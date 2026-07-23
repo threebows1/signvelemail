@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock, Send, AlertCircle, Mail, Users, Zap } from "lucide-react";
 import { templates } from "@/components/signatures/templates";
+import { defaultData } from "@/lib/signature-store";
 
 export const Route = createFileRoute("/app/emails")({
   head: () => ({
@@ -131,7 +132,7 @@ function EmailsPage() {
               </div>
               <div className="border-t border-border">
                 <div style={{ transform: "scale(0.92)", transformOrigin: "top left", width: "108%" }}>
-                  {template.render()}
+                  {template.render(defaultData)}
                 </div>
               </div>
             </div>
