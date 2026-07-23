@@ -103,7 +103,7 @@ export const defaultData: SignatureData = {
     facebook: "https://facebook.com/alriyady",
     instagram: "https://instagram.com/alriyady",
     youtube: "https://youtube.com/@alriyady",
-    github: "",
+    whatsapp: "",
     tiktok: "",
     website: "https://alriyadygroup.ae",
   },
