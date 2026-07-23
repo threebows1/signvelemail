@@ -53,6 +53,31 @@ const FONTS = [
   { label: "Monospace", value: "'JetBrains Mono', Menlo, monospace" },
 ];
 
+const SOCIAL_FIELDS: { key: SocialKey; label: string; placeholder?: string }[] = [
+  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/…" },
+  { key: "twitter", label: "Twitter / X", placeholder: "https://x.com/…" },
+  { key: "facebook", label: "Facebook", placeholder: "https://facebook.com/…" },
+  { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/…" },
+  { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/@…" },
+  { key: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@…" },
+  { key: "whatsapp", label: "WhatsApp", placeholder: "https://wa.me/…" },
+  { key: "telegram", label: "Telegram", placeholder: "https://t.me/…" },
+  { key: "pinterest", label: "Pinterest", placeholder: "https://pinterest.com/…" },
+  { key: "snapchat", label: "Snapchat", placeholder: "https://snapchat.com/add/…" },
+  { key: "threads", label: "Threads", placeholder: "https://threads.net/@…" },
+  { key: "medium", label: "Medium", placeholder: "https://medium.com/@…" },
+  { key: "behance", label: "Behance", placeholder: "https://behance.net/…" },
+  { key: "dribbble", label: "Dribbble", placeholder: "https://dribbble.com/…" },
+  { key: "calendly", label: "Calendly", placeholder: "https://calendly.com/…" },
+  { key: "discord", label: "Discord", placeholder: "https://discord.gg/…" },
+  { key: "twitch", label: "Twitch", placeholder: "https://twitch.tv/…" },
+  { key: "spotify", label: "Spotify", placeholder: "https://open.spotify.com/…" },
+  { key: "slack", label: "Slack", placeholder: "https://…slack.com" },
+  { key: "bluesky", label: "Bluesky", placeholder: "https://bsky.app/profile/…" },
+  { key: "mastodon", label: "Mastodon", placeholder: "https://mastodon.social/@…" },
+  { key: "website", label: "Website", placeholder: "https://…" },
+];
+
 function Editor() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
