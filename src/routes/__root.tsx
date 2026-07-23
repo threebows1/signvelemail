@@ -77,14 +77,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Signature Studio" },
+      { title: "Sign Vel" },
       { name: "description", content: "Deploy precise, professional email signatures across your entire organization." },
-      { name: "author", content: "Signature Studio" },
-      { property: "og:title", content: "Signature Studio" },
+      { name: "author", content: "Sign Vel" },
+      { property: "og:title", content: "Sign Vel" },
       { property: "og:description", content: "Deploy precise, professional email signatures across your entire organization." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@signaturestudio" },
+      { name: "twitter:site", content: "@signvel" },
     ],
     links: [
       {
