@@ -13,6 +13,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppTemplatesRouteImport } from './routes/app.templates'
+import { Route as AppEmailsRouteImport } from './routes/app.emails'
 import { Route as AppEditorIdRouteImport } from './routes/app.editor.$id'
 
 const LoginRoute = LoginRouteImport.update({
@@ -35,6 +37,16 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTemplatesRoute = AppTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEmailsRoute = AppEmailsRouteImport.update({
+  id: '/emails',
+  path: '/emails',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppEditorIdRoute = AppEditorIdRouteImport.update({
   id: '/editor/$id',
   path: '/editor/$id',
@@ -45,12 +57,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/app/emails': typeof AppEmailsRoute
+  '/app/templates': typeof AppTemplatesRoute
   '/app/': typeof AppIndexRoute
   '/app/editor/$id': typeof AppEditorIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/app/emails': typeof AppEmailsRoute
+  '/app/templates': typeof AppTemplatesRoute
   '/app': typeof AppIndexRoute
   '/app/editor/$id': typeof AppEditorIdRoute
 }
@@ -59,15 +75,38 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/app/emails': typeof AppEmailsRoute
+  '/app/templates': typeof AppTemplatesRoute
   '/app/': typeof AppIndexRoute
   '/app/editor/$id': typeof AppEditorIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/login' | '/app/' | '/app/editor/$id'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/app/emails'
+    | '/app/templates'
+    | '/app/'
+    | '/app/editor/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/app' | '/app/editor/$id'
-  id: '__root__' | '/' | '/app' | '/login' | '/app/' | '/app/editor/$id'
+  to:
+    | '/'
+    | '/login'
+    | '/app/emails'
+    | '/app/templates'
+    | '/app'
+    | '/app/editor/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/login'
+    | '/app/emails'
+    | '/app/templates'
+    | '/app/'
+    | '/app/editor/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +145,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/templates': {
+      id: '/app/templates'
+      path: '/templates'
+      fullPath: '/app/templates'
+      preLoaderRoute: typeof AppTemplatesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/emails': {
+      id: '/app/emails'
+      path: '/emails'
+      fullPath: '/app/emails'
+      preLoaderRoute: typeof AppEmailsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/editor/$id': {
       id: '/app/editor/$id'
       path: '/editor/$id'
@@ -117,11 +170,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppEmailsRoute: typeof AppEmailsRoute
+  AppTemplatesRoute: typeof AppTemplatesRoute
   AppIndexRoute: typeof AppIndexRoute
   AppEditorIdRoute: typeof AppEditorIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppEmailsRoute: AppEmailsRoute,
+  AppTemplatesRoute: AppTemplatesRoute,
   AppIndexRoute: AppIndexRoute,
   AppEditorIdRoute: AppEditorIdRoute,
 }
