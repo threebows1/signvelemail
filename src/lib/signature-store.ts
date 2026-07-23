@@ -1,15 +1,30 @@
 import { useEffect, useState } from "react";
 
-export type SocialLinks = {
-  linkedin?: string;
-  twitter?: string;
-  facebook?: string;
-  instagram?: string;
-  youtube?: string;
-  github?: string;
-  tiktok?: string;
-  website?: string;
-};
+export type SocialKey =
+  | "linkedin"
+  | "twitter"
+  | "facebook"
+  | "instagram"
+  | "youtube"
+  | "tiktok"
+  | "website"
+  | "whatsapp"
+  | "telegram"
+  | "pinterest"
+  | "snapchat"
+  | "threads"
+  | "medium"
+  | "behance"
+  | "dribbble"
+  | "calendly"
+  | "discord"
+  | "twitch"
+  | "spotify"
+  | "slack"
+  | "bluesky"
+  | "mastodon";
+
+export type SocialLinks = Partial<Record<SocialKey, string>>;
 
 export type SignatureData = {
   // Identity
