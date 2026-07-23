@@ -458,6 +458,71 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   );
 }
 
+function SliderField({
+  label,
+  min,
+  max,
+  step = 1,
+  value,
+  onChange,
+  suffix = "",
+  display,
+}: {
+  label: string;
+  min: number;
+  max: number;
+  step?: number;
+  value: number;
+  onChange: (v: number) => void;
+  suffix?: string;
+  display?: (v: number) => string;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">{label}</label>
+        <span className="text-[10px] font-[JetBrains_Mono] text-foreground">{display ? display(value) : `${value}${suffix}`}</span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full accent-primary"
+      />
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <div className="space-y-1">
+      <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-stone-50 border border-border px-3 py-2 text-sm rounded"
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function UploadField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [err, setErr] = useState<string | null>(null);
