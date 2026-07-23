@@ -21,7 +21,7 @@ function Dashboard() {
           </span>
           <h1 className="text-3xl font-[Inter_Tight] font-bold tracking-tight">Organization</h1>
         </div>
-        <Link to="/app/editor/$id" params={{ id: "new" }}>
+        <Link to="/app/templates">
           <Button className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90">
             + New Signature
           </Button>
@@ -44,7 +44,7 @@ function Dashboard() {
         {signatures.length === 0 ? (
           <div className="px-6 py-16 text-center">
             <p className="text-muted-foreground mb-4">No signatures yet.</p>
-            <Link to="/app/editor/$id" params={{ id: "new" }}>
+            <Link to="/app/templates">
               <Button>Create your first signature</Button>
             </Link>
           </div>
