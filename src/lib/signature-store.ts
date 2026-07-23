@@ -26,6 +26,12 @@ export type SocialKey =
 
 export type SocialLinks = Partial<Record<SocialKey, string>>;
 
+export type IconStyle = "solid" | "outline" | "plain" | "none";
+export type SocialIconStyle = "color" | "solid" | "outline" | "plain";
+export type Spacing = "compact" | "medium" | "large";
+export type PhoneType = "main" | "mobile" | "office" | "fax" | "direct" | "home" | "other";
+export type PhoneEntry = { type: PhoneType; value: string };
+
 export type SignatureData = {
   // Identity
   name: string;
@@ -37,26 +43,54 @@ export type SignatureData = {
   email: string;
   mobile: string;
   phone: string;
+  phones?: PhoneEntry[];
   address: string;
+  mapUrl?: string;
+  personalAddress?: string;
   website: string;
+  schedulingUrl?: string;
   // Media
   photoUrl?: string;
   logoUrl?: string;
+  logoWidth?: number;
+  cropPhotoCircle?: boolean;
+  showPlaceholderPhoto?: boolean;
   // Extras
   tagline?: string;
   quote?: string;
   disclaimer?: string;
   ctaLabel?: string;
   ctaUrl?: string;
-  // Style
+  // Colors
   primaryColor: string;
   accentColor: string;
   textColor: string;
   mutedColor: string;
+  titleColor?: string;
+  linkColor?: string;
+  iconColor?: string;
+  socialIconColor?: string;
+  themeColor?: string;
+  dividingLineColor?: string;
+  // Typography
   fontFamily: string;
+  fontSize?: number;
+  titleFontSize?: number;
+  separateTitleFontSize?: boolean;
+  lineHeight?: number;
+  spacing?: Spacing;
+  // Icon / social icon rendering
+  iconStyle?: IconStyle;
+  iconSize?: number;
+  socialIconStyle?: SocialIconStyle;
+  socialIconSize?: number;
+  // Layout toggles
   showIcons: boolean;
   showDisclaimer: boolean;
   showSocials: boolean;
+  showDividingLines?: boolean;
+  dividingLineSize?: number;
+  separateWebsite?: boolean;
   // Social
   socials: SocialLinks;
 };
@@ -79,10 +113,20 @@ export const defaultData: SignatureData = {
   email: "farrukh@alriyady.ae",
   mobile: "+971 50 274 9769",
   phone: "+971 4 591 8185",
+  phones: [
+    { type: "main", value: "+971 4 591 8185" },
+    { type: "mobile", value: "+971 50 274 9769" },
+  ],
   address: "The Curve Building - Office M 47, Dubai - UAE",
+  mapUrl: "",
+  personalAddress: "",
   website: "alriyadygroup.ae",
+  schedulingUrl: "",
   photoUrl: "",
   logoUrl: "",
+  logoWidth: 150,
+  cropPhotoCircle: true,
+  showPlaceholderPhoto: false,
   tagline: "Building signature moments.",
   quote: "",
   disclaimer:
@@ -93,10 +137,28 @@ export const defaultData: SignatureData = {
   accentColor: "#00E5A0",
   textColor: "#14121F",
   mutedColor: "#6B7280",
+  titleColor: "#14121F",
+  linkColor: "#5B2EFF",
+  iconColor: "#F59E0B",
+  socialIconColor: "#F59E0B",
+  themeColor: "#0A2A5E",
+  dividingLineColor: "#0A2A5E",
   fontFamily: "Arial, Helvetica, sans-serif",
+  fontSize: 13,
+  titleFontSize: 15,
+  separateTitleFontSize: false,
+  lineHeight: 1.3,
+  spacing: "large",
+  iconStyle: "solid",
+  iconSize: 18,
+  socialIconStyle: "color",
+  socialIconSize: 30,
   showIcons: true,
   showDisclaimer: true,
   showSocials: true,
+  showDividingLines: true,
+  dividingLineSize: 2,
+  separateWebsite: false,
   socials: {
     linkedin: "https://linkedin.com/in/farrukh",
     twitter: "",

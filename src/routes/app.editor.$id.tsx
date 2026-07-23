@@ -212,7 +212,10 @@ function Editor() {
                   <Field label="Mobile" value={sig.data.mobile} onChange={(v) => patch("mobile", v)} />
                   <Field label="Office Phone" value={sig.data.phone} onChange={(v) => patch("phone", v)} />
                   <Field label="Address" value={sig.data.address} onChange={(v) => patch("address", v)} />
+                  <Field label="Address / Map URL" value={sig.data.mapUrl || ""} onChange={(v) => patch("mapUrl", v)} placeholder="https://maps.google.com/…" />
+                  <Field label="Personal Address" value={sig.data.personalAddress || ""} onChange={(v) => patch("personalAddress", v)} />
                   <Field label="Website" value={sig.data.website} onChange={(v) => patch("website", v)} />
+                  <Field label="Scheduling URL" value={sig.data.schedulingUrl || ""} onChange={(v) => patch("schedulingUrl", v)} placeholder="https://cal.com/…" />
                 </Section>
                 <Section title="Media">
                   <UploadField label="Profile Photo" value={sig.data.photoUrl || ""} onChange={(v) => patch("photoUrl", v)} />
@@ -249,6 +252,10 @@ function Editor() {
                         onClick={() => {
                           patch("primaryColor", p.primary);
                           patch("accentColor", p.accent);
+                          patch("themeColor", p.primary);
+                          patch("iconColor", p.primary);
+                          patch("socialIconColor", p.primary);
+                          patch("dividingLineColor", p.primary);
                         }}
                         className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full border border-border hover:border-foreground/30 text-[11px]"
                       >
@@ -260,11 +267,50 @@ function Editor() {
                   </div>
                 </Section>
 
-                <Section title="Custom colors">
+                <Section title="Colors">
+                  <ColorField label="Theme" value={sig.data.themeColor || sig.data.primaryColor} onChange={(v) => patch("themeColor", v)} />
                   <ColorField label="Primary" value={sig.data.primaryColor} onChange={(v) => patch("primaryColor", v)} />
                   <ColorField label="Accent" value={sig.data.accentColor} onChange={(v) => patch("accentColor", v)} />
+                  <ColorField label="Title" value={sig.data.titleColor || sig.data.textColor} onChange={(v) => patch("titleColor", v)} />
                   <ColorField label="Text" value={sig.data.textColor} onChange={(v) => patch("textColor", v)} />
                   <ColorField label="Muted" value={sig.data.mutedColor} onChange={(v) => patch("mutedColor", v)} />
+                  <ColorField label="Link" value={sig.data.linkColor || sig.data.primaryColor} onChange={(v) => patch("linkColor", v)} />
+                  <ColorField label="Icon" value={sig.data.iconColor || sig.data.primaryColor} onChange={(v) => patch("iconColor", v)} />
+                  <ColorField label="Social Icon" value={sig.data.socialIconColor || sig.data.primaryColor} onChange={(v) => patch("socialIconColor", v)} />
+                  <ColorField label="Dividing Line" value={sig.data.dividingLineColor || sig.data.primaryColor} onChange={(v) => patch("dividingLineColor", v)} />
+                </Section>
+
+                <Section title="Icons">
+                  <Toggle label="Show icons" checked={sig.data.showIcons} onChange={(v) => patch("showIcons", v)} />
+                  <SelectField
+                    label="Icon type"
+                    value={sig.data.iconStyle || "solid"}
+                    onChange={(v) => patch("iconStyle", v as any)}
+                    options={[
+                      { value: "solid", label: "Solid circle" },
+                      { value: "outline", label: "Outline circle" },
+                      { value: "plain", label: "Plain (no circle)" },
+                      { value: "none", label: "No icons" },
+                    ]}
+                  />
+                  <SliderField label="Icon size" min={10} max={40} value={sig.data.iconSize ?? 18} onChange={(v) => patch("iconSize", v)} suffix="px" />
+                  <SelectField
+                    label="Social media icon type"
+                    value={sig.data.socialIconStyle || "color"}
+                    onChange={(v) => patch("socialIconStyle", v as any)}
+                    options={[
+                      { value: "color", label: "Filled color" },
+                      { value: "solid", label: "Solid" },
+                      { value: "outline", label: "Outline" },
+                      { value: "plain", label: "Plain" },
+                    ]}
+                  />
+                  <SliderField label="Social icon size" min={14} max={48} value={sig.data.socialIconSize ?? 30} onChange={(v) => patch("socialIconSize", v)} suffix="px" />
+                </Section>
+
+                <Section title="Dividing lines">
+                  <Toggle label="Show dividing lines" checked={sig.data.showDividingLines !== false} onChange={(v) => patch("showDividingLines", v)} />
+                  <SliderField label="Line thickness" min={1} max={8} value={sig.data.dividingLineSize ?? 2} onChange={(v) => patch("dividingLineSize", v)} suffix="px" />
                 </Section>
 
                 <Section title="Typography">
@@ -278,46 +324,27 @@ function Editor() {
                       <option key={f.value} value={f.value}>{f.label}</option>
                     ))}
                   </select>
-                </Section>
-              </>
-            )}
-
-            {tab === "social" && (
-              <Section title="Social profiles">
-                <p className="text-[11px] text-muted-foreground -mt-1">Add URLs for the icons you want to show. Empty fields are hidden.</p>
-                {SOCIAL_FIELDS.map((f) => (
-                  <Field
-                    key={f.key}
-                    label={f.label}
-                    value={sig.data.socials[f.key] || ""}
-                    onChange={(v) => patchSocial(f.key, v)}
-                    placeholder={f.placeholder}
+                  <SliderField label="Font size" min={10} max={20} value={sig.data.fontSize ?? 13} onChange={(v) => patch("fontSize", v)} suffix="px" />
+                  <Toggle label="Separate font size for title" checked={!!sig.data.separateTitleFontSize} onChange={(v) => patch("separateTitleFontSize", v)} />
+                  {sig.data.separateTitleFontSize && (
+                    <SliderField label="Title font size" min={12} max={32} value={sig.data.titleFontSize ?? 17} onChange={(v) => patch("titleFontSize", v)} suffix="px" />
+                  )}
+                  <SliderField label="Line height" min={10} max={22} step={1} value={Math.round((sig.data.lineHeight ?? 1.3) * 10)} onChange={(v) => patch("lineHeight", v / 10)} suffix="" display={(v) => (v / 10).toFixed(1)} />
+                  <SelectField
+                    label="Spacing"
+                    value={sig.data.spacing || "large"}
+                    onChange={(v) => patch("spacing", v as any)}
+                    options={[
+                      { value: "compact", label: "Compact" },
+                      { value: "medium", label: "Medium" },
+                      { value: "large", label: "Large" },
+                    ]}
                   />
-                ))}
-                <Toggle label="Show social icons" checked={sig.data.showSocials} onChange={(v) => patch("showSocials", v)} />
-              </Section>
-            )}
+                  <Toggle label="Separate website line" checked={!!sig.data.separateWebsite} onChange={(v) => patch("separateWebsite", v)} />
+                </Section>
 
-            {tab === "extras" && (
-              <>
-                <Section title="Marketing">
-                  <Field label="Tagline" value={sig.data.tagline || ""} onChange={(v) => patch("tagline", v)} />
-                  <Field label="Personal Quote" value={sig.data.quote || ""} onChange={(v) => patch("quote", v)} />
-                  <Field label="CTA Label" value={sig.data.ctaLabel || ""} onChange={(v) => patch("ctaLabel", v)} placeholder="Book a meeting" />
-                  <Field label="CTA URL" value={sig.data.ctaUrl || ""} onChange={(v) => patch("ctaUrl", v)} placeholder="https://cal.com/…" />
-                </Section>
-                <Section title="Legal">
-                  <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">Disclaimer</label>
-                  <textarea
-                    value={sig.data.disclaimer || ""}
-                    onChange={(e) => patch("disclaimer", e.target.value)}
-                    rows={4}
-                    className="w-full bg-stone-50 border border-border px-3 py-2 text-sm rounded"
-                  />
-                  <Toggle label="Show disclaimer" checked={sig.data.showDisclaimer} onChange={(v) => patch("showDisclaimer", v)} />
-                </Section>
-                <Section title="Options">
-                  <Toggle label="Show icons" checked={sig.data.showIcons} onChange={(v) => patch("showIcons", v)} />
+                <Section title="Logo">
+                  <SliderField label="Logo width" min={60} max={320} value={sig.data.logoWidth ?? 150} onChange={(v) => patch("logoWidth", v)} suffix="px" />
                 </Section>
               </>
             )}
@@ -431,6 +458,71 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
         <span className={`absolute top-0.5 size-4 bg-white rounded-full transition-transform ${checked ? "translate-x-4" : "translate-x-0.5"}`} />
       </button>
     </label>
+  );
+}
+
+function SliderField({
+  label,
+  min,
+  max,
+  step = 1,
+  value,
+  onChange,
+  suffix = "",
+  display,
+}: {
+  label: string;
+  min: number;
+  max: number;
+  step?: number;
+  value: number;
+  onChange: (v: number) => void;
+  suffix?: string;
+  display?: (v: number) => string;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">{label}</label>
+        <span className="text-[10px] font-[JetBrains_Mono] text-foreground">{display ? display(value) : `${value}${suffix}`}</span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full accent-primary"
+      />
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <div className="space-y-1">
+      <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-stone-50 border border-border px-3 py-2 text-sm rounded"
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
+    </div>
   );
 }
 
