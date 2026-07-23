@@ -31,8 +31,11 @@ const Avatar = ({ d, size = 56 }: { d: SignatureData; size?: number }) => {
   return <Initials name={d.name} bg={d.primaryColor} size={size} />;
 };
 
-const Socials = ({ d, color, ring = false, size = 26 }: { d: SignatureData; color: string; ring?: boolean; size?: number }) => {
+const Socials = ({ d, color, ring = false, size }: { d: SignatureData; color: string; ring?: boolean; size?: number }) => {
   if (!d.showSocials) return null;
+  const style = d.socialIconStyle ?? (ring ? "outline" : "solid");
+  const finalSize = size ?? d.socialIconSize ?? 26;
+  const finalColor = d.socialIconColor || color;
   const items = [
     { url: d.socials.linkedin, Icon: Linkedin },
     { url: d.socials.twitter, Icon: Twitter },
@@ -58,22 +61,27 @@ const Socials = ({ d, color, ring = false, size = 26 }: { d: SignatureData; colo
     { url: d.socials.website, Icon: Globe },
   ].filter((s) => s.url);
   return (
-    <div className="flex items-center gap-1.5">
-      {items.map(({ Icon }, i) => (
-        <span
-          key={i}
-          style={{
-            width: size,
-            height: size,
-            background: ring ? "transparent" : color,
-            color: ring ? color : "#fff",
-            border: ring ? `1px solid ${color}` : "none",
-          }}
-          className="rounded-full flex items-center justify-center"
-        >
-          <Icon style={{ width: size * 0.5, height: size * 0.5 }} />
-        </span>
-      ))}
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {items.map(({ Icon }, i) => {
+        const isPlain = style === "plain";
+        const isOutline = style === "outline";
+        return (
+          <span
+            key={i}
+            style={{
+              width: finalSize,
+              height: finalSize,
+              background: isPlain || isOutline ? "transparent" : finalColor,
+              color: isPlain || isOutline ? finalColor : "#fff",
+              border: isOutline ? `1px solid ${finalColor}` : "none",
+              borderRadius: isPlain ? 0 : "9999px",
+            }}
+            className="inline-flex items-center justify-center"
+          >
+            <Icon style={{ width: finalSize * 0.5, height: finalSize * 0.5 }} />
+          </span>
+        );
+      })}
     </div>
   );
 };
@@ -85,52 +93,78 @@ const Disclaimer = ({ d }: { d: SignatureData }) =>
     </p>
   ) : null;
 
-const IconRow = ({ Icon, text, color, ring = false }: { Icon: any; text: string; color: string; ring?: boolean }) => (
-  <div className="flex items-center gap-3 text-[13px]">
-    <span
-      style={{ background: ring ? "transparent" : color, color: ring ? color : "#fff", border: ring ? `1px solid ${color}` : "none" }}
-      className="flex items-center justify-center size-6 rounded-full shrink-0"
-    >
-      <Icon className="size-3" />
-    </span>
-    <span>{text}</span>
-  </div>
-);
+const IconRow = ({ Icon, text, color, ring = false, d }: { Icon: any; text: string; color: string; ring?: boolean; d?: SignatureData }) => {
+  const style = d?.iconStyle ?? (ring ? "outline" : "solid");
+  const iconColor = d?.iconColor || color;
+  const size = d?.iconSize ?? 24;
+  const isPlain = style === "plain";
+  const isOutline = style === "outline";
+  const isNone = style === "none";
+  return (
+    <div className="flex items-center gap-3" style={{ fontSize: d?.fontSize ? `${d.fontSize}px` : "13px", lineHeight: d?.lineHeight ?? 1.3 }}>
+      {!isNone && (
+        <span
+          style={{
+            width: size,
+            height: size,
+            background: isPlain || isOutline ? "transparent" : iconColor,
+            color: isPlain || isOutline ? iconColor : "#fff",
+            border: isOutline ? `1px solid ${iconColor}` : "none",
+            borderRadius: isPlain ? 0 : "9999px",
+          }}
+          className="inline-flex items-center justify-center shrink-0"
+        >
+          <Icon style={{ width: size * 0.55, height: size * 0.55 }} />
+        </span>
+      )}
+      <span>{text}</span>
+    </div>
+  );
+};
 
 /* ============ 1. Al Riyady (exact reference) ============ */
 function AlRiyady(d: SignatureData) {
-  const gold = d.primaryColor;
+  const gold = d.themeColor || d.primaryColor;
+  const lineColor = d.dividingLineColor || gold;
+  const lineSize = d.dividingLineSize ?? 2;
+  const titleSize = d.separateTitleFontSize && d.titleFontSize ? d.titleFontSize : (d.fontSize ? d.fontSize + 4 : 17);
+  const bodySize = d.fontSize ?? 13;
+  const gap = d.spacing === "compact" ? 4 : d.spacing === "medium" ? 8 : 16;
   return (
-    <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+    <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor, lineHeight: d.lineHeight ?? 1.3 }}>
       <div className="mb-2">
-        <p className="text-[17px] font-bold leading-tight">{d.name}</p>
-        <p className="text-[15px] leading-snug" style={{ color: d.mutedColor }}>{d.title}</p>
-        <p className="text-[15px] leading-snug" style={{ color: d.mutedColor }}>{d.company}</p>
+        <p style={{ fontSize: titleSize, color: d.titleColor || d.textColor }} className="font-bold leading-tight">{d.name}</p>
+        <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.title}</p>
+        <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.company}</p>
       </div>
-      <div className="my-3" style={{ height: 2, background: gold }} />
-      <div className="flex items-start gap-8 my-4">
+      {d.showDividingLines !== false && <div className="my-3" style={{ height: lineSize, background: lineColor }} />}
+      <div className="flex items-start my-4" style={{ gap: gap * 2 }}>
         {d.logoUrl ? (
-          <img src={d.logoUrl} alt={d.company} className="shrink-0 w-[160px] object-contain" />
+          <img src={d.logoUrl} alt={d.company} className="shrink-0 object-contain" style={{ width: d.logoWidth ?? 150 }} />
         ) : (
-          <div className="shrink-0 w-[180px]">
-            <div style={{ color: "#0A2A5E" }} className="font-black tracking-widest">
+          <div className="shrink-0" style={{ width: d.logoWidth ?? 180 }}>
+            <div style={{ color: d.themeColor || "#0A2A5E" }} className="font-black tracking-widest">
               <div className="text-right text-[22px] font-serif" dir="rtl">الريادي</div>
               <div style={{ color: gold }} className="text-[28px] leading-none font-black italic mt-1">AL RIYADY</div>
-              <div className="mt-1" style={{ borderTop: "2px solid #0A2A5E" }} />
+              <div className="mt-1" style={{ borderTop: `2px solid ${d.themeColor || "#0A2A5E"}` }} />
               <div className="text-[11px] tracking-[0.4em] mt-1 text-right">G R O U P</div>
             </div>
           </div>
         )}
-        <div className="flex-1 space-y-2">
-          <IconRow Icon={Mail} text={d.email} color={gold} />
-          <IconRow Icon={Smartphone} text={d.mobile} color={gold} />
-          <IconRow Icon={Phone} text={d.phone} color={gold} />
-          <IconRow Icon={MapPin} text={d.address} color={gold} />
-          <IconRow Icon={LinkIcon} text={d.website} color={gold} />
+        <div className="flex-1" style={{ display: "flex", flexDirection: "column", gap }}>
+          <IconRow Icon={Mail} text={d.email} color={gold} d={d} />
+          {(d.phones && d.phones.length > 0 ? d.phones : [{ type: "mobile", value: d.mobile }, { type: "main", value: d.phone }]).map((p, i) =>
+            p.value ? <IconRow key={i} Icon={p.type === "mobile" ? Smartphone : Phone} text={p.value} color={gold} d={d} /> : null,
+          )}
+          <IconRow Icon={MapPin} text={d.address} color={gold} d={d} />
+          {!d.separateWebsite && <IconRow Icon={LinkIcon} text={d.website} color={gold} d={d} />}
         </div>
       </div>
-      <div style={{ height: 2, background: gold }} className="mt-4 mb-3" />
-      <Socials d={d} color={gold} ring size={28} />
+      {d.separateWebsite && (
+        <div className="mb-3"><IconRow Icon={LinkIcon} text={d.website} color={gold} d={d} /></div>
+      )}
+      {d.showDividingLines !== false && <div className="mt-4 mb-3" style={{ height: lineSize, background: lineColor }} />}
+      <Socials d={d} color={gold} />
       <Disclaimer d={d} />
     </div>
   );
