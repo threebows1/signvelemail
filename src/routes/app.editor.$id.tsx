@@ -189,8 +189,8 @@ function Editor() {
                   <Field label="Website" value={sig.data.website} onChange={(v) => patch("website", v)} />
                 </Section>
                 <Section title="Media">
-                  <Field label="Photo URL" value={sig.data.photoUrl || ""} onChange={(v) => patch("photoUrl", v)} placeholder="https://…/avatar.jpg" />
-                  <Field label="Company Logo URL" value={sig.data.logoUrl || ""} onChange={(v) => patch("logoUrl", v)} placeholder="https://…/logo.png" />
+                  <UploadField label="Profile Photo" value={sig.data.photoUrl || ""} onChange={(v) => patch("photoUrl", v)} />
+                  <UploadField label="Company Logo" value={sig.data.logoUrl || ""} onChange={(v) => patch("logoUrl", v)} />
                 </Section>
               </>
             )}
