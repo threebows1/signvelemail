@@ -131,7 +131,7 @@ function EmailsPage() {
               </div>
               <div className="border-t border-border">
                 <div style={{ transform: "scale(0.92)", transformOrigin: "top left", width: "108%" }}>
-                  {template.render()}
+                  {template.render(defaultData)}
                 </div>
               </div>
             </div>
