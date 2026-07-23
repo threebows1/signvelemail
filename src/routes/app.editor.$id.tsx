@@ -9,6 +9,7 @@ import {
   saveSignature,
   type SavedSignature,
   type SignatureData,
+  type SocialKey,
 } from "@/lib/signature-store";
 import { ExportDialog } from "@/components/signatures/ExportDialog";
 import { Check, ChevronRight, Download, Palette, Share2, Sliders, User } from "lucide-react";
