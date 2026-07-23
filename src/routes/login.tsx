@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Sign In — Signature Studio" },
-      { name: "description", content: "Sign in to Signature Studio to manage your team's email signatures." },
-      { property: "og:title", content: "Sign In — Signature Studio" },
-      { property: "og:description", content: "Sign in to Signature Studio to manage your team's email signatures." },
+      { title: "Sign In — Sign Vel" },
+      { name: "description", content: "Sign in to Sign Vel to manage your team's email signatures." },
+      { property: "og:title", content: "Sign In — Sign Vel" },
+      { property: "og:description", content: "Sign in to Sign Vel to manage your team's email signatures." },
       { name: "twitter:card", content: "summary" },
     ],
   }),
@@ -18,8 +19,8 @@ function Login() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans flex flex-col">
       <header className="px-6 py-4 flex items-center justify-between border-b border-border">
-        <Link to="/" className="font-[Inter_Tight] text-lg font-bold tracking-tighter uppercase">
-          Signature Studio
+        <Link to="/" aria-label="Sign Vel home">
+          <Logo size={44} wordmarkClassName="text-lg" />
         </Link>
         <Link to="/">
           <Button variant="ghost" size="sm">
@@ -69,7 +70,7 @@ function Login() {
       </main>
 
       <footer className="border-t border-border px-6 py-4 text-center text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">
-        © 2024 Signature Studio
+        © 2024 Sign Vel
       </footer>
     </div>
   );

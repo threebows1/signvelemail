@@ -1,10 +1,11 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/app")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Signature Studio" },
-      { name: "description", content: "Manage your team's email signatures from the Signature Studio dashboard." },
+      { title: "Dashboard — Sign Vel" },
+      { name: "description", content: "Manage your team's email signatures from the Sign Vel dashboard." },
       { name: "twitter:card", content: "summary" },
     ],
   }),
@@ -15,8 +16,8 @@ function AppLayout() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans flex">
       <aside className="w-64 border-r border-border bg-white p-6 flex flex-col sticky top-0 h-screen">
-        <Link to="/" className="font-[Inter_Tight] text-lg font-bold tracking-tighter uppercase mb-12">
-          Signature Studio
+        <Link to="/" aria-label="Sign Vel home" className="mb-12">
+          <Logo size={44} wordmarkClassName="text-lg" />
         </Link>
 
         <nav className="flex flex-col gap-1">

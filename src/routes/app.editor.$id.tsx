@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import logoMonogram from "@/assets/logo-monogram.png";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/app/editor/$id")({
   head: ({ params }) => ({
     meta: [
-      { title: `Editor ${params.id} — Signature Studio` },
+      { title: `Editor ${params.id} — Sign Vel` },
       { name: "description", content: "Edit your team's email signature with the visual editor." },
       { name: "twitter:card", content: "summary" },
     ],
@@ -44,7 +44,7 @@ function Editor() {
           <div className="space-y-5">
             <FormField label="Full Name" value="Marcus Sterling" />
             <FormField label="Job Title" value="Principal Creative Director" />
-            <FormField label="Company" value="Signature Studio" />
+            <FormField label="Company" value="Sign Vel" />
             <FormField label="Email" value="marcus@studio.id" />
             <FormField label="Phone" value="+1 555 012 3456" />
             <FormField label="Website" value="studio.id" />
@@ -75,13 +75,9 @@ function Editor() {
           </span>
           <div className="bg-white p-12 shadow-sm ring-1 ring-black/5 rounded-lg w-full max-w-lg">
             <div className="flex items-start gap-8 border-l-2 border-primary pl-8">
-              <img
-                src={logoMonogram}
-                alt="Studio monogram"
-                width={64}
-                height={64}
-                className="size-16 rounded bg-stone-50 shrink-0 border border-black/5 object-cover"
-              />
+              <div className="size-16 rounded bg-stone-50 shrink-0 border border-black/5 flex items-center justify-center">
+                <Logo size={44} showWordmark={false} />
+              </div>
               <div>
                 <h3 className="text-2xl font-bold font-[Inter_Tight] tracking-tighter">Marcus Sterling</h3>
                 <p className="text-sm text-muted-foreground mb-6 font-medium italic">Principal Creative Director</p>
