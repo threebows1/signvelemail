@@ -1,4 +1,4 @@
-import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon, Facebook, Linkedin, Instagram, Youtube, Twitter, Github, Globe } from "lucide-react";
+import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon, Facebook, Linkedin, Instagram, Youtube, Twitter, Globe, MessageCircle, Send, AtSign, BookOpen, Palette, Dribbble, Calendar, MessageSquare, Twitch, Music, Music2, Slack, Ghost, Cloud, Hash } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SignatureData } from "@/lib/signature-store";
 
