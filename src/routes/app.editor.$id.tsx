@@ -212,7 +212,10 @@ function Editor() {
                   <Field label="Mobile" value={sig.data.mobile} onChange={(v) => patch("mobile", v)} />
                   <Field label="Office Phone" value={sig.data.phone} onChange={(v) => patch("phone", v)} />
                   <Field label="Address" value={sig.data.address} onChange={(v) => patch("address", v)} />
+                  <Field label="Address / Map URL" value={sig.data.mapUrl || ""} onChange={(v) => patch("mapUrl", v)} placeholder="https://maps.google.com/…" />
+                  <Field label="Personal Address" value={sig.data.personalAddress || ""} onChange={(v) => patch("personalAddress", v)} />
                   <Field label="Website" value={sig.data.website} onChange={(v) => patch("website", v)} />
+                  <Field label="Scheduling URL" value={sig.data.schedulingUrl || ""} onChange={(v) => patch("schedulingUrl", v)} placeholder="https://cal.com/…" />
                 </Section>
                 <Section title="Media">
                   <UploadField label="Profile Photo" value={sig.data.photoUrl || ""} onChange={(v) => patch("photoUrl", v)} />
