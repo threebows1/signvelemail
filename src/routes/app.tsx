@@ -1,0 +1,59 @@
+import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/app")({
+  head: () => ({
+    meta: [
+      { title: "Dashboard — Signature Studio" },
+      { name: "description", content: "Manage your team's email signatures from the Signature Studio dashboard." },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: AppLayout,
+});
+
+function AppLayout() {
+  return (
+    <div className="min-h-screen bg-background text-foreground font-sans flex">
+      <aside className="w-64 border-r border-border bg-white p-6 flex flex-col sticky top-0 h-screen">
+        <Link to="/" className="font-[Inter_Tight] text-lg font-bold tracking-tighter uppercase mb-12">
+          Signature Studio
+        </Link>
+
+        <nav className="flex flex-col gap-1">
+          <NavItem to="/app" label="Dashboard" active />
+          <NavItem to="/app/editor/new" label="Editor" />
+          <NavItem to="/app" label="Templates" />
+          <NavItem to="/app" label="Team" />
+          <NavItem to="/app" label="Settings" />
+        </nav>
+
+        <div className="mt-auto pt-6 border-t border-border">
+          <Link to="/">
+            <button className="w-full text-left text-xs font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+              Sign Out
+            </button>
+          </Link>
+        </div>
+      </aside>
+
+      <main className="flex-1 overflow-auto">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+
+function NavItem({ to, label, active }: { to: string; label: string; active?: boolean }) {
+  return (
+    <Link
+      to={to}
+      className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+        active
+          ? "bg-foreground text-background font-medium"
+          : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
