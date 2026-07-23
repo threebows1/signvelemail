@@ -1,15 +1,30 @@
 import { useEffect, useState } from "react";
 
-export type SocialLinks = {
-  linkedin?: string;
-  twitter?: string;
-  facebook?: string;
-  instagram?: string;
-  youtube?: string;
-  github?: string;
-  tiktok?: string;
-  website?: string;
-};
+export type SocialKey =
+  | "linkedin"
+  | "twitter"
+  | "facebook"
+  | "instagram"
+  | "youtube"
+  | "tiktok"
+  | "website"
+  | "whatsapp"
+  | "telegram"
+  | "pinterest"
+  | "snapchat"
+  | "threads"
+  | "medium"
+  | "behance"
+  | "dribbble"
+  | "calendly"
+  | "discord"
+  | "twitch"
+  | "spotify"
+  | "slack"
+  | "bluesky"
+  | "mastodon";
+
+export type SocialLinks = Partial<Record<SocialKey, string>>;
 
 export type SignatureData = {
   // Identity
@@ -88,7 +103,7 @@ export const defaultData: SignatureData = {
     facebook: "https://facebook.com/alriyady",
     instagram: "https://instagram.com/alriyady",
     youtube: "https://youtube.com/@alriyady",
-    github: "",
+    whatsapp: "",
     tiktok: "",
     website: "https://alriyadygroup.ae",
   },

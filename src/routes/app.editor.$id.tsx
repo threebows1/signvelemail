@@ -9,6 +9,7 @@ import {
   saveSignature,
   type SavedSignature,
   type SignatureData,
+  type SocialKey,
 } from "@/lib/signature-store";
 import { ExportDialog } from "@/components/signatures/ExportDialog";
 import { Check, ChevronRight, Download, Palette, Share2, Sliders, User } from "lucide-react";
@@ -50,6 +51,31 @@ const FONTS = [
   { label: "Tahoma", value: "Tahoma, Geneva, sans-serif" },
   { label: "Trebuchet", value: "'Trebuchet MS', sans-serif" },
   { label: "Monospace", value: "'JetBrains Mono', Menlo, monospace" },
+];
+
+const SOCIAL_FIELDS: { key: SocialKey; label: string; placeholder?: string }[] = [
+  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/…" },
+  { key: "twitter", label: "Twitter / X", placeholder: "https://x.com/…" },
+  { key: "facebook", label: "Facebook", placeholder: "https://facebook.com/…" },
+  { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/…" },
+  { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/@…" },
+  { key: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@…" },
+  { key: "whatsapp", label: "WhatsApp", placeholder: "https://wa.me/…" },
+  { key: "telegram", label: "Telegram", placeholder: "https://t.me/…" },
+  { key: "pinterest", label: "Pinterest", placeholder: "https://pinterest.com/…" },
+  { key: "snapchat", label: "Snapchat", placeholder: "https://snapchat.com/add/…" },
+  { key: "threads", label: "Threads", placeholder: "https://threads.net/@…" },
+  { key: "medium", label: "Medium", placeholder: "https://medium.com/@…" },
+  { key: "behance", label: "Behance", placeholder: "https://behance.net/…" },
+  { key: "dribbble", label: "Dribbble", placeholder: "https://dribbble.com/…" },
+  { key: "calendly", label: "Calendly", placeholder: "https://calendly.com/…" },
+  { key: "discord", label: "Discord", placeholder: "https://discord.gg/…" },
+  { key: "twitch", label: "Twitch", placeholder: "https://twitch.tv/…" },
+  { key: "spotify", label: "Spotify", placeholder: "https://open.spotify.com/…" },
+  { key: "slack", label: "Slack", placeholder: "https://…slack.com" },
+  { key: "bluesky", label: "Bluesky", placeholder: "https://bsky.app/profile/…" },
+  { key: "mastodon", label: "Mastodon", placeholder: "https://mastodon.social/@…" },
+  { key: "website", label: "Website", placeholder: "https://…" },
 ];
 
 function Editor() {
@@ -189,8 +215,8 @@ function Editor() {
                   <Field label="Website" value={sig.data.website} onChange={(v) => patch("website", v)} />
                 </Section>
                 <Section title="Media">
-                  <Field label="Photo URL" value={sig.data.photoUrl || ""} onChange={(v) => patch("photoUrl", v)} placeholder="https://…/avatar.jpg" />
-                  <Field label="Company Logo URL" value={sig.data.logoUrl || ""} onChange={(v) => patch("logoUrl", v)} placeholder="https://…/logo.png" />
+                  <UploadField label="Profile Photo" value={sig.data.photoUrl || ""} onChange={(v) => patch("photoUrl", v)} />
+                  <UploadField label="Company Logo" value={sig.data.logoUrl || ""} onChange={(v) => patch("logoUrl", v)} />
                 </Section>
               </>
             )}
@@ -258,13 +284,16 @@ function Editor() {
 
             {tab === "social" && (
               <Section title="Social profiles">
-                <Field label="LinkedIn" value={sig.data.socials.linkedin || ""} onChange={(v) => patchSocial("linkedin", v)} placeholder="https://linkedin.com/in/…" />
-                <Field label="Twitter / X" value={sig.data.socials.twitter || ""} onChange={(v) => patchSocial("twitter", v)} />
-                <Field label="Facebook" value={sig.data.socials.facebook || ""} onChange={(v) => patchSocial("facebook", v)} />
-                <Field label="Instagram" value={sig.data.socials.instagram || ""} onChange={(v) => patchSocial("instagram", v)} />
-                <Field label="YouTube" value={sig.data.socials.youtube || ""} onChange={(v) => patchSocial("youtube", v)} />
-                <Field label="GitHub" value={sig.data.socials.github || ""} onChange={(v) => patchSocial("github", v)} />
-                <Field label="TikTok" value={sig.data.socials.tiktok || ""} onChange={(v) => patchSocial("tiktok", v)} />
+                <p className="text-[11px] text-muted-foreground -mt-1">Add URLs for the icons you want to show. Empty fields are hidden.</p>
+                {SOCIAL_FIELDS.map((f) => (
+                  <Field
+                    key={f.key}
+                    label={f.label}
+                    value={sig.data.socials[f.key] || ""}
+                    onChange={(v) => patchSocial(f.key, v)}
+                    placeholder={f.placeholder}
+                  />
+                ))}
                 <Toggle label="Show social icons" checked={sig.data.showSocials} onChange={(v) => patch("showSocials", v)} />
               </Section>
             )}
@@ -402,5 +431,75 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
         <span className={`absolute top-0.5 size-4 bg-white rounded-full transition-transform ${checked ? "translate-x-4" : "translate-x-0.5"}`} />
       </button>
     </label>
+  );
+}
+
+function UploadField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [err, setErr] = useState<string | null>(null);
+  function handleFiles(files: FileList | null) {
+    const file = files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setErr("Please choose an image file.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setErr("Image must be under 2 MB.");
+      return;
+    }
+    setErr(null);
+    const reader = new FileReader();
+    reader.onload = () => onChange(String(reader.result || ""));
+    reader.readAsDataURL(file);
+  }
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">{label}</label>
+      <div
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
+        className="flex items-center gap-3 p-2 border border-dashed border-border rounded bg-stone-50 hover:border-primary/40 transition-colors"
+      >
+        {value ? (
+          <img src={value} alt={label} className="size-14 rounded object-cover ring-1 ring-border" />
+        ) : (
+          <div className="size-14 rounded bg-white ring-1 ring-border flex items-center justify-center text-[10px] text-muted-foreground uppercase font-[JetBrains_Mono]">
+            None
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="px-2.5 py-1 rounded border border-border bg-white text-[11px] font-medium hover:border-foreground/40"
+            >
+              {value ? "Replace" : "Upload"}
+            </button>
+            {value && (
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="px-2.5 py-1 rounded border border-border bg-white text-[11px] font-medium hover:border-destructive/40 text-destructive"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-1 truncate">
+            {value ? "Uploaded — drop a new image to replace." : "Drag & drop or click Upload · PNG/JPG · max 2 MB"}
+          </p>
+          {err && <p className="text-[10px] text-destructive mt-0.5">{err}</p>}
+        </div>
+      </div>
+    </div>
   );
 }
