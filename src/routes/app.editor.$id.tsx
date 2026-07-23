@@ -258,13 +258,16 @@ function Editor() {
 
             {tab === "social" && (
               <Section title="Social profiles">
-                <Field label="LinkedIn" value={sig.data.socials.linkedin || ""} onChange={(v) => patchSocial("linkedin", v)} placeholder="https://linkedin.com/in/…" />
-                <Field label="Twitter / X" value={sig.data.socials.twitter || ""} onChange={(v) => patchSocial("twitter", v)} />
-                <Field label="Facebook" value={sig.data.socials.facebook || ""} onChange={(v) => patchSocial("facebook", v)} />
-                <Field label="Instagram" value={sig.data.socials.instagram || ""} onChange={(v) => patchSocial("instagram", v)} />
-                <Field label="YouTube" value={sig.data.socials.youtube || ""} onChange={(v) => patchSocial("youtube", v)} />
-                <Field label="GitHub" value={sig.data.socials.github || ""} onChange={(v) => patchSocial("github", v)} />
-                <Field label="TikTok" value={sig.data.socials.tiktok || ""} onChange={(v) => patchSocial("tiktok", v)} />
+                <p className="text-[11px] text-muted-foreground -mt-1">Add URLs for the icons you want to show. Empty fields are hidden.</p>
+                {SOCIAL_FIELDS.map((f) => (
+                  <Field
+                    key={f.key}
+                    label={f.label}
+                    value={sig.data.socials[f.key] || ""}
+                    onChange={(v) => patchSocial(f.key, v)}
+                    placeholder={f.placeholder}
+                  />
+                ))}
                 <Toggle label="Show social icons" checked={sig.data.showSocials} onChange={(v) => patch("showSocials", v)} />
               </Section>
             )}
