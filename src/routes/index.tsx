@@ -49,18 +49,12 @@ function Navigation() {
           </a>
         </div>
       </div>
-      <div className="flex items-center gap-4">
-        <Link to="/login">
-          <Button variant="ghost" size="sm">
-            Sign In
-          </Button>
-        </Link>
-        <Link to="/login">
-          <Button size="sm" className="bg-foreground text-background hover:bg-foreground/90">
-            Get Started
-          </Button>
-        </Link>
-      </div>
+      <Link to="/login">
+        <Button size="sm" className="bg-foreground text-background hover:bg-foreground/90">
+          Get Started
+        </Button>
+      </Link>
+
     </nav>
   );
 }
