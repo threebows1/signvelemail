@@ -1,123 +1,174 @@
-import { Logo } from "@/components/Logo";
-import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon, Facebook, Linkedin, Instagram, Youtube, Globe, Twitter } from "lucide-react";
+import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon, Facebook, Linkedin, Instagram, Youtube, Twitter, Github, Globe } from "lucide-react";
 import type { ReactNode } from "react";
+import type { SignatureData } from "@/lib/signature-store";
 
 export type TemplateMeta = {
   id: string;
   name: string;
   category: "Corporate" | "Creative" | "Minimal" | "Bold" | "Executive";
-  accent: string; // tailwind bg for chip
+  accent: string;
   description: string;
-  render: () => ReactNode;
+  render: (d: SignatureData) => ReactNode;
 };
 
-/* ------------- Shared demo person ------------- */
-const person = {
-  name: "Farrukh Shahzad",
-  title: "Marketing Manager",
-  company: "Al Riyady Group",
-  email: "farrukh@alriyady.ae",
-  mobile: "+971 50 274 9769",
-  phone: "+971 4 591 8185",
-  address: "The Curve Building - Office No. M 47, Dubai - UAE",
-  website: "alriyadygroup.ae",
-};
-
-/* ------------- 1. Al Riyady (exact reference) ------------- */
-function AlRiyadyTemplate() {
-  const ring = "border border-[#C88A1E]";
-  const iconWrap = `flex items-center justify-center size-7 rounded-full bg-[#C88A1E] text-white shrink-0`;
-  const iconOutline = `flex items-center justify-center size-7 rounded-full ${ring} text-[#C88A1E] shrink-0`;
+/* ---------- helpers ---------- */
+const Initials = ({ name, bg, fg = "#fff", size = 56 }: { name: string; bg: string; fg?: string; size?: number }) => {
+  const initials = name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
   return (
-    <div className="bg-white p-8 font-[Arial,sans-serif] text-[#333]">
+    <div
+      style={{ width: size, height: size, background: bg, color: fg, fontFamily: "inherit" }}
+      className="rounded-full flex items-center justify-center font-bold shrink-0"
+    >
+      {initials}
+    </div>
+  );
+};
+
+const Avatar = ({ d, size = 56 }: { d: SignatureData; size?: number }) => {
+  if (d.photoUrl) {
+    return <img src={d.photoUrl} alt={d.name} style={{ width: size, height: size }} className="rounded-full object-cover shrink-0" />;
+  }
+  return <Initials name={d.name} bg={d.primaryColor} size={size} />;
+};
+
+const Socials = ({ d, color, ring = false, size = 26 }: { d: SignatureData; color: string; ring?: boolean; size?: number }) => {
+  if (!d.showSocials) return null;
+  const items = [
+    { url: d.socials.linkedin, Icon: Linkedin },
+    { url: d.socials.twitter, Icon: Twitter },
+    { url: d.socials.facebook, Icon: Facebook },
+    { url: d.socials.instagram, Icon: Instagram },
+    { url: d.socials.youtube, Icon: Youtube },
+    { url: d.socials.github, Icon: Github },
+    { url: d.socials.website, Icon: Globe },
+  ].filter((s) => s.url);
+  return (
+    <div className="flex items-center gap-1.5">
+      {items.map(({ Icon }, i) => (
+        <span
+          key={i}
+          style={{
+            width: size,
+            height: size,
+            background: ring ? "transparent" : color,
+            color: ring ? color : "#fff",
+            border: ring ? `1px solid ${color}` : "none",
+          }}
+          className="rounded-full flex items-center justify-center"
+        >
+          <Icon style={{ width: size * 0.5, height: size * 0.5 }} />
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const Disclaimer = ({ d }: { d: SignatureData }) =>
+  d.showDisclaimer && d.disclaimer ? (
+    <p className="mt-3 text-[10.5px] leading-relaxed" style={{ color: d.mutedColor }}>
+      {d.disclaimer}
+    </p>
+  ) : null;
+
+const IconRow = ({ Icon, text, color, ring = false }: { Icon: any; text: string; color: string; ring?: boolean }) => (
+  <div className="flex items-center gap-3 text-[13px]">
+    <span
+      style={{ background: ring ? "transparent" : color, color: ring ? color : "#fff", border: ring ? `1px solid ${color}` : "none" }}
+      className="flex items-center justify-center size-6 rounded-full shrink-0"
+    >
+      <Icon className="size-3" />
+    </span>
+    <span>{text}</span>
+  </div>
+);
+
+/* ============ 1. Al Riyady (exact reference) ============ */
+function AlRiyady(d: SignatureData) {
+  const gold = d.primaryColor;
+  return (
+    <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <div className="mb-2">
-        <p className="text-[17px] font-bold text-black leading-tight">{person.name}</p>
-        <p className="text-[15px] text-neutral-500 leading-snug">{person.title}</p>
-        <p className="text-[15px] text-neutral-500 leading-snug">{person.company}</p>
+        <p className="text-[17px] font-bold leading-tight">{d.name}</p>
+        <p className="text-[15px] leading-snug" style={{ color: d.mutedColor }}>{d.title}</p>
+        <p className="text-[15px] leading-snug" style={{ color: d.mutedColor }}>{d.company}</p>
       </div>
-      <div className="h-[2px] bg-[#C88A1E] my-3" />
+      <div className="my-3" style={{ height: 2, background: gold }} />
       <div className="flex items-start gap-8 my-4">
-        <div className="shrink-0 w-[180px]">
-          <div className="text-[#0A2A5E] font-black tracking-widest">
-            <div className="text-right text-[22px] font-serif" dir="rtl">الريادي</div>
-            <div className="text-[#C88A1E] text-[28px] leading-none font-black italic mt-1">AL RIYADY</div>
-            <div className="border-t-2 border-[#0A2A5E] mt-1" />
-            <div className="text-[#0A2A5E] text-[11px] tracking-[0.4em] mt-1 text-right">G R O U P</div>
+        {d.logoUrl ? (
+          <img src={d.logoUrl} alt={d.company} className="shrink-0 w-[160px] object-contain" />
+        ) : (
+          <div className="shrink-0 w-[180px]">
+            <div style={{ color: "#0A2A5E" }} className="font-black tracking-widest">
+              <div className="text-right text-[22px] font-serif" dir="rtl">الريادي</div>
+              <div style={{ color: gold }} className="text-[28px] leading-none font-black italic mt-1">AL RIYADY</div>
+              <div className="mt-1" style={{ borderTop: "2px solid #0A2A5E" }} />
+              <div className="text-[11px] tracking-[0.4em] mt-1 text-right">G R O U P</div>
+            </div>
           </div>
-        </div>
-        <div className="flex-1 space-y-2 text-[14px]">
-          <div className="flex items-center gap-3"><span className={iconWrap}><Mail className="size-3.5" /></span><span>{person.email}</span></div>
-          <div className="flex items-center gap-3"><span className={iconWrap}><Smartphone className="size-3.5" /></span><span>{person.mobile}</span></div>
-          <div className="flex items-center gap-3"><span className={iconWrap}><Phone className="size-3.5" /></span><span>{person.phone}</span></div>
-          <div className="flex items-center gap-3"><span className={iconWrap}><MapPin className="size-3.5" /></span><span>{person.address}</span></div>
-          <div className="flex items-center gap-3"><span className={iconWrap}><LinkIcon className="size-3.5" /></span><span className="font-bold text-neutral-700">{person.website}</span></div>
+        )}
+        <div className="flex-1 space-y-2">
+          <IconRow Icon={Mail} text={d.email} color={gold} />
+          <IconRow Icon={Smartphone} text={d.mobile} color={gold} />
+          <IconRow Icon={Phone} text={d.phone} color={gold} />
+          <IconRow Icon={MapPin} text={d.address} color={gold} />
+          <IconRow Icon={LinkIcon} text={d.website} color={gold} />
         </div>
       </div>
-      <div className="h-[2px] bg-[#C88A1E] mt-4 mb-3" />
-      <div className="flex items-center gap-2 mb-4">
-        {[Facebook, Linkedin, Instagram, Youtube].map((Icon, i) => (
-          <span key={i} className={iconOutline}><Icon className="size-3.5" /></span>
-        ))}
-        <span className={iconOutline}><span className="text-[11px] font-bold">♪</span></span>
-      </div>
-      <p className="text-[11px] text-neutral-500 leading-relaxed">
-        The content of this email is confidential and intended for the recipient specified in message only. It is strictly forbidden to share any part of this message with any third party, without a written consent of the sender. If you received this message by mistake, please reply to this message and follow with its deletion, so that we can ensure such a mistake does not occur in the future.
-      </p>
+      <div style={{ height: 2, background: gold }} className="mt-4 mb-3" />
+      <Socials d={d} color={gold} ring size={28} />
+      <Disclaimer d={d} />
     </div>
   );
 }
 
-/* ------------- 2. Left Line (Sign Vel default) ------------- */
-function LeftLineTemplate() {
+/* ============ 2. Left Line ============ */
+function LeftLine(d: SignatureData) {
   return (
-    <div className="bg-white p-8 font-sans">
-      <div className="flex items-start gap-6 border-l-2 border-[#5B2EFF] pl-6">
-        <div className="size-16 rounded bg-stone-50 shrink-0 border border-black/5 flex items-center justify-center">
-          <Logo size={40} showWordmark={false} />
-        </div>
+    <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="flex items-start gap-6" style={{ borderLeft: `2px solid ${d.primaryColor}`, paddingLeft: 24 }}>
+        <Avatar d={d} size={64} />
         <div>
-          <h3 className="text-xl font-bold tracking-tight text-neutral-900">{person.name}</h3>
-          <p className="text-sm text-neutral-500 mb-4 italic">{person.title} · {person.company}</p>
-          <div className="space-y-1 text-[12px] text-neutral-600">
-            <p>T: {person.phone}</p>
-            <p>E: {person.email}</p>
-            <p className="font-bold text-neutral-900">W: {person.website}</p>
+          <h3 className="text-xl font-bold tracking-tight">{d.name}</h3>
+          <p className="text-sm italic mb-4" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
+          <div className="space-y-1 text-[12px]" style={{ color: d.mutedColor }}>
+            <p>T: {d.phone}</p>
+            <p>E: {d.email}</p>
+            <p className="font-bold" style={{ color: d.textColor }}>W: {d.website}</p>
           </div>
+          <div className="mt-3"><Socials d={d} color={d.primaryColor} size={22} /></div>
         </div>
       </div>
     </div>
   );
 }
 
-/* ------------- 3. Stacked Minimal ------------- */
-function StackedMinimalTemplate() {
+/* ============ 3. Stacked Minimal ============ */
+function StackedMinimal(d: SignatureData) {
   return (
-    <div className="bg-white p-8 font-sans max-w-md">
-      <p className="text-[15px] font-semibold text-neutral-900">{person.name}</p>
-      <p className="text-[13px] text-neutral-500 mb-3">{person.title}, {person.company}</p>
-      <div className="text-[12px] text-neutral-700 space-y-0.5">
-        <p><span className="text-neutral-400">e</span> {person.email}</p>
-        <p><span className="text-neutral-400">m</span> {person.mobile}</p>
-        <p><span className="text-neutral-400">w</span> <span className="underline">{person.website}</span></p>
+    <div className="bg-white p-8 max-w-md" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <p className="text-[15px] font-semibold">{d.name}</p>
+      <p className="text-[13px] mb-3" style={{ color: d.mutedColor }}>{d.title}, {d.company}</p>
+      <div className="text-[12px] space-y-0.5">
+        <p><span style={{ color: d.mutedColor }}>e</span> {d.email}</p>
+        <p><span style={{ color: d.mutedColor }}>m</span> {d.mobile}</p>
+        <p><span style={{ color: d.mutedColor }}>w</span> <span className="underline">{d.website}</span></p>
       </div>
     </div>
   );
 }
 
-/* ------------- 4. Photo + vertical rule ------------- */
-function PhotoCardTemplate() {
+/* ============ 4. Portrait Card ============ */
+function PhotoCard(d: SignatureData) {
   return (
-    <div className="bg-white p-6 font-sans">
+    <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <div className="flex items-center gap-5">
-        <div className="size-20 rounded-full bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0] flex items-center justify-center text-white text-2xl font-bold shrink-0">
-          FS
-        </div>
-        <div className="border-l border-neutral-200 pl-5">
-          <p className="text-lg font-bold text-neutral-900">{person.name}</p>
-          <p className="text-sm text-[#5B2EFF] font-medium">{person.title}</p>
-          <p className="text-xs text-neutral-500 mb-2">{person.company}</p>
-          <div className="text-[11px] text-neutral-600 space-x-3">
-            <span>{person.mobile}</span>·<span>{person.email}</span>
+        <Avatar d={d} size={80} />
+        <div style={{ borderLeft: `1px solid ${d.mutedColor}33`, paddingLeft: 20 }}>
+          <p className="text-lg font-bold">{d.name}</p>
+          <p className="text-sm font-medium" style={{ color: d.primaryColor }}>{d.title}</p>
+          <p className="text-xs mb-2" style={{ color: d.mutedColor }}>{d.company}</p>
+          <div className="text-[11px] space-x-3" style={{ color: d.mutedColor }}>
+            <span>{d.mobile}</span>·<span>{d.email}</span>
           </div>
         </div>
       </div>
@@ -125,23 +176,23 @@ function PhotoCardTemplate() {
   );
 }
 
-/* ------------- 5. Corporate Blue table style ------------- */
-function CorporateBlueTemplate() {
+/* ============ 5. Corporate Blue ============ */
+function CorporateBlue(d: SignatureData) {
   return (
-    <div className="bg-white p-6 font-[Georgia,serif]">
+    <div className="bg-white p-6" style={{ fontFamily: "Georgia, serif", color: d.textColor }}>
       <table className="text-[13px]">
         <tbody>
           <tr>
-            <td className="pr-6 border-r-2 border-[#1E40AF] align-top">
-              <div className="text-[#1E40AF] font-bold text-xl leading-tight">{person.name}</div>
-              <div className="italic text-neutral-600">{person.title}</div>
-              <div className="text-neutral-500 text-[12px] mt-1">{person.company}</div>
+            <td className="pr-6 align-top" style={{ borderRight: `2px solid ${d.primaryColor}` }}>
+              <div className="font-bold text-xl leading-tight" style={{ color: d.primaryColor }}>{d.name}</div>
+              <div className="italic" style={{ color: d.mutedColor }}>{d.title}</div>
+              <div className="text-[12px] mt-1" style={{ color: d.mutedColor }}>{d.company}</div>
             </td>
-            <td className="pl-6 align-top text-neutral-700 text-[12px] space-y-0.5">
-              <div><b>D</b> {person.phone}</div>
-              <div><b>M</b> {person.mobile}</div>
-              <div><b>E</b> <a className="text-[#1E40AF]">{person.email}</a></div>
-              <div><b>W</b> <a className="text-[#1E40AF]">{person.website}</a></div>
+            <td className="pl-6 align-top text-[12px]" style={{ color: d.textColor }}>
+              <div><b>D</b> {d.phone}</div>
+              <div><b>M</b> {d.mobile}</div>
+              <div><b>E</b> <span style={{ color: d.primaryColor }}>{d.email}</span></div>
+              <div><b>W</b> <span style={{ color: d.primaryColor }}>{d.website}</span></div>
             </td>
           </tr>
         </tbody>
@@ -150,104 +201,524 @@ function CorporateBlueTemplate() {
   );
 }
 
-/* ------------- 6. Banner Bottom ------------- */
-function BannerBottomTemplate() {
+/* ============ 6. Promo Banner ============ */
+function BannerBottom(d: SignatureData) {
   return (
-    <div className="bg-white font-sans">
+    <div className="bg-white" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <div className="p-6">
-        <p className="text-base font-bold text-neutral-900">{person.name}</p>
-        <p className="text-sm text-neutral-500">{person.title} · {person.company}</p>
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-neutral-600">
-          <span>{person.email}</span>
-          <span>{person.mobile}</span>
-          <span className="underline">{person.website}</span>
+        <p className="text-base font-bold">{d.name}</p>
+        <p className="text-sm" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px]" style={{ color: d.mutedColor }}>
+          <span>{d.email}</span>
+          <span>{d.mobile}</span>
+          <span className="underline">{d.website}</span>
         </div>
       </div>
-      <div className="bg-gradient-to-r from-[#5B2EFF] to-[#00E5A0] text-white px-6 py-3 flex items-center justify-between">
-        <span className="text-xs font-medium tracking-wide">✨ New: AI signature deployment across your team</span>
-        <span className="text-[11px] uppercase tracking-widest">Learn more →</span>
+      <div className="text-white px-6 py-3 flex items-center justify-between" style={{ background: `linear-gradient(90deg, ${d.primaryColor}, ${d.accentColor})` }}>
+        <span className="text-xs font-medium tracking-wide">{d.tagline || d.ctaLabel}</span>
+        <span className="text-[11px] uppercase tracking-widest">{d.ctaUrl ? "Learn more →" : ""}</span>
       </div>
     </div>
   );
 }
 
-/* ------------- 7. Compact Mono ------------- */
-function CompactMonoTemplate() {
+/* ============ 7. Compact Mono ============ */
+function CompactMono(d: SignatureData) {
   return (
-    <div className="bg-white p-6 font-[JetBrains_Mono,monospace] text-[12px] text-neutral-800">
+    <div className="bg-white p-6 text-[12px]" style={{ fontFamily: "JetBrains Mono, ui-monospace, monospace", color: d.textColor }}>
       <p>-- </p>
-      <p className="font-bold">{person.name.toUpperCase()}</p>
-      <p className="text-neutral-500">{person.title} // {person.company}</p>
-      <p className="mt-2">{person.email}</p>
-      <p>{person.mobile}</p>
-      <p>{person.website}</p>
+      <p className="font-bold">{d.name.toUpperCase()}</p>
+      <p style={{ color: d.mutedColor }}>{d.title} // {d.company}</p>
+      <p className="mt-2">{d.email}</p>
+      <p>{d.mobile}</p>
+      <p>{d.website}</p>
     </div>
   );
 }
 
-/* ------------- 8. Executive Serif ------------- */
-function ExecutiveSerifTemplate() {
+/* ============ 8. Executive Serif ============ */
+function ExecutiveSerif(d: SignatureData) {
   return (
-    <div className="bg-white p-8 font-[Georgia,serif]">
-      <p className="text-2xl text-neutral-900" style={{ fontVariant: "small-caps" }}>{person.name}</p>
-      <div className="w-16 h-px bg-neutral-900 my-2" />
-      <p className="italic text-neutral-600 text-sm">{person.title}</p>
-      <p className="text-sm text-neutral-800 mt-1 mb-4">{person.company}</p>
-      <div className="text-[12px] text-neutral-600 space-y-0.5">
-        <p>{person.address}</p>
-        <p>{person.phone} · {person.email}</p>
+    <div className="bg-white p-8" style={{ fontFamily: "Georgia, serif", color: d.textColor }}>
+      <p className="text-2xl" style={{ fontVariant: "small-caps" }}>{d.name}</p>
+      <div className="w-16 h-px my-2" style={{ background: d.textColor }} />
+      <p className="italic text-sm" style={{ color: d.mutedColor }}>{d.title}</p>
+      <p className="text-sm mt-1 mb-4">{d.company}</p>
+      <div className="text-[12px] space-y-0.5" style={{ color: d.mutedColor }}>
+        <p>{d.address}</p>
+        <p>{d.phone} · {d.email}</p>
       </div>
     </div>
   );
 }
 
-/* ------------- 9. Green Sustainability ------------- */
-function GreenTemplate() {
+/* ============ 9. Green Sustainability ============ */
+function Green(d: SignatureData) {
   return (
-    <div className="bg-white p-6 font-sans">
+    <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <div className="flex items-center gap-4">
-        <div className="size-14 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold">FS</div>
+        <Avatar d={{ ...d, primaryColor: "#059669" }} size={56} />
         <div>
-          <p className="font-bold text-neutral-900">{person.name}</p>
-          <p className="text-sm text-emerald-700">{person.title}</p>
-          <p className="text-xs text-neutral-500">{person.company}</p>
+          <p className="font-bold">{d.name}</p>
+          <p className="text-sm" style={{ color: "#047857" }}>{d.title}</p>
+          <p className="text-xs" style={{ color: d.mutedColor }}>{d.company}</p>
         </div>
       </div>
-      <div className="mt-4 pt-3 border-t border-emerald-100 text-[12px] text-neutral-600 flex flex-wrap gap-x-4">
-        <span>📧 {person.email}</span>
-        <span>📱 {person.mobile}</span>
-        <span>🌱 {person.website}</span>
+      <div className="mt-4 pt-3 text-[12px] flex flex-wrap gap-x-4" style={{ color: d.mutedColor, borderTop: "1px solid #A7F3D0" }}>
+        <span>📧 {d.email}</span>
+        <span>📱 {d.mobile}</span>
+        <span>🌱 {d.website}</span>
       </div>
-      <p className="mt-3 text-[10px] text-emerald-700 italic">🌍 Please consider the environment before printing this email.</p>
+      <p className="mt-3 text-[10px] italic" style={{ color: "#047857" }}>🌍 Please consider the environment before printing this email.</p>
     </div>
   );
 }
 
-/* ------------- 10. Bold Modern ------------- */
-function BoldModernTemplate() {
+/* ============ 10. Bold Modern ============ */
+function BoldModern(d: SignatureData) {
   return (
-    <div className="bg-neutral-900 text-white p-8 font-sans">
-      <p className="text-[10px] uppercase tracking-[0.3em] text-[#00E5A0] mb-2">Marketing</p>
-      <p className="text-2xl font-bold leading-tight">{person.name}</p>
-      <p className="text-sm text-neutral-400 mb-4">{person.title} at {person.company}</p>
-      <div className="grid grid-cols-2 gap-2 text-[12px] text-neutral-300 max-w-md">
-        <span>{person.email}</span>
-        <span>{person.mobile}</span>
-        <span className="col-span-2 text-[#00E5A0]">{person.website}</span>
+    <div className="p-8" style={{ background: "#111111", color: "#fff", fontFamily: d.fontFamily }}>
+      <p className="text-[10px] uppercase tracking-[0.3em] mb-2" style={{ color: d.accentColor }}>{d.department || "Team"}</p>
+      <p className="text-2xl font-bold leading-tight">{d.name}</p>
+      <p className="text-sm mb-4" style={{ color: "#a1a1aa" }}>{d.title} at {d.company}</p>
+      <div className="grid grid-cols-2 gap-2 text-[12px] max-w-md" style={{ color: "#d4d4d8" }}>
+        <span>{d.email}</span>
+        <span>{d.mobile}</span>
+        <span className="col-span-2" style={{ color: d.accentColor }}>{d.website}</span>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 11. Split Card ============ */
+function SplitCard(d: SignatureData) {
+  return (
+    <div className="bg-white flex overflow-hidden rounded-lg ring-1 ring-black/5 max-w-xl" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div style={{ background: d.primaryColor }} className="p-6 flex flex-col items-center justify-center text-white w-40">
+        <Avatar d={{ ...d, primaryColor: "#ffffff33" }} size={70} />
+        <p className="mt-3 text-sm font-bold text-center">{d.name}</p>
+        <p className="text-[10px] uppercase tracking-widest text-white/70 mt-1">{d.title}</p>
+      </div>
+      <div className="p-6 flex-1">
+        <p className="font-bold text-lg mb-1">{d.company}</p>
+        <p className="text-xs mb-4" style={{ color: d.mutedColor }}>{d.tagline}</p>
+        <div className="space-y-1 text-[12px]" style={{ color: d.textColor }}>
+          <p><span style={{ color: d.mutedColor }}>P</span> {d.phone}</p>
+          <p><span style={{ color: d.mutedColor }}>E</span> {d.email}</p>
+          <p><span style={{ color: d.mutedColor }}>W</span> {d.website}</p>
+        </div>
+        <div className="mt-4"><Socials d={d} color={d.primaryColor} size={22} /></div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 12. Vertical Ribbon ============ */
+function VerticalRibbon(d: SignatureData) {
+  return (
+    <div className="bg-white p-6 relative pl-10" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="absolute left-0 top-0 bottom-0 w-6" style={{ background: `linear-gradient(180deg, ${d.primaryColor}, ${d.accentColor})` }} />
+      <p className="text-xl font-bold">{d.name}</p>
+      <p className="text-sm" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
+      <div className="mt-3 text-[12px] grid grid-cols-2 gap-x-6 gap-y-1" style={{ color: d.textColor }}>
+        <span>📞 {d.phone}</span>
+        <span>✉️ {d.email}</span>
+        <span>📱 {d.mobile}</span>
+        <span>🔗 {d.website}</span>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 13. Gradient Header ============ */
+function GradientHeader(d: SignatureData) {
+  return (
+    <div className="bg-white overflow-hidden rounded-lg ring-1 ring-black/5" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="p-5 text-white" style={{ background: `linear-gradient(135deg, ${d.primaryColor}, ${d.accentColor})` }}>
+        <p className="text-lg font-bold">{d.name}</p>
+        <p className="text-xs opacity-90">{d.title} — {d.company}</p>
+      </div>
+      <div className="p-5 grid grid-cols-2 gap-2 text-[12px]" style={{ color: d.textColor }}>
+        <span>📧 {d.email}</span>
+        <span>📞 {d.phone}</span>
+        <span>📱 {d.mobile}</span>
+        <span>🌐 {d.website}</span>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 14. Business Card ============ */
+function BusinessCard(d: SignatureData) {
+  return (
+    <div className="bg-white p-6 rounded-xl ring-1 ring-black/10 max-w-sm shadow-sm" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-lg font-bold">{d.name}</p>
+        <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded" style={{ background: `${d.primaryColor}22`, color: d.primaryColor }}>
+          {d.department || "Team"}
+        </span>
+      </div>
+      <p className="text-sm mb-4" style={{ color: d.mutedColor }}>{d.title}, {d.company}</p>
+      <div className="pt-4 space-y-1 text-[12px]" style={{ borderTop: `1px dashed ${d.mutedColor}55` }}>
+        <p>{d.email}</p>
+        <p>{d.mobile}</p>
+        <p>{d.address}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 15. Elegant Script ============ */
+function ElegantScript(d: SignatureData) {
+  return (
+    <div className="bg-white p-8" style={{ fontFamily: "Georgia, serif", color: d.textColor }}>
+      <p className="text-3xl italic" style={{ fontFamily: "Brush Script MT, cursive", color: d.primaryColor }}>{d.name}</p>
+      <p className="text-sm tracking-[0.3em] uppercase mt-2" style={{ color: d.mutedColor }}>{d.title}</p>
+      <div className="my-3 w-24 h-px" style={{ background: d.primaryColor }} />
+      <p className="text-sm">{d.company}</p>
+      <div className="mt-3 text-[12px] space-y-0.5" style={{ color: d.mutedColor }}>
+        <p>{d.email} · {d.phone}</p>
+        <p>{d.address}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 16. Icon Grid ============ */
+function IconGrid(d: SignatureData) {
+  return (
+    <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="flex items-center gap-4 mb-4">
+        <Avatar d={d} size={60} />
+        <div>
+          <p className="font-bold text-lg">{d.name}</p>
+          <p className="text-sm" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <IconRow Icon={Mail} text={d.email} color={d.primaryColor} />
+        <IconRow Icon={Phone} text={d.phone} color={d.primaryColor} />
+        <IconRow Icon={Smartphone} text={d.mobile} color={d.primaryColor} />
+        <IconRow Icon={LinkIcon} text={d.website} color={d.primaryColor} />
+      </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} size={24} /></div>
+    </div>
+  );
+}
+
+/* ============ 17. Big Photo ============ */
+function BigPhoto(d: SignatureData) {
+  return (
+    <div className="bg-white flex items-stretch max-w-xl ring-1 ring-black/5 rounded-lg overflow-hidden" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="w-32 shrink-0" style={{ background: d.primaryColor }}>
+        {d.photoUrl ? (
+          <img src={d.photoUrl} alt={d.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="h-full flex items-center justify-center text-white font-bold text-3xl">
+            {d.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+          </div>
+        )}
+      </div>
+      <div className="p-5 flex-1">
+        <p className="text-xl font-bold">{d.name}</p>
+        <p className="text-sm mb-3" style={{ color: d.primaryColor }}>{d.title}</p>
+        <p className="text-xs mb-3" style={{ color: d.mutedColor }}>{d.company}</p>
+        <div className="text-[12px] space-y-0.5">
+          <p>📧 {d.email}</p>
+          <p>📞 {d.phone}</p>
+          <p>🌐 {d.website}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 18. Underline Accent ============ */
+function UnderlineAccent(d: SignatureData) {
+  return (
+    <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <p className="text-lg font-bold inline-block pb-1" style={{ borderBottom: `3px solid ${d.primaryColor}` }}>{d.name}</p>
+      <p className="text-sm mt-1" style={{ color: d.mutedColor }}>{d.title}</p>
+      <p className="text-sm font-medium">{d.company}</p>
+      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[12px]" style={{ color: d.textColor }}>
+        <span><b style={{ color: d.primaryColor }}>E.</b> {d.email}</span>
+        <span><b style={{ color: d.primaryColor }}>M.</b> {d.mobile}</span>
+        <span><b style={{ color: d.primaryColor }}>W.</b> {d.website}</span>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 19. Full Contact Grid ============ */
+function FullGrid(d: SignatureData) {
+  return (
+    <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <p className="text-xl font-bold">{d.name}{d.pronouns && <span className="text-xs font-normal ml-2" style={{ color: d.mutedColor }}>({d.pronouns})</span>}</p>
+      <p className="text-sm mb-4" style={{ color: d.primaryColor }}>{d.title}, {d.company}</p>
+      <table className="text-[12px]" style={{ color: d.textColor }}>
+        <tbody>
+          <tr><td className="pr-4 py-0.5" style={{ color: d.mutedColor }}>Email</td><td>{d.email}</td></tr>
+          <tr><td className="pr-4 py-0.5" style={{ color: d.mutedColor }}>Mobile</td><td>{d.mobile}</td></tr>
+          <tr><td className="pr-4 py-0.5" style={{ color: d.mutedColor }}>Office</td><td>{d.phone}</td></tr>
+          <tr><td className="pr-4 py-0.5" style={{ color: d.mutedColor }}>Address</td><td>{d.address}</td></tr>
+          <tr><td className="pr-4 py-0.5" style={{ color: d.mutedColor }}>Web</td><td className="underline">{d.website}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ============ 20. Newsletter CTA ============ */
+function NewsletterCTA(d: SignatureData) {
+  return (
+    <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <p className="font-bold">{d.name}</p>
+      <p className="text-sm" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
+      <div className="mt-3 text-[12px] space-y-0.5">
+        <p>{d.email} · {d.phone}</p>
+      </div>
+      {d.ctaLabel && (
+        <a
+          href={d.ctaUrl}
+          className="inline-block mt-4 px-4 py-2 rounded-md text-white text-xs font-semibold"
+          style={{ background: d.primaryColor }}
+        >
+          {d.ctaLabel} →
+        </a>
+      )}
+    </div>
+  );
+}
+
+/* ============ 21. Two-Tone Header ============ */
+function TwoTone(d: SignatureData) {
+  return (
+    <div className="max-w-xl ring-1 ring-black/5 rounded-lg overflow-hidden" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="flex">
+        <div className="p-6 flex-1" style={{ background: d.primaryColor, color: "#fff" }}>
+          <p className="text-xl font-bold">{d.name}</p>
+          <p className="text-xs opacity-90">{d.title}</p>
+        </div>
+        <div className="p-6 flex-1 bg-white">
+          <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: d.mutedColor }}>{d.company}</p>
+          <div className="text-[12px] space-y-0.5">
+            <p>{d.email}</p>
+            <p>{d.mobile}</p>
+            <p>{d.website}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 22. Minimal Divider ============ */
+function MinimalDivider(d: SignatureData) {
+  return (
+    <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="flex items-center gap-3">
+        <p className="text-lg font-semibold">{d.name}</p>
+        <span style={{ background: d.primaryColor, width: 20, height: 2 }} />
+        <p className="text-sm" style={{ color: d.mutedColor }}>{d.title}</p>
+      </div>
+      <div className="mt-2 text-[12px] flex flex-wrap gap-x-4" style={{ color: d.mutedColor }}>
+        <span>{d.company}</span>
+        <span>{d.email}</span>
+        <span>{d.mobile}</span>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 23. Legal Formal ============ */
+function LegalFormal(d: SignatureData) {
+  return (
+    <div className="bg-white p-6" style={{ fontFamily: "Times New Roman, serif", color: d.textColor }}>
+      <p className="font-bold text-base">{d.name}, Esq.</p>
+      <p className="italic text-sm" style={{ color: d.mutedColor }}>{d.title}</p>
+      <p className="text-sm mt-1">{d.company}</p>
+      <div className="mt-3 text-[12px]" style={{ color: d.textColor }}>
+        <p>{d.address}</p>
+        <p>Direct: {d.phone} · Cell: {d.mobile}</p>
+        <p>{d.email}</p>
+      </div>
+      <p className="mt-3 text-[10px] italic" style={{ color: d.mutedColor }}>
+        PRIVILEGED &amp; CONFIDENTIAL — This communication is intended solely for the named addressee.
+      </p>
+    </div>
+  );
+}
+
+/* ============ 24. Circle Icons Row ============ */
+function CircleIcons(d: SignatureData) {
+  return (
+    <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <p className="font-bold text-lg">{d.name}</p>
+      <p className="text-sm mb-4" style={{ color: d.mutedColor }}>{d.title} at {d.company}</p>
+      <div className="flex flex-wrap gap-3">
+        {[
+          { Icon: Mail, text: d.email },
+          { Icon: Smartphone, text: d.mobile },
+          { Icon: LinkIcon, text: d.website },
+        ].map(({ Icon, text }, i) => (
+          <div key={i} className="flex items-center gap-2 text-[12px]">
+            <span style={{ background: d.primaryColor }} className="size-7 rounded-full flex items-center justify-center text-white">
+              <Icon className="size-3.5" />
+            </span>
+            <span>{text}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} size={26} /></div>
+    </div>
+  );
+}
+
+/* ============ 25. Quote Callout ============ */
+function QuoteCallout(d: SignatureData) {
+  return (
+    <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <p className="font-bold">{d.name}</p>
+      <p className="text-sm" style={{ color: d.mutedColor }}>{d.title}, {d.company}</p>
+      <div className="text-[12px] mt-2" style={{ color: d.textColor }}>
+        <p>{d.email} · {d.mobile}</p>
+      </div>
+      {d.quote && (
+        <blockquote className="mt-4 pl-4 italic text-sm" style={{ borderLeft: `3px solid ${d.primaryColor}`, color: d.mutedColor }}>
+          "{d.quote}"
+        </blockquote>
+      )}
+    </div>
+  );
+}
+
+/* ============ 26. Modern Tech ============ */
+function ModernTech(d: SignatureData) {
+  return (
+    <div className="bg-white p-6 rounded-xl" style={{ fontFamily: "SF Pro Text, -apple-system, sans-serif", color: d.textColor }}>
+      <div className="flex items-center gap-4">
+        <Avatar d={d} size={52} />
+        <div>
+          <p className="font-semibold">{d.name} <span className="text-xs font-normal" style={{ color: d.mutedColor }}>· {d.pronouns}</span></p>
+          <p className="text-xs" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+        {[d.email, d.mobile, d.website].map((v, i) => (
+          <span key={i} className="px-2 py-1 rounded-md" style={{ background: `${d.primaryColor}12`, color: d.primaryColor }}>{v}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============ 27. Framed Border ============ */
+function FramedBorder(d: SignatureData) {
+  return (
+    <div className="bg-white p-1" style={{ background: `linear-gradient(135deg, ${d.primaryColor}, ${d.accentColor})`, fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="bg-white p-6">
+        <p className="text-lg font-bold">{d.name}</p>
+        <p className="text-sm" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
+        <div className="mt-3 text-[12px] space-y-0.5">
+          <p>✉️ {d.email}</p>
+          <p>📱 {d.mobile}</p>
+          <p>🌐 {d.website}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 28. Sales Pitch ============ */
+function SalesPitch(d: SignatureData) {
+  return (
+    <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <p className="text-[10px] uppercase tracking-[0.3em] font-bold" style={{ color: d.primaryColor }}>{d.company}</p>
+      <p className="text-2xl font-black leading-tight mt-1">{d.name}</p>
+      <p className="text-sm" style={{ color: d.mutedColor }}>{d.title}</p>
+      <p className="mt-3 text-sm font-medium max-w-md" style={{ color: d.textColor }}>{d.tagline}</p>
+      <div className="mt-4 flex gap-3">
+        {d.ctaLabel && (
+          <a href={d.ctaUrl} className="inline-block px-4 py-2 rounded-full text-white text-xs font-bold" style={{ background: d.primaryColor }}>
+            {d.ctaLabel} →
+          </a>
+        )}
+        <a href={`mailto:${d.email}`} className="inline-block px-4 py-2 rounded-full text-xs font-bold border" style={{ borderColor: d.primaryColor, color: d.primaryColor }}>
+          Reply
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 29. Ivy League ============ */
+function IvyLeague(d: SignatureData) {
+  return (
+    <div className="bg-white p-8" style={{ fontFamily: "Baskerville, Georgia, serif", color: d.textColor }}>
+      <p className="text-center text-[10px] uppercase tracking-[0.4em]" style={{ color: d.mutedColor }}>{d.company}</p>
+      <div className="mx-auto my-2 w-24 h-px" style={{ background: d.textColor }} />
+      <p className="text-center text-xl font-semibold">{d.name}</p>
+      <p className="text-center text-sm italic mt-1" style={{ color: d.mutedColor }}>{d.title}</p>
+      <div className="text-center mt-4 text-[12px] space-y-0.5" style={{ color: d.textColor }}>
+        <p>{d.address}</p>
+        <p>{d.phone} — {d.email}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ============ 30. Neon Card ============ */
+function NeonCard(d: SignatureData) {
+  return (
+    <div className="p-6 rounded-xl" style={{ background: "#0A0A0F", color: "#fff", fontFamily: d.fontFamily, boxShadow: `0 0 0 1px ${d.accentColor}44` }}>
+      <div className="flex items-center gap-3 mb-4">
+        <span className="size-2 rounded-full animate-pulse" style={{ background: d.accentColor }} />
+        <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: d.accentColor }}>Available</span>
+      </div>
+      <p className="text-xl font-bold">{d.name}</p>
+      <p className="text-sm" style={{ color: "#a1a1aa" }}>{d.title} · {d.company}</p>
+      <div className="mt-4 text-[12px] space-y-0.5">
+        <p style={{ color: "#d4d4d8" }}>{d.email}</p>
+        <p style={{ color: "#d4d4d8" }}>{d.mobile}</p>
+        <p style={{ color: d.accentColor }}>{d.website}</p>
       </div>
     </div>
   );
 }
 
 export const templates: TemplateMeta[] = [
-  { id: "al-riyady", name: "Al Riyady Corporate", category: "Corporate", accent: "bg-[#C88A1E]", description: "Gold-accented executive layout with icon contact rows, brand logo, and legal disclaimer.", render: AlRiyadyTemplate },
-  { id: "left-line", name: "Left Line", category: "Minimal", accent: "bg-[#5B2EFF]", description: "Clean vertical accent bar. Sign Vel signature default.", render: LeftLineTemplate },
-  { id: "stacked", name: "Stacked Minimal", category: "Minimal", accent: "bg-neutral-400", description: "Ultra-quiet stacked lines, no icons, no chrome.", render: StackedMinimalTemplate },
-  { id: "photo-card", name: "Portrait Card", category: "Creative", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Circular avatar with vertical rule. Great for client-facing roles.", render: PhotoCardTemplate },
-  { id: "corp-blue", name: "Corporate Blue", category: "Corporate", accent: "bg-[#1E40AF]", description: "Two-column serif layout — legal, finance, and consulting.", render: CorporateBlueTemplate },
-  { id: "banner", name: "Promo Banner", category: "Bold", accent: "bg-gradient-to-r from-[#5B2EFF] to-[#00E5A0]", description: "Bottom banner strip for marketing announcements.", render: BannerBottomTemplate },
-  { id: "mono", name: "Compact Mono", category: "Minimal", accent: "bg-neutral-800", description: "Terminal-flavored monospace signature for engineers.", render: CompactMonoTemplate },
-  { id: "exec-serif", name: "Executive Serif", category: "Executive", accent: "bg-neutral-900", description: "Small-caps serif — quiet, senior, timeless.", render: ExecutiveSerifTemplate },
-  { id: "green", name: "Sustainability", category: "Creative", accent: "bg-emerald-600", description: "Warm emerald palette with eco footer note.", render: GreenTemplate },
-  { id: "bold-dark", name: "Bold Modern", category: "Bold", accent: "bg-neutral-900", description: "High-contrast dark card with mint kicker — brand-forward.", render: BoldModernTemplate },
+  { id: "al-riyady", name: "Al Riyady Corporate", category: "Corporate", accent: "bg-[#C88A1E]", description: "Gold-accented executive layout with icon rows, brand logo, and disclaimer.", render: AlRiyady },
+  { id: "left-line", name: "Left Line", category: "Minimal", accent: "bg-[#5B2EFF]", description: "Clean vertical accent bar. Sign Vel default.", render: LeftLine },
+  { id: "stacked", name: "Stacked Minimal", category: "Minimal", accent: "bg-neutral-400", description: "Ultra-quiet stacked lines, no chrome.", render: StackedMinimal },
+  { id: "photo-card", name: "Portrait Card", category: "Creative", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Circular avatar with vertical rule.", render: PhotoCard },
+  { id: "corp-blue", name: "Corporate Blue", category: "Corporate", accent: "bg-[#1E40AF]", description: "Two-column serif for professional services.", render: CorporateBlue },
+  { id: "banner", name: "Promo Banner", category: "Bold", accent: "bg-gradient-to-r from-[#5B2EFF] to-[#00E5A0]", description: "Bottom banner strip for announcements.", render: BannerBottom },
+  { id: "mono", name: "Compact Mono", category: "Minimal", accent: "bg-neutral-800", description: "Terminal monospace for engineers.", render: CompactMono },
+  { id: "exec-serif", name: "Executive Serif", category: "Executive", accent: "bg-neutral-900", description: "Small-caps serif — quiet, senior, timeless.", render: ExecutiveSerif },
+  { id: "green", name: "Sustainability", category: "Creative", accent: "bg-emerald-600", description: "Warm emerald palette with eco footer.", render: Green },
+  { id: "bold-dark", name: "Bold Modern", category: "Bold", accent: "bg-neutral-900", description: "High-contrast dark card with mint kicker.", render: BoldModern },
+  { id: "split-card", name: "Split Card", category: "Creative", accent: "bg-[#5B2EFF]", description: "Colored avatar column beside details.", render: SplitCard },
+  { id: "vertical-ribbon", name: "Vertical Ribbon", category: "Bold", accent: "bg-gradient-to-b from-[#5B2EFF] to-[#00E5A0]", description: "Gradient vertical ribbon accent.", render: VerticalRibbon },
+  { id: "gradient-header", name: "Gradient Header", category: "Creative", accent: "bg-gradient-to-r from-[#5B2EFF] to-[#00E5A0]", description: "Colorful header block above details.", render: GradientHeader },
+  { id: "business-card", name: "Business Card", category: "Corporate", accent: "bg-neutral-800", description: "Feels like a printed business card.", render: BusinessCard },
+  { id: "elegant-script", name: "Elegant Script", category: "Executive", accent: "bg-neutral-900", description: "Handwritten name for lifestyle brands.", render: ElegantScript },
+  { id: "icon-grid", name: "Icon Grid", category: "Corporate", accent: "bg-[#5B2EFF]", description: "Balanced icon grid with avatar header.", render: IconGrid },
+  { id: "big-photo", name: "Big Photo", category: "Creative", accent: "bg-[#5B2EFF]", description: "Prominent square photo strip.", render: BigPhoto },
+  { id: "underline-accent", name: "Underline Accent", category: "Minimal", accent: "bg-[#5B2EFF]", description: "Name underlined with brand color.", render: UnderlineAccent },
+  { id: "full-grid", name: "Full Contact Grid", category: "Corporate", accent: "bg-neutral-800", description: "Data table with all contact fields.", render: FullGrid },
+  { id: "newsletter-cta", name: "Newsletter CTA", category: "Bold", accent: "bg-[#5B2EFF]", description: "Highlighted call-to-action button.", render: NewsletterCTA },
+  { id: "two-tone", name: "Two-Tone Header", category: "Bold", accent: "bg-[#5B2EFF]", description: "Split colored/white header blocks.", render: TwoTone },
+  { id: "minimal-divider", name: "Minimal Divider", category: "Minimal", accent: "bg-neutral-500", description: "Inline divider between name and title.", render: MinimalDivider },
+  { id: "legal-formal", name: "Legal Formal", category: "Executive", accent: "bg-neutral-900", description: "Formal serif with privileged notice.", render: LegalFormal },
+  { id: "circle-icons", name: "Circle Icons", category: "Corporate", accent: "bg-[#5B2EFF]", description: "Chip-style contact rows with icons.", render: CircleIcons },
+  { id: "quote-callout", name: "Quote Callout", category: "Creative", accent: "bg-[#5B2EFF]", description: "Includes a signature quote block.", render: QuoteCallout },
+  { id: "modern-tech", name: "Modern Tech", category: "Minimal", accent: "bg-[#5B2EFF]", description: "SF-style pill contact chips.", render: ModernTech },
+  { id: "framed-border", name: "Framed Border", category: "Creative", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Gradient frame around content card.", render: FramedBorder },
+  { id: "sales-pitch", name: "Sales Pitch", category: "Bold", accent: "bg-[#5B2EFF]", description: "Big kicker + CTA buttons for outbound.", render: SalesPitch },
+  { id: "ivy-league", name: "Ivy League", category: "Executive", accent: "bg-neutral-900", description: "Symmetric center-aligned formal card.", render: IvyLeague },
+  { id: "neon-card", name: "Neon Card", category: "Bold", accent: "bg-black", description: "Dark card with neon-accent status dot.", render: NeonCard },
 ];
+
+export function getTemplate(id: string): TemplateMeta | undefined {
+  return templates.find((t) => t.id === id);
+}
