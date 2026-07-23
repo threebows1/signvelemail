@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock, Send, AlertCircle, Mail, Users, Zap } from "lucide-react";
 import { templates } from "@/components/signatures/templates";
+import { defaultData } from "@/lib/signature-store";
 
 export const Route = createFileRoute("/app/emails")({
   head: () => ({
