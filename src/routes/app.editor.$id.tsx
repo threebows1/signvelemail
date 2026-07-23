@@ -433,3 +433,73 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
     </label>
   );
 }
+
+function UploadField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [err, setErr] = useState<string | null>(null);
+  function handleFiles(files: FileList | null) {
+    const file = files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setErr("Please choose an image file.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setErr("Image must be under 2 MB.");
+      return;
+    }
+    setErr(null);
+    const reader = new FileReader();
+    reader.onload = () => onChange(String(reader.result || ""));
+    reader.readAsDataURL(file);
+  }
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">{label}</label>
+      <div
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
+        className="flex items-center gap-3 p-2 border border-dashed border-border rounded bg-stone-50 hover:border-primary/40 transition-colors"
+      >
+        {value ? (
+          <img src={value} alt={label} className="size-14 rounded object-cover ring-1 ring-border" />
+        ) : (
+          <div className="size-14 rounded bg-white ring-1 ring-border flex items-center justify-center text-[10px] text-muted-foreground uppercase font-[JetBrains_Mono]">
+            None
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="px-2.5 py-1 rounded border border-border bg-white text-[11px] font-medium hover:border-foreground/40"
+            >
+              {value ? "Replace" : "Upload"}
+            </button>
+            {value && (
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="px-2.5 py-1 rounded border border-border bg-white text-[11px] font-medium hover:border-destructive/40 text-destructive"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-1 truncate">
+            {value ? "Uploaded — drop a new image to replace." : "Drag & drop or click Upload · PNG/JPG · max 2 MB"}
+          </p>
+          {err && <p className="text-[10px] text-destructive mt-0.5">{err}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
