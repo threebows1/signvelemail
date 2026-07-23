@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import logoMonogram from "@/assets/logo-monogram.png";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Signature Studio — Email signatures for teams" },
+      { title: "Sign Vel — Email signatures for teams" },
       { name: "description", content: "Deploy precise, professional email signatures across your entire organization." },
-      { property: "og:title", content: "Signature Studio — Email signatures for teams" },
+      { property: "og:title", content: "Sign Vel — Email signatures for teams" },
       { property: "og:description", content: "Deploy precise, professional email signatures across your entire organization." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -34,8 +34,8 @@ function Navigation() {
   return (
     <nav className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between">
       <div className="flex items-center gap-8">
-        <Link to="/" className="font-[Inter_Tight] text-xl font-bold tracking-tighter uppercase">
-          Signature Studio
+        <Link to="/" aria-label="Sign Vel home">
+          <Logo size={48} wordmarkClassName="text-xl" />
         </Link>
         <div className="hidden md:flex items-center gap-6">
           <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
@@ -87,13 +87,9 @@ function HeroSection() {
       <div className="animate-slide-up-delay">
         <div className="bg-white ring-1 ring-black/5 p-8 rounded-2xl shadow-xl transform rotate-1">
           <div className="flex items-start gap-6 border-l-2 border-primary pl-6">
-            <img
-              src={logoMonogram}
-              alt="Studio monogram"
-              width={64}
-              height={64}
-              className="size-16 rounded bg-stone-50 shrink-0 border border-black/5 object-cover"
-            />
+            <div className="size-16 rounded bg-stone-50 shrink-0 border border-black/5 flex items-center justify-center">
+              <Logo size={44} showWordmark={false} />
+            </div>
             <div>
               <h3 className="text-xl font-bold font-[Inter_Tight] tracking-tight">Marcus Sterling</h3>
               <p className="text-sm text-muted-foreground mb-4">Principal Creative Director</p>
@@ -200,7 +196,7 @@ function EditorSection() {
           <div className="space-y-6 flex-1 overflow-y-auto">
             <FormField label="Full Name" value="Marcus Sterling" />
             <FormField label="Job Title" value="Principal Creative Director" />
-            <FormField label="Company" value="Signature Studio" />
+            <FormField label="Company" value="Sign Vel" />
             <div className="space-y-1.5">
               <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">Color Accent</label>
               <div className="flex gap-2">
@@ -264,7 +260,10 @@ function Footer() {
   return (
     <footer className="border-t border-border py-12 px-6 bg-white">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-        <span className="font-[Inter_Tight] text-sm font-bold tracking-tighter uppercase">Signature Studio &copy; 2024</span>
+        <div className="flex items-center gap-3">
+          <Logo size={40} wordmarkClassName="text-sm" />
+          <span className="text-xs text-muted-foreground">&copy; 2024</span>
+        </div>
         <div className="flex gap-8 text-[10px] font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground">
           <a href="#" className="hover:text-primary transition-colors">
             Security
