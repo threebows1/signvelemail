@@ -41,12 +41,12 @@ function Navigation() {
           <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
             Product
           </a>
-          <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
+          <Link to="/app/templates" className="text-sm font-medium hover:text-primary transition-colors">
             Templates
-          </a>
-          <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
+          </Link>
+          <Link to="/pricing" className="text-sm font-medium hover:text-primary transition-colors">
             Pricing
-          </a>
+          </Link>
         </div>
       </div>
       <Link to="/login">
