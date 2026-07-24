@@ -11,9 +11,9 @@ export const Route = createFileRoute("/app/")({
 });
 
 function Dashboard() {
-  const signatures = useSignatures();
+  const { list: signatures } = useSignatures();
   const navigate = useNavigate();
-  const active = signatures.filter((s) => s.status === "Active").length;
+  const active = signatures.filter((s: SavedSignature) => s.status === "Active").length;
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
@@ -51,7 +51,7 @@ function Dashboard() {
     );
   }
 
-  function duplicate(sig: SavedSignature) {
+  async function duplicate(sig: SavedSignature) {
     const copy: SavedSignature = {
       ...sig,
       id: newSignatureId(),
@@ -60,13 +60,13 @@ function Dashboard() {
       updatedAt: Date.now(),
       data: { ...sig.data },
     };
-    saveSignature(copy);
+    await saveSignature(copy);
     toast.success("Signature duplicated");
   }
 
-  function commitRename(sig: SavedSignature) {
+  async function commitRename(sig: SavedSignature) {
     if (renameValue.trim()) {
-      saveSignature({ ...sig, name: renameValue.trim(), updatedAt: Date.now() });
+      await saveSignature({ ...sig, name: renameValue.trim(), updatedAt: Date.now() });
       toast.success("Renamed");
     }
     setRenaming(null);
@@ -171,9 +171,9 @@ function Dashboard() {
                     <IconBtn
                       label="Delete"
                       danger
-                      onClick={() => {
+                      onClick={async () => {
                         if (confirm(`Delete "${sig.name}"?`)) {
-                          deleteSignature(sig.id);
+                          await deleteSignature(sig.id);
                           toast.success("Signature deleted");
                         }
                       }}

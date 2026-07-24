@@ -1,8 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : "/app",
+  }),
   head: () => ({
     meta: [
       { title: "Sign In — Sign Vel" },
@@ -16,6 +19,13 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
+  const { next } = useSearch({ from: "/login" });
+  const navigate = useNavigate();
+
+  function handleContinue() {
+    navigate({ href: next });
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans flex flex-col">
       <header className="px-6 py-4 flex items-center justify-between border-b border-border">
@@ -36,7 +46,7 @@ function Login() {
           </span>
           <h1 className="text-2xl font-[Inter_Tight] font-bold tracking-tight mb-6">Sign in</h1>
 
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleContinue(); }}>
             <div className="space-y-1.5">
               <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">Work Email</label>
               <input
@@ -53,11 +63,9 @@ function Login() {
                 className="w-full bg-stone-50 border border-border px-3 py-2 text-sm rounded focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all"
               />
             </div>
-            <Link to="/app" className="block">
-              <Button className="w-full py-3 bg-foreground text-background font-semibold text-sm rounded-lg hover:bg-foreground/90">
-                Continue
-              </Button>
-            </Link>
+            <Button type="submit" className="w-full py-3 bg-foreground text-background font-semibold text-sm rounded-lg hover:bg-foreground/90">
+              Continue
+            </Button>
           </form>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
