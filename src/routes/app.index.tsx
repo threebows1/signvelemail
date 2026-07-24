@@ -11,9 +11,9 @@ export const Route = createFileRoute("/app/")({
 });
 
 function Dashboard() {
-  const signatures = useSignatures();
+  const { list: signatures } = useSignatures();
   const navigate = useNavigate();
-  const active = signatures.filter((s) => s.status === "Active").length;
+  const active = signatures.filter((s: SavedSignature) => s.status === "Active").length;
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 

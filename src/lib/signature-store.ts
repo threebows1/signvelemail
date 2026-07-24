@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type SocialKey =
   | "linkedin"
@@ -208,7 +209,7 @@ export const defaultData: SignatureData = {
 
 const KEY = "signvel:signatures:v1";
 
-function read(): SavedSignature[] {
+function readLocal(): SavedSignature[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(KEY);
@@ -219,36 +220,126 @@ function read(): SavedSignature[] {
   }
 }
 
-function write(list: SavedSignature[]) {
+function writeLocal(list: SavedSignature[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(KEY, JSON.stringify(list));
   window.dispatchEvent(new StorageEvent("storage", { key: KEY }));
 }
 
+function rowToSaved(row: any): SavedSignature {
+  return {
+    id: row.id,
+    name: row.name,
+    templateId: row.template_id,
+    status: row.status as "Active" | "Draft",
+    updatedAt: new Date(row.updated_at).getTime(),
+    data: { ...defaultData, ...row.data } as SignatureData,
+  };
+}
+
 export function useSignatures() {
-  const [list, setList] = useState<SavedSignature[]>(() => read());
+  const [list, setList] = useState<SavedSignature[]>(() => readLocal());
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    const on = () => setList(read());
+    const on = () => setList(readLocal());
     window.addEventListener("storage", on);
     return () => window.removeEventListener("storage", on);
   }, []);
-  return list;
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return;
+      setLoading(true);
+      try {
+        const { data: rows, error } = await supabase
+          .from("signatures")
+          .select("id, name, template_id, status, data, updated_at")
+          .order("updated_at", { ascending: false });
+        if (error) throw error;
+        const cloud = (rows ?? []).map(rowToSaved);
+        if (!cancelled) {
+          setList(cloud);
+          writeLocal(cloud);
+        }
+      } catch (e) {
+        console.error("Failed to load cloud signatures", e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  return { list, loading };
 }
 
-export function getSignature(id: string): SavedSignature | undefined {
-  return read().find((s) => s.id === id);
+export async function getSignature(id: string): Promise<SavedSignature | undefined> {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) {
+    try {
+      const { data: rows, error } = await supabase
+        .from("signatures")
+        .select("id, name, template_id, status, data, updated_at")
+        .eq("id", id)
+        .limit(1);
+      if (error) throw error;
+      if (rows && rows.length > 0) return rowToSaved(rows[0]);
+    } catch (e) {
+      console.error("Failed to get cloud signature", e);
+    }
+  }
+  return readLocal().find((s) => s.id === id);
 }
 
-export function saveSignature(sig: SavedSignature) {
-  const list = read();
-  const idx = list.findIndex((s) => s.id === sig.id);
-  if (idx >= 0) list[idx] = sig;
-  else list.unshift(sig);
-  write(list);
+export async function saveSignature(sig: SavedSignature) {
+  const local = readLocal();
+  const idx = local.findIndex((s) => s.id === sig.id);
+  if (idx >= 0) local[idx] = sig;
+  else local.unshift(sig);
+  writeLocal(local);
+
+  const { data } = await supabase.auth.getSession();
+  if (data.session) {
+    try {
+      const { data: existing } = await supabase.from("signatures").select("id").eq("id", sig.id).limit(1);
+      const row = {
+        id: sig.id,
+        name: sig.name,
+        template_id: sig.templateId,
+        status: sig.status,
+        data: sig.data as any,
+        updated_at: new Date(sig.updatedAt).toISOString(),
+        user_id: data.session.user.id,
+      };
+      if (existing && existing.length > 0) {
+        const { error } = await supabase.from("signatures").update(row).eq("id", sig.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("signatures").insert(row);
+        if (error) throw error;
+      }
+    } catch (e) {
+      console.error("Failed to sync signature to cloud", e);
+    }
+  }
 }
 
-export function deleteSignature(id: string) {
-  write(read().filter((s) => s.id !== id));
+export async function deleteSignature(id: string) {
+  writeLocal(readLocal().filter((s) => s.id !== id));
+
+  const { data } = await supabase.auth.getSession();
+  if (data.session) {
+    try {
+      const { error } = await supabase.from("signatures").delete().eq("id", id);
+      if (error) throw error;
+    } catch (e) {
+      console.error("Failed to delete cloud signature", e);
+    }
+  }
 }
 
 export function newSignatureId() {

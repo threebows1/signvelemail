@@ -1,0 +1,262 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://fnvysxqalsegetrzqitz.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "signvel-mcp",
+      "version": "0.1.0",
+      "title": "Sign Vel MCP"
+    },
+    "tools": [
+      {
+        "name": "list_templates",
+        "title": "List signature templates",
+        "description": "List all available email-signature templates with their category, layout, and accent color.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "enum": [
+                "Corporate",
+                "Creative",
+                "Minimal",
+                "Bold",
+                "Executive",
+                "Custom"
+              ],
+              "description": "Filter by template category."
+            },
+            "layout": {
+              "type": "string",
+              "enum": [
+                "single",
+                "two-column",
+                "vertical"
+              ],
+              "description": "Filter by layout type."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_template",
+        "title": "Get signature template details",
+        "description": "Get details about a specific email-signature template by its id.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The template id (e.g. left-line, al-riyady)."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_signatures",
+        "title": "List saved signatures",
+        "description": "List all email signatures saved by the signed-in user.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "Draft",
+                "Active"
+              ],
+              "description": "Filter by status."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_signature",
+        "title": "Get a saved signature",
+        "description": "Fetch a single saved signature, including its full design data, by its id.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The signature uuid."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_signature",
+        "title": "Create a signature",
+        "description": "Create a new email signature for the signed-in user. Provide the template id and design data; any missing fields use the default design.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "description": "Signature name."
+            },
+            "template_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Template id from list_templates."
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "Draft",
+                "Active"
+              ],
+              "default": "Draft",
+              "description": "Initial status."
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Partial signature design data (colors, contact info, social links, etc.)."
+            }
+          },
+          "required": [
+            "name",
+            "template_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_signature",
+        "title": "Update a signature",
+        "description": "Update an existing email signature's name, template, status, or design data. Only provided fields are changed.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The signature uuid."
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "description": "New signature name."
+            },
+            "template_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "New template id."
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "Draft",
+                "Active"
+              ],
+              "description": "New status."
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Design data fields to merge into the existing signature."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "delete_signature",
+        "title": "Delete a signature",
+        "description": "Permanently delete a saved email signature by its id.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "destructiveHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The signature uuid to delete."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
