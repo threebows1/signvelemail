@@ -594,109 +594,7 @@ function UploadField({ label, value, onChange }: { label: string; value: string;
     if (!file.type.startsWith("image/")) {
       setErr("Please choose an image file.");
       return;
-}
-
-/* ---- Fetch Branding from website ---- */
-type BrandInfo = { logoUrl?: string; primary?: string; accent?: string };
-
-function BrandingField({
-  value,
-  onChange,
-  onBranding,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  onBranding: (b: BrandInfo) => void;
-}) {
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-
-  async function fetchBranding() {
-    if (!value.trim()) {
-      setMsg("Enter a website first");
-      return;
     }
-    setLoading(true);
-    setMsg(null);
-    try {
-      const domain = value.trim().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
-      const logoUrl = `https://logo.clearbit.com/${domain}`;
-      const res = await fetch(logoUrl);
-      if (!res.ok) throw new Error("No logo found");
-      const blob = await res.blob();
-      const dataUrl: string = await new Promise((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = () => resolve(String(r.result || ""));
-        r.onerror = reject;
-        r.readAsDataURL(blob);
-      });
-      // Extract dominant colors
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = dataUrl;
-      await img.decode();
-      const c = document.createElement("canvas");
-      const w = (c.width = 64);
-      const h = (c.height = 64);
-      const ctx = c.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, w, h);
-      const { data } = ctx.getImageData(0, 0, w, h);
-      const buckets = new Map<string, { r: number; g: number; b: number; count: number; sat: number }>();
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
-        if (a < 200) continue;
-        const max = Math.max(r, g, b), min = Math.min(r, g, b);
-        const lum = (max + min) / 2;
-        if (lum < 25 || lum > 235) continue; // skip near-black / near-white
-        const sat = max === 0 ? 0 : (max - min) / max;
-        if (sat < 0.2) continue;
-        const key = `${r >> 5}-${g >> 5}-${b >> 5}`;
-        const cur = buckets.get(key);
-        if (cur) {
-          cur.r += r; cur.g += g; cur.b += b; cur.count++; cur.sat += sat;
-        } else {
-          buckets.set(key, { r, g, b, count: 1, sat });
-        }
-      }
-      const sorted = [...buckets.values()].sort((a, b) => b.count * b.sat - a.count * a.sat);
-      const toHex = (n: number) => n.toString(16).padStart(2, "0");
-      const pick = (b: any) => `#${toHex(Math.round(b.r / b.count))}${toHex(Math.round(b.g / b.count))}${toHex(Math.round(b.b / b.count))}`;
-      const primary = sorted[0] ? pick(sorted[0]) : undefined;
-      const accent = sorted[1] ? pick(sorted[1]) : undefined;
-      onBranding({ logoUrl: dataUrl, primary, accent });
-      setMsg("Branding applied ✓");
-    } catch (e) {
-      setMsg("Couldn't fetch — logo may not be public");
-    } finally {
-      setLoading(false);
-      setTimeout(() => setMsg(null), 3000);
-    }
-  }
-
-  return (
-    <div className="space-y-1">
-      <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">Website</label>
-      <div className="flex items-center gap-2">
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="company.com"
-          className="flex-1 bg-stone-50 border border-border px-3 py-2 text-sm rounded focus:outline-none focus:ring-1 focus:ring-primary/40"
-        />
-        <button
-          type="button"
-          onClick={fetchBranding}
-          disabled={loading}
-          className="px-3 py-2 rounded border border-primary bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 disabled:opacity-60 whitespace-nowrap"
-        >
-          {loading ? "Fetching…" : "Fetch branding"}
-        </button>
-      </div>
-      {msg && <p className="text-[10px] text-muted-foreground">{msg}</p>}
-    </div>
-  );
-}
     if (file.size > 2 * 1024 * 1024) {
       setErr("Image must be under 2 MB.");
       return;
@@ -753,6 +651,109 @@ function BrandingField({
           {err && <p className="text-[10px] text-destructive mt-0.5">{err}</p>}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---- Fetch Branding from website ---- */
+type BrandInfo = { logoUrl?: string; primary?: string; accent?: string };
+
+function BrandingField({
+  value,
+  onChange,
+  onBranding,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onBranding: (b: BrandInfo) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function fetchBranding() {
+    if (!value.trim()) {
+      setMsg("Enter a website first");
+      setTimeout(() => setMsg(null), 3000);
+      return;
+    }
+    setLoading(true);
+    setMsg(null);
+    try {
+      const domain = value.trim().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+      const logoUrl = `https://logo.clearbit.com/${domain}`;
+      const res = await fetch(logoUrl);
+      if (!res.ok) throw new Error("No logo found");
+      const blob = await res.blob();
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result || ""));
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = dataUrl;
+      await img.decode();
+      const c = document.createElement("canvas");
+      const w = (c.width = 64);
+      const h = (c.height = 64);
+      const ctx = c.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, w, h);
+      const { data } = ctx.getImageData(0, 0, w, h);
+      const buckets = new Map<string, { r: number; g: number; b: number; count: number; sat: number }>();
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+        if (a < 200) continue;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const lum = (max + min) / 2;
+        if (lum < 25 || lum > 235) continue;
+        const sat = max === 0 ? 0 : (max - min) / max;
+        if (sat < 0.2) continue;
+        const key = `${r >> 5}-${g >> 5}-${b >> 5}`;
+        const cur = buckets.get(key);
+        if (cur) {
+          cur.r += r; cur.g += g; cur.b += b; cur.count++; cur.sat += sat;
+        } else {
+          buckets.set(key, { r, g, b, count: 1, sat });
+        }
+      }
+      const sorted = [...buckets.values()].sort((a, b) => b.count * b.sat - a.count * a.sat);
+      const toHex = (n: number) => n.toString(16).padStart(2, "0");
+      const pick = (b: { r: number; g: number; b: number; count: number }) =>
+        `#${toHex(Math.round(b.r / b.count))}${toHex(Math.round(b.g / b.count))}${toHex(Math.round(b.b / b.count))}`;
+      const primary = sorted[0] ? pick(sorted[0]) : undefined;
+      const accent = sorted[1] ? pick(sorted[1]) : undefined;
+      onBranding({ logoUrl: dataUrl, primary, accent });
+      setMsg("Branding applied ✓");
+    } catch {
+      setMsg("Couldn't fetch — logo may not be public");
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMsg(null), 3000);
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">Website</label>
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="company.com"
+          className="flex-1 bg-stone-50 border border-border px-3 py-2 text-sm rounded focus:outline-none focus:ring-1 focus:ring-primary/40"
+        />
+        <button
+          type="button"
+          onClick={fetchBranding}
+          disabled={loading}
+          className="px-3 py-2 rounded border border-primary bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 disabled:opacity-60 whitespace-nowrap"
+        >
+          {loading ? "Fetching…" : "Fetch branding"}
+        </button>
+      </div>
+      {msg && <p className="text-[10px] text-muted-foreground">{msg}</p>}
     </div>
   );
 }
