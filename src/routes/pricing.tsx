@@ -8,9 +8,9 @@ export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — Sign Vel" },
-      { name: "description", content: "Simple, affordable pricing for teams of every size. Deploy pixel-perfect email signatures from $2.25/mo." },
+      { name: "description", content: "Straightforward plans for teams of every size. Signatures from $5/mo, agency-grade Pro at $50/mo." },
       { property: "og:title", content: "Sign Vel Pricing" },
-      { property: "og:description", content: "Trial free. Basic from $2.25/mo. Plus from $4.75/mo. Pro from $17.50/mo. Billed monthly or yearly." },
+      { property: "og:description", content: "5-day free trial. Basic $5/mo. Plus $20/mo. Pro $50/mo. Billed monthly or yearly." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
