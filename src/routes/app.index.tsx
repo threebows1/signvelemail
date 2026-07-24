@@ -171,9 +171,9 @@ function Dashboard() {
                     <IconBtn
                       label="Delete"
                       danger
-                      onClick={() => {
+                      onClick={async () => {
                         if (confirm(`Delete "${sig.name}"?`)) {
-                          deleteSignature(sig.id);
+                          await deleteSignature(sig.id);
                           toast.success("Signature deleted");
                         }
                       }}
