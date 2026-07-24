@@ -2,10 +2,13 @@ import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon, Facebook, Linkedin, 
 import type { ReactNode } from "react";
 import type { SignatureData } from "@/lib/signature-store";
 
+export type TemplateLayout = "single" | "two-column" | "vertical";
+
 export type TemplateMeta = {
   id: string;
   name: string;
-  category: "Corporate" | "Creative" | "Minimal" | "Bold" | "Executive";
+  category: "Corporate" | "Creative" | "Minimal" | "Bold" | "Executive" | "Custom";
+  layout: TemplateLayout;
   accent: string;
   description: string;
   render: (d: SignatureData) => ReactNode;
