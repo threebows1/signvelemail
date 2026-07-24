@@ -39,30 +39,43 @@ const Socials = ({ d, color, ring = false, size }: { d: SignatureData; color: st
   const style = d.socialIconStyle ?? (ring ? "outline" : "solid");
   const finalSize = size ?? d.socialIconSize ?? 26;
   const finalColor = d.socialIconColor || color;
-  const items = [
-    { url: d.socials.linkedin, Icon: Linkedin },
-    { url: d.socials.twitter, Icon: Twitter },
-    { url: d.socials.facebook, Icon: Facebook },
-    { url: d.socials.instagram, Icon: Instagram },
-    { url: d.socials.youtube, Icon: Youtube },
-    { url: d.socials.tiktok, Icon: Music2 },
-    { url: d.socials.whatsapp, Icon: MessageCircle },
-    { url: d.socials.telegram, Icon: Send },
-    { url: d.socials.pinterest, Icon: Hash },
-    { url: d.socials.snapchat, Icon: Ghost },
-    { url: d.socials.threads, Icon: AtSign },
-    { url: d.socials.medium, Icon: BookOpen },
-    { url: d.socials.behance, Icon: Palette },
-    { url: d.socials.dribbble, Icon: Dribbble },
-    { url: d.socials.calendly, Icon: Calendar },
-    { url: d.socials.discord, Icon: MessageSquare },
-    { url: d.socials.twitch, Icon: Twitch },
-    { url: d.socials.spotify, Icon: Music },
-    { url: d.socials.slack, Icon: Slack },
-    { url: d.socials.bluesky, Icon: Cloud },
-    { url: d.socials.mastodon, Icon: AtSign },
-    { url: d.socials.website, Icon: Globe },
-  ].filter((s) => s.url);
+  const iconMap: Record<string, any> = {
+    linkedin: Linkedin,
+    twitter: Twitter,
+    facebook: Facebook,
+    instagram: Instagram,
+    youtube: Youtube,
+    tiktok: Music2,
+    whatsapp: MessageCircle,
+    telegram: Send,
+    pinterest: Hash,
+    snapchat: Ghost,
+    threads: AtSign,
+    medium: BookOpen,
+    behance: Palette,
+    dribbble: Dribbble,
+    calendly: Calendar,
+    discord: MessageSquare,
+    twitch: Twitch,
+    spotify: Music,
+    slack: Slack,
+    bluesky: Cloud,
+    mastodon: AtSign,
+    website: Globe,
+  };
+  const defaultOrder = [
+    "facebook", "instagram", "linkedin", "tiktok", "youtube", "pinterest",
+    "twitter", "whatsapp", "telegram", "snapchat", "threads", "medium",
+    "behance", "dribbble", "calendly", "discord", "twitch", "spotify",
+    "slack", "bluesky", "mastodon", "website",
+  ];
+  const order = (d.socialOrder && d.socialOrder.length ? d.socialOrder : defaultOrder) as string[];
+  const seen = new Set(order);
+  const fullOrder = [...order, ...defaultOrder.filter((k) => !seen.has(k))];
+  const items = fullOrder
+    .map((k) => ({ url: (d.socials as any)[k], Icon: iconMap[k] }))
+    .filter((s) => s.url && s.Icon);
+
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
       {items.map(({ Icon }, i) => {
