@@ -198,6 +198,10 @@ function Editor() {
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {tab === "content" && (
               <>
+                <Section title="Media">
+                  <UploadField label="Profile Photo" value={sig.data.photoUrl || ""} onChange={(v) => patch("photoUrl", v)} />
+                  <UploadField label="Company Logo" value={sig.data.logoUrl || ""} onChange={(v) => patch("logoUrl", v)} />
+                </Section>
                 <Section title="Identity">
                   <Field label="Full Name" value={sig.data.name} onChange={(v) => patch("name", v)} />
                   <Field label="Job Title" value={sig.data.title} onChange={(v) => patch("title", v)} />
@@ -214,12 +218,67 @@ function Editor() {
                   <Field label="Address" value={sig.data.address} onChange={(v) => patch("address", v)} />
                   <Field label="Address / Map URL" value={sig.data.mapUrl || ""} onChange={(v) => patch("mapUrl", v)} placeholder="https://maps.google.com/…" />
                   <Field label="Personal Address" value={sig.data.personalAddress || ""} onChange={(v) => patch("personalAddress", v)} />
-                  <Field label="Website" value={sig.data.website} onChange={(v) => patch("website", v)} />
+                  <BrandingField
+                    value={sig.data.website}
+                    onChange={(v) => patch("website", v)}
+                    onBranding={(b) => {
+                      setSig((s) => ({
+                        ...s,
+                        data: {
+                          ...s.data,
+                          logoUrl: b.logoUrl || s.data.logoUrl,
+                          primaryColor: b.primary || s.data.primaryColor,
+                          accentColor: b.accent || s.data.accentColor,
+                          themeColor: b.primary || s.data.themeColor,
+                          iconColor: b.primary || s.data.iconColor,
+                          socialIconColor: b.primary || s.data.socialIconColor,
+                          dividingLineColor: b.primary || s.data.dividingLineColor,
+                        },
+                        updatedAt: Date.now(),
+                      }));
+                    }}
+                  />
                   <Field label="Scheduling URL" value={sig.data.schedulingUrl || ""} onChange={(v) => patch("schedulingUrl", v)} placeholder="https://cal.com/…" />
                 </Section>
-                <Section title="Media">
-                  <UploadField label="Profile Photo" value={sig.data.photoUrl || ""} onChange={(v) => patch("photoUrl", v)} />
-                  <UploadField label="Company Logo" value={sig.data.logoUrl || ""} onChange={(v) => patch("logoUrl", v)} />
+              </>
+            )}
+
+            {tab === "social" && (
+              <Section title="Social Links">
+                <p className="text-[11px] text-muted-foreground -mt-1 mb-1">Only filled platforms are rendered as icons.</p>
+                {SOCIAL_FIELDS.map((f) => (
+                  <Field
+                    key={f.key}
+                    label={f.label}
+                    value={sig.data.socials[f.key] || ""}
+                    onChange={(v) => patchSocial(f.key, v)}
+                    placeholder={f.placeholder}
+                  />
+                ))}
+              </Section>
+            )}
+
+            {tab === "extras" && (
+              <>
+                <Section title="Marketing">
+                  <Field label="Tagline" value={sig.data.tagline || ""} onChange={(v) => patch("tagline", v)} placeholder="Building signature moments." />
+                  <Field label="Quote" value={sig.data.quote || ""} onChange={(v) => patch("quote", v)} placeholder="Optional inspirational quote" />
+                  <Field label="CTA Label" value={sig.data.ctaLabel || ""} onChange={(v) => patch("ctaLabel", v)} placeholder="Book a meeting" />
+                  <Field label="CTA URL" value={sig.data.ctaUrl || ""} onChange={(v) => patch("ctaUrl", v)} placeholder="https://cal.com/…" />
+                </Section>
+                <Section title="Legal">
+                  <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">Disclaimer</label>
+                  <textarea
+                    value={sig.data.disclaimer || ""}
+                    onChange={(e) => patch("disclaimer", e.target.value)}
+                    rows={5}
+                    className="w-full bg-stone-50 border border-border px-3 py-2 text-sm rounded focus:outline-none focus:ring-1 focus:ring-primary/40"
+                  />
+                </Section>
+                <Section title="Visibility">
+                  <Toggle label="Show icons" checked={sig.data.showIcons} onChange={(v) => patch("showIcons", v)} />
+                  <Toggle label="Show social icons" checked={sig.data.showSocials} onChange={(v) => patch("showSocials", v)} />
+                  <Toggle label="Show disclaimer" checked={sig.data.showDisclaimer} onChange={(v) => patch("showDisclaimer", v)} />
                 </Section>
               </>
             )}
