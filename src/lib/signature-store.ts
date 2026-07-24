@@ -93,7 +93,42 @@ export type SignatureData = {
   separateWebsite?: boolean;
   // Social
   socials: SocialLinks;
+  socialOrder?: SocialKey[];
 };
+
+export const ALL_SOCIAL_KEYS: SocialKey[] = [
+  "facebook",
+  "instagram",
+  "linkedin",
+  "tiktok",
+  "youtube",
+  "pinterest",
+  "twitter",
+  "whatsapp",
+  "telegram",
+  "snapchat",
+  "threads",
+  "medium",
+  "behance",
+  "dribbble",
+  "calendly",
+  "discord",
+  "twitch",
+  "spotify",
+  "slack",
+  "bluesky",
+  "mastodon",
+  "website",
+];
+
+export const FEATURED_SOCIAL_KEYS: SocialKey[] = [
+  "facebook",
+  "instagram",
+  "linkedin",
+  "tiktok",
+  "youtube",
+  "pinterest",
+];
 
 export type SavedSignature = {
   id: string;
