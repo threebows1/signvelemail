@@ -63,7 +63,6 @@ const plans: Plan[] = [
     monthlyStrike: 25,
     yearly: 192,
     yearlyStrike: 300,
-    yearlyStrike: 300,
     highlight: true,
     cta: "Choose Plus",
   },
