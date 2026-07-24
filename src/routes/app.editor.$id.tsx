@@ -198,6 +198,10 @@ function Editor() {
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {tab === "content" && (
               <>
+                <Section title="Media">
+                  <UploadField label="Profile Photo" value={sig.data.photoUrl || ""} onChange={(v) => patch("photoUrl", v)} />
+                  <UploadField label="Company Logo" value={sig.data.logoUrl || ""} onChange={(v) => patch("logoUrl", v)} />
+                </Section>
                 <Section title="Identity">
                   <Field label="Full Name" value={sig.data.name} onChange={(v) => patch("name", v)} />
                   <Field label="Job Title" value={sig.data.title} onChange={(v) => patch("title", v)} />
@@ -214,12 +218,67 @@ function Editor() {
                   <Field label="Address" value={sig.data.address} onChange={(v) => patch("address", v)} />
                   <Field label="Address / Map URL" value={sig.data.mapUrl || ""} onChange={(v) => patch("mapUrl", v)} placeholder="https://maps.google.com/…" />
                   <Field label="Personal Address" value={sig.data.personalAddress || ""} onChange={(v) => patch("personalAddress", v)} />
-                  <Field label="Website" value={sig.data.website} onChange={(v) => patch("website", v)} />
+                  <BrandingField
+                    value={sig.data.website}
+                    onChange={(v) => patch("website", v)}
+                    onBranding={(b) => {
+                      setSig((s) => ({
+                        ...s,
+                        data: {
+                          ...s.data,
+                          logoUrl: b.logoUrl || s.data.logoUrl,
+                          primaryColor: b.primary || s.data.primaryColor,
+                          accentColor: b.accent || s.data.accentColor,
+                          themeColor: b.primary || s.data.themeColor,
+                          iconColor: b.primary || s.data.iconColor,
+                          socialIconColor: b.primary || s.data.socialIconColor,
+                          dividingLineColor: b.primary || s.data.dividingLineColor,
+                        },
+                        updatedAt: Date.now(),
+                      }));
+                    }}
+                  />
                   <Field label="Scheduling URL" value={sig.data.schedulingUrl || ""} onChange={(v) => patch("schedulingUrl", v)} placeholder="https://cal.com/…" />
                 </Section>
-                <Section title="Media">
-                  <UploadField label="Profile Photo" value={sig.data.photoUrl || ""} onChange={(v) => patch("photoUrl", v)} />
-                  <UploadField label="Company Logo" value={sig.data.logoUrl || ""} onChange={(v) => patch("logoUrl", v)} />
+              </>
+            )}
+
+            {tab === "social" && (
+              <Section title="Social Links">
+                <p className="text-[11px] text-muted-foreground -mt-1 mb-1">Only filled platforms are rendered as icons.</p>
+                {SOCIAL_FIELDS.map((f) => (
+                  <Field
+                    key={f.key}
+                    label={f.label}
+                    value={sig.data.socials[f.key] || ""}
+                    onChange={(v) => patchSocial(f.key, v)}
+                    placeholder={f.placeholder}
+                  />
+                ))}
+              </Section>
+            )}
+
+            {tab === "extras" && (
+              <>
+                <Section title="Marketing">
+                  <Field label="Tagline" value={sig.data.tagline || ""} onChange={(v) => patch("tagline", v)} placeholder="Building signature moments." />
+                  <Field label="Quote" value={sig.data.quote || ""} onChange={(v) => patch("quote", v)} placeholder="Optional inspirational quote" />
+                  <Field label="CTA Label" value={sig.data.ctaLabel || ""} onChange={(v) => patch("ctaLabel", v)} placeholder="Book a meeting" />
+                  <Field label="CTA URL" value={sig.data.ctaUrl || ""} onChange={(v) => patch("ctaUrl", v)} placeholder="https://cal.com/…" />
+                </Section>
+                <Section title="Legal">
+                  <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">Disclaimer</label>
+                  <textarea
+                    value={sig.data.disclaimer || ""}
+                    onChange={(e) => patch("disclaimer", e.target.value)}
+                    rows={5}
+                    className="w-full bg-stone-50 border border-border px-3 py-2 text-sm rounded focus:outline-none focus:ring-1 focus:ring-primary/40"
+                  />
+                </Section>
+                <Section title="Visibility">
+                  <Toggle label="Show icons" checked={sig.data.showIcons} onChange={(v) => patch("showIcons", v)} />
+                  <Toggle label="Show social icons" checked={sig.data.showSocials} onChange={(v) => patch("showSocials", v)} />
+                  <Toggle label="Show disclaimer" checked={sig.data.showDisclaimer} onChange={(v) => patch("showDisclaimer", v)} />
                 </Section>
               </>
             )}
@@ -592,6 +651,109 @@ function UploadField({ label, value, onChange }: { label: string; value: string;
           {err && <p className="text-[10px] text-destructive mt-0.5">{err}</p>}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---- Fetch Branding from website ---- */
+type BrandInfo = { logoUrl?: string; primary?: string; accent?: string };
+
+function BrandingField({
+  value,
+  onChange,
+  onBranding,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onBranding: (b: BrandInfo) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function fetchBranding() {
+    if (!value.trim()) {
+      setMsg("Enter a website first");
+      setTimeout(() => setMsg(null), 3000);
+      return;
+    }
+    setLoading(true);
+    setMsg(null);
+    try {
+      const domain = value.trim().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+      const logoUrl = `https://logo.clearbit.com/${domain}`;
+      const res = await fetch(logoUrl);
+      if (!res.ok) throw new Error("No logo found");
+      const blob = await res.blob();
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result || ""));
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = dataUrl;
+      await img.decode();
+      const c = document.createElement("canvas");
+      const w = (c.width = 64);
+      const h = (c.height = 64);
+      const ctx = c.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, w, h);
+      const { data } = ctx.getImageData(0, 0, w, h);
+      const buckets = new Map<string, { r: number; g: number; b: number; count: number; sat: number }>();
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+        if (a < 200) continue;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const lum = (max + min) / 2;
+        if (lum < 25 || lum > 235) continue;
+        const sat = max === 0 ? 0 : (max - min) / max;
+        if (sat < 0.2) continue;
+        const key = `${r >> 5}-${g >> 5}-${b >> 5}`;
+        const cur = buckets.get(key);
+        if (cur) {
+          cur.r += r; cur.g += g; cur.b += b; cur.count++; cur.sat += sat;
+        } else {
+          buckets.set(key, { r, g, b, count: 1, sat });
+        }
+      }
+      const sorted = [...buckets.values()].sort((a, b) => b.count * b.sat - a.count * a.sat);
+      const toHex = (n: number) => n.toString(16).padStart(2, "0");
+      const pick = (b: { r: number; g: number; b: number; count: number }) =>
+        `#${toHex(Math.round(b.r / b.count))}${toHex(Math.round(b.g / b.count))}${toHex(Math.round(b.b / b.count))}`;
+      const primary = sorted[0] ? pick(sorted[0]) : undefined;
+      const accent = sorted[1] ? pick(sorted[1]) : undefined;
+      onBranding({ logoUrl: dataUrl, primary, accent });
+      setMsg("Branding applied ✓");
+    } catch {
+      setMsg("Couldn't fetch — logo may not be public");
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMsg(null), 3000);
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">Website</label>
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="company.com"
+          className="flex-1 bg-stone-50 border border-border px-3 py-2 text-sm rounded focus:outline-none focus:ring-1 focus:ring-primary/40"
+        />
+        <button
+          type="button"
+          onClick={fetchBranding}
+          disabled={loading}
+          className="px-3 py-2 rounded border border-primary bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90 disabled:opacity-60 whitespace-nowrap"
+        >
+          {loading ? "Fetching…" : "Fetch branding"}
+        </button>
+      </div>
+      {msg && <p className="text-[10px] text-muted-foreground">{msg}</p>}
     </div>
   );
 }

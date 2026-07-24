@@ -18,11 +18,20 @@ export const Route = createFileRoute("/app/templates")({
   component: Templates,
 });
 
-const categories = ["All", "Corporate", "Creative", "Minimal", "Bold", "Executive"] as const;
+const categories = ["All", "Corporate", "Creative", "Minimal", "Bold", "Executive", "Custom"] as const;
+const layouts = [
+  { id: "all", label: "All layouts" },
+  { id: "single", label: "Single column" },
+  { id: "two-column", label: "Two columns" },
+  { id: "vertical", label: "Vertical" },
+] as const;
 
 function Templates() {
   const [filter, setFilter] = useState<(typeof categories)[number]>("All");
-  const visible = filter === "All" ? templates : templates.filter((t) => t.category === filter);
+  const [layout, setLayout] = useState<(typeof layouts)[number]["id"]>("all");
+  const visible = templates.filter(
+    (t) => (filter === "All" || t.category === filter) && (layout === "all" || t.layout === layout),
+  );
 
   return (
     <div className="p-8 md:p-12 max-w-7xl">
@@ -41,20 +50,37 @@ function Templates() {
         </span>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-8">
-        {categories.map((c) => (
-          <button
-            key={c}
-            onClick={() => setFilter(c)}
-            className={`px-4 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-              filter === c
-                ? "bg-foreground text-background border-foreground"
-                : "bg-white text-muted-foreground border-border hover:border-foreground/40"
-            }`}
-          >
-            {c}
-          </button>
-        ))}
+      <div className="space-y-2 mb-8">
+        <div className="flex flex-wrap gap-2">
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setFilter(c)}
+              className={`px-4 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                filter === c
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-white text-muted-foreground border-border hover:border-foreground/40"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {layouts.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => setLayout(l.id)}
+              className={`px-3 py-1 text-[11px] font-[JetBrains_Mono] uppercase tracking-wider rounded-full border transition-colors ${
+                layout === l.id
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-white text-muted-foreground border-border hover:border-primary/40"
+              }`}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
