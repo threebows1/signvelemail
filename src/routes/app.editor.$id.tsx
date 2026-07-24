@@ -753,3 +753,128 @@ function BrandingField({
     </div>
   );
 }
+
+function SocialEditor({
+  sig,
+  setSig,
+}: {
+  sig: SavedSignature;
+  setSig: React.Dispatch<React.SetStateAction<SavedSignature>>;
+}) {
+  const [showMore, setShowMore] = useState(false);
+
+  const labelMap: Record<SocialKey, { label: string; placeholder: string }> = {
+    linkedin: { label: "LinkedIn", placeholder: "https://linkedin.com/in/…" },
+    twitter: { label: "Twitter / X", placeholder: "https://x.com/…" },
+    facebook: { label: "Facebook", placeholder: "https://facebook.com/…" },
+    instagram: { label: "Instagram", placeholder: "https://instagram.com/…" },
+    youtube: { label: "YouTube", placeholder: "https://youtube.com/@…" },
+    tiktok: { label: "TikTok", placeholder: "https://tiktok.com/@…" },
+    whatsapp: { label: "WhatsApp", placeholder: "https://wa.me/…" },
+    telegram: { label: "Telegram", placeholder: "https://t.me/…" },
+    pinterest: { label: "Pinterest", placeholder: "https://pinterest.com/…" },
+    snapchat: { label: "Snapchat", placeholder: "https://snapchat.com/add/…" },
+    threads: { label: "Threads", placeholder: "https://threads.net/@…" },
+    medium: { label: "Medium", placeholder: "https://medium.com/@…" },
+    behance: { label: "Behance", placeholder: "https://behance.net/…" },
+    dribbble: { label: "Dribbble", placeholder: "https://dribbble.com/…" },
+    calendly: { label: "Calendly", placeholder: "https://calendly.com/…" },
+    discord: { label: "Discord", placeholder: "https://discord.gg/…" },
+    twitch: { label: "Twitch", placeholder: "https://twitch.tv/…" },
+    spotify: { label: "Spotify", placeholder: "https://open.spotify.com/…" },
+    slack: { label: "Slack", placeholder: "https://…slack.com" },
+    bluesky: { label: "Bluesky", placeholder: "https://bsky.app/profile/…" },
+    mastodon: { label: "Mastodon", placeholder: "https://mastodon.social/@…" },
+    website: { label: "Website", placeholder: "https://…" },
+  };
+
+  // Build the current effective order (persist featured order first if none saved)
+  const savedOrder = sig.data.socialOrder && sig.data.socialOrder.length ? sig.data.socialOrder : null;
+  const baseOrder: SocialKey[] = savedOrder
+    ? [...savedOrder, ...ALL_SOCIAL_KEYS.filter((k) => !savedOrder.includes(k))]
+    : [...FEATURED_SOCIAL_KEYS, ...ALL_SOCIAL_KEYS.filter((k) => !FEATURED_SOCIAL_KEYS.includes(k))];
+
+  const featuredKeys = baseOrder.filter((k) => FEATURED_SOCIAL_KEYS.includes(k));
+  const moreKeys = baseOrder.filter((k) => !FEATURED_SOCIAL_KEYS.includes(k));
+
+  function setSocial(k: SocialKey, v: string) {
+    setSig((s) => ({
+      ...s,
+      data: { ...s.data, socials: { ...s.data.socials, [k]: v } },
+      updatedAt: Date.now(),
+    }));
+  }
+
+  function move(list: SocialKey[], key: SocialKey, dir: -1 | 1) {
+    const idx = list.indexOf(key);
+    const target = idx + dir;
+    if (idx < 0 || target < 0 || target >= list.length) return;
+    // Reorder within its group, then rebuild full order preserving groups
+    const newGroup = [...list];
+    [newGroup[idx], newGroup[target]] = [newGroup[target], newGroup[idx]];
+    const rebuilt: SocialKey[] =
+      list === featuredKeys ? [...newGroup, ...moreKeys] : [...featuredKeys, ...newGroup];
+    setSig((s) => ({ ...s, data: { ...s.data, socialOrder: rebuilt }, updatedAt: Date.now() }));
+  }
+
+  function Row({ k, list }: { k: SocialKey; list: SocialKey[] }) {
+    const meta = labelMap[k];
+    const idx = list.indexOf(k);
+    return (
+      <div className="flex items-end gap-1.5">
+        <div className="flex-1">
+          <Field
+            label={meta.label}
+            value={sig.data.socials[k] || ""}
+            onChange={(v) => setSocial(k, v)}
+            placeholder={meta.placeholder}
+          />
+        </div>
+        <div className="flex flex-col gap-0.5 pb-[2px]">
+          <button
+            type="button"
+            onClick={() => move(list, k, -1)}
+            disabled={idx === 0}
+            className="p-1 rounded border border-border bg-stone-50 hover:bg-stone-100 disabled:opacity-30"
+            aria-label={`Move ${meta.label} up`}
+          >
+            <ArrowUp size={12} />
+          </button>
+          <button
+            type="button"
+            onClick={() => move(list, k, 1)}
+            disabled={idx === list.length - 1}
+            className="p-1 rounded border border-border bg-stone-50 hover:bg-stone-100 disabled:opacity-30"
+            aria-label={`Move ${meta.label} down`}
+          >
+            <ArrowDown size={12} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {featuredKeys.map((k) => (
+        <Row key={k} k={k} list={featuredKeys} />
+      ))}
+      <button
+        type="button"
+        onClick={() => setShowMore((v) => !v)}
+        className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded border border-dashed border-border text-[12px] text-muted-foreground hover:bg-stone-50"
+      >
+        <Plus size={14} />
+        {showMore ? "Hide extra platforms" : `Show ${moreKeys.length} more platforms`}
+      </button>
+      {showMore && (
+        <div className="space-y-2 pt-1">
+          {moreKeys.map((k) => (
+            <Row key={k} k={k} list={moreKeys} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
