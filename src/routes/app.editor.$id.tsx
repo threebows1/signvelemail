@@ -83,7 +83,16 @@ function Editor() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
 
-  const [sig, setSig] = useState<SavedSignature | null>(null);
+  const defaultSig: SavedSignature = {
+    id: newSignatureId(),
+    name: "Untitled Signature",
+    templateId: "left-line",
+    status: "Draft",
+    updatedAt: Date.now(),
+    data: { ...defaultData },
+  };
+
+  const [sig, setSig] = useState<SavedSignature>(defaultSig);
   const [tab, setTab] = useState<Tab>("content");
   const [exportOpen, setExportOpen] = useState(false);
   const [savedNote, setSavedNote] = useState(false);
@@ -94,15 +103,7 @@ function Editor() {
     let cancelled = false;
     async function load() {
       if (id === "new") {
-        if (cancelled) return;
-        setSig({
-          id: newSignatureId(),
-          name: "Untitled Signature",
-          templateId: "left-line",
-          status: "Draft",
-          updatedAt: Date.now(),
-          data: { ...defaultData },
-        });
+        if (!cancelled) setSig(defaultSig);
         return;
       }
       const found = await getSignature(id);
@@ -127,17 +128,16 @@ function Editor() {
     return () => { cancelled = true; };
   }, [id]);
 
-  const template = sig ? getTemplate(sig.templateId) ?? templates[0] : templates[0];
+  const template = getTemplate(sig.templateId) ?? templates[0];
 
   function patch<K extends keyof SignatureData>(k: K, v: SignatureData[K]) {
-    setSig((s) => (s ? { ...s, data: { ...s.data, [k]: v }, updatedAt: Date.now() } : s));
+    setSig((s) => ({ ...s, data: { ...s.data, [k]: v }, updatedAt: Date.now() }));
   }
   function patchSocial(k: keyof SignatureData["socials"], v: string) {
-    setSig((s) => (s ? { ...s, data: { ...s.data, socials: { ...s.data.socials, [k]: v } }, updatedAt: Date.now() } : s));
+    setSig((s) => ({ ...s, data: { ...s.data, socials: { ...s.data.socials, [k]: v } }, updatedAt: Date.now() }));
   }
 
-  async function handleSave(status: "Draft" | "Active" = sig?.status ?? "Draft") {
-    if (!sig) return;
+  async function handleSave(status: "Draft" | "Active" = sig.status) {
     const toSave = { ...sig, status, updatedAt: Date.now() };
     await saveSignature(toSave);
     setSig(toSave);
@@ -148,7 +148,6 @@ function Editor() {
 
   // Auto-save on any change
   useEffect(() => {
-    if (!sig) return;
     const t = setTimeout(() => saveSignature(sig), 400);
     return () => clearTimeout(t);
   }, [sig]);
