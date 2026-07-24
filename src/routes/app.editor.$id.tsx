@@ -246,18 +246,13 @@ function Editor() {
 
             {tab === "social" && (
               <Section title="Social Links">
-                <p className="text-[11px] text-muted-foreground -mt-1 mb-1">Only filled platforms are rendered as icons.</p>
-                {SOCIAL_FIELDS.map((f) => (
-                  <Field
-                    key={f.key}
-                    label={f.label}
-                    value={sig.data.socials[f.key] || ""}
-                    onChange={(v) => patchSocial(f.key, v)}
-                    placeholder={f.placeholder}
-                  />
-                ))}
+                <p className="text-[11px] text-muted-foreground -mt-1 mb-1">
+                  Only filled platforms are rendered. Use the arrows to reorder how they appear.
+                </p>
+                <SocialEditor sig={sig} setSig={setSig} />
               </Section>
             )}
+
 
             {tab === "extras" && (
               <>
