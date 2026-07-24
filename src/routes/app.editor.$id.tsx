@@ -83,50 +83,63 @@ function Editor() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
 
-  // Load or bootstrap
-  const initial: SavedSignature = useMemo(() => {
-    if (id === "new") {
-      return {
-        id: newSignatureId(),
-        name: "Untitled Signature",
-        templateId: "left-line",
-        status: "Draft",
-        updatedAt: Date.now(),
-        data: { ...defaultData },
-      };
-    }
-    const found = getSignature(id);
-    if (found) return found;
-    // If id matches a template id, start a new sig from that template
-    const t = getTemplate(id);
-    return {
-      id: newSignatureId(),
-      name: t ? `${t.name} Signature` : "Untitled Signature",
-      templateId: t?.id ?? "left-line",
-      status: "Draft",
-      updatedAt: Date.now(),
-      data: { ...defaultData },
-    };
-  }, [id]);
-
-  const [sig, setSig] = useState<SavedSignature>(initial);
+  const [sig, setSig] = useState<SavedSignature | null>(null);
   const [tab, setTab] = useState<Tab>("content");
   const [exportOpen, setExportOpen] = useState(false);
   const [savedNote, setSavedNote] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
-  const template = getTemplate(sig.templateId) ?? templates[0];
+  // Load or bootstrap
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (id === "new") {
+        if (cancelled) return;
+        setSig({
+          id: newSignatureId(),
+          name: "Untitled Signature",
+          templateId: "left-line",
+          status: "Draft",
+          updatedAt: Date.now(),
+          data: { ...defaultData },
+        });
+        return;
+      }
+      const found = await getSignature(id);
+      if (found) {
+        if (!cancelled) setSig(found);
+        return;
+      }
+      // If id matches a template id, start a new sig from that template
+      const t = getTemplate(id);
+      if (!cancelled) {
+        setSig({
+          id: newSignatureId(),
+          name: t ? `${t.name} Signature` : "Untitled Signature",
+          templateId: t?.id ?? "left-line",
+          status: "Draft",
+          updatedAt: Date.now(),
+          data: { ...defaultData },
+        });
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  const template = sig ? getTemplate(sig.templateId) ?? templates[0] : templates[0];
 
   function patch<K extends keyof SignatureData>(k: K, v: SignatureData[K]) {
-    setSig((s) => ({ ...s, data: { ...s.data, [k]: v }, updatedAt: Date.now() }));
+    setSig((s) => (s ? { ...s, data: { ...s.data, [k]: v }, updatedAt: Date.now() } : s));
   }
   function patchSocial(k: keyof SignatureData["socials"], v: string) {
-    setSig((s) => ({ ...s, data: { ...s.data, socials: { ...s.data.socials, [k]: v } }, updatedAt: Date.now() }));
+    setSig((s) => (s ? { ...s, data: { ...s.data, socials: { ...s.data.socials, [k]: v } }, updatedAt: Date.now() } : s));
   }
 
-  function handleSave(status: "Draft" | "Active" = sig.status) {
+  async function handleSave(status: "Draft" | "Active" = sig?.status ?? "Draft") {
+    if (!sig) return;
     const toSave = { ...sig, status, updatedAt: Date.now() };
-    saveSignature(toSave);
+    await saveSignature(toSave);
     setSig(toSave);
     setSavedNote(true);
     setTimeout(() => setSavedNote(false), 1600);
@@ -135,6 +148,7 @@ function Editor() {
 
   // Auto-save on any change
   useEffect(() => {
+    if (!sig) return;
     const t = setTimeout(() => saveSignature(sig), 400);
     return () => clearTimeout(t);
   }, [sig]);
