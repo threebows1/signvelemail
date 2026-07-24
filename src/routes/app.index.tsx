@@ -51,7 +51,7 @@ function Dashboard() {
     );
   }
 
-  function duplicate(sig: SavedSignature) {
+  async function duplicate(sig: SavedSignature) {
     const copy: SavedSignature = {
       ...sig,
       id: newSignatureId(),
@@ -60,13 +60,13 @@ function Dashboard() {
       updatedAt: Date.now(),
       data: { ...sig.data },
     };
-    saveSignature(copy);
+    await saveSignature(copy);
     toast.success("Signature duplicated");
   }
 
-  function commitRename(sig: SavedSignature) {
+  async function commitRename(sig: SavedSignature) {
     if (renameValue.trim()) {
-      saveSignature({ ...sig, name: renameValue.trim(), updatedAt: Date.now() });
+      await saveSignature({ ...sig, name: renameValue.trim(), updatedAt: Date.now() });
       toast.success("Renamed");
     }
     setRenaming(null);
