@@ -15,6 +15,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppTemplatesRouteImport } from './routes/app.templates'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppEmailsRouteImport } from './routes/app.emails'
 import { Route as AppEditorIdRouteImport } from './routes/app.editor.$id'
 
@@ -48,6 +49,11 @@ const AppTemplatesRoute = AppTemplatesRouteImport.update({
   path: '/templates',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppEmailsRoute = AppEmailsRouteImport.update({
   id: '/emails',
   path: '/emails',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/app/emails': typeof AppEmailsRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/templates': typeof AppTemplatesRoute
   '/app/': typeof AppIndexRoute
   '/app/editor/$id': typeof AppEditorIdRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/app/emails': typeof AppEmailsRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/templates': typeof AppTemplatesRoute
   '/app': typeof AppIndexRoute
   '/app/editor/$id': typeof AppEditorIdRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/app/emails': typeof AppEmailsRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/templates': typeof AppTemplatesRoute
   '/app/': typeof AppIndexRoute
   '/app/editor/$id': typeof AppEditorIdRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/app/emails'
+    | '/app/settings'
     | '/app/templates'
     | '/app/'
     | '/app/editor/$id'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/app/emails'
+    | '/app/settings'
     | '/app/templates'
     | '/app'
     | '/app/editor/$id'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/app/emails'
+    | '/app/settings'
     | '/app/templates'
     | '/app/'
     | '/app/editor/$id'
@@ -172,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTemplatesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/emails': {
       id: '/app/emails'
       path: '/emails'
@@ -191,6 +210,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppEmailsRoute: typeof AppEmailsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppTemplatesRoute: typeof AppTemplatesRoute
   AppIndexRoute: typeof AppIndexRoute
   AppEditorIdRoute: typeof AppEditorIdRoute
@@ -198,6 +218,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppEmailsRoute: AppEmailsRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppTemplatesRoute: AppTemplatesRoute,
   AppIndexRoute: AppIndexRoute,
   AppEditorIdRoute: AppEditorIdRoute,
