@@ -25,8 +25,7 @@ function AppLayout() {
           <NavItem to="/app/editor/new" label="Editor" />
           <NavItem to="/app/templates" label="Templates" />
           <NavItem to="/app/emails" label="Emails" />
-          <NavItem to="/app" label="Team" />
-          <NavItem to="/app" label="Settings" />
+          <NavItem to="/app/settings" label="Settings" />
         </nav>
 
         <div className="mt-auto pt-6 border-t border-border">
