@@ -1019,19 +1019,8 @@ function PalettePane({
       <div className="flex items-end justify-between">
         <div className="flex items-baseline gap-2">
           <h4 className="text-[15px] font-semibold text-[#14121F]">Palettes</h4>
-          <span className="text-[12px] text-[#9A9AA8]">16 presets</span>
+          <span className="text-[12px] text-[#9A9AA8]">4 presets · or edit below</span>
         </div>
-        <button
-          type="button"
-          className="text-[12px] font-semibold"
-          style={{ color: "#5B2EFF" }}
-          onClick={() => {
-            const el = document.getElementById("role-primary-color-input") as HTMLInputElement | null;
-            el?.click();
-          }}
-        >
-          Custom…
-        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-2.5">
