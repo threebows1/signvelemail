@@ -432,10 +432,10 @@ function Editor() {
                 Auto-saved <ChevronRight className="size-3" />
               </span>
             </div>
-            <div className="bg-white shadow-sm ring-1 ring-black/5 rounded-lg overflow-hidden max-h-[calc(100vh-220px)] overflow-y-auto">
+            <div className="bg-white shadow-sm ring-1 ring-black/5 rounded-lg overflow-hidden flex-1 min-h-0 overflow-y-auto">
               <div ref={previewRef}>{template.render(sig.data)}</div>
             </div>
-            <div className="mt-6 flex items-center gap-3">
+            <div className="mt-6 flex items-center gap-3 shrink-0">
               <Button onClick={() => setExportOpen(true)} className="gap-2">
                 <Share2 className="size-4" /> Copy &amp; Install
               </Button>
