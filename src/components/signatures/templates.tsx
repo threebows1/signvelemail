@@ -1,4 +1,4 @@
-import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon, Globe } from "lucide-react";
+import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SignatureData, SocialKey } from "@/lib/signature-store";
 import { socialGlyphMap, socialBrandColor } from "@/components/signatures/social-icons";
