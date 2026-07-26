@@ -40,62 +40,44 @@ const Socials = ({ d, color, ring = false, size }: { d: SignatureData; color: st
   const style = d.socialIconStyle ?? (ring ? "outline" : "solid");
   const finalSize = size ?? d.socialIconSize ?? 26;
   const finalColor = d.socialIconColor || color;
-  const iconMap: Record<string, any> = {
-    linkedin: Linkedin,
-    twitter: Twitter,
-    facebook: Facebook,
-    instagram: Instagram,
-    youtube: Youtube,
-    tiktok: Music2,
-    whatsapp: MessageCircle,
-    telegram: Send,
-    pinterest: Hash,
-    snapchat: Ghost,
-    threads: AtSign,
-    medium: BookOpen,
-    behance: Palette,
-    dribbble: Dribbble,
-    calendly: Calendar,
-    discord: MessageSquare,
-    twitch: Twitch,
-    spotify: Music,
-    slack: Slack,
-    bluesky: Cloud,
-    mastodon: AtSign,
-    website: Globe,
-  };
-  const defaultOrder = [
+  const defaultOrder: SocialKey[] = [
     "facebook", "instagram", "linkedin", "tiktok", "youtube", "pinterest",
     "twitter", "whatsapp", "telegram", "snapchat", "threads", "medium",
     "behance", "dribbble", "calendly", "discord", "twitch", "spotify",
     "slack", "bluesky", "mastodon", "website",
   ];
-  const order = (d.socialOrder && d.socialOrder.length ? d.socialOrder : defaultOrder) as string[];
-  const seen = new Set(order);
+  const order = (d.socialOrder && d.socialOrder.length ? d.socialOrder : defaultOrder) as SocialKey[];
+  const seen = new Set(order as string[]);
   const fullOrder = [...order, ...defaultOrder.filter((k) => !seen.has(k))];
   const items = fullOrder
-    .map((k) => ({ url: (d.socials as any)[k], Icon: iconMap[k] }))
+    .map((k) => ({ url: (d.socials as any)[k], Icon: socialGlyphMap[k], key: k }))
     .filter((s) => s.url && s.Icon);
+
+  const glyphSize = Math.round(finalSize * 0.62);
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
-      {items.map(({ Icon }, i) => {
+      {items.map(({ Icon, key }, i) => {
+        const isColor = style === "color";
         const isPlain = style === "plain";
         const isOutline = style === "outline";
+        const brand = socialBrandColor[key] || finalColor;
+        const glyphColor = isColor ? brand : isPlain || isOutline ? finalColor : "#fff";
         return (
           <span
             key={i}
             style={{
               width: finalSize,
               height: finalSize,
-              background: isPlain || isOutline ? "transparent" : finalColor,
-              color: isPlain || isOutline ? finalColor : "#fff",
+              background: isColor || isPlain || isOutline ? "transparent" : finalColor,
+              color: glyphColor,
+              fill: glyphColor,
               border: isOutline ? `1px solid ${finalColor}` : "none",
-              borderRadius: isPlain ? 0 : "9999px",
+              borderRadius: isColor || isPlain ? 0 : "9999px",
             }}
-            className="inline-flex items-center justify-center"
+            className="inline-flex items-center justify-center overflow-hidden"
           >
-            <Icon style={{ width: finalSize * 0.5, height: finalSize * 0.5 }} />
+            <Icon style={{ width: glyphSize, height: glyphSize, color: glyphColor, fill: glyphColor }} />
           </span>
         );
       })}
