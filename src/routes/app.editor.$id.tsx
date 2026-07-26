@@ -306,129 +306,15 @@ function Editor() {
             )}
 
             {tab === "design" && (
-              <>
-                <Section title="Template">
-                  <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
-                    {templates.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => setSig((s) => ({ ...s, templateId: t.id }))}
-                        className={`text-left p-2 rounded-lg border text-xs transition-all ${
-                          sig.templateId === t.id ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-foreground/30"
-                        }`}
-                      >
-                        <span className={`inline-block size-2 rounded-full ${t.accent} mr-1.5`} />
-                        <span className="font-medium">{t.name}</span>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">{t.category}</p>
-                      </button>
-                    ))}
-                  </div>
-                </Section>
-
-                <Section title="Color presets">
-                  <div className="flex flex-wrap gap-2">
-                    {PRESETS.map((p) => (
-                      <button
-                        key={p.name}
-                        onClick={() => {
-                          patch("primaryColor", p.primary);
-                          patch("accentColor", p.accent);
-                          patch("themeColor", p.primary);
-                          patch("iconColor", p.primary);
-                          patch("socialIconColor", p.primary);
-                          patch("dividingLineColor", p.primary);
-                        }}
-                        className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full border border-border hover:border-foreground/30 text-[11px]"
-                      >
-                        <span className="size-4 rounded-full" style={{ background: p.primary }} />
-                        <span className="size-4 rounded-full -ml-2" style={{ background: p.accent }} />
-                        {p.name}
-                      </button>
-                    ))}
-                  </div>
-                </Section>
-
-                <Section title="Colors">
-                  <ColorField label="Theme" value={sig.data.themeColor || sig.data.primaryColor} onChange={(v) => patch("themeColor", v)} />
-                  <ColorField label="Primary" value={sig.data.primaryColor} onChange={(v) => patch("primaryColor", v)} />
-                  <ColorField label="Accent" value={sig.data.accentColor} onChange={(v) => patch("accentColor", v)} />
-                  <ColorField label="Title" value={sig.data.titleColor || sig.data.textColor} onChange={(v) => patch("titleColor", v)} />
-                  <ColorField label="Text" value={sig.data.textColor} onChange={(v) => patch("textColor", v)} />
-                  <ColorField label="Muted" value={sig.data.mutedColor} onChange={(v) => patch("mutedColor", v)} />
-                  <ColorField label="Link" value={sig.data.linkColor || sig.data.primaryColor} onChange={(v) => patch("linkColor", v)} />
-                  <ColorField label="Icon" value={sig.data.iconColor || sig.data.primaryColor} onChange={(v) => patch("iconColor", v)} />
-                  <ColorField label="Social Icon" value={sig.data.socialIconColor || sig.data.primaryColor} onChange={(v) => patch("socialIconColor", v)} />
-                  <ColorField label="Dividing Line" value={sig.data.dividingLineColor || sig.data.primaryColor} onChange={(v) => patch("dividingLineColor", v)} />
-                </Section>
-
-                <Section title="Icons">
-                  <Toggle label="Show icons" checked={sig.data.showIcons} onChange={(v) => patch("showIcons", v)} />
-                  <SelectField
-                    label="Icon type"
-                    value={sig.data.iconStyle || "solid"}
-                    onChange={(v) => patch("iconStyle", v as any)}
-                    options={[
-                      { value: "solid", label: "Solid circle" },
-                      { value: "outline", label: "Outline circle" },
-                      { value: "plain", label: "Plain (no circle)" },
-                      { value: "none", label: "No icons" },
-                    ]}
-                  />
-                  <SliderField label="Icon size" min={10} max={40} value={sig.data.iconSize ?? 18} onChange={(v) => patch("iconSize", v)} suffix="px" />
-                  <SelectField
-                    label="Social media icon style"
-                    value={sig.data.socialIconStyle || "color"}
-                    onChange={(v) => patch("socialIconStyle", v as any)}
-                    options={[
-                      { value: "color", label: "Brand color glyphs" },
-                      { value: "solid", label: "Solid circle" },
-                      { value: "outline", label: "Outline circle" },
-                      { value: "plain", label: "Plain glyphs" },
-                    ]}
-                  />
-                  <SliderField label="Social icon size" min={14} max={48} value={sig.data.socialIconSize ?? 30} onChange={(v) => patch("socialIconSize", v)} suffix="px" />
-                  <SocialIconPreview sig={sig} />
-                </Section>
-
-                <Section title="Dividing lines">
-                  <Toggle label="Show dividing lines" checked={sig.data.showDividingLines !== false} onChange={(v) => patch("showDividingLines", v)} />
-                  <SliderField label="Line thickness" min={1} max={8} value={sig.data.dividingLineSize ?? 2} onChange={(v) => patch("dividingLineSize", v)} suffix="px" />
-                </Section>
-
-                <Section title="Typography">
-                  <label className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase">Font family</label>
-                  <select
-                    value={sig.data.fontFamily}
-                    onChange={(e) => patch("fontFamily", e.target.value)}
-                    className="w-full bg-stone-50 border border-border px-3 py-2 text-sm rounded"
-                  >
-                    {FONTS.map((f) => (
-                      <option key={f.value} value={f.value}>{f.label}</option>
-                    ))}
-                  </select>
-                  <SliderField label="Font size" min={10} max={20} value={sig.data.fontSize ?? 13} onChange={(v) => patch("fontSize", v)} suffix="px" />
-                  <Toggle label="Separate font size for title" checked={!!sig.data.separateTitleFontSize} onChange={(v) => patch("separateTitleFontSize", v)} />
-                  {sig.data.separateTitleFontSize && (
-                    <SliderField label="Title font size" min={12} max={32} value={sig.data.titleFontSize ?? 17} onChange={(v) => patch("titleFontSize", v)} suffix="px" />
-                  )}
-                  <SliderField label="Line height" min={10} max={22} step={1} value={Math.round((sig.data.lineHeight ?? 1.3) * 10)} onChange={(v) => patch("lineHeight", v / 10)} suffix="" display={(v) => (v / 10).toFixed(1)} />
-                  <SelectField
-                    label="Spacing"
-                    value={sig.data.spacing || "large"}
-                    onChange={(v) => patch("spacing", v as any)}
-                    options={[
-                      { value: "compact", label: "Compact" },
-                      { value: "medium", label: "Medium" },
-                      { value: "large", label: "Large" },
-                    ]}
-                  />
-                  <Toggle label="Separate website line" checked={!!sig.data.separateWebsite} onChange={(v) => patch("separateWebsite", v)} />
-                </Section>
-
-                <Section title="Logo">
-                  <SliderField label="Logo width" min={60} max={320} value={sig.data.logoWidth ?? 150} onChange={(v) => patch("logoWidth", v)} suffix="px" />
-                </Section>
-              </>
+              <DesignPane
+                sig={sig}
+                setSig={setSig}
+                patch={patch}
+                designSub={designSub}
+                setDesignSub={setDesignSub}
+                templateFilter={templateFilter}
+                setTemplateFilter={setTemplateFilter}
+              />
             )}
           </div>
         </div>
