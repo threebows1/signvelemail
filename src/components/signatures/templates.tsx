@@ -749,7 +749,7 @@ function NeonCard(d: SignatureData) {
 }
 
 export const templates: TemplateMeta[] = [
-  { id: "al-riyady", name: "Al Riyady Corporate", category: "Corporate", layout: "two-column", accent: "bg-[#C88A1E]", description: "Gold-accented executive layout with icon rows, brand logo, and disclaimer.", render: AlRiyady },
+  { id: "al-riyady", name: "SignVel Corporate", category: "Corporate", layout: "two-column", accent: "bg-[#5B2EFF]", description: "Flagship SignVel layout with gradient logo, icon rows, and disclaimer.", render: SignVelCorporate },
   { id: "left-line", name: "Left Line", category: "Minimal", layout: "single", accent: "bg-[#5B2EFF]", description: "Clean vertical accent bar. Sign Vel default.", render: LeftLine },
   { id: "stacked", name: "Stacked Minimal", category: "Minimal", layout: "single", accent: "bg-neutral-400", description: "Ultra-quiet stacked lines, no chrome.", render: StackedMinimal },
   { id: "photo-card", name: "Portrait Card", category: "Creative", layout: "two-column", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Circular avatar with vertical rule.", render: PhotoCard },
