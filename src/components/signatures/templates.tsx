@@ -121,10 +121,10 @@ const IconRow = ({ Icon, text, color, ring = false, d }: { Icon: any; text: stri
   );
 };
 
-/* ============ 1. Al Riyady (exact reference) ============ */
-function AlRiyady(d: SignatureData) {
-  const gold = d.themeColor || d.primaryColor;
-  const lineColor = d.dividingLineColor || gold;
+/* ============ 1. Sign Vel Corporate (flagship reference) ============ */
+function SignVelCorporate(d: SignatureData) {
+  const accent = d.themeColor || d.primaryColor;
+  const lineColor = d.dividingLineColor || accent;
   const lineSize = d.dividingLineSize ?? 2;
   const titleSize = d.separateTitleFontSize && d.titleFontSize ? d.titleFontSize : (d.fontSize ? d.fontSize + 4 : 17);
   const bodySize = d.fontSize ?? 13;
@@ -141,29 +141,43 @@ function AlRiyady(d: SignatureData) {
         {d.logoUrl ? (
           <img src={d.logoUrl} alt={d.company} className="shrink-0 object-contain" style={{ width: d.logoWidth ?? 150 }} />
         ) : (
-          <div className="shrink-0" style={{ width: d.logoWidth ?? 180 }}>
-            <div style={{ color: d.themeColor || "#0A2A5E" }} className="font-black tracking-widest">
-              <div className="text-right text-[22px] font-serif" dir="rtl">الريادي</div>
-              <div style={{ color: gold }} className="text-[28px] leading-none font-black italic mt-1">AL RIYADY</div>
-              <div className="mt-1" style={{ borderTop: `2px solid ${d.themeColor || "#0A2A5E"}` }} />
-              <div className="text-[11px] tracking-[0.4em] mt-1 text-right">G R O U P</div>
+          <div className="shrink-0" style={{ width: d.logoWidth ?? 170 }}>
+            <svg width="100%" viewBox="0 0 88 37" aria-hidden="true">
+              <defs>
+                <linearGradient id="signvel-tmpl-grad" x1="0" x2="1">
+                  <stop offset="0" stopColor={accent} />
+                  <stop offset="1" stopColor={d.accentColor || "#00E5A0"} />
+                </linearGradient>
+              </defs>
+              <path
+                d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9"
+                fill="none"
+                stroke="url(#signvel-tmpl-grad)"
+                strokeWidth={6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="76" cy="27" r="5" fill={accent} />
+            </svg>
+            <div style={{ color: d.textColor, fontWeight: 800, letterSpacing: "-0.01em", fontSize: 20, marginTop: 4 }}>
+              Sign<span style={{ color: d.accentColor || "#00E5A0" }}>Vel</span>
             </div>
           </div>
         )}
         <div className="flex-1" style={{ display: "flex", flexDirection: "column", gap }}>
-          <IconRow Icon={Mail} text={d.email} color={gold} d={d} />
+          <IconRow Icon={Mail} text={d.email} color={accent} d={d} />
           {(d.phones && d.phones.length > 0 ? d.phones : [{ type: "mobile", value: d.mobile }, { type: "main", value: d.phone }]).map((p, i) =>
-            p.value ? <IconRow key={i} Icon={p.type === "mobile" ? Smartphone : Phone} text={p.value} color={gold} d={d} /> : null,
+            p.value ? <IconRow key={i} Icon={p.type === "mobile" ? Smartphone : Phone} text={p.value} color={accent} d={d} /> : null,
           )}
-          <IconRow Icon={MapPin} text={d.address} color={gold} d={d} />
-          {!d.separateWebsite && <IconRow Icon={LinkIcon} text={d.website} color={gold} d={d} />}
+          <IconRow Icon={MapPin} text={d.address} color={accent} d={d} />
+          {!d.separateWebsite && <IconRow Icon={LinkIcon} text={d.website} color={accent} d={d} />}
         </div>
       </div>
       {d.separateWebsite && (
-        <div className="mb-3"><IconRow Icon={LinkIcon} text={d.website} color={gold} d={d} /></div>
+        <div className="mb-3"><IconRow Icon={LinkIcon} text={d.website} color={accent} d={d} /></div>
       )}
       {d.showDividingLines !== false && <div className="mt-4 mb-3" style={{ height: lineSize, background: lineColor }} />}
-      <Socials d={d} color={gold} />
+      <Socials d={d} color={accent} />
       <Disclaimer d={d} />
     </div>
   );
