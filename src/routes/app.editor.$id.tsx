@@ -363,17 +363,18 @@ function Editor() {
                   />
                   <SliderField label="Icon size" min={10} max={40} value={sig.data.iconSize ?? 18} onChange={(v) => patch("iconSize", v)} suffix="px" />
                   <SelectField
-                    label="Social media icon type"
+                    label="Social media icon style"
                     value={sig.data.socialIconStyle || "color"}
                     onChange={(v) => patch("socialIconStyle", v as any)}
                     options={[
-                      { value: "color", label: "Filled color" },
-                      { value: "solid", label: "Solid" },
-                      { value: "outline", label: "Outline" },
-                      { value: "plain", label: "Plain" },
+                      { value: "color", label: "Brand color glyphs" },
+                      { value: "solid", label: "Solid circle" },
+                      { value: "outline", label: "Outline circle" },
+                      { value: "plain", label: "Plain glyphs" },
                     ]}
                   />
                   <SliderField label="Social icon size" min={14} max={48} value={sig.data.socialIconSize ?? 30} onChange={(v) => patch("socialIconSize", v)} suffix="px" />
+                  <SocialIconPreview sig={sig} />
                 </Section>
 
                 <Section title="Dividing lines">
