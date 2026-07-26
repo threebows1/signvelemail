@@ -12,6 +12,7 @@ import {
   type SocialKey,
 } from "@/lib/signature-store";
 import { ExportDialog } from "@/components/signatures/ExportDialog";
+import { socialGlyphMap, socialBrandColor } from "@/components/signatures/social-icons";
 import { ArrowDown, ArrowUp, Check, ChevronRight, Download, Palette, Plus, Share2, Sliders, User } from "lucide-react";
 import { ALL_SOCIAL_KEYS, FEATURED_SOCIAL_KEYS } from "@/lib/signature-store";
 
