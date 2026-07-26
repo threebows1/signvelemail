@@ -154,8 +154,8 @@ function Editor() {
   }, [sig]);
 
   return (
-    <div className="h-full flex flex-col">
-      <header className="px-8 py-4 border-b border-border bg-white flex items-center justify-between sticky top-0 z-10">
+    <div className="h-screen flex flex-col overflow-hidden">
+      <header className="px-8 py-4 border-b border-border bg-white flex items-center justify-between shrink-0 z-10">
         <div className="flex items-center gap-3 min-w-0">
           <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.2em] text-primary font-medium">Editor</span>
           <span className="text-muted-foreground">/</span>
@@ -186,9 +186,9 @@ function Editor() {
         </div>
       </header>
 
-      <div className="flex-1 flex h-[calc(100vh-64px)]">
+      <div className="flex-1 flex min-h-0">
         {/* Left panel */}
-        <div className="w-96 border-r border-border bg-white flex flex-col">
+        <div className="w-96 border-r border-border bg-white flex flex-col min-h-0 shrink-0">
           <div className="flex border-b border-border">
             {(
               [
@@ -421,10 +421,10 @@ function Editor() {
           </div>
         </div>
 
-        {/* Preview */}
-        <div className="flex-1 bg-stone-50/50 p-8 flex flex-col items-center overflow-y-auto">
-          <div className="w-full max-w-3xl sticky top-0 self-start">
-            <div className="flex items-center justify-between mb-4">
+        {/* Preview — fixed, never scrolls out of view */}
+        <div className="flex-1 bg-stone-50/50 p-8 flex flex-col items-center min-h-0 overflow-hidden">
+          <div className="w-full max-w-3xl flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-4 shrink-0">
               <span className="text-[10px] font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground">
                 Live Preview · {template.name}
               </span>
@@ -432,10 +432,10 @@ function Editor() {
                 Auto-saved <ChevronRight className="size-3" />
               </span>
             </div>
-            <div className="bg-white shadow-sm ring-1 ring-black/5 rounded-lg overflow-hidden max-h-[calc(100vh-220px)] overflow-y-auto">
+            <div className="bg-white shadow-sm ring-1 ring-black/5 rounded-lg overflow-hidden flex-1 min-h-0 overflow-y-auto">
               <div ref={previewRef}>{template.render(sig.data)}</div>
             </div>
-            <div className="mt-6 flex items-center gap-3">
+            <div className="mt-6 flex items-center gap-3 shrink-0">
               <Button onClick={() => setExportOpen(true)} className="gap-2">
                 <Share2 className="size-4" /> Copy &amp; Install
               </Button>
