@@ -154,8 +154,8 @@ function Editor() {
   }, [sig]);
 
   return (
-    <div className="h-full flex flex-col">
-      <header className="px-8 py-4 border-b border-border bg-white flex items-center justify-between sticky top-0 z-10">
+    <div className="h-screen flex flex-col overflow-hidden">
+      <header className="px-8 py-4 border-b border-border bg-white flex items-center justify-between shrink-0 z-10">
         <div className="flex items-center gap-3 min-w-0">
           <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.2em] text-primary font-medium">Editor</span>
           <span className="text-muted-foreground">/</span>
