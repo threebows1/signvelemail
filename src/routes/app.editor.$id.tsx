@@ -38,19 +38,7 @@ const PALETTES: { name: string; primary: string; accent: string; dark: string }[
   { name: "Sign Vel", primary: "#5B2EFF", accent: "#00E5A0", dark: "#14121F" },
   { name: "Mint", primary: "#0E8A6B", accent: "#00E5A0", dark: "#0B3B2E" },
   { name: "Corporate", primary: "#143A8A", accent: "#6EA8FF", dark: "#0B1B3A" },
-  { name: "Emerald", primary: "#0C6B4F", accent: "#A7F3D0", dark: "#083A2C" },
-  { name: "Rose", primary: "#E11D48", accent: "#FDA4AF", dark: "#4C0519" },
-  { name: "Charcoal", primary: "#14121F", accent: "#6B7280", dark: "#9CA3AF" },
   { name: "Sunset", primary: "#F97316", accent: "#FBBF24", dark: "#7C2D12" },
-  { name: "Ocean", primary: "#0EA5E9", accent: "#67E8F9", dark: "#0C4A6E" },
-  { name: "Plum", primary: "#7C3AED", accent: "#E9D5FF", dark: "#3B0764" },
-  { name: "Slate", primary: "#334155", accent: "#94A3B8", dark: "#0F172A" },
-  { name: "Cobalt", primary: "#1D4ED8", accent: "#38BDF8", dark: "#10254F" },
-  { name: "Sand", primary: "#A16207", accent: "#FDE68A", dark: "#422006" },
-  { name: "Forest", primary: "#14532D", accent: "#4ADE80", dark: "#052E16" },
-  { name: "Coral", primary: "#FB7185", accent: "#FFE4E6", dark: "#831843" },
-  { name: "Ink", primary: "#0B1020", accent: "#4F46E5", dark: "#6B7280" },
-  { name: "Lilac", primary: "#8B5CF6", accent: "#DDD6FE", dark: "#2E1065" },
 ];
 
 const FONTS = [
