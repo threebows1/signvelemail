@@ -1,6 +1,7 @@
-import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon, Facebook, Linkedin, Instagram, Youtube, Twitter, Globe, MessageCircle, Send, AtSign, BookOpen, Palette, Dribbble, Calendar, MessageSquare, Twitch, Music, Music2, Slack, Ghost, Cloud, Hash } from "lucide-react";
+import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon, Globe } from "lucide-react";
 import type { ReactNode } from "react";
-import type { SignatureData } from "@/lib/signature-store";
+import type { SignatureData, SocialKey } from "@/lib/signature-store";
+import { socialGlyphMap, socialBrandColor } from "@/components/signatures/social-icons";
 
 export type TemplateLayout = "single" | "two-column" | "vertical";
 
