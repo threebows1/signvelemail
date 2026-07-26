@@ -1139,36 +1139,6 @@ function TypePane({
 }) {
   return (
     <div className="space-y-4">
-      <div
-        className="rounded-[12px] p-4"
-        style={{ background: "#FBFBFE", border: "1px solid #EDEDF4" }}
-      >
-        <div className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#9A9AA8" }}>
-          Preview
-        </div>
-        <div
-          style={{
-            fontFamily: sig.data.fontFamily,
-            lineHeight: sig.data.lineHeight ?? 1.3,
-            color: sig.data.textColor,
-          }}
-        >
-          <div
-            style={{
-              fontSize: (sig.data.separateTitleFontSize ? sig.data.titleFontSize : sig.data.fontSize) ?? 15,
-              fontWeight: 600,
-              color: sig.data.titleColor || sig.data.textColor,
-            }}
-          >
-            {sig.data.name}
-          </div>
-          <div style={{ fontSize: sig.data.fontSize ?? 13 }}>{sig.data.title}</div>
-          <div style={{ fontSize: sig.data.fontSize ?? 13, color: sig.data.mutedColor }}>
-            {sig.data.company}
-          </div>
-        </div>
-      </div>
-
       <div className="space-y-1">
         <label className="text-[12px] text-[#6B7280]">Font family</label>
         <select
