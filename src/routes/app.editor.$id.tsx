@@ -38,19 +38,7 @@ const PALETTES: { name: string; primary: string; accent: string; dark: string }[
   { name: "Sign Vel", primary: "#5B2EFF", accent: "#00E5A0", dark: "#14121F" },
   { name: "Mint", primary: "#0E8A6B", accent: "#00E5A0", dark: "#0B3B2E" },
   { name: "Corporate", primary: "#143A8A", accent: "#6EA8FF", dark: "#0B1B3A" },
-  { name: "Emerald", primary: "#0C6B4F", accent: "#A7F3D0", dark: "#083A2C" },
-  { name: "Rose", primary: "#E11D48", accent: "#FDA4AF", dark: "#4C0519" },
-  { name: "Charcoal", primary: "#14121F", accent: "#6B7280", dark: "#9CA3AF" },
   { name: "Sunset", primary: "#F97316", accent: "#FBBF24", dark: "#7C2D12" },
-  { name: "Ocean", primary: "#0EA5E9", accent: "#67E8F9", dark: "#0C4A6E" },
-  { name: "Plum", primary: "#7C3AED", accent: "#E9D5FF", dark: "#3B0764" },
-  { name: "Slate", primary: "#334155", accent: "#94A3B8", dark: "#0F172A" },
-  { name: "Cobalt", primary: "#1D4ED8", accent: "#38BDF8", dark: "#10254F" },
-  { name: "Sand", primary: "#A16207", accent: "#FDE68A", dark: "#422006" },
-  { name: "Forest", primary: "#14532D", accent: "#4ADE80", dark: "#052E16" },
-  { name: "Coral", primary: "#FB7185", accent: "#FFE4E6", dark: "#831843" },
-  { name: "Ink", primary: "#0B1020", accent: "#4F46E5", dark: "#6B7280" },
-  { name: "Lilac", primary: "#8B5CF6", accent: "#DDD6FE", dark: "#2E1065" },
 ];
 
 const FONTS = [
@@ -1031,19 +1019,8 @@ function PalettePane({
       <div className="flex items-end justify-between">
         <div className="flex items-baseline gap-2">
           <h4 className="text-[15px] font-semibold text-[#14121F]">Palettes</h4>
-          <span className="text-[12px] text-[#9A9AA8]">16 presets</span>
+          <span className="text-[12px] text-[#9A9AA8]">4 presets · or edit below</span>
         </div>
-        <button
-          type="button"
-          className="text-[12px] font-semibold"
-          style={{ color: "#5B2EFF" }}
-          onClick={() => {
-            const el = document.getElementById("role-primary-color-input") as HTMLInputElement | null;
-            el?.click();
-          }}
-        >
-          Custom…
-        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-2.5">
@@ -1162,36 +1139,6 @@ function TypePane({
 }) {
   return (
     <div className="space-y-4">
-      <div
-        className="rounded-[12px] p-4"
-        style={{ background: "#FBFBFE", border: "1px solid #EDEDF4" }}
-      >
-        <div className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#9A9AA8" }}>
-          Preview
-        </div>
-        <div
-          style={{
-            fontFamily: sig.data.fontFamily,
-            lineHeight: sig.data.lineHeight ?? 1.3,
-            color: sig.data.textColor,
-          }}
-        >
-          <div
-            style={{
-              fontSize: (sig.data.separateTitleFontSize ? sig.data.titleFontSize : sig.data.fontSize) ?? 15,
-              fontWeight: 600,
-              color: sig.data.titleColor || sig.data.textColor,
-            }}
-          >
-            {sig.data.name}
-          </div>
-          <div style={{ fontSize: sig.data.fontSize ?? 13 }}>{sig.data.title}</div>
-          <div style={{ fontSize: sig.data.fontSize ?? 13, color: sig.data.mutedColor }}>
-            {sig.data.company}
-          </div>
-        </div>
-      </div>
-
       <div className="space-y-1">
         <label className="text-[12px] text-[#6B7280]">Font family</label>
         <select
