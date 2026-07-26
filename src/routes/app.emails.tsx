@@ -122,13 +122,13 @@ function EmailsPage() {
           <div className="p-6 bg-stone-50/40">
             <div className="bg-white rounded-lg ring-1 ring-black/5 overflow-hidden">
               <div className="px-5 py-3 border-b border-border">
-                <p className="text-xs text-muted-foreground">From: Farrukh Shahzad &lt;farrukh@alriyady.ae&gt;</p>
+                <p className="text-xs text-muted-foreground">From: Alex Rivera &lt;alex@signvel.com&gt;</p>
                 <p className="text-xs text-muted-foreground">Subject: <span className="text-foreground">Signature preview from Sign Vel</span></p>
               </div>
               <div className="px-6 py-5 text-sm text-neutral-700">
                 <p>Hi there,</p>
                 <p className="mt-2">Here's a preview of my new signature — let me know what you think.</p>
-                <p className="mt-2">Best,<br />Farrukh</p>
+                <p className="mt-2">Best,<br />Alex</p>
               </div>
               <div className="border-t border-border">
                 <div style={{ transform: "scale(0.92)", transformOrigin: "top left", width: "108%" }}>
