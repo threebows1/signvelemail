@@ -893,3 +893,48 @@ function SocialEditor({
   );
 }
 
+function SocialIconPreview({ sig }: { sig: SavedSignature }) {
+  const d = sig.data;
+  const style = (d.socialIconStyle ?? "color") as "color" | "solid" | "outline" | "plain";
+  const size = d.socialIconSize ?? 30;
+  const finalColor = d.socialIconColor || d.primaryColor;
+  const keys = FEATURED_SOCIAL_KEYS;
+  const glyph = Math.round(size * 0.62);
+  return (
+    <div className="rounded-lg border border-border bg-stone-50 p-3">
+      <p className="text-[10px] uppercase tracking-wider font-[JetBrains_Mono] text-muted-foreground mb-2">
+        Live preview
+      </p>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {keys.map((k) => {
+          const Glyph = socialGlyphMap[k];
+          const isColor = style === "color";
+          const isPlain = style === "plain";
+          const isOutline = style === "outline";
+          const brand = socialBrandColor[k] || finalColor;
+          const glyphColor = isColor ? brand : isPlain || isOutline ? finalColor : "#fff";
+          return (
+            <span
+              key={k}
+              title={k}
+              style={{
+                width: size,
+                height: size,
+                background: isColor || isPlain || isOutline ? "transparent" : finalColor,
+                color: glyphColor,
+                fill: glyphColor,
+                border: isOutline ? `1px solid ${finalColor}` : "none",
+                borderRadius: isColor || isPlain ? 0 : "9999px",
+              }}
+              className="inline-flex items-center justify-center overflow-hidden"
+            >
+              <Glyph style={{ width: glyph, height: glyph, color: glyphColor, fill: glyphColor }} />
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+
