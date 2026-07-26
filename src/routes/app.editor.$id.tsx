@@ -186,9 +186,9 @@ function Editor() {
         </div>
       </header>
 
-      <div className="flex-1 flex h-[calc(100vh-64px)]">
+      <div className="flex-1 flex min-h-0">
         {/* Left panel */}
-        <div className="w-96 border-r border-border bg-white flex flex-col">
+        <div className="w-96 border-r border-border bg-white flex flex-col min-h-0 shrink-0">
           <div className="flex border-b border-border">
             {(
               [
