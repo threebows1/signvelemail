@@ -105,6 +105,8 @@ function Editor() {
 
   const [sig, setSig] = useState<SavedSignature>(defaultSig);
   const [tab, setTab] = useState<Tab>("content");
+  const [designSub, setDesignSub] = useState<DesignSub>("palette");
+  const [templateFilter, setTemplateFilter] = useState<TemplateFilter>("All");
   const [exportOpen, setExportOpen] = useState(false);
   const [savedNote, setSavedNote] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
