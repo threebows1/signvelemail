@@ -34,7 +34,7 @@ type Tab = "content" | "design" | "social" | "extras";
 
 const PRESETS = [
   { name: "Sign Vel", primary: "#5B2EFF", accent: "#00E5A0" },
-  { name: "Al Riyady", primary: "#C88A1E", accent: "#0A2A5E" },
+  { name: "Mint", primary: "#00A879", accent: "#00E5A0" },
   { name: "Corporate", primary: "#1E40AF", accent: "#60A5FA" },
   { name: "Emerald", primary: "#059669", accent: "#A7F3D0" },
   { name: "Rose", primary: "#E11D48", accent: "#FDA4AF" },
