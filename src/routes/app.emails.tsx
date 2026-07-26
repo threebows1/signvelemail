@@ -27,10 +27,10 @@ const rollouts = [
 ];
 
 const activity = [
-  { who: "farrukh@alriyady.ae", event: "Test email delivered", time: "just now", tone: "ok" },
-  { who: "sara@alriyady.ae", event: "Signature updated to 'Al Riyady Corporate'", time: "12 min ago", tone: "info" },
-  { who: "team-eu@alriyady.ae", event: "58 mailboxes synced with new template", time: "1 hr ago", tone: "ok" },
-  { who: "ali@alriyady.ae", event: "Deploy failed — OAuth token expired", time: "3 hr ago", tone: "err" },
+  { who: "alex@signvel.com", event: "Test email delivered", time: "just now", tone: "ok" },
+  { who: "sara@signvel.com", event: "Signature updated to 'SignVel Corporate'", time: "12 min ago", tone: "info" },
+  { who: "team@signvel.com", event: "58 mailboxes synced with new template", time: "1 hr ago", tone: "ok" },
+  { who: "ali@signvel.com", event: "Deploy failed — OAuth token expired", time: "3 hr ago", tone: "err" },
 ];
 
 function EmailsPage() {
@@ -122,13 +122,13 @@ function EmailsPage() {
           <div className="p-6 bg-stone-50/40">
             <div className="bg-white rounded-lg ring-1 ring-black/5 overflow-hidden">
               <div className="px-5 py-3 border-b border-border">
-                <p className="text-xs text-muted-foreground">From: Farrukh Shahzad &lt;farrukh@alriyady.ae&gt;</p>
+                <p className="text-xs text-muted-foreground">From: Alex Rivera &lt;alex@signvel.com&gt;</p>
                 <p className="text-xs text-muted-foreground">Subject: <span className="text-foreground">Signature preview from Sign Vel</span></p>
               </div>
               <div className="px-6 py-5 text-sm text-neutral-700">
                 <p>Hi there,</p>
                 <p className="mt-2">Here's a preview of my new signature — let me know what you think.</p>
-                <p className="mt-2">Best,<br />Farrukh</p>
+                <p className="mt-2">Best,<br />Alex</p>
               </div>
               <div className="border-t border-border">
                 <div style={{ transform: "scale(0.92)", transformOrigin: "top left", width: "108%" }}>
