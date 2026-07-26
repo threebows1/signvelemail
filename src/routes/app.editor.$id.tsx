@@ -423,7 +423,7 @@ function Editor() {
 
         {/* Preview */}
         <div className="flex-1 bg-stone-50/50 p-8 flex flex-col items-center overflow-y-auto">
-          <div className="w-full max-w-3xl">
+          <div className="w-full max-w-3xl sticky top-0 self-start">
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground">
                 Live Preview · {template.name}
@@ -432,7 +432,7 @@ function Editor() {
                 Auto-saved <ChevronRight className="size-3" />
               </span>
             </div>
-            <div className="bg-white shadow-sm ring-1 ring-black/5 rounded-lg overflow-hidden">
+            <div className="bg-white shadow-sm ring-1 ring-black/5 rounded-lg overflow-hidden max-h-[calc(100vh-220px)] overflow-y-auto">
               <div ref={previewRef}>{template.render(sig.data)}</div>
             </div>
             <div className="mt-6 flex items-center gap-3">
