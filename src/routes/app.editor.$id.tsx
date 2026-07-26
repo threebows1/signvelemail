@@ -836,3 +836,530 @@ function SocialIconPreview({ sig }: { sig: SavedSignature }) {
 }
 
 
+
+/* ============================================================
+ * Design tab — sub-tabbed panes (Template · Palette · Type · Icons)
+ * ============================================================ */
+
+function DesignPane({
+  sig,
+  setSig,
+  patch,
+  designSub,
+  setDesignSub,
+  templateFilter,
+  setTemplateFilter,
+}: {
+  sig: SavedSignature;
+  setSig: React.Dispatch<React.SetStateAction<SavedSignature>>;
+  patch: <K extends keyof SignatureData>(k: K, v: SignatureData[K]) => void;
+  designSub: DesignSub;
+  setDesignSub: React.Dispatch<React.SetStateAction<DesignSub>>;
+  templateFilter: TemplateFilter;
+  setTemplateFilter: React.Dispatch<React.SetStateAction<TemplateFilter>>;
+}) {
+  const subs: { id: DesignSub; label: string }[] = [
+    { id: "template", label: "Template" },
+    { id: "palette", label: "Palette" },
+    { id: "type", label: "Type" },
+    { id: "icons", label: "Icons" },
+  ];
+
+  return (
+    <div className="-mx-5 -mt-5">
+      {/* Sticky sub-nav */}
+      <div className="sticky top-0 z-10 bg-[#FAFAFD] border-b border-[#EDEDF4] px-5 py-3">
+        <div
+          className="grid grid-cols-4 gap-0 p-[3px] rounded-[11px]"
+          style={{ background: "#EFEFF5" }}
+        >
+          {subs.map((s) => {
+            const active = designSub === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setDesignSub(s.id)}
+                className="text-[12px] py-1.5 rounded-[8px] transition-all"
+                style={{
+                  background: active ? "#fff" : "transparent",
+                  color: active ? "#14121F" : "#6B7280",
+                  fontWeight: active ? 600 : 500,
+                  boxShadow: active ? "0 1px 3px rgba(20,18,31,.14)" : "none",
+                }}
+              >
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="px-5 py-4">
+        {designSub === "template" && (
+          <TemplatePane
+            sig={sig}
+            setSig={setSig}
+            filter={templateFilter}
+            setFilter={setTemplateFilter}
+          />
+        )}
+        {designSub === "palette" && <PalettePane sig={sig} patch={patch} />}
+        {designSub === "type" && <TypePane sig={sig} patch={patch} />}
+        {designSub === "icons" && <IconsPane sig={sig} patch={patch} />}
+      </div>
+    </div>
+  );
+}
+
+/* ---- Template pane ---- */
+function TemplatePane({
+  sig,
+  setSig,
+  filter,
+  setFilter,
+}: {
+  sig: SavedSignature;
+  setSig: React.Dispatch<React.SetStateAction<SavedSignature>>;
+  filter: TemplateFilter;
+  setFilter: React.Dispatch<React.SetStateAction<TemplateFilter>>;
+}) {
+  const filters: TemplateFilter[] = ["All", "Corporate", "Minimal", "Creative", "Bold"];
+  const filtered = filter === "All" ? templates : templates.filter((t) => t.category === filter);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-1.5">
+        {filters.map((f) => {
+          const active = filter === f;
+          return (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className="px-3 py-1 rounded-full text-[11px] transition-colors"
+              style={{
+                background: active ? "#14121F" : "transparent",
+                color: active ? "#fff" : "#6B7280",
+                border: active ? "1px solid #14121F" : "1px solid #E4E4EE",
+                fontWeight: active ? 600 : 500,
+              }}
+            >
+              {f}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5">
+        {filtered.map((t) => {
+          const selected = sig.templateId === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setSig((s) => ({ ...s, templateId: t.id }))}
+              className="text-left p-2.5 rounded-[12px] transition-all bg-white"
+              style={{
+                border: selected ? "2px solid #5B2EFF" : "1px solid #E4E4EE",
+                background: selected ? "#F8F6FF" : "#fff",
+              }}
+            >
+              <div
+                className="rounded-md p-2 mb-2 flex flex-col justify-between"
+                style={{ background: "#F5F5FA", height: 52 }}
+              >
+                <div className="space-y-1">
+                  <div className="h-[3px] rounded-full bg-[#D4D4DE]" style={{ width: "72%" }} />
+                  <div className="h-[3px] rounded-full bg-[#D4D4DE]" style={{ width: "54%" }} />
+                  <div className="h-[3px] rounded-full bg-[#D4D4DE]" style={{ width: "40%" }} />
+                </div>
+                <div className="flex items-center gap-1 mt-1">
+                  <span className={`inline-block ${t.accent}`} style={{ width: 7, height: 7, borderRadius: 999 }} />
+                  <span className="inline-block bg-[#D4D4DE]" style={{ width: 7, height: 7, borderRadius: 999 }} />
+                  <span className="inline-block bg-[#D4D4DE]" style={{ width: 7, height: 7, borderRadius: 999 }} />
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[13px] font-semibold text-[#14121F] truncate">{t.name}</span>
+                {selected && <Check className="size-3.5 shrink-0" style={{ color: "#5B2EFF" }} />}
+              </div>
+              <div className="text-[11px] text-[#9A9AA8] mt-0.5">{t.category}</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ---- Palette pane ---- */
+function PalettePane({
+  sig,
+  patch,
+}: {
+  sig: SavedSignature;
+  patch: <K extends keyof SignatureData>(k: K, v: SignatureData[K]) => void;
+}) {
+  const selected = PALETTES.find(
+    (p) => p.primary.toLowerCase() === (sig.data.primaryColor || "").toLowerCase()
+  );
+
+  function applyPalette(p: (typeof PALETTES)[number]) {
+    patch("primaryColor", p.primary);
+    patch("accentColor", p.accent);
+    patch("themeColor", p.primary);
+    patch("iconColor", p.primary);
+    patch("socialIconColor", p.primary);
+    patch("linkColor", p.primary);
+    patch("dividingLineColor", p.primary);
+    patch("titleColor", p.dark);
+    patch("textColor", p.dark);
+  }
+
+  const roles: { key: keyof SignatureData; label: string; fallback?: keyof SignatureData }[] = [
+    { key: "themeColor", label: "Theme", fallback: "primaryColor" },
+    { key: "primaryColor", label: "Primary" },
+    { key: "accentColor", label: "Accent" },
+    { key: "titleColor", label: "Title", fallback: "textColor" },
+    { key: "textColor", label: "Text" },
+    { key: "mutedColor", label: "Muted" },
+    { key: "linkColor", label: "Link", fallback: "primaryColor" },
+    { key: "socialIconColor", label: "Social icon", fallback: "primaryColor" },
+    { key: "dividingLineColor", label: "Divider", fallback: "primaryColor" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-end justify-between">
+        <div className="flex items-baseline gap-2">
+          <h4 className="text-[15px] font-semibold text-[#14121F]">Palettes</h4>
+          <span className="text-[12px] text-[#9A9AA8]">16 presets</span>
+        </div>
+        <button
+          type="button"
+          className="text-[12px] font-semibold"
+          style={{ color: "#5B2EFF" }}
+          onClick={() => {
+            const el = document.getElementById("role-primary-color-input") as HTMLInputElement | null;
+            el?.click();
+          }}
+        >
+          Custom…
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5">
+        {PALETTES.map((p) => {
+          const active = selected?.name === p.name;
+          return (
+            <button
+              key={p.name}
+              onClick={() => applyPalette(p)}
+              className="p-2.5 rounded-[12px] text-left transition-all"
+              style={{
+                border: active ? "2px solid #5B2EFF" : "1px solid #E9E9F1",
+                background: active ? "#F8F6FF" : "#fff",
+              }}
+            >
+              <div
+                className="flex overflow-hidden rounded-lg"
+                style={{ height: 34 }}
+              >
+                <span style={{ background: p.primary, flex: 2 }} />
+                <span style={{ background: p.accent, flex: 1 }} />
+                <span style={{ background: p.dark, flex: 1 }} />
+              </div>
+              <div className="flex items-center justify-between mt-1.5 gap-1">
+                <span className="text-[13px] font-medium text-[#14121F] truncate">{p.name}</span>
+                {active && <Check className="size-3.5 shrink-0" style={{ color: "#5B2EFF" }} />}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="pt-2 border-t" style={{ borderColor: "#EDEDF4" }}>
+        <div className="flex items-center justify-between mb-2">
+          <span
+            className="text-[11px] font-semibold uppercase"
+            style={{ letterSpacing: "0.16em", color: "#8A8A98" }}
+          >
+            Roles in this palette
+          </span>
+          <button
+            type="button"
+            className="text-[12px] font-semibold"
+            style={{ color: "#5B2EFF" }}
+            onClick={() => {
+              const el = document.getElementById("role-primaryColor-input") as HTMLInputElement | null;
+              el?.click();
+            }}
+          >
+            Edit all
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          {roles.map((r) => (
+            <RoleChip
+              key={String(r.key)}
+              label={r.label}
+              value={
+                (sig.data[r.key] as string) ||
+                (r.fallback ? (sig.data[r.fallback] as string) : "#000000")
+              }
+              onChange={(v) => patch(r.key as any, v as any)}
+              inputId={`role-${String(r.key)}-input`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RoleChip({
+  label,
+  value,
+  onChange,
+  inputId,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  inputId?: string;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <button
+      type="button"
+      onClick={() => ref.current?.click()}
+      className="flex items-center gap-2 rounded-[10px] py-2 px-2.5 text-left transition-colors hover:bg-[#FAFAFD]"
+      style={{ border: "1px solid #EDEDF4", background: "#fff" }}
+    >
+      <span
+        className="rounded"
+        style={{ width: 20, height: 20, background: value, border: "1px solid rgba(0,0,0,.06)" }}
+      />
+      <span className="text-[12px] text-[#14121F] flex-1 truncate">{label}</span>
+      <span className="text-[11px] font-mono text-[#9A9AA8]">{value.toUpperCase()}</span>
+      <input
+        id={inputId}
+        ref={ref}
+        type="color"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="sr-only"
+      />
+    </button>
+  );
+}
+
+/* ---- Type pane ---- */
+function TypePane({
+  sig,
+  patch,
+}: {
+  sig: SavedSignature;
+  patch: <K extends keyof SignatureData>(k: K, v: SignatureData[K]) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div
+        className="rounded-[12px] p-4"
+        style={{ background: "#FBFBFE", border: "1px solid #EDEDF4" }}
+      >
+        <div className="text-[10px] uppercase tracking-widest mb-2" style={{ color: "#9A9AA8" }}>
+          Preview
+        </div>
+        <div
+          style={{
+            fontFamily: sig.data.fontFamily,
+            lineHeight: sig.data.lineHeight ?? 1.3,
+            color: sig.data.textColor,
+          }}
+        >
+          <div
+            style={{
+              fontSize: (sig.data.separateTitleFontSize ? sig.data.titleFontSize : sig.data.fontSize) ?? 15,
+              fontWeight: 600,
+              color: sig.data.titleColor || sig.data.textColor,
+            }}
+          >
+            {sig.data.name}
+          </div>
+          <div style={{ fontSize: sig.data.fontSize ?? 13 }}>{sig.data.title}</div>
+          <div style={{ fontSize: sig.data.fontSize ?? 13, color: sig.data.mutedColor }}>
+            {sig.data.company}
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <label className="text-[12px] text-[#6B7280]">Font family</label>
+        <select
+          value={sig.data.fontFamily}
+          onChange={(e) => patch("fontFamily", e.target.value)}
+          className="w-full bg-white border px-3 py-2 text-sm rounded-lg"
+          style={{ borderColor: "#E4E4EE" }}
+        >
+          {FONTS.map((f) => (
+            <option key={f.value} value={f.value}>
+              {f.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <SliderField
+        label="Body size"
+        min={10}
+        max={20}
+        value={sig.data.fontSize ?? 13}
+        onChange={(v) => patch("fontSize", v)}
+        suffix="px"
+      />
+      <Toggle
+        label="Separate title size"
+        checked={!!sig.data.separateTitleFontSize}
+        onChange={(v) => patch("separateTitleFontSize", v)}
+      />
+      {sig.data.separateTitleFontSize && (
+        <SliderField
+          label="Title size"
+          min={12}
+          max={32}
+          value={sig.data.titleFontSize ?? 17}
+          onChange={(v) => patch("titleFontSize", v)}
+          suffix="px"
+        />
+      )}
+      <SliderField
+        label="Line height"
+        min={10}
+        max={22}
+        value={Math.round((sig.data.lineHeight ?? 1.3) * 10)}
+        onChange={(v) => patch("lineHeight", v / 10)}
+        display={(v) => (v / 10).toFixed(1)}
+      />
+
+      <div className="space-y-1.5">
+        <label className="text-[12px] text-[#6B7280]">Spacing</label>
+        <div
+          className="grid grid-cols-3 gap-0 p-[3px] rounded-[11px]"
+          style={{ background: "#EFEFF5" }}
+        >
+          {(["compact", "medium", "large"] as const).map((s, i) => {
+            const current = sig.data.spacing || "large";
+            const active = current === s;
+            return (
+              <button
+                key={s}
+                onClick={() => patch("spacing", s)}
+                className="text-[12px] py-1.5 rounded-[8px] transition-all"
+                style={{
+                  background: active ? "#fff" : "transparent",
+                  color: active ? "#14121F" : "#6B7280",
+                  fontWeight: active ? 600 : 500,
+                  boxShadow: active ? "0 1px 3px rgba(20,18,31,.14)" : "none",
+                }}
+              >
+                {["S", "M", "L"][i]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <Toggle
+        label="Separate website line"
+        checked={!!sig.data.separateWebsite}
+        onChange={(v) => patch("separateWebsite", v)}
+      />
+    </div>
+  );
+}
+
+/* ---- Icons pane ---- */
+function IconsPane({
+  sig,
+  patch,
+}: {
+  sig: SavedSignature;
+  patch: <K extends keyof SignatureData>(k: K, v: SignatureData[K]) => void;
+}) {
+  const socialStyles: { id: "solid" | "outline" | "color"; label: string }[] = [
+    { id: "solid", label: "Solid" },
+    { id: "outline", label: "Outline" },
+    { id: "color", label: "Brand" },
+  ];
+  const current = sig.data.socialIconStyle || "color";
+
+  return (
+    <div className="space-y-4">
+      <Toggle
+        label="Show social icons"
+        checked={sig.data.showSocials}
+        onChange={(v) => patch("showSocials", v)}
+      />
+
+      <div className="space-y-1.5">
+        <label className="text-[12px] text-[#6B7280]">Icon style</label>
+        <div className="grid grid-cols-3 gap-2">
+          {socialStyles.map((s) => {
+            const active = current === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => patch("socialIconStyle", s.id)}
+                className="rounded-[10px] py-3 text-[12px] font-medium transition-all"
+                style={{
+                  border: active ? "2px solid #5B2EFF" : "1px solid #E4E4EE",
+                  background: active ? "#F6F4FF" : "#fff",
+                  color: active ? "#14121F" : "#6B7280",
+                }}
+              >
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <SliderField
+        label="Icon size"
+        min={14}
+        max={48}
+        value={sig.data.socialIconSize ?? 30}
+        onChange={(v) => patch("socialIconSize", v)}
+        suffix="px"
+      />
+
+      <SocialIconPreview sig={sig} />
+
+      <div className="pt-3 border-t" style={{ borderColor: "#EDEDF4" }}>
+        <Toggle
+          label="Show dividing lines"
+          checked={sig.data.showDividingLines !== false}
+          onChange={(v) => patch("showDividingLines", v)}
+        />
+        <SliderField
+          label="Line thickness"
+          min={1}
+          max={8}
+          value={sig.data.dividingLineSize ?? 2}
+          onChange={(v) => patch("dividingLineSize", v)}
+          suffix="px"
+        />
+      </div>
+
+      <div className="pt-3 border-t" style={{ borderColor: "#EDEDF4" }}>
+        <SliderField
+          label="Logo width"
+          min={60}
+          max={320}
+          value={sig.data.logoWidth ?? 150}
+          onChange={(v) => patch("logoWidth", v)}
+          suffix="px"
+        />
+      </div>
+    </div>
+  );
+}
