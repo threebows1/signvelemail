@@ -189,7 +189,7 @@ function Editor() {
       <div className="flex-1 flex min-h-0">
         {/* Left panel */}
         <div className="w-96 border-r border-border bg-white flex flex-col min-h-0 shrink-0">
-          <div className="flex border-b border-border">
+          <div className="flex border-b border-border bg-[#FAFAFD] py-3">
             {(
               [
                 { id: "content", label: "Content", Icon: User },
@@ -201,14 +201,28 @@ function Editor() {
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${
-                  tab === t.id ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"
-                }`}
+                className="flex-1 flex flex-col items-center gap-1.5 group"
               >
-                <t.Icon className="size-3.5" /> {t.label}
+                <span
+                  className={`size-10 rounded-full flex items-center justify-center border transition-all ${
+                    tab === t.id
+                      ? "bg-foreground text-background border-foreground shadow-[0_2px_8px_rgba(20,18,31,0.22)]"
+                      : "bg-white text-muted-foreground border-border group-hover:border-foreground/40 group-hover:text-foreground"
+                  }`}
+                >
+                  <t.Icon className="size-4" />
+                </span>
+                <span
+                  className={`text-[11px] transition-colors ${
+                    tab === t.id ? "text-foreground font-semibold" : "text-muted-foreground font-medium"
+                  }`}
+                >
+                  {t.label}
+                </span>
               </button>
             ))}
           </div>
+
 
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {tab === "content" && (
