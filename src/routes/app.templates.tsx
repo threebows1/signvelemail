@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { templates } from "@/components/signatures/templates";
+import { templates, renderSignature } from "@/components/signatures/templates";
 import { defaultData } from "@/lib/signature-store";
 
 export const Route = createFileRoute("/app/templates")({

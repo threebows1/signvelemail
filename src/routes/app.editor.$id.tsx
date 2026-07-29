@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { getTemplate, templates } from "@/components/signatures/templates";
+import { getTemplate, templates, renderSignature } from "@/components/signatures/templates";
 import {
   defaultData,
   getSignature,

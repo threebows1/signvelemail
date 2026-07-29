@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { deleteSignature, saveSignature, useSignatures, newSignatureId, type SavedSignature } from "@/lib/signature-store";
-import { getTemplate } from "@/components/signatures/templates";
+import { getTemplate, renderSignature } from "@/components/signatures/templates";
 import { Copy, Link2, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
