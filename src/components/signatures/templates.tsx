@@ -785,3 +785,41 @@ export const templates: TemplateMeta[] = [
 export function getTemplate(id: string): TemplateMeta | undefined {
   return templates.find((t) => t.id === id);
 }
+
+/* ============================================================
+   Typography-aware render wrapper.
+   Templates author at a 13px base; this scopes user typography
+   (font family, body size, title size, line-height, spacing)
+   across every template — including ones with hard-coded sizes.
+   ============================================================ */
+const BASE_FONT_SIZE = 13;
+const DEFAULT_FONT = "Rubik, Arial, sans-serif";
+
+export function renderSignature(template: TemplateMeta, d: SignatureData) {
+  const base = d.fontSize ?? BASE_FONT_SIZE;
+  const scale = Math.max(0.6, Math.min(2, base / BASE_FONT_SIZE));
+  const fontOverridden = !!d.fontFamily && d.fontFamily !== DEFAULT_FONT;
+
+  // Normalize so templates keep authoring at the 13px base; the wrapper scales.
+  const normalized: SignatureData = {
+    ...d,
+    fontSize: BASE_FONT_SIZE,
+    titleFontSize: d.titleFontSize ? d.titleFontSize / scale : undefined,
+  };
+
+  return (
+    <div
+      data-sig-scope=""
+      data-sig-font={fontOverridden ? "" : undefined}
+      data-sig-line=""
+      style={{
+        fontFamily: d.fontFamily || DEFAULT_FONT,
+        fontSize: `${BASE_FONT_SIZE}px`,
+        lineHeight: d.lineHeight ?? 1.3,
+        zoom: scale,
+      }}
+    >
+      {template.render(normalized)}
+    </div>
+  );
+}
