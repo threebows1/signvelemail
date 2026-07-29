@@ -160,3 +160,15 @@
 .animate-slide-up-delay {
   animation: slideUp 600ms var(--ease-out-expo) 200ms both;
 }
+
+/* Signature preview typography scoping */
+[data-sig-font] * {
+  font-family: inherit !important;
+}
+[data-sig-line] p,
+[data-sig-line] span,
+[data-sig-line] div,
+[data-sig-line] a,
+[data-sig-line] td {
+  line-height: inherit;
+}
