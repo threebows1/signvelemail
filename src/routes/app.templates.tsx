@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { templates } from "@/components/signatures/templates";
+import { templates, renderSignature } from "@/components/signatures/templates";
 import { defaultData } from "@/lib/signature-store";
 
 export const Route = createFileRoute("/app/templates")({
@@ -108,7 +108,7 @@ function Templates() {
             <div className="p-5 bg-stone-50/40 min-h-[280px] overflow-hidden">
               <div className="rounded-lg ring-1 ring-black/5 overflow-hidden bg-white text-left">
                 <div className="origin-top-left" style={{ transform: "scale(0.86)", transformOrigin: "top left", width: "116%" }}>
-                  {t.render(defaultData)}
+                  {renderSignature(t, defaultData)}
                 </div>
               </div>
             </div>

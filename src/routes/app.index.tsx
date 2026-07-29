@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { deleteSignature, saveSignature, useSignatures, newSignatureId, type SavedSignature } from "@/lib/signature-store";
-import { getTemplate } from "@/components/signatures/templates";
+import { getTemplate, renderSignature } from "@/components/signatures/templates";
 import { Copy, Link2, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,7 +27,7 @@ function Dashboard() {
     const tmpl = getTemplate(sig.templateId);
     if (!tmpl) return;
     const root = createRoot(container);
-    root.render(tmpl.render(sig.data) as any);
+    root.render(renderSignature(tmpl, sig.data) as any);
     await new Promise((r) => setTimeout(r, 100));
     try {
       const html = container.innerHTML;

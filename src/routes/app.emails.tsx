@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock, Send, AlertCircle, Mail, Users, Zap } from "lucide-react";
-import { templates } from "@/components/signatures/templates";
+import { templates, renderSignature } from "@/components/signatures/templates";
 import { defaultData } from "@/lib/signature-store";
 
 export const Route = createFileRoute("/app/emails")({
@@ -132,7 +132,7 @@ function EmailsPage() {
               </div>
               <div className="border-t border-border">
                 <div style={{ transform: "scale(0.92)", transformOrigin: "top left", width: "108%" }}>
-                  {template.render(defaultData)}
+                  {renderSignature(template, defaultData)}
                 </div>
               </div>
             </div>
