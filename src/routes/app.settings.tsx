@@ -176,15 +176,18 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="flex items-center justify-between gap-4 cursor-pointer">
-      <span className="text-sm">{label}</span>
+      <span className="text-sm min-w-0 flex-1">{label}</span>
       <button
         type="button"
+        role="switch"
         onClick={() => onChange(!checked)}
-        className={`relative w-10 h-6 rounded-full transition-colors ${checked ? "bg-primary" : "bg-muted"}`}
-        aria-pressed={checked}
+        className={`relative shrink-0 w-[38px] h-[22px] rounded-full transition-colors ${checked ? "bg-primary" : "bg-[#E4E4EE]"}`}
+        aria-checked={checked}
+        aria-label={label}
       >
-        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${checked ? "translate-x-4" : ""}`} />
+        <span className={`absolute top-[2px] left-[2px] size-[18px] bg-white rounded-full shadow-sm transition-transform ${checked ? "translate-x-4" : "translate-x-0"}`} />
       </button>
     </label>
   );
 }
+
