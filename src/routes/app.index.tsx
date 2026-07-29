@@ -27,7 +27,7 @@ function Dashboard() {
     const tmpl = getTemplate(sig.templateId);
     if (!tmpl) return;
     const root = createRoot(container);
-    root.render(tmpl.render(sig.data) as any);
+    root.render(renderSignature(tmpl, sig.data) as any);
     await new Promise((r) => setTimeout(r, 100));
     try {
       const html = container.innerHTML;
