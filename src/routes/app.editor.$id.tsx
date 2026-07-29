@@ -904,7 +904,7 @@ function DesignPane({
         </div>
       </div>
 
-      <div className="px-5 py-4">
+      <div className="px-5 pt-5 pb-4">
         {designSub === "template" && (
           <TemplatePane
             sig={sig}
