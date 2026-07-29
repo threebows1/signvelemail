@@ -4,7 +4,7 @@ import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === "string" ? s.next : "/app",
+    next: typeof s.next === "string" ? s.next : undefined,
   }),
   head: () => ({
     meta: [
@@ -19,7 +19,8 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
-  const { next } = useSearch({ from: "/login" });
+  const { next: nextParam } = useSearch({ from: "/login" });
+  const next = nextParam ?? "/app";
   const navigate = useNavigate();
 
   function handleContinue() {
