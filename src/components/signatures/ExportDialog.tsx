@@ -254,6 +254,24 @@ export function ExportDialog({
   );
 }
 
+/** Accumulated CSS `zoom` for an element (used for typography scaling in previews). */
+function zoomOf(el: HTMLElement): number {
+  let z = 1;
+  let cur: HTMLElement | null = el;
+  while (cur) {
+    const v = parseFloat(window.getComputedStyle(cur).zoom as string);
+    if (!Number.isNaN(v) && v > 0) z *= v;
+    cur = cur.parentElement;
+  }
+  return z;
+}
+
+/** Bake a zoom factor into px lengths so email clients (which ignore zoom) match the preview. */
+function scalePx(css: string, factor: number): string {
+  if (!factor || Math.abs(factor - 1) < 0.001) return css;
+  return css.replace(/(-?[\d.]+)px/g, (_m, n) => `${(parseFloat(n) * factor).toFixed(2)}px`);
+}
+
 /** Inline all computed styles so pasted HTML renders identically in email clients. */
 function inlineStyles(node: HTMLElement): string {
   const clone = node.cloneNode(true) as HTMLElement;
@@ -278,7 +296,7 @@ function inlineStyles(node: HTMLElement): string {
       const v = s.getPropertyValue(prop);
       if (v && v !== "none" && v !== "normal" && v !== "auto") css += `${prop}:${v};`;
     }
-    (dst[i] as HTMLElement).setAttribute("style", css);
+    (dst[i] as HTMLElement).setAttribute("style", scalePx(css, zoomOf(src[i])));
     (dst[i] as HTMLElement).removeAttribute("class");
   }
   return clone.outerHTML;
