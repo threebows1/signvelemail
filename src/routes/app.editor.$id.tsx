@@ -418,18 +418,26 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
 
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="flex items-center justify-between text-sm py-1 cursor-pointer">
-      <span>{label}</span>
+    <label className="flex items-center justify-between gap-3 text-sm py-1 cursor-pointer">
+      <span className="min-w-0 flex-1">{label}</span>
       <button
         type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
         onClick={() => onChange(!checked)}
-        className={`relative w-9 h-5 rounded-full transition-colors ${checked ? "bg-primary" : "bg-muted"}`}
+        className={`relative shrink-0 w-[38px] h-[22px] rounded-full transition-colors ${checked ? "bg-primary" : "bg-[#E4E4EE]"}`}
       >
-        <span className={`absolute top-0.5 size-4 bg-white rounded-full transition-transform ${checked ? "translate-x-4" : "translate-x-0.5"}`} />
+        <span
+          className={`absolute top-[2px] left-[2px] size-[18px] bg-white rounded-full shadow-sm transition-transform ${
+            checked ? "translate-x-4" : "translate-x-0"
+          }`}
+        />
       </button>
     </label>
   );
 }
+
 
 function SliderField({
   label,
@@ -896,7 +904,7 @@ function DesignPane({
         </div>
       </div>
 
-      <div className="px-5 py-4">
+      <div className="px-5 pt-5 pb-4">
         {designSub === "template" && (
           <TemplatePane
             sig={sig}
