@@ -118,7 +118,7 @@ function Pricing() {
           <Logo size={48} wordmarkClassName="text-xl" />
         </Link>
         <div className="flex items-center gap-3">
-          <Link to="/login" className="text-sm font-medium hover:text-primary transition-colors">
+          <Link to="/login" search={{ next: "/app" }} className="text-sm font-medium hover:text-primary transition-colors">
             Sign in
           </Link>
           <Link to="/app">
@@ -200,7 +200,7 @@ function Pricing() {
                 <p className="text-xs text-muted-foreground mt-2 uppercase tracking-wider font-[JetBrains_Mono]">
                   {p.audience}
                 </p>
-                <Link to="/login" className="block mt-6">
+                <Link to="/login" search={{ next: "/app" }} className="block mt-6">
                   <Button
                     className={`w-full py-6 rounded-lg font-semibold ${
                       p.highlight

@@ -49,7 +49,7 @@ function Navigation() {
           </Link>
         </div>
       </div>
-      <Link to="/login">
+      <Link to="/login" search={{ next: "/app" }}>
         <Button size="sm" className="bg-foreground text-background hover:bg-foreground/90">
           Get Started
         </Button>
