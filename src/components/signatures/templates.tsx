@@ -807,8 +807,26 @@ export function renderSignature(template: TemplateMeta, d: SignatureData) {
     titleFontSize: d.titleFontSize ? d.titleFontSize / scale : undefined,
   };
 
+  const titleOn = !!d.separateTitleFontSize && !!d.titleFontSize;
+  const scopeClass = `sigscope-${template.id}-${titleOn ? Math.round(d.titleFontSize!) : "d"}-${d.separateWebsite ? "w" : "i"}`;
+
+  const rules: string[] = [];
+  if (titleOn) {
+    // Name size is authored at the 13px base; wrapper zoom re-applies user scale.
+    const size = d.titleFontSize! / scale;
+    rules.push(
+      `.${scopeClass} [data-sig-name]{font-size:${size}px !important;line-height:1.15 !important;}`,
+    );
+  }
+  if (d.separateWebsite) {
+    rules.push(
+      `.${scopeClass} [data-sig-website]{display:block !important;width:100% !important;}`,
+    );
+  }
+
   return (
     <div
+      className={scopeClass}
       data-sig-scope=""
       data-sig-font={fontOverridden ? "" : undefined}
       data-sig-line=""
@@ -819,7 +837,9 @@ export function renderSignature(template: TemplateMeta, d: SignatureData) {
         zoom: scale,
       }}
     >
+      {rules.length > 0 && <style dangerouslySetInnerHTML={{ __html: rules.join("") }} />}
       {template.render(normalized)}
     </div>
   );
 }
+
