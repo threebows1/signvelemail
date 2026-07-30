@@ -16,6 +16,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppTemplatesRouteImport } from './routes/app.templates'
+import { Route as AppSignatureFormRouteImport } from './routes/app.signature-form'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppEmailsRouteImport } from './routes/app.emails'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -57,6 +58,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppTemplatesRoute = AppTemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSignatureFormRoute = AppSignatureFormRouteImport.update({
+  id: '/signature-form',
+  path: '/signature-form',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/emails': typeof AppEmailsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/signature-form': typeof AppSignatureFormRoute
   '/app/templates': typeof AppTemplatesRoute
   '/app/': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/emails': typeof AppEmailsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/signature-form': typeof AppSignatureFormRoute
   '/app/templates': typeof AppTemplatesRoute
   '/app': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/emails': typeof AppEmailsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/app/signature-form': typeof AppSignatureFormRoute
   '/app/templates': typeof AppTemplatesRoute
   '/app/': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/app/emails'
     | '/app/settings'
+    | '/app/signature-form'
     | '/app/templates'
     | '/app/'
     | '/.lovable/oauth/consent'
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/app/emails'
     | '/app/settings'
+    | '/app/signature-form'
     | '/app/templates'
     | '/app'
     | '/.lovable/oauth/consent'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/app/emails'
     | '/app/settings'
+    | '/app/signature-form'
     | '/app/templates'
     | '/app/'
     | '/.lovable/oauth/consent'
@@ -259,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTemplatesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/signature-form': {
+      id: '/app/signature-form'
+      path: '/signature-form'
+      fullPath: '/app/signature-form'
+      preLoaderRoute: typeof AppSignatureFormRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/settings': {
       id: '/app/settings'
       path: '/settings'
@@ -314,6 +333,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppEmailsRoute: typeof AppEmailsRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppSignatureFormRoute: typeof AppSignatureFormRoute
   AppTemplatesRoute: typeof AppTemplatesRoute
   AppIndexRoute: typeof AppIndexRoute
   AppEditorIdRoute: typeof AppEditorIdRoute
@@ -322,6 +342,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppEmailsRoute: AppEmailsRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppSignatureFormRoute: AppSignatureFormRoute,
   AppTemplatesRoute: AppTemplatesRoute,
   AppIndexRoute: AppIndexRoute,
   AppEditorIdRoute: AppEditorIdRoute,
