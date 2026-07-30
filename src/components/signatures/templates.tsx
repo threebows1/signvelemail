@@ -132,7 +132,7 @@ function SignVelCorporate(d: SignatureData) {
   return (
     <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor, lineHeight: d.lineHeight ?? 1.3 }}>
       <div className="mb-2">
-        <p style={{ fontSize: titleSize, color: d.titleColor || d.textColor }} className="font-bold leading-tight">{d.name}</p>
+        <p data-sig-name="" style={{ fontSize: titleSize, color: d.titleColor || d.textColor }} className="font-bold leading-tight">{d.name}</p>
         <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.title}</p>
         <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.company}</p>
       </div>
@@ -174,7 +174,7 @@ function SignVelCorporate(d: SignatureData) {
         </div>
       </div>
       {d.separateWebsite && (
-        <div className="mb-3"><IconRow Icon={LinkIcon} text={d.website} color={accent} d={d} /></div>
+        <div data-sig-website="" className="mb-3"><IconRow Icon={LinkIcon} text={d.website} color={accent} d={d} /></div>
       )}
       {d.showDividingLines !== false && <div className="mt-4 mb-3" style={{ height: lineSize, background: lineColor }} />}
       <Socials d={d} color={accent} />
@@ -190,12 +190,12 @@ function LeftLine(d: SignatureData) {
       <div className="flex items-start gap-6" style={{ borderLeft: `2px solid ${d.primaryColor}`, paddingLeft: 24 }}>
         <Avatar d={d} size={64} />
         <div>
-          <h3 className="text-xl font-bold tracking-tight">{d.name}</h3>
+          <h3 data-sig-name="" className="text-xl font-bold tracking-tight">{d.name}</h3>
           <p className="text-sm italic mb-4" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
           <div className="space-y-1 text-[12px]" style={{ color: d.mutedColor }}>
             <p>T: {d.phone}</p>
             <p>E: {d.email}</p>
-            <p className="font-bold" style={{ color: d.textColor }}>W: {d.website}</p>
+            <p data-sig-website="" className="font-bold" style={{ color: d.textColor }}>W: {d.website}</p>
           </div>
           <div className="mt-3"><Socials d={d} color={d.primaryColor} size={22} /></div>
         </div>
@@ -208,12 +208,12 @@ function LeftLine(d: SignatureData) {
 function StackedMinimal(d: SignatureData) {
   return (
     <div className="bg-white p-8 max-w-md" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
-      <p className="text-[15px] font-semibold">{d.name}</p>
+      <p data-sig-name="" className="text-[15px] font-semibold">{d.name}</p>
       <p className="text-[13px] mb-3" style={{ color: d.mutedColor }}>{d.title}, {d.company}</p>
       <div className="text-[12px] space-y-0.5">
         <p><span style={{ color: d.mutedColor }}>e</span> {d.email}</p>
         <p><span style={{ color: d.mutedColor }}>m</span> {d.mobile}</p>
-        <p><span style={{ color: d.mutedColor }}>w</span> <span className="underline">{d.website}</span></p>
+        <p><span style={{ color: d.mutedColor }}>w</span> <span data-sig-website="" className="underline">{d.website}</span></p>
       </div>
     </div>
   );
@@ -226,7 +226,7 @@ function PhotoCard(d: SignatureData) {
       <div className="flex items-center gap-5">
         <Avatar d={d} size={80} />
         <div style={{ borderLeft: `1px solid ${d.mutedColor}33`, paddingLeft: 20 }}>
-          <p className="text-lg font-bold">{d.name}</p>
+          <p data-sig-name="" className="text-lg font-bold">{d.name}</p>
           <p className="text-sm font-medium" style={{ color: d.primaryColor }}>{d.title}</p>
           <p className="text-xs mb-2" style={{ color: d.mutedColor }}>{d.company}</p>
           <div className="text-[11px] space-x-3" style={{ color: d.mutedColor }}>
@@ -246,7 +246,7 @@ function CorporateBlue(d: SignatureData) {
         <tbody>
           <tr>
             <td className="pr-6 align-top" style={{ borderRight: `2px solid ${d.primaryColor}` }}>
-              <div className="font-bold text-xl leading-tight" style={{ color: d.primaryColor }}>{d.name}</div>
+              <div data-sig-name="" className="font-bold text-xl leading-tight" style={{ color: d.primaryColor }}>{d.name}</div>
               <div className="italic" style={{ color: d.mutedColor }}>{d.title}</div>
               <div className="text-[12px] mt-1" style={{ color: d.mutedColor }}>{d.company}</div>
             </td>
@@ -254,7 +254,7 @@ function CorporateBlue(d: SignatureData) {
               <div><b>D</b> {d.phone}</div>
               <div><b>M</b> {d.mobile}</div>
               <div><b>E</b> <span style={{ color: d.primaryColor }}>{d.email}</span></div>
-              <div><b>W</b> <span style={{ color: d.primaryColor }}>{d.website}</span></div>
+              <div><b>W</b> <span data-sig-website="" style={{ color: d.primaryColor }}>{d.website}</span></div>
             </td>
           </tr>
         </tbody>
@@ -268,12 +268,12 @@ function BannerBottom(d: SignatureData) {
   return (
     <div className="bg-white" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <div className="p-6">
-        <p className="text-base font-bold">{d.name}</p>
+        <p data-sig-name="" className="text-base font-bold">{d.name}</p>
         <p className="text-sm" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12px]" style={{ color: d.mutedColor }}>
           <span>{d.email}</span>
           <span>{d.mobile}</span>
-          <span className="underline">{d.website}</span>
+          <span data-sig-website="" className="underline">{d.website}</span>
         </div>
       </div>
       <div className="text-white px-6 py-3 flex items-center justify-between" style={{ background: `linear-gradient(90deg, ${d.primaryColor}, ${d.accentColor})` }}>
@@ -293,7 +293,7 @@ function CompactMono(d: SignatureData) {
       <p style={{ color: d.mutedColor }}>{d.title} // {d.company}</p>
       <p className="mt-2">{d.email}</p>
       <p>{d.mobile}</p>
-      <p>{d.website}</p>
+      <p data-sig-website="">{d.website}</p>
     </div>
   );
 }
@@ -302,7 +302,7 @@ function CompactMono(d: SignatureData) {
 function ExecutiveSerif(d: SignatureData) {
   return (
     <div className="bg-white p-8" style={{ fontFamily: "Georgia, serif", color: d.textColor }}>
-      <p className="text-2xl" style={{ fontVariant: "small-caps" }}>{d.name}</p>
+      <p data-sig-name="" className="text-2xl" style={{ fontVariant: "small-caps" }}>{d.name}</p>
       <div className="w-16 h-px my-2" style={{ background: d.textColor }} />
       <p className="italic text-sm" style={{ color: d.mutedColor }}>{d.title}</p>
       <p className="text-sm mt-1 mb-4">{d.company}</p>
@@ -321,7 +321,7 @@ function Green(d: SignatureData) {
       <div className="flex items-center gap-4">
         <Avatar d={{ ...d, primaryColor: "#059669" }} size={56} />
         <div>
-          <p className="font-bold">{d.name}</p>
+          <p data-sig-name="" className="font-bold">{d.name}</p>
           <p className="text-sm" style={{ color: "#047857" }}>{d.title}</p>
           <p className="text-xs" style={{ color: d.mutedColor }}>{d.company}</p>
         </div>
@@ -329,7 +329,7 @@ function Green(d: SignatureData) {
       <div className="mt-4 pt-3 text-[12px] flex flex-wrap gap-x-4" style={{ color: d.mutedColor, borderTop: "1px solid #A7F3D0" }}>
         <span>📧 {d.email}</span>
         <span>📱 {d.mobile}</span>
-        <span>🌱 {d.website}</span>
+        <span data-sig-website="">🌱 {d.website}</span>
       </div>
       <p className="mt-3 text-[10px] italic" style={{ color: "#047857" }}>🌍 Please consider the environment before printing this email.</p>
     </div>
@@ -341,12 +341,12 @@ function BoldModern(d: SignatureData) {
   return (
     <div className="p-8" style={{ background: "#111111", color: "#fff", fontFamily: d.fontFamily }}>
       <p className="text-[10px] uppercase tracking-[0.3em] mb-2" style={{ color: d.accentColor }}>{d.department || "Team"}</p>
-      <p className="text-2xl font-bold leading-tight">{d.name}</p>
+      <p data-sig-name="" className="text-2xl font-bold leading-tight">{d.name}</p>
       <p className="text-sm mb-4" style={{ color: "#a1a1aa" }}>{d.title} at {d.company}</p>
       <div className="grid grid-cols-2 gap-2 text-[12px] max-w-md" style={{ color: "#d4d4d8" }}>
         <span>{d.email}</span>
         <span>{d.mobile}</span>
-        <span className="col-span-2" style={{ color: d.accentColor }}>{d.website}</span>
+        <span data-sig-website="" className="col-span-2" style={{ color: d.accentColor }}>{d.website}</span>
       </div>
     </div>
   );
@@ -358,7 +358,7 @@ function SplitCard(d: SignatureData) {
     <div className="bg-white flex overflow-hidden rounded-lg ring-1 ring-black/5 max-w-xl" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <div style={{ background: d.primaryColor }} className="p-6 flex flex-col items-center justify-center text-white w-40">
         <Avatar d={{ ...d, primaryColor: "#ffffff33" }} size={70} />
-        <p className="mt-3 text-sm font-bold text-center">{d.name}</p>
+        <p data-sig-name="" className="mt-3 text-sm font-bold text-center">{d.name}</p>
         <p className="text-[10px] uppercase tracking-widest text-white/70 mt-1">{d.title}</p>
       </div>
       <div className="p-6 flex-1">
@@ -367,7 +367,7 @@ function SplitCard(d: SignatureData) {
         <div className="space-y-1 text-[12px]" style={{ color: d.textColor }}>
           <p><span style={{ color: d.mutedColor }}>P</span> {d.phone}</p>
           <p><span style={{ color: d.mutedColor }}>E</span> {d.email}</p>
-          <p><span style={{ color: d.mutedColor }}>W</span> {d.website}</p>
+          <p><span data-sig-website="" style={{ color: d.mutedColor }}>W</span> {d.website}</p>
         </div>
         <div className="mt-4"><Socials d={d} color={d.primaryColor} size={22} /></div>
       </div>
@@ -380,13 +380,13 @@ function VerticalRibbon(d: SignatureData) {
   return (
     <div className="bg-white p-6 relative pl-10" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <div className="absolute left-0 top-0 bottom-0 w-6" style={{ background: `linear-gradient(180deg, ${d.primaryColor}, ${d.accentColor})` }} />
-      <p className="text-xl font-bold">{d.name}</p>
+      <p data-sig-name="" className="text-xl font-bold">{d.name}</p>
       <p className="text-sm" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
       <div className="mt-3 text-[12px] grid grid-cols-2 gap-x-6 gap-y-1" style={{ color: d.textColor }}>
         <span>📞 {d.phone}</span>
         <span>✉️ {d.email}</span>
         <span>📱 {d.mobile}</span>
-        <span>🔗 {d.website}</span>
+        <span data-sig-website="">🔗 {d.website}</span>
       </div>
     </div>
   );
@@ -397,14 +397,14 @@ function GradientHeader(d: SignatureData) {
   return (
     <div className="bg-white overflow-hidden rounded-lg ring-1 ring-black/5" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <div className="p-5 text-white" style={{ background: `linear-gradient(135deg, ${d.primaryColor}, ${d.accentColor})` }}>
-        <p className="text-lg font-bold">{d.name}</p>
+        <p data-sig-name="" className="text-lg font-bold">{d.name}</p>
         <p className="text-xs opacity-90">{d.title} — {d.company}</p>
       </div>
       <div className="p-5 grid grid-cols-2 gap-2 text-[12px]" style={{ color: d.textColor }}>
         <span>📧 {d.email}</span>
         <span>📞 {d.phone}</span>
         <span>📱 {d.mobile}</span>
-        <span>🌐 {d.website}</span>
+        <span data-sig-website="">🌐 {d.website}</span>
       </div>
     </div>
   );
@@ -415,7 +415,7 @@ function BusinessCard(d: SignatureData) {
   return (
     <div className="bg-white p-6 rounded-xl ring-1 ring-black/10 max-w-sm shadow-sm" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-lg font-bold">{d.name}</p>
+        <p data-sig-name="" className="text-lg font-bold">{d.name}</p>
         <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded" style={{ background: `${d.primaryColor}22`, color: d.primaryColor }}>
           {d.department || "Team"}
         </span>
@@ -434,7 +434,7 @@ function BusinessCard(d: SignatureData) {
 function ElegantScript(d: SignatureData) {
   return (
     <div className="bg-white p-8" style={{ fontFamily: "Georgia, serif", color: d.textColor }}>
-      <p className="text-3xl italic" style={{ fontFamily: "Brush Script MT, cursive", color: d.primaryColor }}>{d.name}</p>
+      <p data-sig-name="" className="text-3xl italic" style={{ fontFamily: "Brush Script MT, cursive", color: d.primaryColor }}>{d.name}</p>
       <p className="text-sm tracking-[0.3em] uppercase mt-2" style={{ color: d.mutedColor }}>{d.title}</p>
       <div className="my-3 w-24 h-px" style={{ background: d.primaryColor }} />
       <p className="text-sm">{d.company}</p>
@@ -453,7 +453,7 @@ function IconGrid(d: SignatureData) {
       <div className="flex items-center gap-4 mb-4">
         <Avatar d={d} size={60} />
         <div>
-          <p className="font-bold text-lg">{d.name}</p>
+          <p data-sig-name="" className="font-bold text-lg">{d.name}</p>
           <p className="text-sm" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
         </div>
       </div>
@@ -482,13 +482,13 @@ function BigPhoto(d: SignatureData) {
         )}
       </div>
       <div className="p-5 flex-1">
-        <p className="text-xl font-bold">{d.name}</p>
+        <p data-sig-name="" className="text-xl font-bold">{d.name}</p>
         <p className="text-sm mb-3" style={{ color: d.primaryColor }}>{d.title}</p>
         <p className="text-xs mb-3" style={{ color: d.mutedColor }}>{d.company}</p>
         <div className="text-[12px] space-y-0.5">
           <p>📧 {d.email}</p>
           <p>📞 {d.phone}</p>
-          <p>🌐 {d.website}</p>
+          <p data-sig-website="">🌐 {d.website}</p>
         </div>
       </div>
     </div>
@@ -499,13 +499,13 @@ function BigPhoto(d: SignatureData) {
 function UnderlineAccent(d: SignatureData) {
   return (
     <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
-      <p className="text-lg font-bold inline-block pb-1" style={{ borderBottom: `3px solid ${d.primaryColor}` }}>{d.name}</p>
+      <p data-sig-name="" className="text-lg font-bold inline-block pb-1" style={{ borderBottom: `3px solid ${d.primaryColor}` }}>{d.name}</p>
       <p className="text-sm mt-1" style={{ color: d.mutedColor }}>{d.title}</p>
       <p className="text-sm font-medium">{d.company}</p>
       <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[12px]" style={{ color: d.textColor }}>
         <span><b style={{ color: d.primaryColor }}>E.</b> {d.email}</span>
         <span><b style={{ color: d.primaryColor }}>M.</b> {d.mobile}</span>
-        <span><b style={{ color: d.primaryColor }}>W.</b> {d.website}</span>
+        <span data-sig-website=""><b style={{ color: d.primaryColor }}>W.</b> {d.website}</span>
       </div>
     </div>
   );
@@ -515,7 +515,7 @@ function UnderlineAccent(d: SignatureData) {
 function FullGrid(d: SignatureData) {
   return (
     <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
-      <p className="text-xl font-bold">{d.name}{d.pronouns && <span className="text-xs font-normal ml-2" style={{ color: d.mutedColor }}>({d.pronouns})</span>}</p>
+      <p data-sig-name="" className="text-xl font-bold">{d.name}{d.pronouns && <span className="text-xs font-normal ml-2" style={{ color: d.mutedColor }}>({d.pronouns})</span>}</p>
       <p className="text-sm mb-4" style={{ color: d.primaryColor }}>{d.title}, {d.company}</p>
       <table className="text-[12px]" style={{ color: d.textColor }}>
         <tbody>
@@ -523,7 +523,7 @@ function FullGrid(d: SignatureData) {
           <tr><td className="pr-4 py-0.5" style={{ color: d.mutedColor }}>Mobile</td><td>{d.mobile}</td></tr>
           <tr><td className="pr-4 py-0.5" style={{ color: d.mutedColor }}>Office</td><td>{d.phone}</td></tr>
           <tr><td className="pr-4 py-0.5" style={{ color: d.mutedColor }}>Address</td><td>{d.address}</td></tr>
-          <tr><td className="pr-4 py-0.5" style={{ color: d.mutedColor }}>Web</td><td className="underline">{d.website}</td></tr>
+          <tr><td className="pr-4 py-0.5" style={{ color: d.mutedColor }}>Web</td><td data-sig-website="" className="underline">{d.website}</td></tr>
         </tbody>
       </table>
     </div>
@@ -534,7 +534,7 @@ function FullGrid(d: SignatureData) {
 function NewsletterCTA(d: SignatureData) {
   return (
     <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
-      <p className="font-bold">{d.name}</p>
+      <p data-sig-name="" className="font-bold">{d.name}</p>
       <p className="text-sm" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
       <div className="mt-3 text-[12px] space-y-0.5">
         <p>{d.email} · {d.phone}</p>
@@ -558,7 +558,7 @@ function TwoTone(d: SignatureData) {
     <div className="max-w-xl ring-1 ring-black/5 rounded-lg overflow-hidden" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <div className="flex">
         <div className="p-6 flex-1" style={{ background: d.primaryColor, color: "#fff" }}>
-          <p className="text-xl font-bold">{d.name}</p>
+          <p data-sig-name="" className="text-xl font-bold">{d.name}</p>
           <p className="text-xs opacity-90">{d.title}</p>
         </div>
         <div className="p-6 flex-1 bg-white">
@@ -566,7 +566,7 @@ function TwoTone(d: SignatureData) {
           <div className="text-[12px] space-y-0.5">
             <p>{d.email}</p>
             <p>{d.mobile}</p>
-            <p>{d.website}</p>
+            <p data-sig-website="">{d.website}</p>
           </div>
         </div>
       </div>
@@ -579,7 +579,7 @@ function MinimalDivider(d: SignatureData) {
   return (
     <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <div className="flex items-center gap-3">
-        <p className="text-lg font-semibold">{d.name}</p>
+        <p data-sig-name="" className="text-lg font-semibold">{d.name}</p>
         <span style={{ background: d.primaryColor, width: 20, height: 2 }} />
         <p className="text-sm" style={{ color: d.mutedColor }}>{d.title}</p>
       </div>
@@ -596,7 +596,7 @@ function MinimalDivider(d: SignatureData) {
 function LegalFormal(d: SignatureData) {
   return (
     <div className="bg-white p-6" style={{ fontFamily: "Times New Roman, serif", color: d.textColor }}>
-      <p className="font-bold text-base">{d.name}, Esq.</p>
+      <p data-sig-name="" className="font-bold text-base">{d.name}, Esq.</p>
       <p className="italic text-sm" style={{ color: d.mutedColor }}>{d.title}</p>
       <p className="text-sm mt-1">{d.company}</p>
       <div className="mt-3 text-[12px]" style={{ color: d.textColor }}>
@@ -615,7 +615,7 @@ function LegalFormal(d: SignatureData) {
 function CircleIcons(d: SignatureData) {
   return (
     <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
-      <p className="font-bold text-lg">{d.name}</p>
+      <p data-sig-name="" className="font-bold text-lg">{d.name}</p>
       <p className="text-sm mb-4" style={{ color: d.mutedColor }}>{d.title} at {d.company}</p>
       <div className="flex flex-wrap gap-3">
         {[
@@ -640,7 +640,7 @@ function CircleIcons(d: SignatureData) {
 function QuoteCallout(d: SignatureData) {
   return (
     <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
-      <p className="font-bold">{d.name}</p>
+      <p data-sig-name="" className="font-bold">{d.name}</p>
       <p className="text-sm" style={{ color: d.mutedColor }}>{d.title}, {d.company}</p>
       <div className="text-[12px] mt-2" style={{ color: d.textColor }}>
         <p>{d.email} · {d.mobile}</p>
@@ -661,7 +661,7 @@ function ModernTech(d: SignatureData) {
       <div className="flex items-center gap-4">
         <Avatar d={d} size={52} />
         <div>
-          <p className="font-semibold">{d.name} <span className="text-xs font-normal" style={{ color: d.mutedColor }}>· {d.pronouns}</span></p>
+          <p data-sig-name="" className="font-semibold">{d.name} <span className="text-xs font-normal" style={{ color: d.mutedColor }}>· {d.pronouns}</span></p>
           <p className="text-xs" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
         </div>
       </div>
@@ -679,12 +679,12 @@ function FramedBorder(d: SignatureData) {
   return (
     <div className="bg-white p-1" style={{ background: `linear-gradient(135deg, ${d.primaryColor}, ${d.accentColor})`, fontFamily: d.fontFamily, color: d.textColor }}>
       <div className="bg-white p-6">
-        <p className="text-lg font-bold">{d.name}</p>
+        <p data-sig-name="" className="text-lg font-bold">{d.name}</p>
         <p className="text-sm" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
         <div className="mt-3 text-[12px] space-y-0.5">
           <p>✉️ {d.email}</p>
           <p>📱 {d.mobile}</p>
-          <p>🌐 {d.website}</p>
+          <p data-sig-website="">🌐 {d.website}</p>
         </div>
       </div>
     </div>
@@ -696,7 +696,7 @@ function SalesPitch(d: SignatureData) {
   return (
     <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <p className="text-[10px] uppercase tracking-[0.3em] font-bold" style={{ color: d.primaryColor }}>{d.company}</p>
-      <p className="text-2xl font-black leading-tight mt-1">{d.name}</p>
+      <p data-sig-name="" className="text-2xl font-black leading-tight mt-1">{d.name}</p>
       <p className="text-sm" style={{ color: d.mutedColor }}>{d.title}</p>
       <p className="mt-3 text-sm font-medium max-w-md" style={{ color: d.textColor }}>{d.tagline}</p>
       <div className="mt-4 flex gap-3">
@@ -719,7 +719,7 @@ function IvyLeague(d: SignatureData) {
     <div className="bg-white p-8" style={{ fontFamily: "Baskerville, Georgia, serif", color: d.textColor }}>
       <p className="text-center text-[10px] uppercase tracking-[0.4em]" style={{ color: d.mutedColor }}>{d.company}</p>
       <div className="mx-auto my-2 w-24 h-px" style={{ background: d.textColor }} />
-      <p className="text-center text-xl font-semibold">{d.name}</p>
+      <p data-sig-name="" className="text-center text-xl font-semibold">{d.name}</p>
       <p className="text-center text-sm italic mt-1" style={{ color: d.mutedColor }}>{d.title}</p>
       <div className="text-center mt-4 text-[12px] space-y-0.5" style={{ color: d.textColor }}>
         <p>{d.address}</p>
@@ -737,12 +737,12 @@ function NeonCard(d: SignatureData) {
         <span className="size-2 rounded-full animate-pulse" style={{ background: d.accentColor }} />
         <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: d.accentColor }}>Available</span>
       </div>
-      <p className="text-xl font-bold">{d.name}</p>
+      <p data-sig-name="" className="text-xl font-bold">{d.name}</p>
       <p className="text-sm" style={{ color: "#a1a1aa" }}>{d.title} · {d.company}</p>
       <div className="mt-4 text-[12px] space-y-0.5">
         <p style={{ color: "#d4d4d8" }}>{d.email}</p>
         <p style={{ color: "#d4d4d8" }}>{d.mobile}</p>
-        <p style={{ color: d.accentColor }}>{d.website}</p>
+        <p data-sig-website="" style={{ color: d.accentColor }}>{d.website}</p>
       </div>
     </div>
   );
