@@ -808,7 +808,9 @@ export function renderSignature(template: TemplateMeta, d: SignatureData) {
   };
 
   const titleOn = !!d.separateTitleFontSize && !!d.titleFontSize;
-  const scopeClass = `sigscope-${template.id}-${titleOn ? Math.round(d.titleFontSize!) : "d"}-${d.separateWebsite ? "w" : "i"}`;
+  const spacing = d.spacing || "large";
+  const gap = spacing === "compact" ? 3 : spacing === "medium" ? 8 : 14;
+  const scopeClass = `sigscope-${template.id}-${titleOn ? Math.round(d.titleFontSize!) : "d"}-${d.separateWebsite ? "w" : "i"}-${spacing}`;
 
   const rules: string[] = [];
   if (titleOn) {
@@ -820,9 +822,17 @@ export function renderSignature(template: TemplateMeta, d: SignatureData) {
   }
   if (d.separateWebsite) {
     rules.push(
-      `.${scopeClass} [data-sig-website]{display:block !important;width:100% !important;}`,
+      `.${scopeClass} [data-sig-website]{display:block !important;width:100% !important;flex:0 0 100% !important;}`,
     );
   }
+  // Generic vertical rhythm: templates use flex/grid gaps or space-y margins.
+  rules.push(
+    `.${scopeClass} *{row-gap:${gap}px !important;}`,
+    `.${scopeClass} [class*="space-y-"] > * + *{margin-top:${gap}px !important;}`,
+    `.${scopeClass} [class*="mt-"]:not([class*="mt-0"]){margin-top:${gap}px !important;}`,
+    `.${scopeClass} [class*="mb-"]:not([class*="mb-0"]){margin-bottom:${gap}px !important;}`,
+  );
+
 
   return (
     <div
