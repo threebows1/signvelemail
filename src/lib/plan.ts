@@ -79,20 +79,77 @@ export function writePlanId(id: PlanId) {
   window.dispatchEvent(new Event("signvel:plan"));
 }
 
+const TRIAL_KEY = "signvel:trialStart:v1";
+const DAY = 86_400_000;
+
+/** Trial starts the first time the app is opened on this browser. */
+export function readTrialStart(): number {
+  if (typeof window === "undefined") return Date.now();
+  const raw = window.localStorage.getItem(TRIAL_KEY);
+  const parsed = raw ? Number(raw) : NaN;
+  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  const now = Date.now();
+  window.localStorage.setItem(TRIAL_KEY, String(now));
+  return now;
+}
+
+export function restartTrial() {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(TRIAL_KEY, String(Date.now()));
+  window.dispatchEvent(new Event("signvel:plan"));
+}
+
+export type TrialState = {
+  ready: boolean;
+  onTrial: boolean;
+  daysLeft: number;
+  hoursLeft: number;
+  expired: boolean;
+  endsAt: number;
+};
+
 /** Client-only plan hook — returns "free" during SSR to keep hydration stable. */
 export function usePlan() {
   const [planId, setPlanId] = useState<PlanId>("free");
+  const [trialStart, setTrialStart] = useState<number | null>(null);
 
   useEffect(() => {
-    const sync = () => setPlanId(readPlanId());
+    const sync = () => {
+      setPlanId(readPlanId());
+      setTrialStart(readTrialStart());
+    };
     sync();
     window.addEventListener("signvel:plan", sync);
     window.addEventListener("storage", sync);
+    const t = window.setInterval(sync, 60_000);
     return () => {
+      window.clearInterval(t);
       window.removeEventListener("signvel:plan", sync);
       window.removeEventListener("storage", sync);
     };
   }, []);
 
-  return { planId, plan: getPlan(planId), setPlan: (id: PlanId) => { writePlanId(id); setPlanId(id); } };
+  const plan = getPlan(planId);
+  const trialDays = plan.trialDays ?? 0;
+  const isPaid = planId !== "free";
+  const endsAt = (trialStart ?? Date.now()) + trialDays * DAY;
+  const msLeft = endsAt - Date.now();
+  const ready = trialStart !== null;
+
+  const trial: TrialState = {
+    ready,
+    onTrial: ready && !isPaid && trialDays > 0 && msLeft > 0,
+    daysLeft: Math.max(0, Math.ceil(msLeft / DAY)),
+    hoursLeft: Math.max(0, Math.ceil(msLeft / 3_600_000)),
+    expired: ready && !isPaid && trialDays > 0 && msLeft <= 0,
+    endsAt,
+  };
+
+  return {
+    planId,
+    plan,
+    trial,
+    setPlan: (id: PlanId) => { writePlanId(id); setPlanId(id); },
+  };
 }
+
