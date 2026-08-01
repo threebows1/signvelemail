@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { deleteSignature, saveSignature, useSignatures, newSignatureId, type SavedSignature } from "@/lib/signature-store";
 import { getTemplate, renderSignature } from "@/components/signatures/templates";
-import { Copy, Link2, Pencil, Plus, Trash2 } from "lucide-react";
+import { usePlan } from "@/lib/plan";
+import { Copy, Link2, Lock, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/")({
@@ -13,9 +14,20 @@ export const Route = createFileRoute("/app/")({
 function Dashboard() {
   const { list: signatures } = useSignatures();
   const navigate = useNavigate();
+  const { plan } = usePlan();
+  const limit = plan.signatureLimit;
+  const atLimit = signatures.length >= limit;
   const active = signatures.filter((s: SavedSignature) => s.status === "Active").length;
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+
+  function limitToast() {
+    toast.error(`Your ${plan.name} plan covers ${limit} signature${limit === 1 ? "" : "s"}.`, {
+      description: "Upgrade to add more.",
+      action: { label: "See plans", onClick: () => navigate({ to: "/pricing" }) },
+    });
+  }
+
 
   async function copySignatureHtml(sig: SavedSignature) {
     // Render template to HTML string via a hidden container
