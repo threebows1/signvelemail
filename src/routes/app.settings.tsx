@@ -163,11 +163,22 @@ function Settings() {
 const input = "w-full px-3 py-2 rounded-lg bg-white border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 function PlanPanel() {
-  const { planId, plan, setPlan } = usePlan();
+  const { planId, plan, trial, setPlan } = usePlan();
   const { list } = useSignatures();
   const limit = plan.signatureLimit;
   return (
     <div className="space-y-4">
+      {trial.ready && (trial.onTrial || trial.expired) && (
+        <div
+          className={`rounded-xl px-4 py-3 text-sm ${
+            trial.expired ? "bg-destructive/10 text-destructive" : "bg-primary/5 text-foreground"
+          }`}
+        >
+          {trial.expired
+            ? "Your trial has expired — pick a paid plan to restore full access."
+            : `Trial active · ${trial.daysLeft} day${trial.daysLeft === 1 ? "" : "s"} left (ends ${new Date(trial.endsAt).toLocaleDateString()}).`}
+        </div>
+      )}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <p className="text-sm font-medium">
