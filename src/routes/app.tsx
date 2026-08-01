@@ -1,5 +1,6 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { Logo } from "@/components/Logo";
+import { TrialBanner, TrialGuard } from "@/components/TrialGuard";
 
 export const Route = createFileRoute("/app")({
   head: () => ({
