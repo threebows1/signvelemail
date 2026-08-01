@@ -461,7 +461,7 @@ function IconGrid(d: SignatureData) {
         <IconRow Icon={Mail} text={d.email} color={d.primaryColor} />
         <IconRow Icon={Phone} text={d.phone} color={d.primaryColor} />
         <IconRow Icon={Smartphone} text={d.mobile} color={d.primaryColor} />
-        <IconRow Icon={LinkIcon} text={d.website} color={d.primaryColor} />
+        <span data-sig-website=""><IconRow Icon={LinkIcon} text={d.website} color={d.primaryColor} /></span>
       </div>
       <div className="mt-4"><Socials d={d} color={d.primaryColor} size={24} /></div>
     </div>
@@ -623,7 +623,7 @@ function CircleIcons(d: SignatureData) {
           { Icon: Smartphone, text: d.mobile },
           { Icon: LinkIcon, text: d.website },
         ].map(({ Icon, text }, i) => (
-          <div key={i} className="flex items-center gap-2 text-[12px]">
+          <div key={i} {...(text === d.website ? { "data-sig-website": "" } : {})} className="flex items-center gap-2 text-[12px]">
             <span style={{ background: d.primaryColor }} className="size-7 rounded-full flex items-center justify-center text-white">
               <Icon className="size-3.5" />
             </span>
@@ -667,7 +667,7 @@ function ModernTech(d: SignatureData) {
       </div>
       <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
         {[d.email, d.mobile, d.website].map((v, i) => (
-          <span key={i} className="px-2 py-1 rounded-md" style={{ background: `${d.primaryColor}12`, color: d.primaryColor }}>{v}</span>
+          <span key={i} {...(v === d.website ? { "data-sig-website": "" } : {})} className="px-2 py-1 rounded-md" style={{ background: `${d.primaryColor}12`, color: d.primaryColor }}>{v}</span>
         ))}
       </div>
     </div>
