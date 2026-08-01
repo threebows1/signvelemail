@@ -238,10 +238,11 @@ function rowToSaved(row: any): SavedSignature {
 }
 
 export function useSignatures() {
-  const [list, setList] = useState<SavedSignature[]>(() => readLocal());
+  const [list, setList] = useState<SavedSignature[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setList(readLocal());
     const on = () => setList(readLocal());
     window.addEventListener("storage", on);
     return () => window.removeEventListener("storage", on);
