@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { deleteSignature, saveSignature, useSignatures, newSignatureId, type SavedSignature } from "@/lib/signature-store";
 import { getTemplate, renderSignature } from "@/components/signatures/templates";
-import { Copy, Link2, Pencil, Plus, Trash2 } from "lucide-react";
+import { usePlan } from "@/lib/plan";
+import { Copy, Link2, Lock, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/")({
@@ -13,9 +14,20 @@ export const Route = createFileRoute("/app/")({
 function Dashboard() {
   const { list: signatures } = useSignatures();
   const navigate = useNavigate();
+  const { plan } = usePlan();
+  const limit = plan.signatureLimit;
+  const atLimit = signatures.length >= limit;
   const active = signatures.filter((s: SavedSignature) => s.status === "Active").length;
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+
+  function limitToast() {
+    toast.error(`Your ${plan.name} plan covers ${limit} signature${limit === 1 ? "" : "s"}.`, {
+      description: "Upgrade to add more.",
+      action: { label: "See plans", onClick: () => navigate({ to: "/pricing" }) },
+    });
+  }
+
 
   async function copySignatureHtml(sig: SavedSignature) {
     // Render template to HTML string via a hidden container
@@ -60,6 +72,7 @@ function Dashboard() {
       updatedAt: Date.now(),
       data: { ...sig.data },
     };
+    if (atLimit) { limitToast(); return; }
     await saveSignature(copy);
     toast.success("Signature duplicated");
   }
@@ -86,7 +99,11 @@ function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <MetricCard label="Signatures Saved" value={String(signatures.length)} />
         <MetricCard label="Active" value={String(active)} />
-        <MetricCard label="Templates Available" value="31" />
+        <MetricCard
+          label="Plan Usage"
+          value={`${signatures.length} / ${limit === Infinity ? "∞" : limit}`}
+          note={`${plan.name} plan`}
+        />
       </div>
 
       <div className="bg-white ring-1 ring-black/5 rounded-xl overflow-hidden">
@@ -99,15 +116,21 @@ function Dashboard() {
 
         <div className="p-6">
           <button
-            onClick={() => navigate({ to: "/app/templates" })}
+            onClick={() => (atLimit ? limitToast() : navigate({ to: "/app/templates" }))}
             className="w-full group relative overflow-hidden rounded-2xl border-2 border-dashed border-primary/40 bg-gradient-to-br from-primary/5 via-primary/[0.02] to-accent/5 hover:border-primary hover:from-primary/10 hover:to-accent/10 transition-all py-10 flex flex-col items-center justify-center gap-3"
           >
             <div className="size-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-              <Plus className="size-7" strokeWidth={2.5} />
+              {atLimit ? <Lock className="size-7" strokeWidth={2.5} /> : <Plus className="size-7" strokeWidth={2.5} />}
             </div>
             <div className="text-center">
-              <p className="font-[Inter_Tight] font-bold text-xl tracking-tight">Create New Signature</p>
-              <p className="text-sm text-muted-foreground mt-1">Pick from 31 templates or start from scratch</p>
+              <p className="font-[Inter_Tight] font-bold text-xl tracking-tight">
+                {atLimit ? "Signature limit reached" : "Create New Signature"}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {atLimit
+                  ? `The ${plan.name} plan includes ${limit} signature${limit === 1 ? "" : "s"} — upgrade for more`
+                  : "Pick from 31 templates or start from scratch"}
+              </p>
             </div>
           </button>
         </div>
@@ -217,11 +240,12 @@ function IconBtn({
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string }) {
+function MetricCard({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div className="bg-white ring-1 ring-black/5 p-6 rounded-xl">
       <p className="text-[10px] font-[JetBrains_Mono] text-muted-foreground uppercase tracking-widest mb-2">{label}</p>
       <p className="text-3xl font-[Inter_Tight] font-bold tracking-tight">{value}</p>
+      {note && <p className="text-[10px] font-[JetBrains_Mono] uppercase tracking-widest text-primary mt-1">{note}</p>}
     </div>
   );
 }

@@ -82,12 +82,13 @@ function Editor() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
 
+  // NOTE: keep the initial id/timestamp deterministic so SSR and client markup match.
   const defaultSig: SavedSignature = {
-    id: newSignatureId(),
+    id: "SIG-NEW",
     name: "Untitled Signature",
     templateId: "left-line",
     status: "Draft",
-    updatedAt: Date.now(),
+    updatedAt: 0,
     data: { ...defaultData },
   };
 
@@ -104,7 +105,7 @@ function Editor() {
     let cancelled = false;
     async function load() {
       if (id === "new") {
-        if (!cancelled) setSig(defaultSig);
+        if (!cancelled) setSig({ ...defaultSig, id: newSignatureId(), updatedAt: Date.now() });
         return;
       }
       const found = await getSignature(id);

@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
+import { PLANS, usePlan } from "@/lib/plan";
+import { useSignatures } from "@/lib/signature-store";
 
 export const Route = createFileRoute("/app/settings")({
   head: () => ({
@@ -96,6 +99,10 @@ function Settings() {
         </Field>
       </Section>
 
+      <Section title="Plan & billing">
+        <PlanPanel />
+      </Section>
+
       <Section title="Branding defaults">
         <Field label="Default font">
           <select className={input} value={p.defaultFont} onChange={(e) => update("defaultFont", e.target.value)}>
@@ -154,6 +161,51 @@ function Settings() {
 }
 
 const input = "w-full px-3 py-2 rounded-lg bg-white border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
+
+function PlanPanel() {
+  const { planId, plan, setPlan } = usePlan();
+  const { list } = useSignatures();
+  const limit = plan.signatureLimit;
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-sm font-medium">
+            Current plan: <span className="text-primary">{plan.name}</span> — {plan.tagline}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {list.length} of {limit === Infinity ? "unlimited" : limit} signature{limit === 1 ? "" : "s"} used
+            {plan.trialDays ? ` · ${plan.trialDays}-day full-feature trial` : ""}
+          </p>
+        </div>
+        <Link to="/pricing">
+          <Button size="sm" variant="outline">Compare plans</Button>
+        </Link>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        {PLANS.map((pl) => (
+          <button
+            key={pl.id}
+            type="button"
+            onClick={() => {
+              setPlan(pl.id);
+              toast.success(`Switched to the ${pl.name} plan`);
+            }}
+            className={`rounded-xl border px-3 py-3 text-left transition-colors ${
+              planId === pl.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+            }`}
+          >
+            <p className="text-[10px] font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground">{pl.name}</p>
+            <p className="text-sm font-semibold mt-0.5">
+              {pl.monthly === null ? "Custom" : pl.monthly === 0 ? "Free" : `$${pl.monthly.toFixed(2)}/mo`}
+            </p>
+            <p className="text-[11px] text-muted-foreground">{pl.tagline}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Section({ title, children, tone }: { title: string; children: React.ReactNode; tone?: "danger" }) {
   return (
