@@ -39,7 +39,10 @@ function AppLayout() {
       </aside>
 
       <main className="flex-1 overflow-auto">
-        <Outlet />
+        <TrialBanner />
+        <TrialGuard>
+          <Outlet />
+        </TrialGuard>
       </main>
     </div>
   );
