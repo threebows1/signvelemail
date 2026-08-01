@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { Logo } from "@/components/Logo";
 import { TrialBanner, TrialGuard } from "@/components/TrialGuard";
 
@@ -14,6 +14,8 @@ export const Route = createFileRoute("/app")({
 });
 
 function AppLayout() {
+  const { pathname } = useLocation();
+  const allowWhenExpired = pathname.startsWith("/app/settings");
   return (
     <div className="min-h-screen bg-background text-foreground font-sans flex">
       <aside className="w-64 border-r border-border bg-white p-6 flex flex-col sticky top-0 h-screen">
@@ -40,9 +42,7 @@ function AppLayout() {
 
       <main className="flex-1 overflow-auto">
         <TrialBanner />
-        <TrialGuard>
-          <Outlet />
-        </TrialGuard>
+        {allowWhenExpired ? <Outlet /> : <TrialGuard><Outlet /></TrialGuard>}
       </main>
     </div>
   );
