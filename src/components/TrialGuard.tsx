@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Lock, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PLANS, usePlan } from "@/lib/plan";
+import { toast } from "sonner";
+import { PLANS, refreshPlan, usePlan } from "@/lib/plan";
 
 const DISMISS_KEY = "signvel:trialBannerDismissed:v1";
 
