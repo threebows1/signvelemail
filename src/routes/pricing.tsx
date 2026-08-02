@@ -174,18 +174,18 @@ function Pricing() {
                     </Button>
                   </a>
                 ) : (
-                  <Link to="/login" search={{ next: "/app" }} className="block mt-6" onClick={() => choose(p.id)}>
-                    <Button
-                      className={`w-full py-6 rounded-lg font-semibold ${
-                        p.highlight
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-foreground text-background hover:bg-foreground/90"
-                      }`}
-                    >
-                      {p.cta}
-                    </Button>
-                  </Link>
+                  <Button
+                    onClick={() => choose(p.id)}
+                    className={`w-full mt-6 py-6 rounded-lg font-semibold ${
+                      p.highlight
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "bg-foreground text-background hover:bg-foreground/90"
+                    }`}
+                  >
+                    {p.cta}
+                  </Button>
                 )}
+
               </div>
             );
           })}
