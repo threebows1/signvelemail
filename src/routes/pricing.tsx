@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { PLANS, writePlanId, type PlanId } from "@/lib/plan";
+import { checkoutUrlFor, usePaymentLinks } from "@/lib/payment-links";
+
 
 
 export const Route = createFileRoute("/pricing")({
@@ -60,19 +62,30 @@ const rows: Row[] = [
 function Pricing() {
   const [cycle, setCycle] = useState<Cycle>("yearly");
   const navigate = useNavigate();
+  const { links } = usePaymentLinks();
 
   function choose(id: PlanId) {
-    writePlanId(id);
-    const p = PLANS.find((x) => x.id === id);
     if (id === "free") {
+      writePlanId(id);
       navigate({ to: "/login", search: { next: "/app" } });
       return;
     }
+
+    // If the owner configured a Stripe Payment Link for this plan, send the buyer to Checkout.
+    const url = checkoutUrlFor(links, id, cycle);
+    if (url) {
+      window.location.href = url;
+      return;
+    }
+
+    writePlanId(id);
+    const p = PLANS.find((x) => x.id === id);
     toast.success(`You're on ${p?.name} — full access unlocked`, {
       description: "Your workspace is ready right away. No refresh or re-login needed.",
     });
     navigate({ to: "/app" });
   }
+
 
 
   return (
