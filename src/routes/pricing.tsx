@@ -57,10 +57,21 @@ const rows: Row[] = [
 
 function Pricing() {
   const [cycle, setCycle] = useState<Cycle>("yearly");
+  const navigate = useNavigate();
 
   function choose(id: PlanId) {
     writePlanId(id);
+    const p = PLANS.find((x) => x.id === id);
+    if (id === "free") {
+      navigate({ to: "/login", search: { next: "/app" } });
+      return;
+    }
+    toast.success(`You're on ${p?.name} — full access unlocked`, {
+      description: "Your workspace is ready right away. No refresh or re-login needed.",
+    });
+    navigate({ to: "/app" });
   }
+
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
