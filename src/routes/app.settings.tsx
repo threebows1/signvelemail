@@ -167,7 +167,76 @@ function Settings() {
 
 const input = "w-full px-3 py-2 rounded-lg bg-white border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
 
+function PaymentsPanel() {
+  const { links, save } = usePaymentLinks();
+  const [draft, setDraft] = useState<PaymentLinks>(DEFAULT_PAYMENT_LINKS);
+
+  useEffect(() => setDraft(links), [links]);
+
+  const set = <K extends keyof PaymentLinks>(k: K, v: PaymentLinks[K]) =>
+    setDraft((prev) => ({ ...prev, [k]: v }));
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Paste your Stripe Payment Link for each paid plan. Once saved, the pricing page sends buyers
+        straight to Stripe Checkout instead of switching plans locally. Create and manage the links in
+        your Stripe developer dashboard.
+      </p>
+
+      <a href={draft.dashboardUrl || STRIPE_DASHBOARD_URL} target="_blank" rel="noopener noreferrer" className="inline-block">
+        <Button size="sm" variant="outline" className="gap-2">
+          Open Stripe payment links dashboard ↗
+        </Button>
+      </a>
+
+      <Field label="Stripe dashboard URL">
+        <input className={input} value={draft.dashboardUrl} onChange={(e) => set("dashboardUrl", e.target.value)} placeholder={STRIPE_DASHBOARD_URL} />
+      </Field>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <Field label="Starter — monthly link">
+          <input className={input} value={draft.starterMonthly} onChange={(e) => set("starterMonthly", e.target.value)} placeholder="https://buy.stripe.com/..." />
+        </Field>
+        <Field label="Starter — yearly link">
+          <input className={input} value={draft.starterYearly} onChange={(e) => set("starterYearly", e.target.value)} placeholder="https://buy.stripe.com/..." />
+        </Field>
+        <Field label="Growth — monthly link">
+          <input className={input} value={draft.growthMonthly} onChange={(e) => set("growthMonthly", e.target.value)} placeholder="https://buy.stripe.com/..." />
+        </Field>
+        <Field label="Growth — yearly link">
+          <input className={input} value={draft.growthYearly} onChange={(e) => set("growthYearly", e.target.value)} placeholder="https://buy.stripe.com/..." />
+        </Field>
+      </div>
+
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          onClick={() => {
+            save(draft);
+            toast.success("Payment links saved");
+          }}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          Save payment links
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            save(DEFAULT_PAYMENT_LINKS);
+            toast.success("Payment links cleared");
+          }}
+        >
+          Clear
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function PlanPanel() {
+
   const { planId, plan, trial, setPlan } = usePlan();
   const { list } = useSignatures();
   const limit = plan.signatureLimit;
