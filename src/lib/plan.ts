@@ -114,7 +114,7 @@ export function readTrialStart(): number {
 export function restartTrial() {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(TRIAL_KEY, String(Date.now()));
-  window.dispatchEvent(new Event("signvel:plan"));
+  refreshPlan();
 }
 
 export type TrialState = {
@@ -137,15 +137,24 @@ export function usePlan() {
       setTrialStart(readTrialStart());
     };
     sync();
-    window.addEventListener("signvel:plan", sync);
+    const onVisible = () => { if (!document.hidden) sync(); };
+    const ch = getChannel();
+    ch?.addEventListener("message", sync);
+    window.addEventListener(PLAN_EVENT, sync);
     window.addEventListener("storage", sync);
-    const t = window.setInterval(sync, 60_000);
+    window.addEventListener("focus", sync);
+    document.addEventListener("visibilitychange", onVisible);
+    const t = window.setInterval(sync, 15_000);
     return () => {
       window.clearInterval(t);
-      window.removeEventListener("signvel:plan", sync);
+      ch?.removeEventListener("message", sync);
+      window.removeEventListener(PLAN_EVENT, sync);
       window.removeEventListener("storage", sync);
+      window.removeEventListener("focus", sync);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
+
 
   const plan = getPlan(planId);
   const trialDays = plan.trialDays ?? 0;
