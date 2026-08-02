@@ -103,6 +103,11 @@ function Settings() {
         <PlanPanel />
       </Section>
 
+      <Section title="Payments (owner only)">
+        <PaymentsPanel />
+      </Section>
+
+
       <Section title="Branding defaults">
         <Field label="Default font">
           <select className={input} value={p.defaultFont} onChange={(e) => update("defaultFont", e.target.value)}>
