@@ -65,6 +65,21 @@ export function getPlan(id: PlanId): Plan {
 }
 
 const KEY = "signvel:plan:v1";
+export const PLAN_EVENT = "signvel:plan";
+
+let channel: BroadcastChannel | null = null;
+function getChannel() {
+  if (typeof window === "undefined" || typeof BroadcastChannel === "undefined") return null;
+  if (!channel) channel = new BroadcastChannel(PLAN_EVENT);
+  return channel;
+}
+
+/** Tell every listener (this tab and any other open tab) to re-read the plan now. */
+export function refreshPlan() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(PLAN_EVENT));
+  getChannel()?.postMessage("sync");
+}
 
 export function readPlanId(): PlanId {
   if (typeof window === "undefined") return "free";
@@ -76,8 +91,11 @@ export function readPlanId(): PlanId {
 export function writePlanId(id: PlanId) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(KEY, id);
-  window.dispatchEvent(new Event("signvel:plan"));
+  // A paid plan hides the trial banner outright — clear the per-session dismissal too.
+  if (id !== "free") window.sessionStorage.removeItem("signvel:trialBannerDismissed:v1");
+  refreshPlan();
 }
+
 
 const TRIAL_KEY = "signvel:trialStart:v1";
 const DAY = 86_400_000;
@@ -96,7 +114,7 @@ export function readTrialStart(): number {
 export function restartTrial() {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(TRIAL_KEY, String(Date.now()));
-  window.dispatchEvent(new Event("signvel:plan"));
+  refreshPlan();
 }
 
 export type TrialState = {
@@ -119,15 +137,24 @@ export function usePlan() {
       setTrialStart(readTrialStart());
     };
     sync();
-    window.addEventListener("signvel:plan", sync);
+    const onVisible = () => { if (!document.hidden) sync(); };
+    const ch = getChannel();
+    ch?.addEventListener("message", sync);
+    window.addEventListener(PLAN_EVENT, sync);
     window.addEventListener("storage", sync);
-    const t = window.setInterval(sync, 60_000);
+    window.addEventListener("focus", sync);
+    document.addEventListener("visibilitychange", onVisible);
+    const t = window.setInterval(sync, 15_000);
     return () => {
       window.clearInterval(t);
-      window.removeEventListener("signvel:plan", sync);
+      ch?.removeEventListener("message", sync);
+      window.removeEventListener(PLAN_EVENT, sync);
       window.removeEventListener("storage", sync);
+      window.removeEventListener("focus", sync);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
+
 
   const plan = getPlan(planId);
   const trialDays = plan.trialDays ?? 0;

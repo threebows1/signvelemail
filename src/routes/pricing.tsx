@@ -1,9 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Check, Minus } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { PLANS, writePlanId, type PlanId } from "@/lib/plan";
+
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -57,10 +59,21 @@ const rows: Row[] = [
 
 function Pricing() {
   const [cycle, setCycle] = useState<Cycle>("yearly");
+  const navigate = useNavigate();
 
   function choose(id: PlanId) {
     writePlanId(id);
+    const p = PLANS.find((x) => x.id === id);
+    if (id === "free") {
+      navigate({ to: "/login", search: { next: "/app" } });
+      return;
+    }
+    toast.success(`You're on ${p?.name} — full access unlocked`, {
+      description: "Your workspace is ready right away. No refresh or re-login needed.",
+    });
+    navigate({ to: "/app" });
   }
+
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
@@ -161,18 +174,18 @@ function Pricing() {
                     </Button>
                   </a>
                 ) : (
-                  <Link to="/login" search={{ next: "/app" }} className="block mt-6" onClick={() => choose(p.id)}>
-                    <Button
-                      className={`w-full py-6 rounded-lg font-semibold ${
-                        p.highlight
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-foreground text-background hover:bg-foreground/90"
-                      }`}
-                    >
-                      {p.cta}
-                    </Button>
-                  </Link>
+                  <Button
+                    onClick={() => choose(p.id)}
+                    className={`w-full mt-6 py-6 rounded-lg font-semibold ${
+                      p.highlight
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "bg-foreground text-background hover:bg-foreground/90"
+                    }`}
+                  >
+                    {p.cta}
+                  </Button>
                 )}
+
               </div>
             );
           })}
