@@ -107,7 +107,22 @@ export function TrialGuard({ children }: { children: React.ReactNode }) {
           <Link to="/app/settings">
             <Button variant="outline">Manage plan in settings</Button>
           </Link>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              refreshPlan();
+              toast.success("Checked your plan", {
+                description: "If your upgrade went through, access is restored instantly.",
+              });
+            }}
+          >
+            Already upgraded? Re-check
+          </Button>
         </div>
+        <p className="text-[11px] text-muted-foreground mt-4">
+          Upgrades apply immediately — no refresh or sign-out needed.
+        </p>
+
       </div>
     </div>
   );
