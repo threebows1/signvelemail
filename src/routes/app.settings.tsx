@@ -5,6 +5,13 @@ import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { PLANS, usePlan } from "@/lib/plan";
 import { useSignatures } from "@/lib/signature-store";
+import {
+  DEFAULT_PAYMENT_LINKS,
+  STRIPE_DASHBOARD_URL,
+  usePaymentLinks,
+  type PaymentLinks,
+} from "@/lib/payment-links";
+
 
 export const Route = createFileRoute("/app/settings")({
   head: () => ({
