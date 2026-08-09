@@ -173,8 +173,8 @@ function ShowcaseSection() {
                 key={id}
                 className="group bg-white text-foreground rounded-2xl overflow-hidden ring-1 ring-white/10 hover:ring-accent/40 hover:-translate-y-1 transition-all"
               >
-                <div className="p-6 bg-stone-50/40 min-h-[240px] overflow-hidden flex items-center justify-center">
-                  <div style={{ transform: "scale(0.78)", transformOrigin: "top center" }}>
+                <div className="p-5 bg-stone-50/40 overflow-hidden">
+                  <div style={{ transform: "scale(0.9)", transformOrigin: "top center" }}>
                     {renderSignature(t, defaultData)}
                   </div>
                 </div>
