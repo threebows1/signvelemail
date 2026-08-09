@@ -90,7 +90,7 @@ function HeroSection() {
         <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.2em] text-primary font-medium block mb-6">
           (01) Email signatures, designed
         </span>
-        <h1 className="text-6xl md:text-7xl font-[Inter_Tight] font-bold tracking-tighter text-balance leading-[0.9] mb-8">
+        <h1 className="text-6xl md:text-7xl font-[Manrope] font-bold tracking-tighter text-balance leading-[0.9] mb-8">
           Every signature,<br />precisely yours.
         </h1>
         <p className="text-xl text-muted-foreground text-pretty max-w-[45ch] mb-10 leading-relaxed">
@@ -153,7 +153,7 @@ function ShowcaseSection() {
             <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.2em] text-accent font-medium block mb-4">
               (02) Signature Showcase
             </span>
-            <h2 className="text-4xl md:text-5xl font-[Inter_Tight] font-bold tracking-tight">
+            <h2 className="text-4xl md:text-5xl font-[Manrope] font-bold tracking-tight">
               Real designs. Ready to deploy.
             </h2>
           </div>
@@ -256,7 +256,7 @@ function FeaturesSection() {
                 <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.2em] text-primary font-medium block mb-2">
                   {f.kicker}
                 </span>
-                <h3 className="text-xl font-[Inter_Tight] font-bold tracking-tight mb-2">{f.title}</h3>
+                <h3 className="text-xl font-[Manrope] font-bold tracking-tight mb-2">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.body}</p>
               </div>
             </div>
@@ -271,7 +271,7 @@ function CompatibilitySection() {
   return (
     <section className="max-w-7xl mx-auto px-6 pb-24">
       <div className="bg-card border border-border rounded-2xl p-12 text-center">
-        <h2 className="text-2xl md:text-3xl font-[Inter_Tight] font-bold tracking-tight mb-3">
+        <h2 className="text-2xl md:text-3xl font-[Manrope] font-bold tracking-tight mb-3">
           Works everywhere your team sends email
         </h2>
         <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
@@ -281,7 +281,7 @@ function CompatibilitySection() {
           {emailClients.map((c) => (
             <span
               key={c}
-              className="font-[Inter_Tight] font-semibold text-lg text-foreground/70 hover:text-primary transition-colors"
+              className="font-[Manrope] font-semibold text-lg text-foreground/70 hover:text-primary transition-colors"
             >
               {c}
             </span>
@@ -298,7 +298,7 @@ function CtaSection() {
       <div className="rounded-3xl bg-primary text-primary-foreground p-12 md:p-16 text-center relative overflow-hidden">
         <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-accent/30 blur-3xl pointer-events-none" />
         <div className="relative z-10">
-          <h2 className="text-4xl md:text-5xl font-[Inter_Tight] font-bold tracking-tight mb-4">
+          <h2 className="text-4xl md:text-5xl font-[Manrope] font-bold tracking-tight mb-4">
             Build your signature in minutes.
           </h2>
           <p className="text-primary-foreground/80 text-lg mb-8 max-w-md mx-auto">
