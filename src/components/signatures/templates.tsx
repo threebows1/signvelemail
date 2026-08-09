@@ -748,6 +748,225 @@ function NeonCard(d: SignatureData) {
   );
 }
 
+/* ============ two-column additions ============ */
+function HairlineDuo(d: SignatureData) {
+  return (
+    <div className="bg-white p-7" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="flex items-stretch gap-6">
+        <div className="pr-6" style={{ borderRight: `1px solid ${d.mutedColor}33` }}>
+          <p data-sig-name="" className="text-[16px] font-semibold leading-tight">{d.name}</p>
+          <p className="text-[12px] mt-0.5" style={{ color: d.mutedColor }}>{d.title}</p>
+          <p className="text-[12px]" style={{ color: d.mutedColor }}>{d.company}</p>
+        </div>
+        <div className="text-[12px] space-y-0.5" style={{ color: d.mutedColor }}>
+          <p>{d.email}</p>
+          <p>{d.mobile}</p>
+          <p data-sig-website="">{d.website}</p>
+        </div>
+      </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} size={20} /></div>
+    </div>
+  );
+}
+
+function QuietColumns(d: SignatureData) {
+  return (
+    <div className="bg-white p-7" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="grid grid-cols-2 gap-x-10 gap-y-1 text-[12px]">
+        <div>
+          <p data-sig-name="" className="text-[15px] font-medium tracking-tight">{d.name}</p>
+          <p style={{ color: d.mutedColor }}>{d.title}</p>
+        </div>
+        <div className="text-right">
+          <p className="font-medium">{d.company}</p>
+          <p data-sig-website="" style={{ color: d.primaryColor }}>{d.website}</p>
+        </div>
+        <div style={{ color: d.mutedColor }}>{d.email}</div>
+        <div className="text-right" style={{ color: d.mutedColor }}>{d.mobile}</div>
+      </div>
+      <div className="mt-4 pt-3 flex justify-between items-center" style={{ borderTop: `1px solid ${d.mutedColor}22` }}>
+        <Socials d={d} color={d.primaryColor} size={20} />
+        <span className="text-[10px] uppercase tracking-[0.25em]" style={{ color: d.mutedColor }}>{d.department}</span>
+      </div>
+    </div>
+  );
+}
+
+function ExecutiveDuo(d: SignatureData) {
+  return (
+    <div className="bg-white p-7" style={{ fontFamily: "Georgia, serif", color: d.textColor }}>
+      <div className="flex items-start gap-7">
+        <div className="text-right shrink-0" style={{ minWidth: 150 }}>
+          <p data-sig-name="" className="text-[19px] font-semibold leading-tight">{d.name}</p>
+          <p className="text-[12px] italic" style={{ color: d.mutedColor }}>{d.title}</p>
+          <p className="text-[11px] uppercase tracking-[0.2em] mt-2" style={{ color: d.primaryColor }}>{d.company}</p>
+        </div>
+        <div className="pl-7 text-[12px] space-y-1" style={{ borderLeft: `2px solid ${d.primaryColor}` }}>
+          <p>{d.phone}</p>
+          <p>{d.mobile}</p>
+          <p>{d.email}</p>
+          <p data-sig-website="">{d.website}</p>
+          <p style={{ color: d.mutedColor }}>{d.address}</p>
+        </div>
+      </div>
+      <Disclaimer d={d} />
+    </div>
+  );
+}
+
+function LogoBeside(d: SignatureData) {
+  return (
+    <div className="bg-white p-7" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="flex items-center gap-7">
+        <div className="shrink-0 flex flex-col items-center gap-2">
+          {d.logoUrl ? (
+            <img src={d.logoUrl} alt={d.company} style={{ width: d.logoWidth ?? 110 }} />
+          ) : (
+            <Initials name={d.company} bg={d.primaryColor} size={64} />
+          )}
+          <span className="text-[9px] uppercase tracking-[0.3em]" style={{ color: d.mutedColor }}>{d.company}</span>
+        </div>
+        <div style={{ borderLeft: `3px solid ${d.accentColor}`, paddingLeft: 22 }}>
+          <p data-sig-name="" className="text-[17px] font-bold leading-tight">{d.name}</p>
+          <p className="text-[12px] mb-2" style={{ color: d.primaryColor }}>{d.title}</p>
+          <div className="text-[12px] space-y-0.5" style={{ color: d.mutedColor }}>
+            <p>{d.email}</p>
+            <p>{d.mobile}</p>
+            <p data-sig-website="">{d.website}</p>
+          </div>
+          <div className="mt-3"><Socials d={d} color={d.primaryColor} size={20} /></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CanvasDuo(d: SignatureData) {
+  return (
+    <div className="bg-white p-7" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="flex items-start gap-8">
+        <Avatar d={d} size={72} />
+        <div className="flex-1">
+          <p data-sig-name="" className="text-[17px] font-semibold">{d.name}</p>
+          <p className="text-[12px]" style={{ color: d.mutedColor }}>{d.title} — {d.company}</p>
+          <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 text-[12px]" style={{ color: d.mutedColor }}>
+            <span>{d.email}</span>
+            <span>{d.mobile}</span>
+            <span data-sig-website="">{d.website}</span>
+            <span>{d.phone}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============ vertical additions ============ */
+function TopRule(d: SignatureData) {
+  return (
+    <div className="bg-white p-7" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div style={{ height: d.dividingLineSize ?? 2, background: d.dividingLineColor || d.primaryColor, width: 48 }} />
+      <p data-sig-name="" className="text-[16px] font-semibold mt-4">{d.name}</p>
+      <p className="text-[12px]" style={{ color: d.mutedColor }}>{d.title}</p>
+      <p className="text-[12px] font-medium">{d.company}</p>
+      <div className="mt-3 text-[12px] space-y-0.5" style={{ color: d.mutedColor }}>
+        <p>{d.email}</p>
+        <p>{d.mobile}</p>
+        <p data-sig-website="">{d.website}</p>
+      </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} size={20} /></div>
+    </div>
+  );
+}
+
+function CenteredStack(d: SignatureData) {
+  return (
+    <div className="bg-white p-7 text-center" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="flex justify-center"><Avatar d={d} size={64} /></div>
+      <p data-sig-name="" className="text-[17px] font-semibold mt-3">{d.name}</p>
+      <p className="text-[12px]" style={{ color: d.primaryColor }}>{d.title}</p>
+      <p className="text-[11px] uppercase tracking-[0.25em] mt-1" style={{ color: d.mutedColor }}>{d.company}</p>
+      <div className="mx-auto my-4" style={{ height: 1, width: 64, background: `${d.mutedColor}44` }} />
+      <div className="text-[12px] space-y-0.5" style={{ color: d.mutedColor }}>
+        <p>{d.email}</p>
+        <p>{d.mobile}</p>
+        <p data-sig-website="">{d.website}</p>
+      </div>
+      <div className="mt-4 flex justify-center"><Socials d={d} color={d.primaryColor} size={22} /></div>
+    </div>
+  );
+}
+
+function StackedBadge(d: SignatureData) {
+  return (
+    <div className="bg-white p-7" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <span
+        className="inline-block text-[9px] uppercase tracking-[0.3em] px-3 py-1 rounded-full"
+        style={{ background: `${d.primaryColor}14`, color: d.primaryColor }}
+      >
+        {d.company}
+      </span>
+      <p data-sig-name="" className="text-[18px] font-bold mt-3 leading-tight">{d.name}</p>
+      <p className="text-[12px]" style={{ color: d.mutedColor }}>{d.title}{d.department ? ` · ${d.department}` : ""}</p>
+      <div className="mt-4 space-y-1.5">
+        <IconRow Icon={Mail} text={d.email} color={d.primaryColor} d={d} />
+        <IconRow Icon={Smartphone} text={d.mobile} color={d.primaryColor} d={d} />
+        <IconRow Icon={LinkIcon} text={d.website} color={d.primaryColor} d={d} />
+      </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} size={22} /></div>
+    </div>
+  );
+}
+
+function SidebarStrip(d: SignatureData) {
+  return (
+    <div className="bg-white overflow-hidden rounded-lg" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <div className="px-7 py-5" style={{ background: d.primaryColor, color: "#fff" }}>
+        <p data-sig-name="" className="text-[17px] font-bold leading-tight">{d.name}</p>
+        <p className="text-[12px] opacity-80">{d.title}</p>
+      </div>
+      <div className="px-7 py-5">
+        <p className="text-[11px] uppercase tracking-[0.25em] mb-2" style={{ color: d.mutedColor }}>{d.company}</p>
+        <div className="text-[12px] space-y-0.5" style={{ color: d.mutedColor }}>
+          <p>{d.email}</p>
+          <p>{d.mobile}</p>
+          <p data-sig-website="">{d.website}</p>
+          <p>{d.address}</p>
+        </div>
+        <div className="mt-4"><Socials d={d} color={d.primaryColor} size={20} /></div>
+      </div>
+    </div>
+  );
+}
+
+function VerticalHairline(d: SignatureData) {
+  return (
+    <div className="bg-white p-7" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <p data-sig-name="" className="text-[15px] font-medium tracking-tight">{d.name}</p>
+      <p className="text-[12px]" style={{ color: d.mutedColor }}>{d.title}</p>
+      <div className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
+      <p className="text-[12px] font-medium">{d.company}</p>
+      <p className="text-[12px]" style={{ color: d.mutedColor }}>{d.email} · {d.mobile}</p>
+      <p data-sig-website="" className="text-[12px]" style={{ color: d.primaryColor }}>{d.website}</p>
+    </div>
+  );
+}
+
+function BlankVertical(d: SignatureData) {
+  return (
+    <div className="bg-white p-7" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
+      <p data-sig-name="" className="text-[16px] font-semibold">{d.name}</p>
+      <p className="text-[12px]" style={{ color: d.mutedColor }}>{d.title}</p>
+      <p className="text-[12px]" style={{ color: d.mutedColor }}>{d.company}</p>
+      <div className="mt-3 text-[12px] space-y-0.5">
+        <p>{d.email}</p>
+        <p data-sig-website="">{d.website}</p>
+      </div>
+    </div>
+  );
+}
+
+
 export const templates: TemplateMeta[] = [
   { id: "al-riyady", name: "SignVel Corporate", category: "Corporate", layout: "two-column", accent: "bg-[#5B2EFF]", description: "Flagship SignVel layout with gradient logo, icon rows, and disclaimer.", render: SignVelCorporate },
   { id: "left-line", name: "Left Line", category: "Minimal", layout: "single", accent: "bg-[#5B2EFF]", description: "Clean vertical accent bar. Sign Vel default.", render: LeftLine },
@@ -779,7 +998,19 @@ export const templates: TemplateMeta[] = [
   { id: "sales-pitch", name: "Sales Pitch", category: "Bold", layout: "vertical", accent: "bg-[#5B2EFF]", description: "Big kicker + CTA buttons for outbound.", render: SalesPitch },
   { id: "ivy-league", name: "Ivy League", category: "Executive", layout: "vertical", accent: "bg-neutral-900", description: "Symmetric center-aligned formal card.", render: IvyLeague },
   { id: "neon-card", name: "Neon Card", category: "Bold", layout: "vertical", accent: "bg-black", description: "Dark card with neon-accent status dot.", render: NeonCard },
+  { id: "hairline-duo", name: "Hairline Duo", category: "Minimal", layout: "two-column", accent: "bg-neutral-400", description: "Two quiet columns split by a hairline rule.", render: HairlineDuo },
+  { id: "quiet-columns", name: "Quiet Columns", category: "Minimal", layout: "two-column", accent: "bg-neutral-500", description: "Balanced left/right grid with footer socials.", render: QuietColumns },
+  { id: "executive-duo", name: "Executive Duo", category: "Executive", layout: "two-column", accent: "bg-neutral-900", description: "Right-aligned serif name beside a contact column.", render: ExecutiveDuo },
+  { id: "logo-beside", name: "Logo Beside", category: "Corporate", layout: "two-column", accent: "bg-[#5B2EFF]", description: "Company logo column next to personal details.", render: LogoBeside },
+  { id: "canvas-duo", name: "Canvas Duo", category: "Custom", layout: "two-column", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Neutral two-column base built for heavy editing.", render: CanvasDuo },
+  { id: "top-rule", name: "Top Rule", category: "Minimal", layout: "vertical", accent: "bg-[#5B2EFF]", description: "Short accent rule above a stacked block.", render: TopRule },
+  { id: "centered-stack", name: "Centered Stack", category: "Creative", layout: "vertical", accent: "bg-gradient-to-b from-[#5B2EFF] to-[#00E5A0]", description: "Center-aligned avatar with stacked contacts.", render: CenteredStack },
+  { id: "stacked-badge", name: "Stacked Badge", category: "Corporate", layout: "vertical", accent: "bg-[#5B2EFF]", description: "Company pill badge above icon contact rows.", render: StackedBadge },
+  { id: "header-strip", name: "Header Strip", category: "Bold", layout: "vertical", accent: "bg-[#5B2EFF]", description: "Solid color header block over a details panel.", render: SidebarStrip },
+  { id: "vertical-hairline", name: "Vertical Hairline", category: "Executive", layout: "vertical", accent: "bg-neutral-700", description: "Understated stack divided by a single hairline.", render: VerticalHairline },
+  { id: "blank-vertical", name: "Custom Vertical", category: "Custom", layout: "vertical", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Bare vertical starting point for your own design.", render: BlankVertical },
   { id: "custom-blank", name: "Custom / Blank", category: "Custom", layout: "single", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Start from a blank canvas and design freely in the editor.", render: LeftLine },
+
 ];
 
 export function getTemplate(id: string): TemplateMeta | undefined {
