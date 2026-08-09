@@ -18,35 +18,44 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-// Curated showcase of real signatures rendered from the actual templates.
-const showcaseIds = [
-  "al-riyady",
-  "left-line",
-  "photo-card",
-  "exec-serif",
-  "mono",
-  "bold-dark",
-];
-const galleryIds = [
-  "gradient-header",
-  "icon-grid",
-  "vertical-ribbon",
-  "underline-accent",
-  "business-card",
-  "circle-icons",
+const showcaseIds = ["al-riyady", "left-line", "bold-dark", "framed-border", "split-card", "mono"];
+
+const emailClients = [
+  { name: "Gmail", time: "1 min" },
+  { name: "Outlook", time: "2 min" },
+  { name: "Apple Mail", time: "1 min" },
+  { name: "Yahoo", time: "1 min" },
+  { name: "Thunderbird", time: "2 min" },
 ];
 
-const emailClients = ["Gmail", "Outlook", "Apple Mail", "Yahoo", "Thunderbird"];
+/** Editorial italic accent used across headings. */
+function Ital({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="font-[Instrument_Serif] italic font-normal text-primary tracking-normal">
+      {children}
+    </span>
+  );
+}
+
+function Kicker({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.22em] text-primary block">
+      {children}
+    </span>
+  );
+}
 
 function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20 selection:text-primary">
+      <TickerBar />
       <Navigation />
       <main>
         <HeroSection />
         <ShowcaseSection />
+        <StepsSection />
         <FeaturesSection />
-        <CompatibilitySection />
+        <CompatibilityStrip />
         <CtaSection />
       </main>
       <Footer />
@@ -54,30 +63,41 @@ function Index() {
   );
 }
 
+function TickerBar() {
+  return (
+    <div className="w-full bg-foreground text-background text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] py-2 px-6 flex items-center justify-center gap-3">
+      <span className="text-accent">New</span>
+      <span className="text-background/70">Bulk-deploy your whole directory in one push.</span>
+      <Link to="/pricing" className="hover:text-accent transition-colors">
+        Start a 7-day trial →
+      </Link>
+    </div>
+  );
+}
+
 function Navigation() {
   return (
-    <nav className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between">
-      <div className="flex items-center gap-8">
+    <nav className="sticky top-0 z-50 w-full bg-background/85 backdrop-blur-md border-b border-border px-6 py-3 flex items-center justify-between">
+      <div className="flex items-center gap-10">
         <Link to="/" aria-label="Sign Vel home">
-          <Logo size={48} wordmarkClassName="text-xl" />
+          <Logo size={44} wordmarkClassName="text-lg" />
         </Link>
-        <div className="hidden md:flex items-center gap-6">
-          <a href="#showcase" className="text-sm font-medium hover:text-primary transition-colors">
-            Showcase
-          </a>
-          <Link to="/app/templates" className="text-sm font-medium hover:text-primary transition-colors">
-            Templates
-          </Link>
-          <Link to="/pricing" className="text-sm font-medium hover:text-primary transition-colors">
-            Pricing
-          </Link>
+        <div className="hidden md:flex items-center gap-7 text-[13px] font-medium">
+          <a href="#showcase" className="hover:text-primary transition-colors">Showcase</a>
+          <Link to="/app/templates" className="hover:text-primary transition-colors">Templates</Link>
+          <Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
         </div>
       </div>
-      <Link to="/login" search={{ next: "/app" }}>
-        <Button size="sm" className="bg-foreground text-background hover:bg-foreground/90">
-          Get Started
-        </Button>
-      </Link>
+      <div className="flex items-center gap-5">
+        <Link to="/login" search={{ next: "/app" }} className="text-[13px] font-medium hover:text-primary transition-colors">
+          Sign in
+        </Link>
+        <Link to="/login" search={{ next: "/app" }}>
+          <Button size="sm" className="rounded-full px-5 bg-foreground text-background hover:bg-foreground/90">
+            Get Started
+          </Button>
+        </Link>
+      </div>
     </nav>
   );
 }
@@ -85,53 +105,61 @@ function Navigation() {
 function HeroSection() {
   const featured = templates.find((t) => t.id === "al-riyady")!;
   return (
-    <section className="max-w-7xl mx-auto px-6 pt-20 pb-24 grid lg:grid-cols-2 gap-16 items-center">
+    <section className="max-w-7xl mx-auto px-6 pt-16 pb-20 grid lg:grid-cols-[1fr_1.05fr] gap-14 items-center">
       <div className="animate-slide-up">
-        <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.2em] text-primary font-medium block mb-6">
-          (01) Email signatures, designed
-        </span>
-        <h1 className="text-6xl md:text-7xl font-[Manrope] font-bold tracking-tighter text-balance leading-[0.9] mb-8">
-          Every signature,<br />precisely yours.
+        <Kicker>(01) Email signatures, designed</Kicker>
+        <h1 className="mt-6 text-5xl md:text-6xl font-[Manrope] font-bold tracking-tighter leading-[0.95] text-balance">
+          Every signature,
+          <br />
+          <Ital>precisely yours.</Ital>
         </h1>
-        <p className="text-xl text-muted-foreground text-pretty max-w-[45ch] mb-10 leading-relaxed">
+        <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-[42ch] leading-relaxed">
           Browse real signature designs, customize every pixel, and deploy across your whole team — Gmail, Outlook, and Apple Mail in one click.
         </p>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 mt-8">
           <Link to="/app">
-            <Button className="px-8 py-6 text-base font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button className="rounded-full px-7 py-5 text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90">
               Start Building
             </Button>
           </Link>
           <a href="#showcase">
-            <Button variant="outline" className="px-8 py-6 text-base font-semibold rounded-lg border-border hover:bg-black/5">
+            <Button variant="outline" className="rounded-full px-7 py-5 text-sm font-semibold border-border">
               View Designs
             </Button>
           </a>
         </div>
-        <div className="flex items-center gap-6 mt-10 text-xs font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground">
-          <span>{templates.length} templates</span>
-          <span className="size-1 rounded-full bg-border" />
-          <span>22 social icons</span>
-          <span className="size-1 rounded-full bg-border" />
-          <span>Free 7-day trial</span>
-        </div>
+        <dl className="grid grid-cols-3 gap-6 mt-12 pt-6 border-t border-border max-w-md">
+          {[
+            [`${templates.length}`, "Templates"],
+            ["22", "Social icons"],
+            ["5", "Mail clients"],
+          ].map(([n, label]) => (
+            <div key={label}>
+              <dt className="text-2xl font-[Manrope] font-bold tracking-tight">{n}</dt>
+              <dd className="text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground mt-1">
+                {label}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
-      {/* Real, rendered signature — not a mockup */}
       <div className="animate-slide-up-delay">
-        <div className="bg-white ring-1 ring-black/5 p-8 rounded-2xl shadow-xl">
+        <div className="bg-white ring-1 ring-black/5 rounded-2xl shadow-xl p-7">
+          <div className="flex items-center justify-between mb-5">
+            <span className="text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground">
+              {featured.name}
+            </span>
+            <span className="flex items-center gap-1.5 text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-accent-foreground">
+              <span className="size-1.5 rounded-full bg-accent" /> Live preview
+            </span>
+          </div>
           <div className="overflow-hidden">
-            <div style={{ transform: "scale(0.92)", transformOrigin: "top center" }}>
+            <div style={{ transform: "scale(0.94)", transformOrigin: "top left" }}>
               {renderSignature(featured, defaultData)}
             </div>
           </div>
-          <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
-            <div className="flex items-center gap-2">
-              <span className="size-2.5 rounded-full bg-primary" />
-              <span className="text-xs font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground">
-                {featured.name}
-              </span>
-            </div>
+          <div className="mt-5 pt-4 border-t border-border flex justify-end">
             <Link to="/app/editor/$id" params={{ id: featured.id }}>
               <span className="text-xs font-medium text-primary hover:underline cursor-pointer">
                 Use this design →
@@ -146,49 +174,50 @@ function HeroSection() {
 
 function ShowcaseSection() {
   return (
-    <section id="showcase" className="bg-foreground text-background py-24 px-6">
+    <section id="showcase" className="bg-foreground text-background py-20 px-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-14">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.2em] text-accent font-medium block mb-4">
-              (02) Signature Showcase
+            <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.22em] text-accent block mb-4">
+              (02) Signature showcase
             </span>
-            <h2 className="text-4xl md:text-5xl font-[Manrope] font-bold tracking-tight">
-              Real designs. Ready to deploy.
+            <h2 className="text-3xl md:text-5xl font-[Manrope] font-bold tracking-tight leading-tight">
+              Real designs.{" "}
+              <span className="font-[Instrument_Serif] italic font-normal text-accent">Ready to deploy.</span>
             </h2>
           </div>
           <Link to="/app/templates">
-            <Button className="px-6 py-3 bg-accent text-accent-foreground rounded-lg font-medium text-sm hover:bg-accent/90">
+            <Button className="rounded-full px-6 bg-accent text-accent-foreground hover:bg-accent/90 text-sm font-medium">
               Browse all templates
             </Button>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {showcaseIds.map((id) => {
             const t = templates.find((x) => x.id === id);
             if (!t) return null;
             return (
               <div
                 key={id}
-                className="group bg-white text-foreground rounded-2xl overflow-hidden ring-1 ring-white/10 hover:ring-accent/40 hover:-translate-y-1 transition-all"
+                className="group bg-white text-foreground rounded-xl overflow-hidden ring-1 ring-white/10 hover:ring-accent/40 hover:-translate-y-1 transition-all"
               >
-                <div className="p-5 bg-stone-50/40 overflow-hidden">
-                  <div style={{ transform: "scale(0.9)", transformOrigin: "top center" }}>
+                <div className="p-4 overflow-hidden">
+                  <div style={{ transform: "scale(0.88)", transformOrigin: "top left" }}>
                     {renderSignature(t, defaultData)}
                   </div>
                 </div>
-                <div className="flex items-center justify-between px-5 py-3.5 border-t border-border bg-white">
+                <div className="flex items-center justify-between px-4 py-3 border-t border-border">
                   <div className="min-w-0">
-                    <p className="font-medium text-sm truncate">{t.name}</p>
-                    <p className="text-[10px] font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground">
+                    <p className="font-medium text-[13px] truncate">{t.name}</p>
+                    <p className="text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground">
                       {t.category}
                     </p>
                   </div>
                   <Link to="/app/editor/$id" params={{ id: t.id }}>
-                    <Button size="sm" variant="outline" className="text-xs h-8 shrink-0">
+                    <span className="text-[11px] font-medium text-primary hover:underline whitespace-nowrap">
                       Customize →
-                    </Button>
+                    </span>
                   </Link>
                 </div>
               </div>
@@ -200,90 +229,279 @@ function ShowcaseSection() {
   );
 }
 
-function FeaturesSection() {
-  const features = [
-    {
-      kicker: "Branding",
-      title: "Upload your logo & photo",
-      body: "Drop in your company logo and profile photo. Fetch branding from any website to pull colors automatically.",
-      templateId: "icon-grid",
-    },
-    {
-      kicker: "Templates",
-      title: "30+ tested layouts",
-      body: "Corporate, creative, minimal, bold, and executive designs — every template is tested across email clients.",
-      templateId: "gradient-header",
-    },
-    {
-      kicker: "Social",
-      title: "22 social icon styles",
-      body: "Brand-color, solid, outline, or plain. Reorder your socials and let recipients discover your channels.",
-      templateId: "circle-icons",
-    },
-    {
-      kicker: "Install",
-      title: "One-click to any client",
-      body: "Export to Gmail, Outlook, Apple Mail and more with step-by-step install guides for Windows and Mac.",
-      templateId: "business-card",
-    },
-  ];
+/* ---------------- Four steps (zigzag) ---------------- */
 
+function StepRow({
+  step,
+  kicker,
+  title,
+  body,
+  visual,
+  flip = false,
+}: {
+  step: string;
+  kicker: string;
+  title: string;
+  body: string;
+  visual: React.ReactNode;
+  flip?: boolean;
+}) {
   return (
-    <section className="max-w-7xl mx-auto px-6 py-24">
-      <div className="flex items-center gap-3 mb-14">
-        <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.2em] text-primary font-medium">
-          (03) Everything you need
+    <div className="grid md:grid-cols-2 gap-10 items-center py-12 border-t border-border">
+      <div className={flip ? "md:order-2" : ""}>
+        <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.22em] text-muted-foreground block mb-3">
+          Step {step} — {kicker}
         </span>
-        <div className="h-px flex-1 bg-border" />
+        <h3 className="text-2xl md:text-3xl font-[Manrope] font-bold tracking-tight mb-3">{title}</h3>
+        <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-[46ch]">{body}</p>
       </div>
+      <div className={flip ? "md:order-1" : ""}>{visual}</div>
+    </div>
+  );
+}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {features.map((f) => {
-          const t = templates.find((x) => x.id === f.templateId);
-          return (
-            <div
-              key={f.title}
-              className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col"
-            >
-              <div className="p-8 bg-stone-50/40 min-h-[200px] overflow-hidden flex items-center justify-center">
-                {t && (
-                  <div style={{ transform: "scale(0.72)", transformOrigin: "center" }}>
-                    {renderSignature(t, defaultData)}
-                  </div>
-                )}
+function Panel({ children, label }: { children: React.ReactNode; label?: string }) {
+  return (
+    <div className="bg-card border border-border rounded-2xl p-5">
+      {label && (
+        <p className="text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground mb-4">
+          {label}
+        </p>
+      )}
+      {children}
+    </div>
+  );
+}
+
+function StepsSection() {
+  const gridTemplates = ["left-line", "mono", "underline-accent", "circle-icons", "stacked", "minimal-divider"];
+  return (
+    <section className="max-w-7xl mx-auto px-6 py-20">
+      <Kicker>(03) Four steps</Kicker>
+      <h2 className="mt-5 text-4xl md:text-5xl font-[Manrope] font-bold tracking-tighter leading-[1.02] max-w-[18ch]">
+        From template to <Ital>every mailbox.</Ital>
+      </h2>
+
+      <div className="mt-10">
+        <StepRow
+          step="01"
+          kicker="Choose"
+          title="Pick a template"
+          body="Start from a library of layouts built for real inboxes. One column, two columns, or vertical — every design is tested across mail clients."
+          visual={
+            <Panel label="Templates">
+              <div className="grid grid-cols-3 gap-3">
+                {gridTemplates.map((id, i) => {
+                  const t = templates.find((x) => x.id === id);
+                  return (
+                    <div
+                      key={id}
+                      className={`rounded-lg border p-2 h-24 overflow-hidden bg-background ${
+                        i === 0 ? "border-primary ring-2 ring-primary/20" : "border-border"
+                      }`}
+                    >
+                      {t && (
+                        <div style={{ transform: "scale(0.32)", transformOrigin: "top left", width: "312%" }}>
+                          {renderSignature(t, defaultData)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              <div className="p-6 flex-1">
-                <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.2em] text-primary font-medium block mb-2">
-                  {f.kicker}
+              <p className="mt-4 text-[11px] text-muted-foreground">
+                Filter by layout and category, then jump straight into the editor.
+              </p>
+            </Panel>
+          }
+        />
+
+        <StepRow
+          step="02"
+          kicker="Customize"
+          title="Match your brand"
+          body="Upload a logo and headshot, set fonts and colors, or pull the palette straight from your website. Lock the fields that shouldn't change."
+          flip
+          visual={
+            <Panel label="Brand">
+              <div className="flex items-center gap-2 mb-5">
+                {["#5B2EFF", "#14121F", "#3B82F6", "#00E5A0"].map((c) => (
+                  <span
+                    key={c}
+                    className="size-6 rounded-full ring-1 ring-black/10"
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+                <span className="ml-auto text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground">
+                  Brand
                 </span>
-                <h3 className="text-xl font-[Manrope] font-bold tracking-tight mb-2">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.body}</p>
               </div>
-            </div>
-          );
-        })}
+              <div className="flex gap-2 mb-5">
+                {["Rubik", "Manrope", "Mono"].map((f, i) => (
+                  <span
+                    key={f}
+                    className={`px-3 py-1.5 rounded-md text-[11px] font-medium border ${
+                      i === 0 ? "bg-secondary border-primary/30 text-secondary-foreground" : "border-border text-muted-foreground"
+                    }`}
+                  >
+                    {f}
+                  </span>
+                ))}
+              </div>
+              <div className="rounded-lg border border-border bg-background p-4 overflow-hidden">
+                <div style={{ transform: "scale(0.82)", transformOrigin: "top left" }}>
+                  {renderSignature(templates.find((t) => t.id === "left-line")!, defaultData)}
+                </div>
+              </div>
+            </Panel>
+          }
+        />
+
+        <StepRow
+          step="03"
+          kicker="Install"
+          title="Install in a minute"
+          body="Pick your client and follow the illustrated steps. Guides cover Windows and Mac for every major mail app."
+          visual={
+            <Panel label="Install guides">
+              <ul className="divide-y divide-border">
+                {emailClients.map((c) => (
+                  <li key={c.name} className="flex items-center justify-between py-3">
+                    <span className="flex items-center gap-3 text-sm font-medium">
+                      <span className="size-6 rounded-md bg-secondary" />
+                      {c.name}
+                    </span>
+                    <span className="text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground">
+                      {c.time}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          }
+        />
+
+        <StepRow
+          step="04"
+          kicker="Deploy"
+          title="Roll it out to the team"
+          body="Colleagues get a link with their own details pre-filled. Upload a CSV or sync your directory and send the whole list at once."
+          flip
+          visual={
+            <Panel label="Team — 48 members">
+              <ul className="divide-y divide-border">
+                {[
+                  ["Alex Rivera", "Brand Designer", true],
+                  ["Dana Okonkwo", "Operations", true],
+                  ["Ivo Brandt", "Support Engineer", false],
+                  ["Lena Whitfield", "VP Revenue", false],
+                ].map(([name, role, done]) => (
+                  <li key={name as string} className="flex items-center justify-between py-3">
+                    <span className="flex items-center gap-3">
+                      <span className="size-7 rounded-full bg-secondary text-secondary-foreground text-[10px] font-semibold grid place-items-center">
+                        {(name as string).split(" ").map((p) => p[0]).join("")}
+                      </span>
+                      <span>
+                        <span className="block text-sm font-medium">{name as string}</span>
+                        <span className="block text-[11px] text-muted-foreground">{role as string}</span>
+                      </span>
+                    </span>
+                    <span
+                      className={`text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] ${
+                        done ? "text-accent-foreground" : "text-muted-foreground"
+                      }`}
+                    >
+                      {done ? "Installed" : "Sent"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          }
+        />
       </div>
     </section>
   );
 }
 
-function CompatibilitySection() {
+function FeaturesSection() {
+  const items = [
+    ["Branding", "Upload your logo & photo", "Drop in your company logo and profile photo. Fetch branding from any website to pull colors automatically."],
+    ["Templates", `${templates.length} tested layouts`, "Corporate, creative, minimal, bold, and executive designs — all verified across mail clients."],
+    ["Social", "22 social icon styles", "Brand-color, solid, outline, or plain. Reorder your channels in a click."],
+    ["Install", "One click to any client", "Export to Gmail, Outlook, Apple Mail and more, with step-by-step guides."],
+  ];
+
   return (
-    <section className="max-w-7xl mx-auto px-6 pb-24">
-      <div className="bg-card border border-border rounded-2xl p-12 text-center">
-        <h2 className="text-2xl md:text-3xl font-[Manrope] font-bold tracking-tight mb-3">
-          Works everywhere your team sends email
-        </h2>
-        <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
-          Installation guides included for every major client, on Windows and Mac.
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+    <section className="max-w-7xl mx-auto px-6 pb-20">
+      <Kicker>(04) Everything you need</Kicker>
+      <div className="mt-8 grid lg:grid-cols-[0.85fr_1.15fr] gap-6 items-start">
+        <div className="border-l-2 border-primary pl-6">
+          {items.map(([kicker, title, body], i) => (
+            <div key={title} className={`${i > 0 ? "border-t border-border pt-6 mt-6" : ""}`}>
+              <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.22em] text-muted-foreground block mb-2">
+                {kicker}
+              </span>
+              <h3 className="text-xl font-[Manrope] font-bold tracking-tight mb-1.5">{title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-[44ch]">{body}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-card border border-border rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-5">
+            <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              Branding — automatic
+            </span>
+            <span className="flex items-center gap-1.5 text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-accent-foreground">
+              <span className="size-1.5 rounded-full bg-accent" /> Live
+            </span>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-dashed border-border bg-background h-28 grid place-items-center gap-2">
+              <Logo size={44} showWordmark={false} />
+              <span className="text-[11px] text-muted-foreground">Drop your logo</span>
+            </div>
+            <div className="rounded-xl border border-dashed border-border bg-background h-28 grid place-items-center gap-2">
+              <span className="size-10 rounded-full bg-secondary text-secondary-foreground text-xs font-semibold grid place-items-center">
+                AR
+              </span>
+              <span className="text-[11px] text-muted-foreground">Drop a headshot</span>
+            </div>
+          </div>
+          <p className="mt-6 text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground">
+            Fetched from signvel.com
+          </p>
+          <div className="mt-3 grid grid-cols-5 gap-2">
+            {["#5B2EFF", "#3B82F6", "#00E5A0", "#14121F", "#9D4EDD"].map((c) => (
+              <span key={c} className="h-9 rounded-md ring-1 ring-black/10" style={{ backgroundColor: c }} />
+            ))}
+          </div>
+          <p className="mt-3 text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground">
+            Accent set to #5B2EFF
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CompatibilityStrip() {
+  return (
+    <section className="max-w-7xl mx-auto px-6 pb-20">
+      <div className="bg-card border border-border rounded-2xl px-8 py-7 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h2 className="text-lg font-[Manrope] font-bold tracking-tight">
+            Works everywhere your team sends email
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Installation guides for every major client, on Windows and Mac.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-7 gap-y-3 text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground">
           {emailClients.map((c) => (
-            <span
-              key={c}
-              className="font-[Manrope] font-semibold text-lg text-foreground/70 hover:text-primary transition-colors"
-            >
-              {c}
+            <span key={c.name} className="hover:text-primary transition-colors">
+              {c.name}
             </span>
           ))}
         </div>
@@ -294,18 +512,20 @@ function CompatibilitySection() {
 
 function CtaSection() {
   return (
-    <section id="cta" className="max-w-7xl mx-auto px-6 pb-24">
-      <div className="rounded-3xl bg-primary text-primary-foreground p-12 md:p-16 text-center relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-accent/30 blur-3xl pointer-events-none" />
+    <section id="cta" className="max-w-7xl mx-auto px-6 pb-20">
+      <div className="rounded-3xl bg-primary text-primary-foreground p-14 md:p-20 text-center relative overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-accent/30 blur-3xl pointer-events-none" />
         <div className="relative z-10">
-          <h2 className="text-4xl md:text-5xl font-[Manrope] font-bold tracking-tight mb-4">
-            Build your signature in minutes.
+          <h2 className="text-4xl md:text-5xl font-[Manrope] font-bold tracking-tight leading-[1.05]">
+            Build your signature
+            <br />
+            <span className="font-[Instrument_Serif] italic font-normal">in minutes.</span>
           </h2>
-          <p className="text-primary-foreground/80 text-lg mb-8 max-w-md mx-auto">
+          <p className="text-primary-foreground/80 mt-4 mb-8">
             Start free for 7 days. No credit card required.
           </p>
           <Link to="/app">
-            <Button className="px-10 py-6 text-base font-semibold rounded-lg bg-background text-foreground hover:bg-background/90">
+            <Button className="rounded-full px-9 py-5 text-sm font-semibold bg-background text-foreground hover:bg-background/90">
               Start Building
             </Button>
           </Link>
@@ -317,13 +537,13 @@ function CtaSection() {
 
 function Footer() {
   return (
-    <footer className="border-t border-border py-12 px-6 bg-card">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+    <footer className="border-t border-border py-10 px-6 bg-card">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-3">
           <Logo size={40} wordmarkClassName="text-sm" />
           <span className="text-xs text-muted-foreground">&copy; 2026</span>
         </div>
-        <div className="flex gap-8 text-[10px] font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground">
+        <div className="flex gap-8 text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground">
           <a href="#" className="hover:text-primary transition-colors">Security</a>
           <a href="#" className="hover:text-primary transition-colors">Legal</a>
           <a href="#" className="hover:text-primary transition-colors">Changelog</a>
