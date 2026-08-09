@@ -998,7 +998,19 @@ export const templates: TemplateMeta[] = [
   { id: "sales-pitch", name: "Sales Pitch", category: "Bold", layout: "vertical", accent: "bg-[#5B2EFF]", description: "Big kicker + CTA buttons for outbound.", render: SalesPitch },
   { id: "ivy-league", name: "Ivy League", category: "Executive", layout: "vertical", accent: "bg-neutral-900", description: "Symmetric center-aligned formal card.", render: IvyLeague },
   { id: "neon-card", name: "Neon Card", category: "Bold", layout: "vertical", accent: "bg-black", description: "Dark card with neon-accent status dot.", render: NeonCard },
+  { id: "hairline-duo", name: "Hairline Duo", category: "Minimal", layout: "two-column", accent: "bg-neutral-400", description: "Two quiet columns split by a hairline rule.", render: HairlineDuo },
+  { id: "quiet-columns", name: "Quiet Columns", category: "Minimal", layout: "two-column", accent: "bg-neutral-500", description: "Balanced left/right grid with footer socials.", render: QuietColumns },
+  { id: "executive-duo", name: "Executive Duo", category: "Executive", layout: "two-column", accent: "bg-neutral-900", description: "Right-aligned serif name beside a contact column.", render: ExecutiveDuo },
+  { id: "logo-beside", name: "Logo Beside", category: "Corporate", layout: "two-column", accent: "bg-[#5B2EFF]", description: "Company logo column next to personal details.", render: LogoBeside },
+  { id: "canvas-duo", name: "Canvas Duo", category: "Custom", layout: "two-column", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Neutral two-column base built for heavy editing.", render: CanvasDuo },
+  { id: "top-rule", name: "Top Rule", category: "Minimal", layout: "vertical", accent: "bg-[#5B2EFF]", description: "Short accent rule above a stacked block.", render: TopRule },
+  { id: "centered-stack", name: "Centered Stack", category: "Creative", layout: "vertical", accent: "bg-gradient-to-b from-[#5B2EFF] to-[#00E5A0]", description: "Center-aligned avatar with stacked contacts.", render: CenteredStack },
+  { id: "stacked-badge", name: "Stacked Badge", category: "Corporate", layout: "vertical", accent: "bg-[#5B2EFF]", description: "Company pill badge above icon contact rows.", render: StackedBadge },
+  { id: "header-strip", name: "Header Strip", category: "Bold", layout: "vertical", accent: "bg-[#5B2EFF]", description: "Solid color header block over a details panel.", render: SidebarStrip },
+  { id: "vertical-hairline", name: "Vertical Hairline", category: "Executive", layout: "vertical", accent: "bg-neutral-700", description: "Understated stack divided by a single hairline.", render: VerticalHairline },
+  { id: "blank-vertical", name: "Custom Vertical", category: "Custom", layout: "vertical", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Bare vertical starting point for your own design.", render: BlankVertical },
   { id: "custom-blank", name: "Custom / Blank", category: "Custom", layout: "single", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Start from a blank canvas and design freely in the editor.", render: LeftLine },
+
 ];
 
 export function getTemplate(id: string): TemplateMeta | undefined {
