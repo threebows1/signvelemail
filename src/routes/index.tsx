@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { templates, renderSignature } from "@/components/signatures/templates";
 import { defaultData } from "@/lib/signature-store";
+import { FitPreview } from "@/components/signatures/FitPreview";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
