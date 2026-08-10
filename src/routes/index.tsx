@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { templates, renderSignature } from "@/components/signatures/templates";
 import { defaultData } from "@/lib/signature-store";
+import { FitPreview } from "@/components/signatures/FitPreview";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -18,7 +20,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const showcaseIds = ["al-riyady", "left-line", "bold-dark", "framed-border", "split-card", "mono"];
+const showcaseIds = ["photo-card", "left-line", "bold-dark", "framed-border", "split-card", "mono"];
 
 const emailClients = [
   { name: "Gmail", time: "1 min" },
@@ -193,28 +195,27 @@ function ShowcaseSection() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
           {showcaseIds.map((id) => {
             const t = templates.find((x) => x.id === id);
             if (!t) return null;
             return (
               <div
                 key={id}
-                className="group bg-white text-foreground rounded-xl overflow-hidden ring-1 ring-white/10 hover:ring-accent/40 hover:-translate-y-1 transition-all"
+                className="group flex h-full flex-col bg-white text-foreground rounded-xl overflow-hidden ring-1 ring-white/10 hover:ring-accent/40 hover:-translate-y-1 transition-all"
               >
-                <div className="p-4 overflow-hidden">
-                  <div style={{ transform: "scale(0.88)", transformOrigin: "top left" }}>
-                    {renderSignature(t, defaultData)}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                <FitPreview className="h-[240px] w-full sm:h-[260px] lg:h-[280px]" max={0.9} padding={18}>
+                  {renderSignature(t, defaultData)}
+                </FitPreview>
+
+                <div className="mt-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 border-t border-border">
                   <div className="min-w-0">
                     <p className="font-medium text-[13px] truncate">{t.name}</p>
-                    <p className="text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground">
+                    <p className="text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] text-muted-foreground truncate">
                       {t.category}
                     </p>
                   </div>
-                  <Link to="/app/editor/$id" params={{ id: t.id }}>
+                  <Link to="/app/editor/$id" params={{ id: t.id }} className="shrink-0">
                     <span className="text-[11px] font-medium text-primary hover:underline whitespace-nowrap">
                       Customize →
                     </span>
@@ -224,6 +225,7 @@ function ShowcaseSection() {
             );
           })}
         </div>
+
       </div>
     </section>
   );
