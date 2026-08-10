@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const showcaseIds = ["al-riyady", "left-line", "bold-dark", "framed-border", "split-card", "mono"];
+const showcaseIds = ["photo-card", "left-line", "bold-dark", "framed-border", "split-card", "mono"];
 
 const emailClients = [
   { name: "Gmail", time: "1 min" },
