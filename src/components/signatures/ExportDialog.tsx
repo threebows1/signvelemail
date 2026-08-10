@@ -213,7 +213,7 @@ export function ExportDialog({
                       client === c.id ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-secondary"
                     }`}
                   >
-                    <c.Icon className="size-3.5" />
+                    <c.Logo size={18} />
                     {c.label}
                   </button>
                 ))}
