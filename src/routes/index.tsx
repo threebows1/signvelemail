@@ -202,11 +202,10 @@ function ShowcaseSection() {
                 key={id}
                 className="group flex h-full flex-col bg-white text-foreground rounded-xl overflow-hidden ring-1 ring-white/10 hover:ring-accent/40 hover:-translate-y-1 transition-all"
               >
-                <div className="relative flex h-[260px] w-full items-center justify-center overflow-hidden p-4">
-                  <div className="max-w-full origin-center scale-[0.72] sm:scale-[0.78] lg:scale-[0.72] xl:scale-[0.8]">
-                    {renderSignature(t, defaultData)}
-                  </div>
-                </div>
+                <FitPreview className="h-[240px] w-full sm:h-[260px] lg:h-[280px]" max={0.9} padding={18}>
+                  {renderSignature(t, defaultData)}
+                </FitPreview>
+
                 <div className="mt-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 border-t border-border">
                   <div className="min-w-0">
                     <p className="font-medium text-[13px] truncate">{t.name}</p>
