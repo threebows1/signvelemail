@@ -204,7 +204,9 @@ function AdminPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <Th>Customer</Th><Th>Plan</Th><Th>Billing</Th><Th>Amount</Th><Th>Status</Th><Th>Date</Th>
+                <tr>
+                  <Th>Customer</Th><Th>Plan</Th><Th>Billing</Th><Th>Amount</Th><Th>Status</Th><Th>Date</Th>
+                </tr>
               </thead>
               <tbody>
                 {purchases.slice(0, 25).map((x) => (
@@ -242,7 +244,9 @@ function AdminPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <Th>Person</Th><Th>Plan</Th><Th>Status</Th><Th>Joined</Th><Th>Access</Th>
+                <tr>
+                  <Th>Person</Th><Th>Plan</Th><Th>Status</Th><Th>Joined</Th><Th>Access</Th>
+                </tr>
               </thead>
               <tbody>
                 {filtered.map((p) => {
