@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { X, Copy, Check, Download, Mail, Monitor, Apple, Smartphone } from "lucide-react";
+import { X, Copy, Check, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  GmailLogo,
+  OutlookLogo,
+  YahooLogo,
+  AppleLogo,
+  ThunderbirdLogo,
+  IosMailLogo,
+} from "@/components/email-client-logos";
 
 type Client =
   | "gmail"
@@ -12,15 +20,15 @@ type Client =
   | "yahoo"
   | "thunderbird";
 
-const CLIENTS: { id: Client; label: string; Icon: any; group: string }[] = [
-  { id: "gmail", label: "Gmail (Web)", Icon: Mail, group: "Web" },
-  { id: "outlook-web", label: "Outlook Web", Icon: Mail, group: "Web" },
-  { id: "yahoo", label: "Yahoo Mail", Icon: Mail, group: "Web" },
-  { id: "outlook-win", label: "Outlook — Windows", Icon: Monitor, group: "Desktop" },
-  { id: "outlook-mac", label: "Outlook — macOS", Icon: Apple, group: "Desktop" },
-  { id: "apple-mail", label: "Apple Mail — macOS", Icon: Apple, group: "Desktop" },
-  { id: "thunderbird", label: "Thunderbird", Icon: Monitor, group: "Desktop" },
-  { id: "apple-mail-ios", label: "iOS / iPadOS Mail", Icon: Smartphone, group: "Mobile" },
+const CLIENTS: { id: Client; label: string; Logo: any; group: string }[] = [
+  { id: "gmail", label: "Gmail (Web)", Logo: GmailLogo, group: "Web" },
+  { id: "outlook-web", label: "Outlook Web", Logo: OutlookLogo, group: "Web" },
+  { id: "yahoo", label: "Yahoo Mail", Logo: YahooLogo, group: "Web" },
+  { id: "outlook-win", label: "Outlook — Windows", Logo: OutlookLogo, group: "Desktop" },
+  { id: "outlook-mac", label: "Outlook — macOS", Logo: OutlookLogo, group: "Desktop" },
+  { id: "apple-mail", label: "Apple Mail — macOS", Logo: AppleLogo, group: "Desktop" },
+  { id: "thunderbird", label: "Thunderbird", Logo: ThunderbirdLogo, group: "Desktop" },
+  { id: "apple-mail-ios", label: "iOS / iPadOS Mail", Logo: IosMailLogo, group: "Mobile" },
 ];
 
 const INSTRUCTIONS: Record<Client, string[]> = {
