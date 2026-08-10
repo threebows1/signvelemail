@@ -17,7 +17,9 @@ export const Route = createFileRoute("/app")({
 
 function AppLayout() {
   const { pathname } = useLocation();
-  const allowWhenExpired = pathname.startsWith("/app/settings");
+  const navigate = useNavigate();
+  const { isStaff } = useAuth();
+  const allowWhenExpired = pathname.startsWith("/app/settings") || pathname.startsWith("/app/admin");
   return (
     <div className="min-h-screen bg-background text-foreground font-sans flex">
       <aside className="w-64 border-r border-border bg-white p-6 flex flex-col sticky top-0 h-screen">
@@ -31,16 +33,22 @@ function AppLayout() {
           <NavItem to="/app/templates" label="Templates" />
           <NavItem to="/app/emails" label="Emails" />
           <NavItem to="/app/settings" label="Settings" />
+          {isStaff && <NavItem to="/app/admin" label="Admin" />}
         </nav>
 
         <div className="mt-auto pt-6 border-t border-border">
-          <Link to="/">
-            <button className="w-full text-left text-xs font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
-              Sign Out
-            </button>
-          </Link>
+          <button
+            onClick={async () => {
+              await signOut();
+              navigate({ to: "/" });
+            }}
+            className="w-full text-left text-xs font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+          >
+            Sign Out
+          </button>
         </div>
       </aside>
+
 
       <main className="flex-1 overflow-auto">
         <TrialBanner />
