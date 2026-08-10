@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { PLANS, usePlan } from "@/lib/plan";
+import { recordPlanChange } from "@/lib/billing";
 import { useSignatures } from "@/lib/signature-store";
+
 import {
   DEFAULT_PAYMENT_LINKS,
   STRIPE_DASHBOARD_URL,
@@ -281,8 +283,10 @@ function PlanPanel() {
             type="button"
             onClick={() => {
               setPlan(pl.id);
+              void recordPlanChange(pl.id, "monthly");
               toast.success(`Switched to the ${pl.name} plan`);
             }}
+
             className={`rounded-xl border px-3 py-3 text-left transition-colors ${
               planId === pl.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
             }`}

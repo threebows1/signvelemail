@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      purchases: {
+        Row: {
+          amount_cents: number
+          billing_interval: string
+          created_at: string
+          currency: string
+          id: string
+          plan_id: string
+          plan_name: string
+          status: string
+          stripe_reference: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          billing_interval?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          plan_id?: string
+          plan_name?: string
+          status?: string
+          stripe_reference?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          billing_interval?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          plan_id?: string
+          plan_name?: string
+          status?: string
+          stripe_reference?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       signatures: {
         Row: {
           created_at: string
@@ -47,15 +110,94 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          amount_cents: number
+          billing_interval: string
+          canceled_at: string | null
+          created_at: string
+          currency: string
+          current_period_end: string | null
+          id: string
+          plan_id: string
+          plan_name: string
+          status: string
+          stripe_reference: string | null
+          trial_ends_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          billing_interval?: string
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          id?: string
+          plan_id?: string
+          plan_name?: string
+          status?: string
+          stripe_reference?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          billing_interval?: string
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          id?: string
+          plan_id?: string
+          plan_name?: string
+          status?: string
+          stripe_reference?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "manager" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -182,6 +324,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "manager", "user"],
+    },
   },
 } as const
