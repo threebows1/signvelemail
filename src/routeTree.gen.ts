@@ -19,6 +19,7 @@ import { Route as AppTemplatesRouteImport } from './routes/app.templates'
 import { Route as AppSignatureFormRouteImport } from './routes/app.signature-form'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppEmailsRouteImport } from './routes/app.emails'
+import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AppEditorIdRouteImport } from './routes/app.editor.$id'
@@ -75,6 +76,11 @@ const AppEmailsRoute = AppEmailsRouteImport.update({
   path: '/emails',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
     id: '/.well-known/oauth-protected-resource',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/emails': typeof AppEmailsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/signature-form': typeof AppSignatureFormRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/emails': typeof AppEmailsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/signature-form': typeof AppSignatureFormRoute
@@ -146,6 +154,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/emails': typeof AppEmailsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/signature-form': typeof AppSignatureFormRoute
@@ -165,6 +174,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/app/admin'
     | '/app/emails'
     | '/app/settings'
     | '/app/signature-form'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/app/admin'
     | '/app/emails'
     | '/app/settings'
     | '/app/signature-form'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/app/admin'
     | '/app/emails'
     | '/app/settings'
     | '/app/signature-form'
@@ -292,6 +304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEmailsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/.well-known/oauth-protected-resource': {
       id: '/.well-known/oauth-protected-resource'
       path: '/.well-known/oauth-protected-resource'
@@ -331,6 +350,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
   AppEmailsRoute: typeof AppEmailsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSignatureFormRoute: typeof AppSignatureFormRoute
@@ -340,6 +360,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
   AppEmailsRoute: AppEmailsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSignatureFormRoute: AppSignatureFormRoute,
