@@ -2,6 +2,8 @@ import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon } from "lucide-react"
 import type { ReactNode } from "react";
 import type { SignatureData, SocialKey } from "@/lib/signature-store";
 import { socialGlyphMap, socialBrandColor } from "@/components/signatures/social-icons";
+import { pack2Templates } from "@/components/signatures/templates-pack2";
+
 
 export type TemplateLayout = "single" | "two-column" | "vertical";
 
