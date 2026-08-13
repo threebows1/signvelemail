@@ -109,7 +109,7 @@ function Templates() {
             <div className="p-5 bg-stone-50/40 overflow-hidden">
               <div className="rounded-lg ring-1 ring-black/5 overflow-hidden bg-white text-left">
                 <FitPreview max={0.86} shrinkWrap maxHeight={280}>
-                  {renderSignature(t, defaultData)}
+                  <div style={{ width: "116%" }}>{renderSignature(t, defaultData)}</div>
                 </FitPreview>
               </div>
             </div>
