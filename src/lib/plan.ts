@@ -130,6 +130,8 @@ export type TrialState = {
 export function usePlan() {
   const [planId, setPlanId] = useState<PlanId>("free");
   const [trialStart, setTrialStart] = useState<number | null>(null);
+  const [serverPlan, setServerPlan] = useState<PlanId | null>(null);
+  const [isStaff, setIsStaff] = useState(false);
 
   useEffect(() => {
     const sync = () => {
@@ -154,6 +156,52 @@ export function usePlan() {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
+
+  // Real entitlement lives in the database: subscription row + staff roles.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadFromDb() {
+      const { data: sess } = await supabase.auth.getSession();
+      const user = sess.session?.user;
+      if (!user) {
+        if (!cancelled) { setServerPlan(null); setIsStaff(false); }
+        return;
+      }
+      const [{ data: roles }, { data: sub }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", user.id),
+        supabase
+          .from("subscriptions")
+          .select("plan_id, status, current_period_end")
+          .eq("user_id", user.id)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      if (cancelled) return;
+
+      const staff = (roles ?? []).some((r) => r.role === "admin" || r.role === "manager");
+      setIsStaff(staff);
+
+      const active =
+        sub &&
+        ["active", "trial", "trialing", "complimentary", "past_due"].includes(sub.status) &&
+        (!sub.current_period_end || new Date(sub.current_period_end).getTime() > Date.now());
+      const id = active ? (sub!.plan_id as PlanId) : null;
+      setServerPlan(id && PLANS.some((p) => p.id === id) ? id : null);
+    }
+
+    void loadFromDb();
+    const { data } = supabase.auth.onAuthStateChange(() => void loadFromDb());
+    const onSync = () => void loadFromDb();
+    window.addEventListener(PLAN_EVENT, onSync);
+    return () => {
+      cancelled = true;
+      data.subscription.unsubscribe();
+      window.removeEventListener(PLAN_EVENT, onSync);
+    };
+  }, []);
+
 
 
   const plan = getPlan(planId);
