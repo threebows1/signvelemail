@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { FitPreview } from "@/components/signatures/FitPreview";
 import { templates, renderSignature } from "@/components/signatures/templates";
 import { defaultData } from "@/lib/signature-store";
 
