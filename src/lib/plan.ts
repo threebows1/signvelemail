@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
 
 export type PlanId = "free" | "starter" | "growth" | "custom";
 
