@@ -989,3 +989,15 @@ function StatusBadge({ status }: { status: string }) {
       : "bg-secondary text-muted-foreground";
   return <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-medium ${tone}`}>{status === "paid" ? "Paid" : label}</span>;
 }
+
+function Th({ children }: { children?: React.ReactNode }) {
+  return (
+    <th className="text-left text-[10px] font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground pb-2 pr-4 font-medium">
+      {children}
+    </th>
+  );
+}
+
+function Td({ children, className = "" }: { children?: React.ReactNode; className?: string }) {
+  return <td className={`py-2.5 pr-4 align-top ${className}`}>{children}</td>;
+}
