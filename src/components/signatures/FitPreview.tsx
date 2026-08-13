@@ -82,7 +82,7 @@ export function FitPreview({
   return (
     <div
       ref={boxRef}
-      className={`relative flex items-center justify-center overflow-hidden ${className ?? ""}`}
+      className={`relative flex ${shrinkWrap ? "items-start" : "items-center"} justify-center overflow-hidden ${className ?? ""}`}
       style={shrinkWrap ? { height: boxHeight } : undefined}
     >
       <div

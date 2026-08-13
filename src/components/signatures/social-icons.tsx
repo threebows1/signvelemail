@@ -57,6 +57,14 @@ function SlackGlyph(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+function GlobeGlyph(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" {...props}>
+      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm7.938 7h-3.02a15.6 15.6 0 0 0-1.35-3.48A10.03 10.03 0 0 1 19.938 7zM12 2.06c.83 1.06 1.79 2.79 2.36 4.94H9.64C10.21 4.85 11.17 3.12 12 2.06zM2.06 13a9.95 9.95 0 0 1 0-2h3.4a19.6 19.6 0 0 0 0 2H2.06zm.79 2h3.02c.32 1.24.77 2.42 1.35 3.48A10.03 10.03 0 0 1 2.85 15zm3.02-8H2.85a10.03 10.03 0 0 1 4.37-3.48A15.6 15.6 0 0 0 5.87 7zM12 21.94c-.83-1.06-1.79-2.79-2.36-4.94h4.72c-.57 2.15-1.53 3.88-2.36 4.94zM14.82 15H9.18a17.6 17.6 0 0 1 0-6h5.64a17.6 17.6 0 0 1 0 6zm1.95 3.48c.58-1.06 1.03-2.24 1.35-3.48h3.02a10.03 10.03 0 0 1-4.37 3.48zM18.54 13a19.6 19.6 0 0 0 0-2h3.4a9.95 9.95 0 0 1 0 2h-3.4z" />
+    </svg>
+  );
+}
+
 export const socialGlyphMap: Record<SocialKey, ComponentType<SVGProps<SVGSVGElement>>> = {
   linkedin: LinkedinGlyph as ComponentType<SVGProps<SVGSVGElement>>,
   twitter: SiX as ComponentType<SVGProps<SVGSVGElement>>,
@@ -79,7 +87,7 @@ export const socialGlyphMap: Record<SocialKey, ComponentType<SVGProps<SVGSVGElem
   slack: SlackGlyph as ComponentType<SVGProps<SVGSVGElement>>,
   bluesky: SiBluesky as ComponentType<SVGProps<SVGSVGElement>>,
   mastodon: SiMastodon as ComponentType<SVGProps<SVGSVGElement>>,
-  website: SiX as ComponentType<SVGProps<SVGSVGElement>>,
+  website: GlobeGlyph as ComponentType<SVGProps<SVGSVGElement>>,
 };
 
 export const socialBrandColor: Record<SocialKey, string> = {

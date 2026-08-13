@@ -132,7 +132,7 @@ function SignVelCorporate(d: SignatureData) {
   const bodySize = d.fontSize ?? 13;
   const gap = d.spacing === "compact" ? 4 : d.spacing === "medium" ? 8 : 16;
   return (
-    <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor, lineHeight: d.lineHeight ?? 1.3 }}>
+    <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor, lineHeight: d.lineHeight ?? 1.3, maxWidth: 560 }}>
       <div className="mb-2">
         <p data-sig-name="" style={{ fontSize: titleSize, color: d.titleColor || d.textColor }} className="font-bold leading-tight">{d.name}</p>
         <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.title}</p>
