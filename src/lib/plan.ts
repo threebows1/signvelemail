@@ -206,9 +206,11 @@ export function usePlan() {
 
 
 
-  const plan = getPlan(planId);
+  const effectiveId: PlanId = serverPlan ?? planId;
+  const plan = getPlan(effectiveId);
   const trialDays = plan.trialDays ?? 0;
-  const isPaid = planId !== "free";
+  // Staff (admin/manager) and anyone with a real paid/complimentary subscription never hit the trial wall.
+  const isPaid = isStaff || effectiveId !== "free";
   const endsAt = (trialStart ?? Date.now()) + trialDays * DAY;
   const msLeft = endsAt - Date.now();
   const ready = trialStart !== null;
@@ -223,10 +225,11 @@ export function usePlan() {
   };
 
   return {
-    planId,
+    planId: effectiveId,
     plan,
     trial,
-    setPlan: (id: PlanId) => { writePlanId(id); setPlanId(id); },
+    setPlan: (id: PlanId) => { writePlanId(id); setPlanId(id); setServerPlan(null); },
+
   };
 }
 
