@@ -2,6 +2,8 @@ import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon } from "lucide-react"
 import type { ReactNode } from "react";
 import type { SignatureData, SocialKey } from "@/lib/signature-store";
 import { socialGlyphMap, socialBrandColor } from "@/components/signatures/social-icons";
+import { pack2Templates } from "@/components/signatures/templates-pack2";
+
 
 export type TemplateLayout = "single" | "two-column" | "vertical";
 
@@ -1010,8 +1012,9 @@ export const templates: TemplateMeta[] = [
   { id: "vertical-hairline", name: "Vertical Hairline", category: "Executive", layout: "vertical", accent: "bg-neutral-700", description: "Understated stack divided by a single hairline.", render: VerticalHairline },
   { id: "blank-vertical", name: "Custom Vertical", category: "Custom", layout: "vertical", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Bare vertical starting point for your own design.", render: BlankVertical },
   { id: "custom-blank", name: "Custom / Blank", category: "Custom", layout: "single", accent: "bg-gradient-to-br from-[#5B2EFF] to-[#00E5A0]", description: "Start from a blank canvas and design freely in the editor.", render: LeftLine },
-
+  ...pack2Templates,
 ];
+
 
 export function getTemplate(id: string): TemplateMeta | undefined {
   return templates.find((t) => t.id === id);
