@@ -84,7 +84,7 @@ function Templates() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
         {visible.map((t) => (
           <div
             key={t.id}
@@ -106,11 +106,11 @@ function Templates() {
                 </Button>
               </Link>
             </div>
-            <div className="p-5 bg-stone-50/40 min-h-[280px] overflow-hidden">
+            <div className="p-5 bg-stone-50/40 overflow-hidden">
               <div className="rounded-lg ring-1 ring-black/5 overflow-hidden bg-white text-left">
-                <div className="origin-top-left" style={{ transform: "scale(0.86)", transformOrigin: "top left", width: "116%" }}>
+                <FitPreview max={0.86} shrinkWrap className="max-h-[280px]">
                   {renderSignature(t, defaultData)}
-                </div>
+                </FitPreview>
               </div>
             </div>
             <div className="px-5 py-3 border-t border-border text-xs text-muted-foreground leading-relaxed">
