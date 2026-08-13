@@ -203,7 +203,6 @@ export const defaultData: SignatureData = {
     youtube: "https://youtube.com/@signvel",
     whatsapp: "",
     tiktok: "",
-    website: "https://signvel.com",
   },
 };
 
