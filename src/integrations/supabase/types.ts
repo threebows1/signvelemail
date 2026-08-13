@@ -14,26 +14,167 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          announcement: string | null
+          created_at: string
+          default_trial_days: number
+          id: string
+          maintenance_mode: boolean
+          product_name: string
+          signups_enabled: boolean
+          support_email: string | null
+          updated_at: string
+        }
+        Insert: {
+          announcement?: string | null
+          created_at?: string
+          default_trial_days?: number
+          id?: string
+          maintenance_mode?: boolean
+          product_name?: string
+          signups_enabled?: boolean
+          support_email?: string | null
+          updated_at?: string
+        }
+        Update: {
+          announcement?: string | null
+          created_at?: string
+          default_trial_days?: number
+          id?: string
+          maintenance_mode?: boolean
+          product_name?: string
+          signups_enabled?: boolean
+          support_email?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      complimentary_access: {
+        Row: {
+          created_at: string
+          duration: string
+          email: string | null
+          expires_at: string | null
+          granted_by: string | null
+          id: string
+          note: string | null
+          plan_id: string
+          plan_name: string
+          revoked_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration?: string
+          email?: string | null
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          note?: string | null
+          plan_id?: string
+          plan_name?: string
+          revoked_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration?: string
+          email?: string | null
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          note?: string | null
+          plan_id?: string
+          plan_name?: string
+          revoked_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      plans: {
+        Row: {
+          created_at: string
+          employee_limit: number
+          features: Json
+          id: string
+          is_active: boolean
+          monthly_cents: number
+          name: string
+          signature_limit: number
+          sort_order: number
+          tagline: string
+          trial_days: number
+          updated_at: string
+          yearly_cents: number
+        }
+        Insert: {
+          created_at?: string
+          employee_limit?: number
+          features?: Json
+          id: string
+          is_active?: boolean
+          monthly_cents?: number
+          name: string
+          signature_limit?: number
+          sort_order?: number
+          tagline?: string
+          trial_days?: number
+          updated_at?: string
+          yearly_cents?: number
+        }
+        Update: {
+          created_at?: string
+          employee_limit?: number
+          features?: Json
+          id?: string
+          is_active?: boolean
+          monthly_cents?: number
+          name?: string
+          signature_limit?: number
+          sort_order?: number
+          tagline?: string
+          trial_days?: number
+          updated_at?: string
+          yearly_cents?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          account_status: string
           created_at: string
           email: string | null
           full_name: string | null
           id: string
+          last_active_at: string | null
+          organization_name: string | null
+          suspended_at: string | null
           updated_at: string
         }
         Insert: {
+          account_status?: string
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
+          last_active_at?: string | null
+          organization_name?: string | null
+          suspended_at?: string | null
           updated_at?: string
         }
         Update: {
+          account_status?: string
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          last_active_at?: string | null
+          organization_name?: string | null
+          suspended_at?: string | null
           updated_at?: string
         }
         Relationships: []
