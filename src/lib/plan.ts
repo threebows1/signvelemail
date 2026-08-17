@@ -168,7 +168,7 @@ export function usePlan() {
       const { data: sess } = await supabase.auth.getSession();
       const user = sess.session?.user;
       if (!user) {
-        if (!cancelled) { setServerPlan(null); setIsStaff(false); }
+        if (!cancelled) { setServerPlan(null); setIsStaff(false); setEntitlementReady(true); }
         return;
       }
       const [{ data: roles }, { data: sub }] = await Promise.all([
