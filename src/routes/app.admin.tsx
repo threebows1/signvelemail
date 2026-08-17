@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SignInAsButton } from "@/components/admin/SignInAsButton";
+import { CustomerSignatures } from "@/components/admin/CustomerSignatures";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/lib/auth";
@@ -545,7 +546,12 @@ function CustomerDetail({
             )}
           </Panel>
 
+          <Panel title={`Signatures (${signatures})`}>
+            <CustomerSignatures userId={profile.id} />
+          </Panel>
+
           <Panel title="Access controls">
+
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" disabled={busy} onClick={() => void run("Trial extended by 7 days", () => extendTrial(profile.id, 7, sub))}>
                 Extend trial 7 days
