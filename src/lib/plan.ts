@@ -192,6 +192,7 @@ export function usePlan() {
         (!sub.current_period_end || new Date(sub.current_period_end).getTime() > Date.now());
       const id = active ? (sub!.plan_id as PlanId) : null;
       setServerPlan(id && PLANS.some((p) => p.id === id) ? id : null);
+      setEntitlementReady(true);
     }
 
     void loadFromDb();
