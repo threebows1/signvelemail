@@ -545,7 +545,12 @@ function CustomerDetail({
             )}
           </Panel>
 
+          <Panel title={`Signatures (${signatures})`}>
+            <CustomerSignatures userId={profile.id} />
+          </Panel>
+
           <Panel title="Access controls">
+
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" disabled={busy} onClick={() => void run("Trial extended by 7 days", () => extendTrial(profile.id, 7, sub))}>
                 Extend trial 7 days
