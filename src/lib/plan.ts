@@ -134,6 +134,7 @@ export function usePlan() {
   const [trialStart, setTrialStart] = useState<number | null>(null);
   const [serverPlan, setServerPlan] = useState<PlanId | null>(null);
   const [isStaff, setIsStaff] = useState(false);
+  const [entitlementReady, setEntitlementReady] = useState(false);
 
   useEffect(() => {
     const sync = () => {
