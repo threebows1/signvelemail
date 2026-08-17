@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { SignInAsButton } from "@/components/admin/SignInAsButton";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/lib/auth";
 import { can, ROLE_SUMMARY } from "@/lib/permissions";
@@ -554,6 +556,7 @@ function CustomerDetail({
               <Button size="sm" variant="outline" disabled={busy} onClick={() => void run("Access cancelled", () => cancelAccess(profile.id, sub))}>
                 Cancel access
               </Button>
+              <SignInAsButton userId={profile.id} disabled={busy || isSelf} />
               {profile.account_status === "suspended" ? (
                 <Button size="sm" disabled={busy} className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => void run("Account restored", () => setAccountStatus(profile.id, "active"))}>
                   Restore account
@@ -566,9 +569,11 @@ function CustomerDetail({
             </div>
             <p className="text-xs text-muted-foreground mt-3">
               Suspending blocks the customer from creating or editing signatures — enforced by database rules, not just
-              hidden buttons.
+              hidden buttons. “Sign in as customer” replaces your session with theirs — sign out to come back to your own
+              admin account.
             </p>
           </Panel>
+
         </>
       )}
 
