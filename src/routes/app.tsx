@@ -1,10 +1,18 @@
-import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useLocation, useNavigate } from "@tanstack/react-router";
 import { Logo } from "@/components/Logo";
 import { TrialBanner, TrialGuard } from "@/components/TrialGuard";
 import { signOut, useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 
 
 export const Route = createFileRoute("/app")({
+  ssr: false,
+  beforeLoad: async ({ location }) => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      throw redirect({ to: "/login", search: { next: location.href } });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Dashboard — Sign Vel" },

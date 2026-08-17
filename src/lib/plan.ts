@@ -134,6 +134,7 @@ export function usePlan() {
   const [trialStart, setTrialStart] = useState<number | null>(null);
   const [serverPlan, setServerPlan] = useState<PlanId | null>(null);
   const [isStaff, setIsStaff] = useState(false);
+  const [entitlementReady, setEntitlementReady] = useState(false);
 
   useEffect(() => {
     const sync = () => {
@@ -167,7 +168,7 @@ export function usePlan() {
       const { data: sess } = await supabase.auth.getSession();
       const user = sess.session?.user;
       if (!user) {
-        if (!cancelled) { setServerPlan(null); setIsStaff(false); }
+        if (!cancelled) { setServerPlan(null); setIsStaff(false); setEntitlementReady(true); }
         return;
       }
       const [{ data: roles }, { data: sub }] = await Promise.all([
@@ -191,6 +192,7 @@ export function usePlan() {
         (!sub.current_period_end || new Date(sub.current_period_end).getTime() > Date.now());
       const id = active ? (sub!.plan_id as PlanId) : null;
       setServerPlan(id && PLANS.some((p) => p.id === id) ? id : null);
+      setEntitlementReady(true);
     }
 
     void loadFromDb();
@@ -213,7 +215,8 @@ export function usePlan() {
   const isPaid = isStaff || effectiveId !== "free";
   const endsAt = (trialStart ?? Date.now()) + trialDays * DAY;
   const msLeft = endsAt - Date.now();
-  const ready = trialStart !== null;
+  // Never judge the trial until the database has told us the real entitlement (staff / paid).
+  const ready = trialStart !== null && entitlementReady;
 
   const trial: TrialState = {
     ready,
