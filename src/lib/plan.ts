@@ -215,7 +215,8 @@ export function usePlan() {
   const isPaid = isStaff || effectiveId !== "free";
   const endsAt = (trialStart ?? Date.now()) + trialDays * DAY;
   const msLeft = endsAt - Date.now();
-  const ready = trialStart !== null;
+  // Never judge the trial until the database has told us the real entitlement (staff / paid).
+  const ready = trialStart !== null && entitlementReady;
 
   const trial: TrialState = {
     ready,
