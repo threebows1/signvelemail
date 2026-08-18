@@ -133,10 +133,13 @@ function SignVelCorporate(d: SignatureData) {
   const gap = d.spacing === "compact" ? 4 : d.spacing === "medium" ? 8 : 16;
   return (
     <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor, lineHeight: d.lineHeight ?? 1.3, maxWidth: 560 }}>
-      <div className="mb-2">
-        <p data-sig-name="" style={{ fontSize: titleSize, color: d.titleColor || d.textColor }} className="font-bold leading-tight">{d.name}</p>
-        <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.title}</p>
-        <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.company}</p>
+      <div className="mb-2 flex items-center" style={{ gap: 14 }}>
+        {(d.photoUrl || d.showPlaceholderPhoto) && <Avatar d={d} size={58} />}
+        <div>
+          <p data-sig-name="" style={{ fontSize: titleSize, color: d.titleColor || d.textColor }} className="font-bold leading-tight">{d.name}</p>
+          <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.title}</p>
+          <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.company}</p>
+        </div>
       </div>
       {d.showDividingLines !== false && <div className="my-3" style={{ height: lineSize, background: lineColor }} />}
       <div className="flex items-start my-4" style={{ gap: gap * 2 }}>
