@@ -304,10 +304,23 @@ function inlineStyles(node: HTMLElement): string {
       const v = s.getPropertyValue(prop);
       if (v && v !== "none" && v !== "normal" && v !== "auto") css += `${prop}:${v};`;
     }
+    // Keep emails, phones and URLs on one line — email clients otherwise break them mid-value.
+    if (isAtomicValue(src[i])) css += "white-space:nowrap;word-break:keep-all;";
     (dst[i] as HTMLElement).setAttribute("style", scalePx(css, zoomOf(src[i])));
     (dst[i] as HTMLElement).removeAttribute("class");
   }
   return clone.outerHTML;
+}
+
+/** True for leaf nodes whose whole text is a single unbreakable value (email, phone, URL). */
+function isAtomicValue(el: HTMLElement): boolean {
+  if (el.children.length > 0) return false;
+  const t = (el.textContent || "").trim();
+  if (!t || t.length > 90) return false;
+  const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phone = /^[+(]?[\d][\d\s().+-]{5,}$/;
+  const url = /^(https?:\/\/|www\.)?[\w-]+(\.[\w-]+)+(\/\S*)?$/;
+  return email.test(t) || phone.test(t) || url.test(t);
 }
 
 function flatten(node: HTMLElement): HTMLElement[] {

@@ -1,4 +1,5 @@
 import type { SignatureData, SocialKey } from "@/lib/signature-store";
+import { derivePhones } from "@/lib/signature-store";
 import { socialGlyphMap, socialBrandColor } from "@/components/signatures/social-icons";
 import type { TemplateMeta } from "@/components/signatures/templates";
 
@@ -95,13 +96,8 @@ const Photo = ({ d, size = 56, square = false }: { d: SignatureData; size?: numb
   );
 };
 
-const firstPhone = (d: SignatureData) =>
-  d.phones?.find((p) => p.value)?.value || d.mobile || d.phone || "";
-const secondPhone = (d: SignatureData) => {
-  const list = (d.phones || []).filter((p) => p.value);
-  if (list.length > 1) return list[1].value;
-  return d.phone && d.phone !== firstPhone(d) ? d.phone : "";
-};
+const firstPhone = (d: SignatureData) => derivePhones(d)[0]?.value || "";
+const secondPhone = (d: SignatureData) => derivePhones(d)[1]?.value || "";
 
 const QR = ({ color = "#111" }: { color?: string }) => (
   <svg width="64" height="64" viewBox="0 0 29 29" shapeRendering="crispEdges" aria-hidden="true">

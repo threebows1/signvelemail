@@ -1,6 +1,7 @@
 import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SignatureData, SocialKey } from "@/lib/signature-store";
+import { derivePhones } from "@/lib/signature-store";
 import { socialGlyphMap, socialBrandColor } from "@/components/signatures/social-icons";
 import { pack2Templates } from "@/components/signatures/templates-pack2";
 
@@ -171,7 +172,7 @@ function SignVelCorporate(d: SignatureData) {
         )}
         <div className="flex-1" style={{ display: "flex", flexDirection: "column", gap }}>
           <IconRow Icon={Mail} text={d.email} color={accent} d={d} />
-          {(d.phones && d.phones.length > 0 ? d.phones : [{ type: "mobile", value: d.mobile }, { type: "main", value: d.phone }]).map((p, i) =>
+          {derivePhones(d).map((p, i) =>
             p.value ? <IconRow key={i} Icon={p.type === "mobile" ? Smartphone : Phone} text={p.value} color={accent} d={d} /> : null,
           )}
           <IconRow Icon={MapPin} text={d.address} color={accent} d={d} />

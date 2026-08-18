@@ -46,9 +46,7 @@ export type SignatureData = {
   phones?: PhoneEntry[];
   address: string;
   mapUrl?: string;
-  personalAddress?: string;
   website: string;
-  schedulingUrl?: string;
   // Media
   photoUrl?: string;
   logoUrl?: string;
@@ -153,9 +151,7 @@ export const defaultData: SignatureData = {
   ],
   address: "500 Market Street, Suite 400, San Francisco, CA 94105",
   mapUrl: "",
-  personalAddress: "",
   website: "signvel.com",
-  schedulingUrl: "",
   photoUrl: "",
   logoUrl: "",
   logoWidth: 150,
@@ -204,6 +200,14 @@ export const defaultData: SignatureData = {
   },
 };
 
+/** Always derive the phone list from the editable Mobile / Office fields so previews stay in sync. */
+export function derivePhones(d: SignatureData): PhoneEntry[] {
+  return [
+    { type: "mobile" as PhoneType, value: (d.mobile || "").trim() },
+    { type: "main" as PhoneType, value: (d.phone || "").trim() },
+  ].filter((p) => p.value);
+}
+
 const KEY = "signvel:signatures:v1";
 
 function readLocal(): SavedSignature[] {
@@ -219,7 +223,22 @@ function readLocal(): SavedSignature[] {
 
 function writeLocal(list: SavedSignature[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(KEY, JSON.stringify(list));
+  const strip = (s: SavedSignature): SavedSignature => ({
+    ...s,
+    data: { ...s.data, photoUrl: "", logoUrl: "" },
+  });
+  try {
+    localStorage.setItem(KEY, JSON.stringify(list));
+  } catch {
+    // Uploaded images (base64) can blow the ~5MB quota — cache without them.
+    try {
+      localStorage.setItem(KEY, JSON.stringify(list.map(strip)));
+    } catch {
+      try {
+        localStorage.removeItem(KEY);
+      } catch { /* ignore */ }
+    }
+  }
   window.dispatchEvent(new StorageEvent("storage", { key: KEY }));
 }
 
@@ -277,7 +296,7 @@ export function useSignatures() {
 
 export async function getSignature(id: string): Promise<SavedSignature | undefined> {
   const { data } = await supabase.auth.getSession();
-  if (data.session) {
+  if (data.session && isCloudId(id)) {
     try {
       const { data: rows, error } = await supabase
         .from("signatures")
@@ -301,7 +320,7 @@ export async function saveSignature(sig: SavedSignature) {
   writeLocal(local);
 
   const { data } = await supabase.auth.getSession();
-  if (data.session) {
+  if (data.session && isCloudId(sig.id)) {
     try {
       const { data: existing } = await supabase.from("signatures").select("id").eq("id", sig.id).limit(1);
       const row = {
@@ -330,7 +349,7 @@ export async function deleteSignature(id: string) {
   writeLocal(readLocal().filter((s) => s.id !== id));
 
   const { data } = await supabase.auth.getSession();
-  if (data.session) {
+  if (data.session && isCloudId(id)) {
     try {
       const { error } = await supabase.from("signatures").delete().eq("id", id);
       if (error) throw error;
@@ -340,6 +359,16 @@ export async function deleteSignature(id: string) {
   }
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isCloudId(id: string) {
+  return UUID_RE.test(id);
+}
+
 export function newSignatureId() {
-  return `SIG-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
 }
