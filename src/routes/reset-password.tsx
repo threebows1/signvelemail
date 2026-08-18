@@ -58,7 +58,7 @@ function ResetPassword() {
         <Link to="/" aria-label="Sign Vel home">
           <Logo size={44} wordmarkClassName="text-lg" />
         </Link>
-        <Link to="/login">
+        <Link to="/login" search={{ next: undefined }}>
           <Button variant="ghost" size="sm">
             Sign in
           </Button>
