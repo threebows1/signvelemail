@@ -244,28 +244,7 @@ function Editor() {
                   <Field label="Office Phone" value={sig.data.phone} onChange={(v) => patch("phone", v)} />
                   <Field label="Address" value={sig.data.address} onChange={(v) => patch("address", v)} />
                   <Field label="Address / Map URL" value={sig.data.mapUrl || ""} onChange={(v) => patch("mapUrl", v)} placeholder="https://maps.google.com/…" />
-                  <Field label="Personal Address" value={sig.data.personalAddress || ""} onChange={(v) => patch("personalAddress", v)} />
-                  <BrandingField
-                    value={sig.data.website}
-                    onChange={(v) => patch("website", v)}
-                    onBranding={(b) => {
-                      setSig((s) => ({
-                        ...s,
-                        data: {
-                          ...s.data,
-                          logoUrl: b.logoUrl || s.data.logoUrl,
-                          primaryColor: b.primary || s.data.primaryColor,
-                          accentColor: b.accent || s.data.accentColor,
-                          themeColor: b.primary || s.data.themeColor,
-                          iconColor: b.primary || s.data.iconColor,
-                          socialIconColor: b.primary || s.data.socialIconColor,
-                          dividingLineColor: b.primary || s.data.dividingLineColor,
-                        },
-                        updatedAt: Date.now(),
-                      }));
-                    }}
-                  />
-                  <Field label="Scheduling URL" value={sig.data.schedulingUrl || ""} onChange={(v) => patch("schedulingUrl", v)} placeholder="https://cal.com/…" />
+                  <Field label="Website" value={sig.data.website} onChange={(v) => patch("website", v)} placeholder="company.com" />
                 </Section>
               </>
             )}
