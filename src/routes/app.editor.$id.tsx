@@ -334,6 +334,7 @@ function Editor() {
         onClose={() => setExportOpen(false)}
         previewRef={previewRef}
         signatureName={sig.name}
+        signatureId={sig.id}
       />
     </div>
   );
