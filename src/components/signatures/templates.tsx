@@ -133,10 +133,13 @@ function SignVelCorporate(d: SignatureData) {
   const gap = d.spacing === "compact" ? 4 : d.spacing === "medium" ? 8 : 16;
   return (
     <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor, lineHeight: d.lineHeight ?? 1.3, maxWidth: 560 }}>
-      <div className="mb-2">
-        <p data-sig-name="" style={{ fontSize: titleSize, color: d.titleColor || d.textColor }} className="font-bold leading-tight">{d.name}</p>
-        <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.title}</p>
-        <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.company}</p>
+      <div className="mb-2 flex items-center" style={{ gap: 14 }}>
+        {(d.photoUrl || d.showPlaceholderPhoto) && <Avatar d={d} size={58} />}
+        <div>
+          <p data-sig-name="" style={{ fontSize: titleSize, color: d.titleColor || d.textColor }} className="font-bold leading-tight">{d.name}</p>
+          <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.title}</p>
+          <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.company}</p>
+        </div>
       </div>
       {d.showDividingLines !== false && <div className="my-3" style={{ height: lineSize, background: lineColor }} />}
       <div className="flex items-start my-4" style={{ gap: gap * 2 }}>
@@ -517,7 +520,7 @@ function UnderlineAccent(d: SignatureData) {
 function FullGrid(d: SignatureData) {
   return (
     <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
-      <p data-sig-name="" className="text-xl font-bold">{d.name}{d.pronouns && <span className="text-xs font-normal ml-2" style={{ color: d.mutedColor }}>({d.pronouns})</span>}</p>
+      <p data-sig-name="" className="text-xl font-bold">{d.name}</p>
       <p className="text-sm mb-4" style={{ color: d.primaryColor }}>{d.title}, {d.company}</p>
       <table className="text-[12px]" style={{ color: d.textColor }}>
         <tbody>
@@ -663,7 +666,7 @@ function ModernTech(d: SignatureData) {
       <div className="flex items-center gap-4">
         <Avatar d={d} size={52} />
         <div>
-          <p data-sig-name="" className="font-semibold">{d.name} <span className="text-xs font-normal" style={{ color: d.mutedColor }}>· {d.pronouns}</span></p>
+          <p data-sig-name="" className="font-semibold">{d.name}</p>
           <p className="text-xs" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
         </div>
       </div>

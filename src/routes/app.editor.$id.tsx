@@ -235,10 +235,7 @@ function Editor() {
                 <Section title="Identity">
                   <Field label="Full Name" value={sig.data.name} onChange={(v) => patch("name", v)} />
                   <Field label="Job Title" value={sig.data.title} onChange={(v) => patch("title", v)} />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Field label="Department" value={sig.data.department || ""} onChange={(v) => patch("department", v)} />
-                    <Field label="Pronouns" value={sig.data.pronouns || ""} onChange={(v) => patch("pronouns", v)} />
-                  </div>
+                  <Field label="Department" value={sig.data.department || ""} onChange={(v) => patch("department", v)} />
                   <Field label="Company" value={sig.data.company} onChange={(v) => patch("company", v)} />
                 </Section>
                 <Section title="Contact">

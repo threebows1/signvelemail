@@ -245,7 +245,6 @@ function WorkingDetails(d: SignatureData) {
       <div className="border border-black/10 rounded-lg px-6 py-5">
         <p className="text-[16px] font-bold">
           <span data-sig-name="">{d.name}</span>
-          {d.pronouns ? <span className="text-[12px] font-normal ml-2" style={{ color: d.mutedColor }}>({d.pronouns})</span> : null}
         </p>
         <p className="text-[12.5px] mt-1" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
         <div className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
@@ -667,7 +666,7 @@ function MultiEntity(d: SignatureData) {
           </div>
           <div className="text-right">
             <span className="rounded px-2 py-1 text-[9.5px] tracking-[0.16em] uppercase" style={{ background: `${accent}12`, color: d.mutedColor, fontFamily: "ui-monospace, monospace" }}>
-              {d.pronouns || "EMEA"}
+              {"EMEA"}
             </span>
             <p className="text-[12.5px] mt-2">{d.email}</p>
           </div>
