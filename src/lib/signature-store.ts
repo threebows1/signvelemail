@@ -204,6 +204,14 @@ export const defaultData: SignatureData = {
   },
 };
 
+/** Always derive the phone list from the editable Mobile / Office fields so previews stay in sync. */
+export function derivePhones(d: SignatureData): PhoneEntry[] {
+  return [
+    { type: "mobile" as PhoneType, value: (d.mobile || "").trim() },
+    { type: "main" as PhoneType, value: (d.phone || "").trim() },
+  ].filter((p) => p.value);
+}
+
 const KEY = "signvel:signatures:v1";
 
 function readLocal(): SavedSignature[] {
