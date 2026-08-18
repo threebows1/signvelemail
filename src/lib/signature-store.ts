@@ -296,7 +296,7 @@ export function useSignatures() {
 
 export async function getSignature(id: string): Promise<SavedSignature | undefined> {
   const { data } = await supabase.auth.getSession();
-  if (data.session) {
+  if (data.session && isCloudId(id)) {
     try {
       const { data: rows, error } = await supabase
         .from("signatures")
@@ -320,7 +320,7 @@ export async function saveSignature(sig: SavedSignature) {
   writeLocal(local);
 
   const { data } = await supabase.auth.getSession();
-  if (data.session) {
+  if (data.session && isCloudId(sig.id)) {
     try {
       const { data: existing } = await supabase.from("signatures").select("id").eq("id", sig.id).limit(1);
       const row = {
@@ -349,7 +349,7 @@ export async function deleteSignature(id: string) {
   writeLocal(readLocal().filter((s) => s.id !== id));
 
   const { data } = await supabase.auth.getSession();
-  if (data.session) {
+  if (data.session && isCloudId(id)) {
     try {
       const { error } = await supabase.from("signatures").delete().eq("id", id);
       if (error) throw error;
@@ -359,6 +359,16 @@ export async function deleteSignature(id: string) {
   }
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isCloudId(id: string) {
+  return UUID_RE.test(id);
+}
+
 export function newSignatureId() {
-  return `SIG-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
 }
