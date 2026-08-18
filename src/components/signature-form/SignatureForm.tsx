@@ -196,7 +196,7 @@ export function SignatureForm() {
     return text + (state.photoUrl ? 1 : 0) + (state.logoUrl ? 1 : 0);
   }, [state]);
 
-  const pct = Math.round((filled / 15) * 100);
+  const pct = Math.round((filled / 12) * 100);
 
   const websiteField = FIELDS.find((f) => f.section === "website")!;
 
@@ -221,12 +221,12 @@ export function SignatureForm() {
             Your signature
           </h2>
           <p className="whitespace-nowrap" style={{ fontWeight: 500, fontSize: 11.5, color: C.secondary }}>
-            Saved automatically · {filled} of 15 fields
+            Saved automatically · {filled} of 12 fields
           </p>
         </div>
         <div
           className="size-[44px] rounded-full flex items-center justify-center shrink-0"
-          style={{ background: `conic-gradient(${C.accent} ${filled / 15}turn, ${C.ringTrack} 0)` }}
+          style={{ background: `conic-gradient(${C.accent} ${filled / 12}turn, ${C.ringTrack} 0)` }}
         >
           <span
             className="size-[34px] rounded-full bg-white flex items-center justify-center"
