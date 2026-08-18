@@ -520,7 +520,7 @@ function UnderlineAccent(d: SignatureData) {
 function FullGrid(d: SignatureData) {
   return (
     <div className="bg-white p-6" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
-      <p data-sig-name="" className="text-xl font-bold">{d.name}{d.pronouns && <span className="text-xs font-normal ml-2" style={{ color: d.mutedColor }}>({d.pronouns})</span>}</p>
+      <p data-sig-name="" className="text-xl font-bold">{d.name}</p>
       <p className="text-sm mb-4" style={{ color: d.primaryColor }}>{d.title}, {d.company}</p>
       <table className="text-[12px]" style={{ color: d.textColor }}>
         <tbody>
@@ -666,7 +666,7 @@ function ModernTech(d: SignatureData) {
       <div className="flex items-center gap-4">
         <Avatar d={d} size={52} />
         <div>
-          <p data-sig-name="" className="font-semibold">{d.name} <span className="text-xs font-normal" style={{ color: d.mutedColor }}>· {d.pronouns}</span></p>
+          <p data-sig-name="" className="font-semibold">{d.name}</p>
           <p className="text-xs" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
         </div>
       </div>

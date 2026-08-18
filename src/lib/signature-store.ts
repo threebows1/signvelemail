@@ -38,7 +38,6 @@ export type SignatureData = {
   name: string;
   title: string;
   department?: string;
-  pronouns?: string;
   company: string;
   // Contact
   email: string;
@@ -144,7 +143,6 @@ export const defaultData: SignatureData = {
   name: "Alex Rivera",
   title: "Brand Designer",
   department: "Design",
-  pronouns: "they/them",
   company: "Sign Vel",
   email: "alex@signvel.com",
   mobile: "+1 (415) 555 0142",

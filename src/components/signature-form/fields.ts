@@ -4,7 +4,6 @@ export type FieldKey =
   | "fullName"
   | "jobTitle"
   | "department"
-  | "pronouns"
   | "company"
   | "email"
   | "mobile"
@@ -27,7 +26,6 @@ export const FIELDS: FieldConfig[] = [
   { key: "fullName", label: "Full name", placeholder: "Alex Rivera", section: "identity" },
   { key: "jobTitle", label: "Job title", placeholder: "Brand Designer", section: "identity" },
   { key: "department", label: "Department", placeholder: "Design", section: "identity", half: true },
-  { key: "pronouns", label: "Pronouns", placeholder: "they/them", section: "identity", half: true },
   { key: "company", label: "Company", placeholder: "Sign Vel", section: "identity" },
 
   { key: "email", label: "Email", placeholder: "alex@signvel.com", section: "contact" },
@@ -51,7 +49,6 @@ export const INITIAL_STATE: SignatureFormState = {
   fullName: "Alex Rivera",
   jobTitle: "Brand Designer",
   department: "Design",
-  pronouns: "they/them",
   company: "Sign Vel",
   email: "alex@signvel.com",
   mobile: "+1 (415) 555 0142",
