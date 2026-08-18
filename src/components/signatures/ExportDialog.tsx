@@ -285,7 +285,7 @@ function scalePx(css: string, factor: number): string {
 /** Inline all computed styles so pasted HTML renders identically in email clients. */
 function inlineStyles(node: HTMLElement, signatureId?: string): string {
   const clone = node.cloneNode(true) as HTMLElement;
-  hostImages(clone, signatureId);
+  hostImages(node, clone, signatureId);
   const src = flatten(node);
   const dst = flatten(clone);
   const KEEP = [
@@ -354,21 +354,27 @@ function inlineStyles(node: HTMLElement, signatureId?: string): string {
  * broken-image placeholder. Point those images at the public HTTPS endpoint that
  * streams the same bytes instead.
  */
-function hostImages(clone: HTMLElement, signatureId?: string) {
-  const imgs = Array.from(clone.querySelectorAll<HTMLImageElement>("img"));
-  const dataImgs = imgs.filter((img) => (img.getAttribute("src") || "").startsWith("data:"));
-  if (dataImgs.length === 0) return;
+function hostImages(source: HTMLElement, clone: HTMLElement, signatureId?: string) {
   if (!signatureId || typeof window === "undefined") return;
   const origin = window.location.origin;
-  // Distinguish logo from profile photo: the profile photo is rendered round /
-  // small, the logo is the wider mark. Fall back to document order.
-  const sorted = [...dataImgs];
-  for (const img of sorted) {
-    const isPhoto = /round|circle/i.test(img.className || "") ||
-      Math.abs(img.clientWidth - img.clientHeight) < 4;
-    const kind = isPhoto ? "photo" : "logo";
-    img.setAttribute("src", `${origin}/api/public/sig-image/${signatureId}/${kind}`);
-    img.removeAttribute("srcset");
+  const src = Array.from(source.querySelectorAll<HTMLImageElement>("img"));
+  const dst = Array.from(clone.querySelectorAll<HTMLImageElement>("img"));
+  for (let i = 0; i < dst.length; i++) {
+    const original = src[i];
+    const target = dst[i];
+    if (!target || !(target.getAttribute("src") || "").startsWith("data:")) continue;
+    // The profile photo renders square/round; the logo is a wider mark.
+    const rect = original?.getBoundingClientRect();
+    const round = /round|circle/i.test(original?.className || "") ||
+      parseFloat(window.getComputedStyle(original || target).borderRadius) > 20;
+    const square = rect ? Math.abs(rect.width - rect.height) < 4 : false;
+    const kind = round || square ? "photo" : "logo";
+    target.setAttribute("src", `${origin}/api/public/sig-image/${signatureId}/${kind}`);
+    target.removeAttribute("srcset");
+    if (rect && rect.width > 0) {
+      target.setAttribute("width", String(Math.round(rect.width)));
+      target.setAttribute("height", String(Math.round(rect.height)));
+    }
   }
 }
 
