@@ -133,7 +133,12 @@ function Editor() {
   const template = getTemplate(sig.templateId) ?? templates[0];
 
   function patch<K extends keyof SignatureData>(k: K, v: SignatureData[K]) {
-    setSig((s) => ({ ...s, data: { ...s.data, [k]: v }, updatedAt: Date.now() }));
+    setSig((s) => {
+      const data = { ...s.data, [k]: v } as SignatureData;
+      // Keep the structured phone list in sync with the Mobile / Office fields
+      if (k === "mobile" || k === "phone") data.phones = derivePhones(data);
+      return { ...s, data, updatedAt: Date.now() };
+    });
   }
   function patchSocial(k: keyof SignatureData["socials"], v: string) {
     setSig((s) => ({ ...s, data: { ...s.data, socials: { ...s.data.socials, [k]: v } }, updatedAt: Date.now() }));
