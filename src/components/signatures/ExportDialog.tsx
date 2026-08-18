@@ -92,11 +92,13 @@ export function ExportDialog({
   onClose,
   previewRef,
   signatureName,
+  signatureId,
 }: {
   open: boolean;
   onClose: () => void;
   previewRef: React.RefObject<HTMLElement | null>;
   signatureName: string;
+  signatureId?: string;
 }) {
   const [client, setClient] = useState<Client>("gmail");
   const [copied, setCopied] = useState<null | "rich" | "html">(null);
@@ -115,7 +117,7 @@ export function ExportDialog({
     const node = previewRef.current;
     if (!node) return;
     try {
-      const html = inlineStyles(node);
+      const html = inlineStyles(node, signatureId);
       const plain = node.innerText;
       if ("ClipboardItem" in window && navigator.clipboard?.write) {
         await navigator.clipboard.write([
@@ -144,7 +146,7 @@ export function ExportDialog({
   const copyHtml = async () => {
     const node = previewRef.current;
     if (!node) return;
-    const html = inlineStyles(node);
+    const html = inlineStyles(node, signatureId);
     await navigator.clipboard.writeText(html);
     setCopied("html");
     setTimeout(() => setCopied(null), 1800);
@@ -153,7 +155,7 @@ export function ExportDialog({
   const downloadHtm = () => {
     const node = previewRef.current;
     if (!node) return;
-    const html = wrapForOutlook(inlineStyles(node));
+    const html = wrapForOutlook(inlineStyles(node, signatureId));
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -281,8 +283,9 @@ function scalePx(css: string, factor: number): string {
 }
 
 /** Inline all computed styles so pasted HTML renders identically in email clients. */
-function inlineStyles(node: HTMLElement): string {
+function inlineStyles(node: HTMLElement, signatureId?: string): string {
   const clone = node.cloneNode(true) as HTMLElement;
+  hostImages(node, clone, signatureId);
   const src = flatten(node);
   const dst = flatten(clone);
   const KEEP = [
@@ -345,6 +348,35 @@ function inlineStyles(node: HTMLElement): string {
   return clone.outerHTML;
 }
 
+
+/**
+ * Gmail and most webmail clients drop base64 `data:` images on paste, leaving a
+ * broken-image placeholder. Point those images at the public HTTPS endpoint that
+ * streams the same bytes instead.
+ */
+function hostImages(source: HTMLElement, clone: HTMLElement, signatureId?: string) {
+  if (!signatureId || typeof window === "undefined") return;
+  const origin = window.location.origin;
+  const src = Array.from(source.querySelectorAll<HTMLImageElement>("img"));
+  const dst = Array.from(clone.querySelectorAll<HTMLImageElement>("img"));
+  for (let i = 0; i < dst.length; i++) {
+    const original = src[i];
+    const target = dst[i];
+    if (!target || !(target.getAttribute("src") || "").startsWith("data:")) continue;
+    // The profile photo renders square/round; the logo is a wider mark.
+    const rect = original?.getBoundingClientRect();
+    const round = /round|circle/i.test(original?.className || "") ||
+      parseFloat(window.getComputedStyle(original || target).borderRadius) > 20;
+    const square = rect ? Math.abs(rect.width - rect.height) < 4 : false;
+    const kind = round || square ? "photo" : "logo";
+    target.setAttribute("src", `${origin}/api/public/sig-image/${signatureId}/${kind}`);
+    target.removeAttribute("srcset");
+    if (rect && rect.width > 0) {
+      target.setAttribute("width", String(Math.round(rect.width)));
+      target.setAttribute("height", String(Math.round(rect.height)));
+    }
+  }
+}
 
 /** True for leaf nodes whose whole text is a single unbreakable value (email, phone, URL). */
 function isAtomicValue(el: HTMLElement): boolean {
