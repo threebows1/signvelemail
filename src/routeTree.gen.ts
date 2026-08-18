@@ -26,6 +26,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as AppEditorIdRouteImport } from './routes/app.editor.$id'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as ApiPublicSigImageIdKindRouteImport } from './routes/api/public/sig-image.$id.$kind'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -115,6 +116,11 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSigImageIdKindRoute = ApiPublicSigImageIdKindRouteImport.update({
+  id: '/api/public/sig-image/$id/$kind',
+  path: '/api/public/sig-image/$id/$kind',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/app/editor/$id': typeof AppEditorIdRoute
+  '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/app/editor/$id': typeof AppEditorIdRoute
+  '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/app/editor/$id': typeof AppEditorIdRoute
+  '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/app/editor/$id'
+    | '/api/public/sig-image/$id/$kind'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -211,6 +221,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/app/editor/$id'
+    | '/api/public/sig-image/$id/$kind'
   id:
     | '__root__'
     | '/'
@@ -230,6 +241,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/app/editor/$id'
+    | '/api/public/sig-image/$id/$kind'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -243,6 +255,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicSigImageIdKindRoute: typeof ApiPublicSigImageIdKindRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -366,6 +379,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sig-image/$id/$kind': {
+      id: '/api/public/sig-image/$id/$kind'
+      path: '/api/public/sig-image/$id/$kind'
+      fullPath: '/api/public/sig-image/$id/$kind'
+      preLoaderRoute: typeof ApiPublicSigImageIdKindRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -403,6 +423,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicSigImageIdKindRoute: ApiPublicSigImageIdKindRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
