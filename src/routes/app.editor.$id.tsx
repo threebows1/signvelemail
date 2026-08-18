@@ -38,7 +38,7 @@ const PALETTES: { name: string; primary: string; accent: string; dark: string }[
   { name: "Sign Vel", primary: "#5B2EFF", accent: "#00E5A0", dark: "#14121F" },
   { name: "Mint", primary: "#0E8A6B", accent: "#00E5A0", dark: "#0B3B2E" },
   { name: "Corporate", primary: "#143A8A", accent: "#6EA8FF", dark: "#0B1B3A" },
-  { name: "Sunset", primary: "#F97316", accent: "#FBBF24", dark: "#7C2D12" },
+  { name: "Gold", primary: "#cd9013", accent: "#F0C84A", dark: "#5C3D05" },
 ];
 
 const FONTS = [
