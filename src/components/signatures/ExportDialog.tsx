@@ -92,11 +92,13 @@ export function ExportDialog({
   onClose,
   previewRef,
   signatureName,
+  signatureId,
 }: {
   open: boolean;
   onClose: () => void;
   previewRef: React.RefObject<HTMLElement | null>;
   signatureName: string;
+  signatureId?: string;
 }) {
   const [client, setClient] = useState<Client>("gmail");
   const [copied, setCopied] = useState<null | "rich" | "html">(null);
