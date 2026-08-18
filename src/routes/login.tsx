@@ -126,6 +126,28 @@ function Login() {
             </Button>
           </form>
 
+          {mode === "signin" && (
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!email) {
+                    toast.error("Enter your email first, then click reset.");
+                    return;
+                  }
+                  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                  });
+                  if (error) toast.error(error.message);
+                  else toast.success("Reset link sent — check your inbox.");
+                }}
+                className="underline decoration-primary/50 underline-offset-4 hover:text-primary"
+              >
+                Forgot your password?
+              </button>
+            </p>
+          )}
+
           <p className="mt-6 text-center text-xs text-muted-foreground">
             {mode === "signup" ? "Already have an account?" : "No account?"}{" "}
             <button
