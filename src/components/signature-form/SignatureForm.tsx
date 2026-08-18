@@ -183,7 +183,6 @@ function UploadTile({
 
 export function SignatureForm() {
   const [state, setState] = useState<SignatureFormState>(INITIAL_STATE);
-  const [fetched, setFetched] = useState(false);
 
   const set = (k: keyof SignatureFormState) => (v: string) => setState((p) => ({ ...p, [k]: v }));
 
@@ -198,14 +197,6 @@ export function SignatureForm() {
   }, [state]);
 
   const pct = Math.round((filled / 15) * 100);
-
-  function fetchBranding() {
-    setFetched(true);
-    if (!state.logoUrl) {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="92" height="92"><rect width="92" height="92" rx="18" fill="#14131A"/><text x="46" y="58" font-family="Manrope,sans-serif" font-size="34" font-weight="800" fill="#fff" text-anchor="middle">${initials(state.company || "Sign Vel")}</text></svg>`;
-      setState((p) => ({ ...p, logoUrl: `data:image/svg+xml;utf8,${encodeURIComponent(svg)}` }));
-    }
-  }
 
   const websiteField = FIELDS.find((f) => f.section === "website")!;
 
@@ -271,7 +262,6 @@ export function SignatureForm() {
           [
             ["Identity", "identity", 4],
             ["Contact", "contact", 5],
-            ["Links", "links", 1],
           ] as const
         ).map(([label, section, total]) => {
           const fields = bySection(section);
@@ -301,27 +291,8 @@ export function SignatureForm() {
         })}
 
         <section>
-          <div className="flex items-stretch gap-[10px]">
-            <div className="flex-1">
-              <FloatingInput field={websiteField} value={state.website} onChange={set("website")} />
-            </div>
-            <button
-              type="button"
-              onClick={fetchBranding}
-              className="h-[47px] px-4 flex items-center gap-2 text-white whitespace-nowrap transition-colors"
-              style={{ background: C.accent, borderRadius: 10, fontWeight: 700, fontSize: 12 }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = C.accentHover)}
-              onMouseLeave={(e) => (e.currentTarget.style.background = C.accent)}
-            >
-              <span className="size-[6px] rounded-full" style={{ background: "#B69BFF" }} />
-              {fetched ? "Branding found" : "Fetch branding"}
-            </button>
-          </div>
-          <p className="mt-2" style={{ fontSize: 11, color: C.tertiary }}>
-            {fetched
-              ? `Pulled logo and brand colour from ${state.website || "your site"} — you can override both.`
-              : "We read your site once to suggest a logo and accent colour."}
-          </p>
+          <SectionHeading label="Website" />
+          <FloatingInput field={websiteField} value={state.website} onChange={set("website")} />
         </section>
       </div>
     </div>

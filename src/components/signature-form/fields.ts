@@ -1,4 +1,4 @@
-export type FieldSection = "identity" | "contact" | "links" | "website";
+export type FieldSection = "identity" | "contact" | "website";
 
 export type FieldKey =
   | "fullName"
@@ -10,8 +10,6 @@ export type FieldKey =
   | "officePhone"
   | "address"
   | "mapUrl"
-  | "personalAddress"
-  | "schedulingUrl"
   | "website";
 
 export type FieldConfig = {
@@ -33,9 +31,6 @@ export const FIELDS: FieldConfig[] = [
   { key: "officePhone", label: "Office phone", placeholder: "+1 (415) 555 0100", section: "contact", half: true },
   { key: "address", label: "Address", placeholder: "500 Market Street, Suite 400", section: "contact" },
   { key: "mapUrl", label: "Address / map URL", placeholder: "https://maps.google.com/…", section: "contact" },
-  { key: "personalAddress", label: "Personal address", placeholder: "Optional", section: "contact" },
-
-  { key: "schedulingUrl", label: "Scheduling URL", placeholder: "https://cal.com/…", section: "links" },
 
   { key: "website", label: "Website", placeholder: "signvel.com", section: "website" },
 ];
@@ -55,8 +50,6 @@ export const INITIAL_STATE: SignatureFormState = {
   officePhone: "+1 (415) 555 0100",
   address: "500 Market Street, Suite 400, San Francisco, CA 94105",
   mapUrl: "",
-  personalAddress: "",
-  schedulingUrl: "",
   website: "signvel.com",
   photoUrl: "",
   logoUrl: "",

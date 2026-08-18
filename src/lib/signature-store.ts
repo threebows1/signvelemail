@@ -46,9 +46,7 @@ export type SignatureData = {
   phones?: PhoneEntry[];
   address: string;
   mapUrl?: string;
-  personalAddress?: string;
   website: string;
-  schedulingUrl?: string;
   // Media
   photoUrl?: string;
   logoUrl?: string;
@@ -153,9 +151,7 @@ export const defaultData: SignatureData = {
   ],
   address: "500 Market Street, Suite 400, San Francisco, CA 94105",
   mapUrl: "",
-  personalAddress: "",
   website: "signvel.com",
-  schedulingUrl: "",
   photoUrl: "",
   logoUrl: "",
   logoWidth: 150,
