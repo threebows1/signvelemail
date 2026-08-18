@@ -328,6 +328,20 @@ function inlineStyles(node: HTMLElement): string {
     "style",
     `${root.getAttribute("style") || ""};display:inline-block;width:auto;min-width:0;max-width:none;margin:0;padding:0;text-align:left;`,
   );
+
+  // Templates are displayed inside a card in the editor and therefore carry
+  // generous outer padding (p-6 / p-8). That padding must not become part of
+  // the email signature itself or it creates a large blank gutter after paste.
+  // Remove only the outermost visual shell; spacing inside the design remains.
+  const shell = Array.from(root.children).find(
+    (child): child is HTMLElement => child instanceof HTMLElement && child.tagName !== "STYLE",
+  );
+  if (shell) {
+    shell.style.setProperty("margin", "0", "important");
+    shell.style.setProperty("padding", "0", "important");
+    shell.style.setProperty("width", "auto", "important");
+    shell.style.setProperty("min-width", "0", "important");
+  }
   return clone.outerHTML;
 }
 
@@ -351,5 +365,5 @@ function flatten(node: HTMLElement): HTMLElement[] {
 
 function wrapForOutlook(inner: string) {
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Signature</title></head><body>${inner}</body></html>`;
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Signature</title></head><body style="margin:0;padding:0;">${inner}</body></html>`;
 }
