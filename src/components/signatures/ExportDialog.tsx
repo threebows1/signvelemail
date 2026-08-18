@@ -304,12 +304,18 @@ function inlineStyles(node: HTMLElement): string {
     // Centering helpers resolve to large used px margins in getComputedStyle,
     // which show up as a big blank gap on the left of the exported signature.
     const autoX = /(^|\s)(mx-auto|m-auto|ml-auto|mr-auto)(\s|$)/.test(cls);
+    // Block containers stretch to the preview box width; exporting that used
+    // width padded the signature out. Only keep widths that were authored.
+    const authoredWidth = /(^|\s)(w-\d|w-\[|w-px|w-full|max-w-|min-w-)/.test(cls) || !!el.style.width || !!el.style.maxWidth;
+    const stretchy = !authoredWidth && /^(block|flex|grid)$/.test(s.display);
     let css = "";
     for (const prop of KEEP) {
       if (autoX && (prop === "margin" || prop === "margin-left" || prop === "margin-right")) continue;
+      if (stretchy && (prop === "width" || prop === "min-width")) continue;
       const v = s.getPropertyValue(prop);
       if (v && v !== "none" && v !== "normal" && v !== "auto") css += `${prop}:${v};`;
     }
+
     // Keep emails, phones and URLs on one line — email clients otherwise break them mid-value.
     if (isAtomicValue(el)) css += "white-space:nowrap;word-break:keep-all;";
     (dst[i] as HTMLElement).setAttribute("style", scalePx(css, zoomOf(el)));
