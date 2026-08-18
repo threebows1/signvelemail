@@ -223,7 +223,22 @@ function readLocal(): SavedSignature[] {
 
 function writeLocal(list: SavedSignature[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(KEY, JSON.stringify(list));
+  const strip = (s: SavedSignature): SavedSignature => ({
+    ...s,
+    data: { ...s.data, photoUrl: "", logoUrl: "" },
+  });
+  try {
+    localStorage.setItem(KEY, JSON.stringify(list));
+  } catch {
+    // Uploaded images (base64) can blow the ~5MB quota — cache without them.
+    try {
+      localStorage.setItem(KEY, JSON.stringify(list.map(strip)));
+    } catch {
+      try {
+        localStorage.removeItem(KEY);
+      } catch { /* ignore */ }
+    }
+  }
   window.dispatchEvent(new StorageEvent("storage", { key: KEY }));
 }
 
