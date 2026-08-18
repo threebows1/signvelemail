@@ -298,19 +298,33 @@ function inlineStyles(node: HTMLElement): string {
     "vertical-align", "overflow",
   ];
   for (let i = 0; i < src.length; i++) {
-    const s = window.getComputedStyle(src[i]);
+    const el = src[i];
+    const s = window.getComputedStyle(el);
+    const cls = el.className && typeof el.className === "string" ? el.className : "";
+    // Centering helpers resolve to large used px margins in getComputedStyle,
+    // which show up as a big blank gap on the left of the exported signature.
+    const autoX = /(^|\s)(mx-auto|m-auto|ml-auto|mr-auto)(\s|$)/.test(cls);
     let css = "";
     for (const prop of KEEP) {
+      if (autoX && (prop === "margin" || prop === "margin-left" || prop === "margin-right")) continue;
       const v = s.getPropertyValue(prop);
       if (v && v !== "none" && v !== "normal" && v !== "auto") css += `${prop}:${v};`;
     }
     // Keep emails, phones and URLs on one line — email clients otherwise break them mid-value.
-    if (isAtomicValue(src[i])) css += "white-space:nowrap;word-break:keep-all;";
-    (dst[i] as HTMLElement).setAttribute("style", scalePx(css, zoomOf(src[i])));
+    if (isAtomicValue(el)) css += "white-space:nowrap;word-break:keep-all;";
+    (dst[i] as HTMLElement).setAttribute("style", scalePx(css, zoomOf(el)));
     (dst[i] as HTMLElement).removeAttribute("class");
   }
+  // Shrink-wrap the outer wrapper: the preview box is much wider than the
+  // signature, and exporting that width leaves dead space around the content.
+  const root = dst[0] as HTMLElement;
+  root.setAttribute(
+    "style",
+    `${root.getAttribute("style") || ""};display:inline-block;width:auto;min-width:0;max-width:none;margin:0;padding:0;text-align:left;`,
+  );
   return clone.outerHTML;
 }
+
 
 /** True for leaf nodes whose whole text is a single unbreakable value (email, phone, URL). */
 function isAtomicValue(el: HTMLElement): boolean {
