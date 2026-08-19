@@ -15,6 +15,7 @@ import { ExportDialog } from "@/components/signatures/ExportDialog";
 import { socialGlyphMap, socialBrandColor } from "@/components/signatures/social-icons";
 import { ArrowDown, ArrowUp, Check, ChevronRight, Download, Palette, Plus, Share2, Sliders, User } from "lucide-react";
 import { ALL_SOCIAL_KEYS, FEATURED_SOCIAL_KEYS, derivePhones } from "@/lib/signature-store";
+import { useBrandColors } from "@/lib/brand-colors";
 
 export const Route = createFileRoute("/app/editor/$id")({
   head: ({ params }) => ({
@@ -1181,6 +1182,8 @@ function IconsPane({
         suffix="px"
       />
 
+      <SocialIconColorPicker sig={sig} patch={patch} />
+
       <SocialIconPreview sig={sig} />
 
       <div className="pt-3 border-t" style={{ borderColor: "#EDEDF4" }}>
@@ -1209,6 +1212,118 @@ function IconsPane({
           suffix="px"
         />
       </div>
+    </div>
+  );
+}
+
+/* ---- Social icon color: presets, brand auto-detect, custom ---- */
+function SocialIconColorPicker({
+  sig,
+  patch,
+}: {
+  sig: SavedSignature;
+  patch: <K extends keyof SignatureData>(k: K, v: SignatureData[K]) => void;
+}) {
+  const d = sig.data;
+  const current = (d.socialIconColor || d.primaryColor || "#5B2EFF").toLowerCase();
+  const isBrandStyle = (d.socialIconStyle || "color") === "color";
+  const { colors: brandColors, loading, hasSource } = useBrandColors(d.logoUrl, d.photoUrl);
+  const customRef = useRef<HTMLInputElement>(null);
+
+  const presets: { label: string; value: string }[] = [
+    { label: "Theme", value: d.themeColor || d.primaryColor },
+    { label: "Primary", value: d.primaryColor },
+    { label: "Accent", value: d.accentColor },
+    { label: "Text", value: d.textColor },
+    { label: "Muted", value: d.mutedColor },
+    ...PALETTES.map((p) => ({ label: p.name, value: p.primary })),
+    { label: "Ink", value: "#14121F" },
+    { label: "Slate", value: "#64748B" },
+  ].filter((p, i, arr) => p.value && arr.findIndex((x) => x.value?.toLowerCase() === p.value?.toLowerCase()) === i);
+
+  const Swatch = ({ value, label }: { value: string; label: string }) => (
+    <button
+      type="button"
+      title={`${label} · ${value.toUpperCase()}`}
+      onClick={() => patch("socialIconColor", value)}
+      className="relative rounded-full transition-transform hover:scale-105"
+      style={{
+        width: 26,
+        height: 26,
+        background: value,
+        border: current === value.toLowerCase() ? "2px solid #14121F" : "1px solid rgba(0,0,0,.12)",
+        boxShadow: current === value.toLowerCase() ? "0 0 0 2px #fff inset" : "none",
+      }}
+    />
+  );
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between">
+        <label className="text-[12px] text-[#6B7280]">Icon color</label>
+        <span className="text-[11px] font-mono text-[#9A9AA8]">{current.toUpperCase()}</span>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        {presets.map((p) => (
+          <Swatch key={p.label + p.value} value={p.value} label={p.label} />
+        ))}
+        <button
+          type="button"
+          onClick={() => customRef.current?.click()}
+          className="rounded-full grid place-items-center text-[10px] text-[#6B7280]"
+          style={{ width: 26, height: 26, border: "1px dashed #C9C9D6", background: "#fff" }}
+          title="Custom color"
+        >
+          <Plus size={13} />
+        </button>
+        <input
+          ref={customRef}
+          type="color"
+          value={current}
+          onChange={(e) => patch("socialIconColor", e.target.value)}
+          className="sr-only"
+        />
+      </div>
+
+      <div className="rounded-[10px] p-2.5" style={{ border: "1px solid #EDEDF4", background: "#FAFAFD" }}>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] font-semibold uppercase" style={{ letterSpacing: "0.14em", color: "#8A8A98" }}>
+            From your branding
+          </span>
+          {brandColors.length > 0 && (
+            <button
+              type="button"
+              className="text-[12px] font-semibold"
+              style={{ color: "#5B2EFF" }}
+              onClick={() => patch("socialIconColor", brandColors[0])}
+            >
+              Auto-apply
+            </button>
+          )}
+        </div>
+        {!hasSource ? (
+          <p className="text-[11.5px] text-[#9A9AA8] mt-1.5">
+            Upload a logo in Content → Media and we’ll pull its colors here automatically.
+          </p>
+        ) : loading ? (
+          <p className="text-[11.5px] text-[#9A9AA8] mt-1.5">Reading colors from your logo…</p>
+        ) : brandColors.length === 0 ? (
+          <p className="text-[11.5px] text-[#9A9AA8] mt-1.5">No strong colors found in your logo.</p>
+        ) : (
+          <div className="flex flex-wrap items-center gap-1.5 mt-2">
+            {brandColors.map((c) => (
+              <Swatch key={c} value={c} label="Logo" />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {isBrandStyle && (
+        <p className="text-[11.5px] text-[#9A9AA8]">
+          Brand style uses each platform’s own colors. Pick Solid or Outline to use the color above.
+        </p>
+      )}
     </div>
   );
 }
