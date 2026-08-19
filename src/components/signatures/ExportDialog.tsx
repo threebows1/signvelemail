@@ -394,8 +394,7 @@ function sanitizeExportHtml(clone: HTMLElement): string {
     // Attribute hygiene: no event handlers, no framework/data hooks, no ids/classes.
     for (const attr of Array.from(el.attributes)) {
       const name = attr.name;
-      const keep = ALLOWED_ATTRS.has(name) || (name.startsWith("aria-") && false);
-      if (!keep || /^on/i.test(name)) el.removeAttribute(name);
+      if (!ALLOWED_ATTRS.has(name) || /^on/i.test(name)) el.removeAttribute(name);
     }
 
     // Neutralise unsafe URL schemes on links and images.
