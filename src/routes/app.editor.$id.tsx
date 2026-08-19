@@ -1181,6 +1181,8 @@ function IconsPane({
         suffix="px"
       />
 
+      <SocialIconColorPicker sig={sig} patch={patch} />
+
       <SocialIconPreview sig={sig} />
 
       <div className="pt-3 border-t" style={{ borderColor: "#EDEDF4" }}>
