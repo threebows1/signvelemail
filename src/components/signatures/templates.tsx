@@ -96,11 +96,7 @@ const Socials = ({ d, color, ring = false, size }: { d: SignatureData; color: st
   );
 };
 
-        );
-      })}
-    </div>
-  );
-};
+
 
 const Disclaimer = ({ d }: { d: SignatureData }) =>
   d.showDisclaimer && d.disclaimer ? (
