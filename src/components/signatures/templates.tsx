@@ -1,4 +1,10 @@
-import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon } from "lucide-react";
+import {
+  MailGlyph as Mail,
+  PhoneGlyph as Phone,
+  MobileGlyph as Smartphone,
+  PinGlyph as MapPin,
+  LinkGlyph as LinkIcon,
+} from "@/components/signatures/contact-icons";
 import type { ReactNode } from "react";
 import type { SignatureData, SocialKey } from "@/lib/signature-store";
 import { derivePhones } from "@/lib/signature-store";
