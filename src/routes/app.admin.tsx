@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SignInAsButton } from "@/components/admin/SignInAsButton";
 import { CustomerSignatures } from "@/components/admin/CustomerSignatures";
+import { SetPasswordButton } from "@/components/admin/SetPasswordButton";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/lib/auth";
@@ -563,6 +564,7 @@ function CustomerDetail({
                 Cancel access
               </Button>
               <SignInAsButton userId={profile.id} disabled={busy || isSelf} />
+              <SetPasswordButton userId={profile.id} disabled={busy} />
               {profile.account_status === "suspended" ? (
                 <Button size="sm" disabled={busy} className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => void run("Account restored", () => setAccountStatus(profile.id, "active"))}>
                   Restore account
