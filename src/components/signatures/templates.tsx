@@ -1071,6 +1071,25 @@ export function renderSignature(template: TemplateMeta, d: SignatureData) {
     `.${scopeClass} [class*="mb-"]:not([class*="mb-0"]){margin-bottom:${gap}px !important;}`,
   );
 
+  // Dividing lines: every template's rule/border obeys one thickness + color.
+  if (d.showDividingLines === false) {
+    rules.push(
+      `.${scopeClass} [data-sig-rule]{display:none !important;}`,
+      `.${scopeClass} hr{display:none !important;}`,
+    );
+  } else {
+    const lw = (d.dividingLineSize ?? 2) / scale;
+    const lc = d.dividingLineColor || d.primaryColor;
+    rules.push(
+      `.${scopeClass} [data-sig-rule]{height:${lw}px !important;min-height:${lw}px !important;background:${lc} !important;}`,
+      `.${scopeClass} hr{border:0 !important;height:${lw}px !important;background:${lc} !important;}`,
+      `.${scopeClass} [style*="border-top"],.${scopeClass} [class*="border-t-"],.${scopeClass} [class~="border-t"]{border-top-width:${lw}px !important;border-top-color:${lc} !important;}`,
+      `.${scopeClass} [style*="border-bottom"],.${scopeClass} [class*="border-b-"],.${scopeClass} [class~="border-b"]{border-bottom-width:${lw}px !important;border-bottom-color:${lc} !important;}`,
+      `.${scopeClass} [style*="border-left"],.${scopeClass} [class*="border-l-"],.${scopeClass} [class~="border-l"]{border-left-width:${lw}px !important;border-left-color:${lc} !important;}`,
+      `.${scopeClass} [style*="border-right"],.${scopeClass} [class*="border-r-"],.${scopeClass} [class~="border-r"]{border-right-width:${lw}px !important;border-right-color:${lc} !important;}`,
+    );
+  }
+
 
   return (
     <div
