@@ -564,6 +564,7 @@ function CustomerDetail({
                 Cancel access
               </Button>
               <SignInAsButton userId={profile.id} disabled={busy || isSelf} />
+              <SetPasswordButton userId={profile.id} disabled={busy} />
               {profile.account_status === "suspended" ? (
                 <Button size="sm" disabled={busy} className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => void run("Account restored", () => setAccountStatus(profile.id, "active"))}>
                   Restore account
