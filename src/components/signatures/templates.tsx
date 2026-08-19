@@ -1048,7 +1048,8 @@ export function renderSignature(template: TemplateMeta, d: SignatureData) {
   const titleOn = !!d.separateTitleFontSize && !!d.titleFontSize;
   const spacing = d.spacing || "large";
   const gap = spacing === "compact" ? 3 : spacing === "medium" ? 8 : 14;
-  const scopeClass = `sigscope-${template.id}-${titleOn ? Math.round(d.titleFontSize!) : "d"}-${d.separateWebsite ? "w" : "i"}-${spacing}`;
+  const ruleKey = d.showDividingLines === false ? "off" : `${d.dividingLineSize ?? 2}-${(d.dividingLineColor || d.primaryColor).replace(/[^0-9a-z]/gi, "")}`;
+  const scopeClass = `sigscope-${template.id}-${titleOn ? Math.round(d.titleFontSize!) : "d"}-${d.separateWebsite ? "w" : "i"}-${spacing}-${ruleKey}`;
 
   const rules: string[] = [];
   if (titleOn) {
