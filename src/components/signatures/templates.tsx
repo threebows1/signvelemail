@@ -62,16 +62,17 @@ const Socials = ({ d, color, ring = false, size }: { d: SignatureData; color: st
     .map((k) => ({ url: (d.socials as any)[k], Icon: socialGlyphMap[k], key: k }))
     .filter((s) => s.url && s.Icon);
 
-  const glyphSize = Math.round(finalSize * 0.62);
+  const ringWidth = Math.max(1, Math.round(finalSize / 18));
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
+    <div className="flex items-center flex-wrap" style={{ gap: Math.max(5, Math.round(finalSize * 0.22)) }}>
       {items.map(({ Icon, key }, i) => {
         const isColor = style === "color";
         const isPlain = style === "plain";
         const isOutline = style === "outline";
         const brand = socialBrandColor[key] || finalColor;
         const glyphColor = isColor ? brand : isPlain || isOutline ? finalColor : "#fff";
+        const glyphSize = Math.round(finalSize * (isColor || isPlain ? 0.86 : isOutline ? 0.5 : 0.54));
         return (
           <span
             key={i}
@@ -81,13 +82,20 @@ const Socials = ({ d, color, ring = false, size }: { d: SignatureData; color: st
               background: isColor || isPlain || isOutline ? "transparent" : finalColor,
               color: glyphColor,
               fill: glyphColor,
-              border: isOutline ? `1px solid ${finalColor}` : "none",
+              border: isOutline ? `${ringWidth}px solid ${finalColor}` : "none",
               borderRadius: isColor || isPlain ? 0 : "9999px",
+              lineHeight: 1,
             }}
             className="inline-flex items-center justify-center overflow-hidden"
           >
-            <Icon style={{ width: glyphSize, height: glyphSize, color: glyphColor, fill: glyphColor }} />
+            <Icon style={{ width: glyphSize, height: glyphSize, color: glyphColor, fill: glyphColor, display: "block" }} />
           </span>
+        );
+      })}
+    </div>
+  );
+};
+
         );
       })}
     </div>
