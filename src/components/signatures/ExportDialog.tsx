@@ -300,7 +300,17 @@ function inlineStyles(node: HTMLElement, signatureId?: string): string {
     "width", "height", "min-width", "max-width", "min-height", "max-height",
     "vertical-align", "overflow",
   ];
+  // Elements hidden in the preview must never reach the export — measure them on
+  // the live node (computed style), before any inlining happens.
+  const hidden = new Set<number>();
   for (let i = 0; i < src.length; i++) {
+    const s = window.getComputedStyle(src[i]);
+    if (s.display === "none" || s.visibility === "hidden" || parseFloat(s.opacity) === 0) hidden.add(i);
+  }
+  for (let i = 0; i < src.length; i++) {
+    if (hidden.has(i)) continue;
+
+
     const el = src[i];
     const s = window.getComputedStyle(el);
     const cls = el.className && typeof el.className === "string" ? el.className : "";
@@ -346,17 +356,88 @@ function inlineStyles(node: HTMLElement, signatureId?: string): string {
     shell.style.setProperty("min-width", "0", "important");
   }
 
-  // Every style is inlined by now, so the injected <style>/<script> blocks are
-  // dead weight. Left in place, clients that strip them (Gmail, Outlook Web)
-  // spill their raw CSS text into the pasted signature.
-  clone.querySelectorAll("style,script,link").forEach((n) => n.remove());
-  // Elements the preview hides must not reappear as blank rows after paste.
-  Array.from(clone.querySelectorAll<HTMLElement>("*")).forEach((el) => {
-    const s = el.getAttribute("style") || "";
-    if (/display:\s*none/.test(s) || /visibility:\s*hidden/.test(s)) el.remove();
-  });
-  return clone.outerHTML;
+  // Drop everything hidden in the preview (measured on the live node above) so it
+  // can't reappear as blank rows or stray text after paste.
+  hidden.forEach((i) => (dst[i] as HTMLElement)?.remove());
+
+  return sanitizeExportHtml(clone);
 }
+
+/**
+ * Final safety net before the HTML leaves the app. Every style is inlined by this
+ * point, so anything script-like, non-visual or hidden is dead weight that email
+ * clients render as raw text.
+ */
+function sanitizeExportHtml(clone: HTMLElement): string {
+  // Non-visual and unsafe nodes: their contents leak as plain text in clients
+  // that strip the tag but keep the text (Gmail, Outlook Web).
+  clone
+    .querySelectorAll("style,script,link,meta,noscript,template,iframe,object,embed,base,title,form,input,button,svg script")
+    .forEach((n) => n.remove());
+
+  // HTML comments (conditional comments included) survive paste in some clients.
+  const walker = document.createTreeWalker(clone, NodeFilter.SHOW_COMMENT);
+  const comments: Comment[] = [];
+  while (walker.nextNode()) comments.push(walker.currentNode as Comment);
+  comments.forEach((c) => c.remove());
+
+  const ALLOWED_ATTRS = new Set([
+    "style", "src", "href", "alt", "title", "width", "height", "align", "valign",
+    "border", "cellpadding", "cellspacing", "colspan", "rowspan", "target", "rel",
+    // inline SVG geometry (icon glyphs)
+    "viewBox", "xmlns", "fill", "stroke", "stroke-width", "stroke-linecap",
+    "stroke-linejoin", "d", "cx", "cy", "r", "x", "y", "x1", "x2", "y1", "y2",
+    "rx", "ry", "points", "transform", "opacity",
+  ]);
+
+  Array.from(clone.querySelectorAll<HTMLElement>("*")).forEach((el) => {
+    // Attribute hygiene: no event handlers, no framework/data hooks, no ids/classes.
+    for (const attr of Array.from(el.attributes)) {
+      const name = attr.name;
+      if (!ALLOWED_ATTRS.has(name) || /^on/i.test(name)) el.removeAttribute(name);
+    }
+
+    // Neutralise unsafe URL schemes on links and images.
+    for (const urlAttr of ["href", "src"]) {
+      const v = el.getAttribute(urlAttr);
+      if (v && /^\s*(javascript|vbscript|file|blob):/i.test(v)) el.removeAttribute(urlAttr);
+    }
+
+    // Any residual hidden markup (inline or attribute driven).
+    const style = el.getAttribute("style") || "";
+    if (
+      /display:\s*none/i.test(style) ||
+      /visibility:\s*hidden/i.test(style) ||
+      /(^|;)\s*opacity:\s*0(\.0+)?\s*(;|$)/i.test(style) ||
+      el.hasAttribute("hidden")
+    ) {
+      el.remove();
+      return;
+    }
+
+    // Strip expression()/url(javascript:) style payloads and CSS variables that
+    // reference tokens the receiving client has never heard of.
+    if (style && /expression\s*\(|javascript:|@import/i.test(style)) {
+      el.setAttribute(
+        "style",
+        style
+          .split(";")
+          .filter((d) => !/expression\s*\(|javascript:|@import/i.test(d))
+          .join(";"),
+      );
+    }
+  });
+
+  // Empty wrappers left behind by removals paste as stray blank lines.
+  for (let pass = 0; pass < 3; pass++) {
+    Array.from(clone.querySelectorAll<HTMLElement>("div,span,p,td,tr,table,section,a")).forEach((el) => {
+      if (el.children.length === 0 && !(el.textContent || "").trim() && !el.querySelector("img,svg,br,hr")) el.remove();
+    });
+  }
+
+  return clone.outerHTML.replace(/<!--[\s\S]*?-->/g, "").replace(/\s{2,}/g, " ");
+}
+
 
 /**
  * Compact plain-text flavour of the signature. `innerText` of the preview keeps
