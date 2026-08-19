@@ -142,7 +142,7 @@ function SignVelCorporate(d: SignatureData) {
           <p style={{ fontSize: bodySize, color: d.mutedColor }} className="leading-snug">{d.company}</p>
         </div>
       </div>
-      {d.showDividingLines !== false && <div className="my-3" style={{ height: lineSize, background: lineColor }} />}
+      {d.showDividingLines !== false && <div data-sig-rule="" className="my-3" style={{ height: lineSize, background: lineColor }} />}
       <div className="flex items-start my-4" style={{ gap: gap * 2 }}>
         {d.logoUrl ? (
           <img src={d.logoUrl} alt={d.company} className="shrink-0 object-contain" style={{ width: d.logoWidth ?? 150 }} />
@@ -182,7 +182,7 @@ function SignVelCorporate(d: SignatureData) {
       {d.separateWebsite && (
         <div data-sig-website="" className="mb-3"><IconRow Icon={LinkIcon} text={d.website} color={accent} d={d} /></div>
       )}
-      {d.showDividingLines !== false && <div className="mt-4 mb-3" style={{ height: lineSize, background: lineColor }} />}
+      {d.showDividingLines !== false && <div data-sig-rule="" className="mt-4 mb-3" style={{ height: lineSize, background: lineColor }} />}
       <Socials d={d} color={accent} />
       <Disclaimer d={d} />
     </div>
@@ -892,7 +892,7 @@ function CenteredStack(d: SignatureData) {
       <p data-sig-name="" className="text-[17px] font-semibold mt-3">{d.name}</p>
       <p className="text-[12px]" style={{ color: d.primaryColor }}>{d.title}</p>
       <p className="text-[11px] uppercase tracking-[0.25em] mt-1" style={{ color: d.mutedColor }}>{d.company}</p>
-      <div className="mx-auto my-4" style={{ height: 1, width: 64, background: `${d.mutedColor}44` }} />
+      <div data-sig-rule="" className="mx-auto my-4" style={{ height: 1, width: 64, background: `${d.mutedColor}44` }} />
       <div className="text-[12px] space-y-0.5" style={{ color: d.mutedColor }}>
         <p>{d.email}</p>
         <p>{d.mobile}</p>
@@ -950,7 +950,7 @@ function VerticalHairline(d: SignatureData) {
     <div className="bg-white p-7" style={{ fontFamily: d.fontFamily, color: d.textColor }}>
       <p data-sig-name="" className="text-[15px] font-medium tracking-tight">{d.name}</p>
       <p className="text-[12px]" style={{ color: d.mutedColor }}>{d.title}</p>
-      <div className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
+      <div data-sig-rule="" className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
       <p className="text-[12px] font-medium">{d.company}</p>
       <p className="text-[12px]" style={{ color: d.mutedColor }}>{d.email} · {d.mobile}</p>
       <p data-sig-website="" className="text-[12px]" style={{ color: d.primaryColor }}>{d.website}</p>

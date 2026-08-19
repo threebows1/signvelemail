@@ -158,7 +158,7 @@ function Ledger(d: SignatureData) {
       <div className="border border-black/10 rounded-lg p-6">
         <p data-sig-name="" className="text-[17px] font-bold" style={{ color: accent }}>{d.name}</p>
         <p className="text-[12.5px] mt-1">{d.title} | {d.company}</p>
-        <div className="my-3" style={{ height: 1, background: `${d.mutedColor}44` }} />
+        <div data-sig-rule="" className="my-3" style={{ height: 1, background: `${d.mutedColor}44` }} />
         <table className="text-[12.5px]">
           <tbody>
             {rows.filter(([, v]) => v).map(([k, v]) => (
@@ -206,7 +206,7 @@ function DarkMode(d: SignatureData) {
           <p data-sig-name="" className="text-[20px] font-bold text-white" style={{ fontFamily: "Georgia, serif" }}>{d.name}</p>
           <span className="text-[9.5px] uppercase tracking-[0.2em] font-medium" style={{ color: accent }}>{d.title}</span>
         </div>
-        <div className="my-3" style={{ height: 2, background: accent }} />
+        <div data-sig-rule="" className="my-3" style={{ height: 2, background: accent }} />
         <p className="text-[12.5px]" style={{ color: "#d4d4d4" }}>{d.company}{d.address ? ` · ${d.address}` : ""}</p>
         <p className="text-[12.5px] mt-1" style={{ color: "#d4d4d4" }}>{d.email}{firstPhone(d) ? ` · ${firstPhone(d)}` : ""}</p>
         <div className="mt-4"><SocialRow d={d} variant="plain" color={accent} /></div>
@@ -243,7 +243,7 @@ function WorkingDetails(d: SignatureData) {
           <span data-sig-name="">{d.name}</span>
         </p>
         <p className="text-[12.5px] mt-1" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
-        <div className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
+        <div data-sig-rule="" className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
         <table className="text-[12.5px]">
           <tbody>
             <tr>
@@ -391,7 +391,7 @@ function SignoffNotice(d: SignatureData) {
         <div className="flex-1">
           <p data-sig-name="" className="text-[18px] font-bold" style={{ fontFamily: "Georgia, serif" }}>{d.name}</p>
           <p className="text-[12.5px]" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
-          <div className="my-2" style={{ height: 1, background: `${d.mutedColor}33` }} />
+          <div data-sig-rule="" className="my-2" style={{ height: 1, background: `${d.mutedColor}33` }} />
           <table className="text-[12.5px]">
             <tbody>
               <tr><td className="pr-3 font-semibold">email:</td><td>{d.email}</td></tr>
@@ -477,7 +477,7 @@ function SidePromo(d: SignatureData) {
         <div className="flex-1 border border-black/10 rounded-lg px-5 py-4">
           <p data-sig-name="" className="text-[18px] font-bold" style={{ fontFamily: "Georgia, serif" }}>{d.name}</p>
           <p className="text-[12.5px] mt-0.5" style={{ color: d.mutedColor }}>{d.title} · {d.company}</p>
-          <div className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
+          <div data-sig-rule="" className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
           {firstPhone(d) && <p className="text-[12.5px]">{firstPhone(d)}</p>}
           <p className="text-[12.5px]" style={{ color: d.linkColor || accent }}>{d.email}</p>
           <div className="mt-3"><SocialRow d={d} variant="plain" limit={3} size={18} /></div>
@@ -514,7 +514,7 @@ function OutlinePanel(d: SignatureData) {
             <tr><td className="pr-6 py-[2px]" style={{ color: d.mutedColor }}>Email</td><td>{d.email}</td></tr>
           </tbody>
         </table>
-        <div className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
+        <div data-sig-rule="" className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
         <div className="flex items-center justify-between">
           <SocialRow d={d} variant="outline" limit={3} size={26} />
           <span className="text-[10px] tracking-[0.16em]" style={{ color: d.mutedColor, fontFamily: "ui-monospace, monospace" }}>SUN–THU · 07:00–16:00</span>
@@ -533,7 +533,7 @@ function ColourWordmark(d: SignatureData) {
       {d.tagline && (
         <p className="text-[11px] uppercase tracking-[0.2em] mt-2" style={{ color: d.mutedColor, fontFamily: "ui-monospace, monospace" }}>{d.tagline}</p>
       )}
-      <div className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
+      <div data-sig-rule="" className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
       <div className="flex items-start justify-between gap-6">
         <div>
           <p data-sig-name="" className="text-[16px] font-bold">{d.name}</p>
@@ -654,7 +654,7 @@ function MultiEntity(d: SignatureData) {
             </p>
           </div>
         </div>
-        <div className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
+        <div data-sig-rule="" className="my-3" style={{ height: 1, background: `${d.mutedColor}33` }} />
         <div className="flex items-start justify-between gap-6">
           <div>
             <p data-sig-name="" className="text-[17px] font-bold">{d.name}</p>
