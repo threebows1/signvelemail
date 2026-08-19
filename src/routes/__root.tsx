@@ -122,8 +122,26 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Password-recovery emails sometimes land on the site root (Supabase Site URL)
+ * instead of /reset-password. Forward the recovery token there so the user can
+ * actually choose a new password instead of seeing the landing page.
+ */
+function useRecoveryRedirect() {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const { pathname, hash, search } = window.location;
+    if (pathname.startsWith("/reset-password")) return;
+    const isRecovery =
+      hash.includes("type=recovery") ||
+      new URLSearchParams(search).get("type") === "recovery";
+    if (isRecovery) window.location.replace(`/reset-password${search}${hash}`);
+  }, []);
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useRecoveryRedirect();
 
   return (
     <QueryClientProvider client={queryClient}>
