@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { PLANS, usePlan } from "@/lib/plan";
 import { recordPlanChange } from "@/lib/billing";
 import { useSignatures } from "@/lib/signature-store";
+import { useAuth } from "@/lib/auth";
 
 import {
   DEFAULT_PAYMENT_LINKS,
@@ -62,6 +63,7 @@ const DEFAULTS: Prefs = {
 };
 
 function Settings() {
+  const { isAdmin } = useAuth();
   const [p, setP] = useState<Prefs>(DEFAULTS);
 
   useEffect(() => {
@@ -112,9 +114,12 @@ function Settings() {
         <PlanPanel />
       </Section>
 
-      <Section title="Payments (owner only)">
-        <PaymentsPanel />
-      </Section>
+      {isAdmin && (
+        <Section title="Payments (owner only)">
+          <PaymentsPanel />
+        </Section>
+      )}
+
 
 
       <Section title="Branding defaults">
