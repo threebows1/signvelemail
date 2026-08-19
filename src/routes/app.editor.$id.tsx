@@ -688,7 +688,7 @@ function SocialIconPreview({ sig }: { sig: SavedSignature }) {
   const size = d.socialIconSize ?? 30;
   const finalColor = d.socialIconColor || d.primaryColor;
   const keys = FEATURED_SOCIAL_KEYS;
-  const glyph = Math.round(size * 0.62);
+  const ringWidth = Math.max(1, Math.round(size / 18));
   return (
     <div className="rounded-lg border border-border bg-stone-50 p-3">
       <p className="text-[10px] uppercase tracking-wider font-[JetBrains_Mono] text-muted-foreground mb-2">
@@ -702,6 +702,7 @@ function SocialIconPreview({ sig }: { sig: SavedSignature }) {
           const isOutline = style === "outline";
           const brand = socialBrandColor[k] || finalColor;
           const glyphColor = isColor ? brand : isPlain || isOutline ? finalColor : "#fff";
+          const glyph = Math.round(size * (isColor || isPlain ? 0.86 : isOutline ? 0.5 : 0.54));
           return (
             <span
               key={k}
@@ -712,12 +713,13 @@ function SocialIconPreview({ sig }: { sig: SavedSignature }) {
                 background: isColor || isPlain || isOutline ? "transparent" : finalColor,
                 color: glyphColor,
                 fill: glyphColor,
-                border: isOutline ? `1px solid ${finalColor}` : "none",
+                border: isOutline ? `${ringWidth}px solid ${finalColor}` : "none",
                 borderRadius: isColor || isPlain ? 0 : "9999px",
+                lineHeight: 1,
               }}
               className="inline-flex items-center justify-center overflow-hidden"
             >
-              <Glyph style={{ width: glyph, height: glyph, color: glyphColor, fill: glyphColor }} />
+              <Glyph style={{ width: glyph, height: glyph, color: glyphColor, fill: glyphColor, display: "block" }} />
             </span>
           );
         })}
@@ -725,6 +727,7 @@ function SocialIconPreview({ sig }: { sig: SavedSignature }) {
     </div>
   );
 }
+
 
 
 

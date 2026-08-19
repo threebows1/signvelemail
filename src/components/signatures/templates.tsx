@@ -1,4 +1,10 @@
-import { Mail, Phone, Smartphone, MapPin, Link as LinkIcon } from "lucide-react";
+import {
+  MailGlyph as Mail,
+  PhoneGlyph as Phone,
+  MobileGlyph as Smartphone,
+  PinGlyph as MapPin,
+  LinkGlyph as LinkIcon,
+} from "@/components/signatures/contact-icons";
 import type { ReactNode } from "react";
 import type { SignatureData, SocialKey } from "@/lib/signature-store";
 import { derivePhones } from "@/lib/signature-store";
@@ -56,16 +62,17 @@ const Socials = ({ d, color, ring = false, size }: { d: SignatureData; color: st
     .map((k) => ({ url: (d.socials as any)[k], Icon: socialGlyphMap[k], key: k }))
     .filter((s) => s.url && s.Icon);
 
-  const glyphSize = Math.round(finalSize * 0.62);
+  const ringWidth = Math.max(1, Math.round(finalSize / 18));
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
+    <div className="flex items-center flex-wrap" style={{ gap: Math.max(5, Math.round(finalSize * 0.22)) }}>
       {items.map(({ Icon, key }, i) => {
         const isColor = style === "color";
         const isPlain = style === "plain";
         const isOutline = style === "outline";
         const brand = socialBrandColor[key] || finalColor;
         const glyphColor = isColor ? brand : isPlain || isOutline ? finalColor : "#fff";
+        const glyphSize = Math.round(finalSize * (isColor || isPlain ? 0.86 : isOutline ? 0.5 : 0.54));
         return (
           <span
             key={i}
@@ -75,18 +82,21 @@ const Socials = ({ d, color, ring = false, size }: { d: SignatureData; color: st
               background: isColor || isPlain || isOutline ? "transparent" : finalColor,
               color: glyphColor,
               fill: glyphColor,
-              border: isOutline ? `1px solid ${finalColor}` : "none",
+              border: isOutline ? `${ringWidth}px solid ${finalColor}` : "none",
               borderRadius: isColor || isPlain ? 0 : "9999px",
+              lineHeight: 1,
             }}
             className="inline-flex items-center justify-center overflow-hidden"
           >
-            <Icon style={{ width: glyphSize, height: glyphSize, color: glyphColor, fill: glyphColor }} />
+            <Icon style={{ width: glyphSize, height: glyphSize, color: glyphColor, fill: glyphColor, display: "block" }} />
           </span>
         );
       })}
     </div>
   );
 };
+
+
 
 const Disclaimer = ({ d }: { d: SignatureData }) =>
   d.showDisclaimer && d.disclaimer ? (
@@ -102,6 +112,7 @@ const IconRow = ({ Icon, text, color, ring = false, d }: { Icon: any; text: stri
   const isPlain = style === "plain";
   const isOutline = style === "outline";
   const isNone = style === "none";
+  const glyph = Math.round(size * (isPlain ? 0.72 : 0.52));
   return (
     <div className="flex items-center gap-3" style={{ fontSize: d?.fontSize ? `${d.fontSize}px` : "13px", lineHeight: d?.lineHeight ?? 1.3 }}>
       {!isNone && (
@@ -111,18 +122,20 @@ const IconRow = ({ Icon, text, color, ring = false, d }: { Icon: any; text: stri
             height: size,
             background: isPlain || isOutline ? "transparent" : iconColor,
             color: isPlain || isOutline ? iconColor : "#fff",
-            border: isOutline ? `1px solid ${iconColor}` : "none",
+            border: isOutline ? `${Math.max(1, Math.round(size / 16))}px solid ${iconColor}` : "none",
             borderRadius: isPlain ? 0 : "9999px",
+            lineHeight: 1,
           }}
           className="inline-flex items-center justify-center shrink-0"
         >
-          <Icon style={{ width: size * 0.55, height: size * 0.55 }} />
+          <Icon style={{ width: glyph, height: glyph, display: "block" }} />
         </span>
       )}
       <span>{text}</span>
     </div>
   );
 };
+
 
 /* ============ 1. Sign Vel Corporate (flagship reference) ============ */
 function SignVelCorporate(d: SignatureData) {
