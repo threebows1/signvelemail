@@ -16,7 +16,7 @@ const base = (props: P) => ({
   viewBox: "0 0 24 24",
   fill: "none",
   stroke: "currentColor",
-  strokeWidth: 1.9,
+  strokeWidth: 1.75,
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
   xmlns: "http://www.w3.org/2000/svg",
@@ -28,8 +28,8 @@ export function MailGlyph(props: P) {
   // ink box: x 3.5-20.5, y 6-18  → centre (12,12)
   return (
     <svg {...base(props)}>
-      <rect x="3.5" y="6" width="17" height="12" rx="2.2" />
-      <path d="M4.6 8.2 12 13.1l7.4-4.9" />
+      <rect x="2.8" y="5.6" width="18.4" height="12.8" rx="2.6" />
+      <path d="M4.2 8.1 12 13.3l7.8-5.2" />
     </svg>
   );
 }
@@ -47,8 +47,8 @@ export function MobileGlyph(props: P) {
   // ink box: x 7.5-16.5, y 3-21 → centre (12,12)
   return (
     <svg {...base(props)}>
-      <rect x="7.5" y="3" width="9" height="18" rx="2.4" />
-      <path d="M10.9 18.2h2.2" />
+      <rect x="7" y="2.6" width="10" height="18.8" rx="2.6" />
+      <path d="M10.7 18.4h2.6" />
     </svg>
   );
 }
@@ -57,8 +57,8 @@ export function PinGlyph(props: P) {
   // ink box: x 5.5-18.5, y 4-20 → centre (12,12)
   return (
     <svg {...base(props)}>
-      <path d="M12 20s6.5-5.7 6.5-10.2a6.5 6.5 0 1 0-13 0C5.5 14.3 12 20 12 20Z" />
-      <circle cx="12" cy="9.7" r="2.4" />
+      <path d="M12 20.6s6.9-6 6.9-10.7a6.9 6.9 0 1 0-13.8 0C5.1 14.6 12 20.6 12 20.6Z" />
+      <circle cx="12" cy="9.8" r="2.6" />
     </svg>
   );
 }
