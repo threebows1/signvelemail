@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const showcaseIds = ["photo-card", "left-line", "bold-dark", "framed-border", "split-card", "mono"];
+const showcaseIds = ["al-riyady"];
 
 const emailClients = [
   { name: "Gmail", time: "1 min" },
@@ -276,7 +276,7 @@ function Panel({ children, label }: { children: React.ReactNode; label?: string 
 }
 
 function StepsSection() {
-  const gridTemplates = ["left-line", "mono", "underline-accent", "circle-icons", "stacked", "minimal-divider"];
+  const gridTemplates = ["al-riyady"];
   return (
     <section className="max-w-7xl mx-auto px-6 py-20">
       <Kicker>(03) Four steps</Kicker>
@@ -352,7 +352,7 @@ function StepsSection() {
               </div>
               <div className="rounded-lg border border-border bg-background p-4 overflow-hidden">
                 <div style={{ transform: "scale(0.82)", transformOrigin: "top left" }}>
-                  {renderSignature(templates.find((t) => t.id === "left-line")!, defaultData)}
+                  {renderSignature(templates[0], defaultData)}
                 </div>
               </div>
             </Panel>

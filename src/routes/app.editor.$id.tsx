@@ -88,7 +88,7 @@ function Editor() {
   const defaultSig: SavedSignature = {
     id: "SIG-NEW",
     name: "Untitled Signature",
-    templateId: "left-line",
+    templateId: "al-riyady",
     status: "Draft",
     updatedAt: 0,
     data: { ...defaultData },
@@ -121,7 +121,7 @@ function Editor() {
         setSig({
           id: newSignatureId(),
           name: t ? `${t.name} Signature` : "Untitled Signature",
-          templateId: t?.id ?? "left-line",
+          templateId: t?.id ?? "al-riyady",
           status: "Draft",
           updatedAt: Date.now(),
           data: { ...defaultData },
