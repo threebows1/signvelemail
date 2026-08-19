@@ -108,6 +108,7 @@ const IconRow = ({ Icon, text, color, ring = false, d }: { Icon: any; text: stri
   const isPlain = style === "plain";
   const isOutline = style === "outline";
   const isNone = style === "none";
+  const glyph = Math.round(size * (isPlain ? 0.72 : 0.52));
   return (
     <div className="flex items-center gap-3" style={{ fontSize: d?.fontSize ? `${d.fontSize}px` : "13px", lineHeight: d?.lineHeight ?? 1.3 }}>
       {!isNone && (
@@ -117,18 +118,20 @@ const IconRow = ({ Icon, text, color, ring = false, d }: { Icon: any; text: stri
             height: size,
             background: isPlain || isOutline ? "transparent" : iconColor,
             color: isPlain || isOutline ? iconColor : "#fff",
-            border: isOutline ? `1px solid ${iconColor}` : "none",
+            border: isOutline ? `${Math.max(1, Math.round(size / 16))}px solid ${iconColor}` : "none",
             borderRadius: isPlain ? 0 : "9999px",
+            lineHeight: 1,
           }}
           className="inline-flex items-center justify-center shrink-0"
         >
-          <Icon style={{ width: size * 0.55, height: size * 0.55 }} />
+          <Icon style={{ width: glyph, height: glyph, display: "block" }} />
         </span>
       )}
       <span>{text}</span>
     </div>
   );
 };
+
 
 /* ============ 1. Sign Vel Corporate (flagship reference) ============ */
 function SignVelCorporate(d: SignatureData) {
