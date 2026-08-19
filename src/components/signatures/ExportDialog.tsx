@@ -345,7 +345,33 @@ function inlineStyles(node: HTMLElement, signatureId?: string): string {
     shell.style.setProperty("width", "auto", "important");
     shell.style.setProperty("min-width", "0", "important");
   }
+
+  // Every style is inlined by now, so the injected <style>/<script> blocks are
+  // dead weight. Left in place, clients that strip them (Gmail, Outlook Web)
+  // spill their raw CSS text into the pasted signature.
+  clone.querySelectorAll("style,script,link").forEach((n) => n.remove());
+  // Elements the preview hides must not reappear as blank rows after paste.
+  Array.from(clone.querySelectorAll<HTMLElement>("*")).forEach((el) => {
+    const s = el.getAttribute("style") || "";
+    if (/display:\s*none/.test(s) || /visibility:\s*hidden/.test(s)) el.remove();
+  });
   return clone.outerHTML;
+}
+
+/**
+ * Compact plain-text flavour of the signature. `innerText` of the preview keeps
+ * every empty layout cell, which pasted into plain-text composers as dozens of
+ * blank lines with stray markup between values.
+ */
+function plainText(node: HTMLElement): string {
+  const clone = node.cloneNode(true) as HTMLElement;
+  clone.querySelectorAll("style,script,link").forEach((n) => n.remove());
+  const raw = (clone.textContent || "").replace(/\u00a0/g, " ");
+  return raw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join("\n");
 }
 
 
