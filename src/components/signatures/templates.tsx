@@ -112,26 +112,38 @@ const IconRow = ({ Icon, text, color, ring = false, d }: { Icon: any; text: stri
   const isPlain = style === "plain";
   const isOutline = style === "outline";
   const isNone = style === "none";
-  const glyph = Math.round(size * (isPlain ? 0.72 : 0.52));
+  const glyph = Math.round(size * (isPlain ? 0.74 : 0.58));
+  const fontSize = d?.fontSize ?? 13;
+  const lineHeight = d?.lineHeight ?? 1.35;
+  // Align the badge optically with the FIRST line of text (matters when the
+  // value wraps, e.g. long addresses) instead of centring on the whole block.
+  const firstLineCenter = (fontSize * lineHeight) / 2;
+  const offset = Math.max(0, Math.round(firstLineCenter - size / 2));
   return (
-    <div className="flex items-center gap-3" style={{ fontSize: d?.fontSize ? `${d.fontSize}px` : "13px", lineHeight: d?.lineHeight ?? 1.3 }}>
+    <div style={{ display: "flex", alignItems: "flex-start", fontSize: `${fontSize}px`, lineHeight }}>
       {!isNone && (
         <span
           style={{
             width: size,
             height: size,
+            minWidth: size,
+            marginTop: offset,
+            marginRight: Math.round(size * 0.42),
             background: isPlain || isOutline ? "transparent" : iconColor,
             color: isPlain || isOutline ? iconColor : "#fff",
             border: isOutline ? `${Math.max(1, Math.round(size / 16))}px solid ${iconColor}` : "none",
             borderRadius: isPlain ? 0 : "9999px",
             lineHeight: 1,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
           }}
-          className="inline-flex items-center justify-center shrink-0"
         >
           <Icon style={{ width: glyph, height: glyph, display: "block" }} />
         </span>
       )}
-      <span>{text}</span>
+      <span style={{ display: "block" }}>{text}</span>
     </div>
   );
 };
