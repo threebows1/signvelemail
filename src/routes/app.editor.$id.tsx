@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { getTemplate, templates, renderSignature } from "@/components/signatures/templates";
 import {
@@ -147,8 +148,12 @@ function Editor() {
 
   async function handleSave(status: "Draft" | "Active" = sig.status) {
     const toSave = { ...sig, status, updatedAt: Date.now() };
-    await saveSignature(toSave);
+    const res = await saveSignature(toSave);
     setSig(toSave);
+    if (!res.ok) {
+      toast.error("Couldn't save your signature", { description: res.error });
+      return;
+    }
     setSavedNote(true);
     setTimeout(() => setSavedNote(false), 1600);
     if (id === "new" || id !== toSave.id) navigate({ to: "/app/editor/$id", params: { id: toSave.id }, replace: true });
@@ -156,7 +161,11 @@ function Editor() {
 
   // Auto-save on any change
   useEffect(() => {
-    const t = setTimeout(() => saveSignature(sig), 400);
+    const t = setTimeout(() => {
+      void saveSignature(sig).then((res) => {
+        if (!res.ok) toast.error("Autosave failed", { description: res.error });
+      });
+    }, 600);
     return () => clearTimeout(t);
   }, [sig]);
 

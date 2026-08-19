@@ -312,7 +312,22 @@ export async function getSignature(id: string): Promise<SavedSignature | undefin
   return readLocal().find((s) => s.id === id);
 }
 
-export async function saveSignature(sig: SavedSignature) {
+export type SaveResult = { ok: boolean; error?: string };
+
+/** Serialises saves per signature so overlapping autosaves can't race each other. */
+const saveQueue = new Map<string, Promise<SaveResult>>();
+
+export function saveSignature(sig: SavedSignature): Promise<SaveResult> {
+  const prev = saveQueue.get(sig.id) ?? Promise.resolve({ ok: true } as SaveResult);
+  const next = prev.catch(() => undefined).then(() => writeSignature(sig));
+  saveQueue.set(sig.id, next);
+  void next.finally(() => {
+    if (saveQueue.get(sig.id) === next) saveQueue.delete(sig.id);
+  });
+  return next;
+}
+
+async function writeSignature(sig: SavedSignature): Promise<SaveResult> {
   const local = readLocal();
   const idx = local.findIndex((s) => s.id === sig.id);
   if (idx >= 0) local[idx] = sig;
@@ -320,29 +335,25 @@ export async function saveSignature(sig: SavedSignature) {
   writeLocal(local);
 
   const { data } = await supabase.auth.getSession();
-  if (data.session && isCloudId(sig.id)) {
-    try {
-      const { data: existing } = await supabase.from("signatures").select("id").eq("id", sig.id).limit(1);
-      const row = {
-        id: sig.id,
-        name: sig.name,
-        template_id: sig.templateId,
-        status: sig.status,
-        data: sig.data as any,
-        updated_at: new Date(sig.updatedAt).toISOString(),
-        user_id: data.session.user.id,
-      };
-      if (existing && existing.length > 0) {
-        const { error } = await supabase.from("signatures").update(row).eq("id", sig.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("signatures").insert(row);
-        if (error) throw error;
-      }
-    } catch (e) {
-      console.error("Failed to sync signature to cloud", e);
-    }
+  if (!data.session || !isCloudId(sig.id)) return { ok: true };
+
+  const row = {
+    id: sig.id,
+    name: sig.name,
+    template_id: sig.templateId,
+    status: sig.status,
+    data: sig.data as any,
+    updated_at: new Date(sig.updatedAt).toISOString(),
+    user_id: data.session.user.id,
+  };
+  // Upsert: an insert/update decided by a prior SELECT loses races with autosave
+  // and fails with a duplicate-key error, which is why saving sometimes broke.
+  const { error } = await supabase.from("signatures").upsert(row, { onConflict: "id" });
+  if (error) {
+    console.error("Failed to sync signature to cloud", error);
+    return { ok: false, error: error.message };
   }
+  return { ok: true };
 }
 
 export async function deleteSignature(id: string) {
