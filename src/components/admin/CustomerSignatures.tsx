@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FitPreview } from "@/components/signatures/FitPreview";
-import { getTemplate, renderSignature } from "@/components/signatures/templates";
+import { getTemplate, renderSignature, templates } from "@/components/signatures/templates";
 import { supabase } from "@/integrations/supabase/client";
 import { defaultData, type SignatureData } from "@/lib/signature-store";
 
@@ -50,7 +50,7 @@ export function CustomerSignatures({ userId }: { userId: string }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {rows.map((row) => {
-        const template = getTemplate(row.template_id) ?? getTemplate("left-line")!;
+        const template = getTemplate(row.template_id) ?? templates[0];
         const data: SignatureData = { ...defaultData, ...((row.data as SignatureData) ?? {}) };
         return (
           <div key={row.id} className="rounded-xl border border-border bg-white overflow-hidden">
