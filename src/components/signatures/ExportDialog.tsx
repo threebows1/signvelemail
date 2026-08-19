@@ -300,7 +300,15 @@ function inlineStyles(node: HTMLElement, signatureId?: string): string {
     "width", "height", "min-width", "max-width", "min-height", "max-height",
     "vertical-align", "overflow",
   ];
+  // Elements hidden in the preview must never reach the export — measure them on
+  // the live node (computed style), before any inlining happens.
+  const hidden = new Set<number>();
   for (let i = 0; i < src.length; i++) {
+    const s = window.getComputedStyle(src[i]);
+    if (s.display === "none" || s.visibility === "hidden" || parseFloat(s.opacity) === 0) hidden.add(i);
+  }
+  for (let i = 0; i < src.length; i++) {
+
     const el = src[i];
     const s = window.getComputedStyle(el);
     const cls = el.className && typeof el.className === "string" ? el.className : "";
