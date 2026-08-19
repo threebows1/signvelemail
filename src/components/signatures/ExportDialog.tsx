@@ -118,7 +118,7 @@ export function ExportDialog({
     if (!node) return;
     try {
       const html = inlineStyles(node, signatureId);
-      const plain = node.innerText;
+      const plain = plainText(node);
       if ("ClipboardItem" in window && navigator.clipboard?.write) {
         await navigator.clipboard.write([
           new ClipboardItem({
@@ -364,9 +364,7 @@ function inlineStyles(node: HTMLElement, signatureId?: string): string {
  * blank lines with stray markup between values.
  */
 function plainText(node: HTMLElement): string {
-  const clone = node.cloneNode(true) as HTMLElement;
-  clone.querySelectorAll("style,script,link").forEach((n) => n.remove());
-  const raw = (clone.textContent || "").replace(/\u00a0/g, " ");
+  const raw = (node.innerText || "").replace(/\u00a0/g, " ");
   return raw
     .split("\n")
     .map((line) => line.trim())
