@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SignInAsButton } from "@/components/admin/SignInAsButton";
 import { CustomerSignatures } from "@/components/admin/CustomerSignatures";
+import { SetPasswordButton } from "@/components/admin/SetPasswordButton";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, type AppRole } from "@/lib/auth";
