@@ -115,7 +115,7 @@ function SignatureCard({ sig }: { sig: SavedSignature }) {
         <div>
           <h3 className="font-bold text-[#14121F] truncate max-w-[180px] text-sm tracking-tight">{sig.name}</h3>
           <p className="text-[10px] text-[#9E958F] font-semibold uppercase tracking-widest mt-1">
-            Updated {new Date(sig.updatedAt).toLocaleDateString()}
+            Last edited {new Date(sig.updatedAt).toLocaleDateString()}
           </p>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
