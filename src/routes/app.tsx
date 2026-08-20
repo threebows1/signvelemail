@@ -62,14 +62,14 @@ function AppLayout() {
               to="/app/admin"
               icon={ShieldCheck}
               label="Admin"
-              active={pathname.includes("/admin")}
+              
             />
           )}
           <RailItem 
             to="/app/settings"
             icon={SettingsIcon}
             label="Settings"
-            active={pathname.includes("/settings")}
+            
           />
         </div>
       </aside>
