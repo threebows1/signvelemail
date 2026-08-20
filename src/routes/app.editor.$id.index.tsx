@@ -24,7 +24,7 @@ function EditorPage() {
   const [sig, setSig] = useState<SavedSignature | null>(null);
 
   useEffect(() => {
-    getSignature(id).then(setSig);
+    getSignature(id).then((s) => setSig(s || null));
   }, [id]);
 
   if (!sig) return null;
