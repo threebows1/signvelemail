@@ -50,7 +50,8 @@ function AppLayout() {
               params={params.id ? { id: params.id } : undefined}
               icon={item.icon}
               label={item.label}
-              active={item.exact ? pathname === item.to : pathname.includes(item.id)}
+              active={pathname.includes(item.id)}
+              exact={item.exact}
             />
           ))}
         </nav>
