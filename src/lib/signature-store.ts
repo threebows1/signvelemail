@@ -143,8 +143,8 @@ export const defaultData: SignatureData = {
   department: "Design",
   company: "Sign Vel",
   email: "alex@signvel.com",
-  mobile: "+1 (415) 555 0142",
-  phone: "+1 (415) 555 0100",
+  mobile: "'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            check if all systems are working",
+  phone: "",
   phones: [
     { type: "main", value: "+1 (415) 555 0100" },
     { type: "mobile", value: "+1 (415) 555 0142" },
