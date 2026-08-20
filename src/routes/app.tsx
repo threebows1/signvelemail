@@ -47,6 +47,7 @@ function AppLayout() {
             <RailItem 
               key={item.id}
               to={item.to}
+              params={params.id ? { id: params.id } : undefined}
               icon={item.icon}
               label={item.label}
               active={pathname.includes(item.id)}
