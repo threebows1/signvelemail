@@ -27,7 +27,7 @@ function AppLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { isStaff } = useAuth();
-  const allowWhenExpired = true; // Temporary bypass while refactoring
+  const allowWhenExpired = pathname.startsWith("/app/settings") || pathname.startsWith("/app/admin");
   return (
     <div className="min-h-screen bg-background text-foreground font-sans flex">
       <aside className="w-64 border-r border-border bg-white p-6 flex flex-col sticky top-0 h-screen">
