@@ -23,6 +23,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as AppEditorIdRouteImport } from './routes/app.editor.$id'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as AppEditorIdIndexRouteImport } from './routes/app.editor.$id.index'
 import { Route as ApiPublicSigImageIdKindRouteImport } from './routes/api/public/sig-image.$id.$kind'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -98,6 +99,11 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppEditorIdIndexRoute = AppEditorIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppEditorIdRoute,
+} as any)
 const ApiPublicSigImageIdKindRoute = ApiPublicSigImageIdKindRouteImport.update({
   id: '/api/public/sig-image/$id/$kind',
   path: '/api/public/sig-image/$id/$kind',
@@ -118,7 +124,8 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/app/editor/$id': typeof AppEditorIdRoute
+  '/app/editor/$id': typeof AppEditorIdRouteWithChildren
+  '/app/editor/$id/': typeof AppEditorIdIndexRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRoutesByTo {
@@ -134,7 +141,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/app/editor/$id': typeof AppEditorIdRoute
+  '/app/editor/$id': typeof AppEditorIdIndexRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRoutesById {
@@ -152,7 +159,8 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/app/editor/$id': typeof AppEditorIdRoute
+  '/app/editor/$id': typeof AppEditorIdRouteWithChildren
+  '/app/editor/$id/': typeof AppEditorIdIndexRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRouteTypes {
@@ -172,6 +180,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/app/editor/$id'
+    | '/app/editor/$id/'
     | '/api/public/sig-image/$id/$kind'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/app/editor/$id'
+    | '/app/editor/$id/'
     | '/api/public/sig-image/$id/$kind'
   fileRoutesById: FileRoutesById
 }
@@ -322,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/editor/$id/': {
+      id: '/app/editor/$id/'
+      path: '/'
+      fullPath: '/app/editor/$id/'
+      preLoaderRoute: typeof AppEditorIdIndexRouteImport
+      parentRoute: typeof AppEditorIdRoute
+    }
     '/api/public/sig-image/$id/$kind': {
       id: '/api/public/sig-image/$id/$kind'
       path: '/api/public/sig-image/$id/$kind'
@@ -332,18 +349,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppEditorIdRouteChildren {
+  AppEditorIdIndexRoute: typeof AppEditorIdIndexRoute
+}
+
+const AppEditorIdRouteChildren: AppEditorIdRouteChildren = {
+  AppEditorIdIndexRoute: AppEditorIdIndexRoute,
+}
+
+const AppEditorIdRouteWithChildren = AppEditorIdRoute._addFileChildren(
+  AppEditorIdRouteChildren,
+)
+
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
-  AppEditorIdRoute: typeof AppEditorIdRoute
+  AppEditorIdRoute: typeof AppEditorIdRouteWithChildren
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
-  AppEditorIdRoute: AppEditorIdRoute,
+  AppEditorIdRoute: AppEditorIdRouteWithChildren,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
