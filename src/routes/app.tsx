@@ -36,8 +36,7 @@ function AppLayout() {
         </Link>
 
         <nav className="flex flex-col gap-1">
-          <NavItem to="/app" label="Dashboard" />
-          <NavItem to="/app/settings" label="Settings" />
+          <NavItem to="/app/settings" label="Users" />
           <NavItem to="/app/settings" label="Settings" />
           {isStaff && <NavItem to="/app/admin" label="Admin" />}
         </nav>
