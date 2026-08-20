@@ -1,79 +1,100 @@
-import { createFileRoute, Link, Outlet, redirect, useLocation, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
+import { 
+  LayoutTemplate, 
+  User, 
+  Building2, 
+  Palette, 
+  MousePointer2, 
+  FileText, 
+  BarChart3,
+  Settings as SettingsIcon,
+  ShieldCheck
+} from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { TrialBanner, TrialGuard } from "@/components/TrialGuard";
-import { signOut, useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
-
+import { useAuth } from "@/lib/auth";
+import { TrialBanner } from "@/components/TrialGuard";
 
 export const Route = createFileRoute("/app")({
-  ssr: false,
-  beforeLoad: async ({ location }) => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) {
-      throw redirect({ to: "/login", search: { next: location.href } });
-    }
-  },
-  head: () => ({
-    meta: [
-      { title: "Dashboard — Sign Vel" },
-      { name: "description", content: "Manage your team's email signatures from the Sign Vel dashboard." },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
   component: AppLayout,
 });
 
 function AppLayout() {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
   const { isStaff } = useAuth();
-  const allowWhenExpired = pathname.startsWith("/app/settings") || pathname.startsWith("/app/admin");
-  return (
-    <div className="min-h-screen bg-background text-foreground font-sans flex">
-      <aside className="w-64 border-r border-border bg-white p-6 flex flex-col sticky top-0 h-screen">
-        <Link to="/" aria-label="Sign Vel home" className="mb-12">
-          <Logo size={44} wordmarkClassName="text-lg" />
-        </Link>
+  
+  const navItems = [
+    { id: "templates", label: "Templates", icon: LayoutTemplate, to: "/app/settings" },
+    { id: "personal", label: "Personal Info", icon: User, to: "/app/settings" },
+    { id: "business", label: "Business Info", icon: Building2, to: "/app/settings" },
+    { id: "design", label: "Design", icon: Palette, to: "/app/settings" },
+    { id: "cta", label: "Call to Action", icon: MousePointer2, to: "/app/settings" },
+    { id: "disclaimer", label: "Disclaimer", icon: FileText, to: "/app/settings" },
+    { id: "analytics", label: "Analytics", icon: BarChart3, to: "/app/settings" },
+  ];
 
-        <nav className="flex flex-col gap-1">
-          <NavItem to="/app/settings" label="Users" />
-          <NavItem to="/app/settings" label="Settings" />
-          {isStaff && <NavItem to="/app/admin" label="Admin" />}
+  return (
+    <div className="flex h-screen bg-[#FDFCFB] overflow-hidden">
+      {/* Vertical Navigation Rail */}
+      <aside className="w-[88px] bg-white border-r border-[#EFEBE6] flex flex-col items-center py-6 shrink-0">
+        <Link to="/" className="mb-10">
+          <Logo size={40} hideWordmark />
+        </Link>
+        
+        <nav className="flex flex-col gap-2 w-full px-2">
+          {navItems.map((item) => (
+            <RailItem 
+              key={item.id}
+              to={item.to}
+              icon={item.icon}
+              label={item.label}
+              active={pathname.includes(item.id)}
+            />
+          ))}
         </nav>
 
-        <div className="mt-auto pt-6 border-t border-border">
-          <button
-            onClick={async () => {
-              await signOut();
-              navigate({ to: "/" });
-            }}
-            className="w-full text-left text-xs font-[JetBrains_Mono] uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
-          >
-            Sign Out
-          </button>
+        <div className="mt-auto flex flex-col gap-2 w-full px-2">
+          {isStaff && (
+            <RailItem 
+              to="/app/admin"
+              icon={ShieldCheck}
+              label="Admin"
+              active={pathname.includes("/admin")}
+            />
+          )}
+          <RailItem 
+            to="/app/settings"
+            icon={SettingsIcon}
+            label="Settings"
+            active={pathname.includes("/settings")}
+          />
         </div>
       </aside>
 
-
-      <main className="flex-1 overflow-auto">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         <TrialBanner />
-        {allowWhenExpired ? <Outlet /> : <TrialGuard><Outlet /></TrialGuard>}
-      </main>
+        <div className="flex-1 overflow-auto">
+          <Outlet />
+        </div>
+      </div>
     </div>
   );
 }
 
-function NavItem({ to, label, active }: { to: string; label: string; active?: boolean }) {
+function RailItem({ to, icon: Icon, label, active }: { to: string; icon: any; label: string; active?: boolean }) {
   return (
     <Link
       to={to}
-      className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-        active
-          ? "bg-foreground text-background font-medium"
-          : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+      className={`group flex flex-col items-center justify-center gap-1.5 w-full py-3 rounded-xl transition-all ${
+        active 
+          ? "bg-[#FFF4EB] text-[#F38121]" 
+          : "text-[#9E958F] hover:bg-[#F9F7F5] hover:text-[#4A443F]"
       }`}
     >
-      {label}
+      <Icon size={22} strokeWidth={active ? 2.5 : 2} />
+      <span className="text-[10px] font-semibold tracking-tight text-center leading-none px-1">
+        {label}
+      </span>
     </Link>
   );
 }
