@@ -158,7 +158,7 @@ function SignVelCorporate(d: SignatureData) {
   const bodySize = d.fontSize ?? 13;
   const gap = d.spacing === "compact" ? 4 : d.spacing === "medium" ? 8 : 16;
   return (
-    <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor, lineHeight: d.lineHeight ?? 1.3, maxWidth: 560 }}>
+    <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor, lineHeight: d.lineHeight ?? 1.3, width: "100%", maxWidth: "560px" }}>
       <div className="mb-2 flex items-center" style={{ gap: 14 }}>
         {(d.photoUrl || d.showPlaceholderPhoto) && <Avatar d={d} size={58} />}
         <div>
@@ -168,7 +168,7 @@ function SignVelCorporate(d: SignatureData) {
         </div>
       </div>
       {d.showDividingLines !== false && <div data-sig-rule="" className="my-3" style={{ height: lineSize, background: lineColor }} />}
-      <div className="flex items-start my-4" style={{ gap: gap * 2 }}>
+      <div className="flex items-start my-4" style={{ gap: gap * 2, display: "flex", flexWrap: "wrap" }}>
         {d.logoUrl ? (
           <img src={d.logoUrl} alt={d.company} className="shrink-0 object-contain" style={{ width: d.logoWidth ?? 150 }} />
         ) : (
@@ -195,7 +195,7 @@ function SignVelCorporate(d: SignatureData) {
             </div>
           </div>
         )}
-        <div className="flex-1" style={{ display: "flex", flexDirection: "column", gap }}>
+        <div className="flex-1" style={{ display: "flex", flexDirection: "column", gap, minWidth: "220px" }}>
           <IconRow Icon={Mail} text={d.email} color={accent} d={d} />
           {derivePhones(d).map((p, i) =>
             p.value ? <IconRow key={i} Icon={p.type === "mobile" ? Smartphone : Phone} text={p.value} color={accent} d={d} /> : null,
