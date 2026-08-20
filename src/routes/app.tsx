@@ -23,13 +23,14 @@ function AppLayout() {
   const { isStaff } = useAuth();
   
   const navItems = [
-    { id: "templates", label: "Templates", icon: LayoutTemplate, to: "/app/settings" },
-    { id: "personal", label: "Personal Info", icon: User, to: "/app/settings" },
-    { id: "business", label: "Business Info", icon: Building2, to: "/app/settings" },
-    { id: "design", label: "Design", icon: Palette, to: "/app/settings" },
-    { id: "cta", label: "Call to Action", icon: MousePointer2, to: "/app/settings" },
-    { id: "disclaimer", label: "Disclaimer", icon: FileText, to: "/app/settings" },
-    { id: "analytics", label: "Analytics", icon: BarChart3, to: "/app/settings" },
+    { id: "dashboard", label: "Dashboard", icon: LayoutTemplate, to: "/app" },
+    { id: "templates", label: "Templates", icon: LayoutTemplate, to: "/app" },
+    { id: "personal", label: "Personal Info", icon: User, to: "/app" },
+    { id: "business", label: "Business Info", icon: Building2, to: "/app" },
+    { id: "design", label: "Design", icon: Palette, to: "/app" },
+    { id: "cta", label: "Call to Action", icon: MousePointer2, to: "/app" },
+    { id: "disclaimer", label: "Disclaimer", icon: FileText, to: "/app" },
+    { id: "analytics", label: "Analytics", icon: BarChart3, to: "/app" },
   ];
 
   return (
