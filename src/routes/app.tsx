@@ -24,13 +24,13 @@ function AppLayout() {
   
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutTemplate, to: "/app" },
-    { id: "templates", label: "Templates", icon: LayoutTemplate, to: "/app" },
-    { id: "personal", label: "Personal Info", icon: User, to: "/app" },
-    { id: "business", label: "Business Info", icon: Building2, to: "/app" },
-    { id: "design", label: "Design", icon: Palette, to: "/app" },
-    { id: "cta", label: "Call to Action", icon: MousePointer2, to: "/app" },
-    { id: "disclaimer", label: "Disclaimer", icon: FileText, to: "/app" },
-    { id: "analytics", label: "Analytics", icon: BarChart3, to: "/app" },
+    { id: "templates", label: "Templates", icon: LayoutTemplate, to: "/app/editor/$id" },
+    { id: "personal", label: "Personal Info", icon: User, to: "/app/editor/$id" },
+    { id: "business", label: "Business Info", icon: Building2, to: "/app/editor/$id" },
+    { id: "design", label: "Design", icon: Palette, to: "/app/editor/$id" },
+    { id: "cta", label: "Call to Action", icon: MousePointer2, to: "/app/editor/$id" },
+    { id: "disclaimer", label: "Disclaimer", icon: FileText, to: "/app/editor/$id" },
+    { id: "analytics", label: "Analytics", icon: BarChart3, to: "/app/editor/$id" },
   ];
 
   return (
