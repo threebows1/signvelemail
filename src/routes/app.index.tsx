@@ -99,8 +99,8 @@ function SignatureCard({ sig }: { sig: SavedSignature }) {
   };
 
   return (
-    <div className="group bg-white border border-[#EFEBE6] rounded-2xl overflow-hidden hover:border-[#F38121]/30 hover:shadow-xl hover:shadow-[#F38121]/5 transition-all">
-      <div className="relative h-[220px] bg-[#FDFCFB] p-6 flex items-center justify-center border-b border-[#EFEBE6]">
+    <div className="group bg-white border border-[#EFEBE6] rounded-2xl overflow-hidden hover:border-[#F38121]/30 hover:shadow-xl hover:shadow-[#F38121]/5 transition-all font-[Inter_Tight]">
+      <div className="relative h-[220px] bg-white p-6 flex items-center justify-center border-b border-[#EFEBE6]">
         <div className="w-full h-full overflow-hidden bg-white rounded-xl shadow-sm border border-[#EFEBE6] flex items-center justify-center p-2">
           <FitPreview max={0.8} padding={12}>
             {renderSignature(template, sig.data)}
