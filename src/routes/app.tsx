@@ -84,7 +84,7 @@ function AppLayout() {
   );
 }
 
-function RailItem({ to, icon: Icon, label, active }: { to: string; icon: any; label: string; active?: boolean }) {
+function RailItem({ to, params, icon: Icon, label, active }: { to: string; params?: any; icon: any; label: string; active?: boolean }) {
   return (
     <Link
       to={to}
