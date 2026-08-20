@@ -24,7 +24,7 @@ function AppLayout() {
   const { isStaff } = useAuth();
   
   const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutTemplate, to: "/app" },
+    { id: "dashboard", label: "Dashboard", icon: LayoutTemplate, to: "/app", exact: true },
     { id: "templates", label: "Templates", icon: LayoutTemplate, to: "/app/editor/$id" },
     { id: "personal", label: "Personal Info", icon: User, to: "/app/editor/$id" },
     { id: "business", label: "Business Info", icon: Building2, to: "/app/editor/$id" },
