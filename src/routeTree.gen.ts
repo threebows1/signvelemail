@@ -20,6 +20,7 @@ import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as AppEditorIdRouteImport } from './routes/app.editor.$id'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicSigImageIdKindRouteImport } from './routes/api/public/sig-image.$id.$kind'
@@ -81,6 +82,11 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AppEditorIdRoute = AppEditorIdRouteImport.update({
+  id: '/editor/$id',
+  path: '/editor/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/app/editor/$id': typeof AppEditorIdRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRoutesByTo {
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/app/editor/$id': typeof AppEditorIdRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRoutesById {
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/app/editor/$id': typeof AppEditorIdRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRouteTypes {
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/app/editor/$id'
     | '/api/public/sig-image/$id/$kind'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/app/editor/$id'
     | '/api/public/sig-image/$id/$kind'
   id:
     | '__root__'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/app/editor/$id'
     | '/api/public/sig-image/$id/$kind'
   fileRoutesById: FileRoutesById
 }
@@ -289,6 +301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/editor/$id': {
+      id: '/app/editor/$id'
+      path: '/editor/$id'
+      fullPath: '/app/editor/$id'
+      preLoaderRoute: typeof AppEditorIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -317,12 +336,14 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppEditorIdRoute: typeof AppEditorIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppEditorIdRoute: AppEditorIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
