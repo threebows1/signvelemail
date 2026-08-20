@@ -89,6 +89,7 @@ function RailItem({ to, params, icon: Icon, label, active, exact }: { to: string
     <Link
       to={to}
       params={params}
+      activeOptions={{ exact }}
       className={`group flex flex-col items-center justify-center gap-1.5 w-full py-3.5 rounded-none transition-all relative ${
         active 
           ? "text-[#F38121]" 
