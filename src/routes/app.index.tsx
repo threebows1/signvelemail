@@ -91,7 +91,12 @@ function Dashboard() {
 }
 
 function SignatureCard({ sig }: { sig: SavedSignature }) {
+  const navigate = useNavigate();
   const template = templates.find(t => t.id === sig.templateId) || templates[0];
+
+  const handleEdit = () => {
+    navigate({ to: "/app/editor/$id", params: { id: sig.id } });
+  };
 
   return (
     <div className="group bg-white border border-[#EFEBE6] rounded-2xl overflow-hidden hover:border-[#F38121]/30 hover:shadow-xl hover:shadow-[#F38121]/5 transition-all">
@@ -102,7 +107,7 @@ function SignatureCard({ sig }: { sig: SavedSignature }) {
           </FitPreview>
         </div>
         <div className="absolute inset-0 bg-[#14121F]/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-          <Button size="sm" variant="secondary" className="rounded-full font-semibold px-5">Edit</Button>
+          <Button size="sm" variant="secondary" onClick={handleEdit} className="rounded-full font-semibold px-5">Edit</Button>
           <Button size="sm" variant="secondary" className="rounded-full font-semibold px-5">Install</Button>
         </div>
       </div>
