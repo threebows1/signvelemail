@@ -34,7 +34,7 @@ function AppLayout() {
   ];
 
   return (
-    <div className="flex h-screen bg-[#FDFCFB] overflow-hidden">
+    <div className="flex h-screen bg-white overflow-hidden font-[Inter_Tight]">
       {/* Vertical Navigation Rail */}
       <aside className="w-[88px] bg-white border-r border-[#EFEBE6] flex flex-col items-center py-6 shrink-0">
         <Link to="/" className="mb-10">
