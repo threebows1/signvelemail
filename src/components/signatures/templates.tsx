@@ -1000,6 +1000,16 @@ function BlankVertical(d: SignatureData) {
 
 export const templates: TemplateMeta[] = [
   { id: "al-riyady", name: "SignVel Corporate", category: "Corporate", layout: "two-column", accent: "bg-[#5B2EFF]", description: "Flagship SignVel layout with gradient logo, icon rows, and disclaimer.", render: SignVelCorporate },
+  { id: "left-line", name: "Left Line", category: "Corporate", layout: "single", accent: "bg-[#5B2EFF]", description: "Simple, border-left layout.", render: LeftLine },
+  { id: "minimal-stacked", name: "Minimal Stacked", category: "Minimal", layout: "single", accent: "bg-neutral-800", description: "Vertically stacked info, no icons.", render: StackedMinimal },
+  { id: "photo-card", name: "Portrait Card", category: "Executive", layout: "two-column", accent: "bg-[#5B2EFF]", description: "Focuses on the person with a large avatar.", render: PhotoCard },
+  { id: "blue-corporate", name: "Corporate Blue", category: "Corporate", layout: "two-column", accent: "bg-blue-800", description: "Tabular layout with serif fonts.", render: CorporateBlue },
+  { id: "banner-bottom", name: "Promo Banner", category: "Bold", layout: "vertical", accent: "bg-orange-600", description: "Standard signature with a colourful bottom banner.", render: BannerBottom },
+  { id: "compact-mono", name: "Compact Mono", category: "Minimal", layout: "single", accent: "bg-black", description: "Monospace font for a developer feel.", render: CompactMono },
+  { id: "executive-serif", name: "Executive Serif", category: "Executive", layout: "single", accent: "bg-neutral-900", description: "Formal serif-based layout.", render: ExecutiveSerif },
+  { id: "green-eco", name: "Eco Friendly", category: "Minimal", layout: "vertical", accent: "bg-green-600", description: "Focus on environment.", render: Green },
+  { id: "bold-modern", name: "Bold Modern", category: "Bold", layout: "vertical", accent: "bg-black", description: "High contrast dark design.", render: BoldModern },
+  ...pack2Templates
 ];
 
 
