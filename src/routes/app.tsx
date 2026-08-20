@@ -50,7 +50,7 @@ function AppLayout() {
               params={params.id ? { id: params.id } : undefined}
               icon={item.icon}
               label={item.label}
-              active={pathname.includes(item.id)}
+              
               exact={item.exact}
             />
           ))}
