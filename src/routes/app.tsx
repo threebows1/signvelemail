@@ -86,12 +86,15 @@ function RailItem({ to, icon: Icon, label, active }: { to: string; icon: any; la
   return (
     <Link
       to={to}
-      className={`group flex flex-col items-center justify-center gap-1.5 w-full py-3 rounded-xl transition-all ${
+      className={`group flex flex-col items-center justify-center gap-1.5 w-full py-3.5 rounded-none transition-all relative ${
         active 
-          ? "bg-[#FFF4EB] text-[#F38121]" 
-          : "text-[#9E958F] hover:bg-[#F9F7F5] hover:text-[#4A443F]"
+          ? "text-[#F38121]" 
+          : "text-[#9E958F] hover:text-[#4A443F]"
       }`}
     >
+      {active && (
+        <div className="absolute inset-y-0 left-0 w-1 bg-[#F38121] rounded-r-full" />
+      )}
       <Icon size={22} strokeWidth={active ? 2.5 : 2} />
       <span className="text-[10px] font-semibold tracking-tight text-center leading-none px-1">
         {label}
