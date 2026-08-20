@@ -69,7 +69,7 @@ function TickerBar() {
   return (
     <div className="w-full bg-foreground text-background text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] py-2 px-6 flex items-center justify-center gap-3">
       <span className="text-accent">New</span>
-      <span className="text-background/70">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            I have approved the plan</span>
+      <span className="text-background/70">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            keep the landing page but inside remove everything except users, settings and addmin pannel. I will give instructions again ffor creating email from scratch.</span>
       <Link to="/pricing" className="hover:text-accent transition-colors">
         Start a 7-day trial →
       </Link>
@@ -86,7 +86,7 @@ function Navigation() {
         </Link>
         <div className="hidden md:flex items-center gap-7 text-[13px] font-medium">
           <a href="#showcase" className="hover:text-primary transition-colors">Showcase</a>
-          <Link to="/app/templates" className="hover:text-primary transition-colors">Templates</Link>
+          <Link to="/app/settings" className="hover:text-primary transition-colors">Settings</Link>
           <Link to="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
         </div>
       </div>
@@ -119,9 +119,9 @@ function HeroSection() {
           Browse real signature designs, customize every pixel, and deploy across your whole team — Gmail, Outlook, and Apple Mail in one click.
         </p>
         <div className="flex items-center gap-3 mt-8">
-          <Link to="/app">
+          <Link to="/app/settings">
             <Button className="rounded-full px-7 py-5 text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90">
-              Start Building
+              Go to Settings
             </Button>
           </Link>
           <a href="#showcase">
@@ -162,9 +162,9 @@ function HeroSection() {
             </div>
           </div>
           <div className="mt-5 pt-4 border-t border-border flex justify-end">
-            <Link to="/app/editor/$id" params={{ id: featured.id }}>
+            <Link to="/app/settings">
               <span className="text-xs font-medium text-primary hover:underline cursor-pointer">
-                Use this design →
+                Get started →
               </span>
             </Link>
           </div>
@@ -188,9 +188,9 @@ function ShowcaseSection() {
               <span className="font-[Instrument_Serif] italic font-normal text-accent">Ready to deploy.</span>
             </h2>
           </div>
-          <Link to="/app/templates">
+          <Link to="/app/settings">
             <Button className="rounded-full px-6 bg-accent text-accent-foreground hover:bg-accent/90 text-sm font-medium">
-              Browse all templates
+              Start configuring
             </Button>
           </Link>
         </div>
@@ -215,9 +215,9 @@ function ShowcaseSection() {
                       {t.category}
                     </p>
                   </div>
-                  <Link to="/app/editor/$id" params={{ id: t.id }} className="shrink-0">
+                  <Link to="/app/settings" className="shrink-0">
                     <span className="text-[11px] font-medium text-primary hover:underline whitespace-nowrap">
-                      Customize →
+                      Get started →
                     </span>
                   </Link>
                 </div>
@@ -526,9 +526,9 @@ function CtaSection() {
           <p className="text-primary-foreground/80 mt-4 mb-8">
             Start free for 7 days. No credit card required.
           </p>
-          <Link to="/app">
+          <Link to="/app/settings">
             <Button className="rounded-full px-9 py-5 text-sm font-semibold bg-background text-foreground hover:bg-background/90">
-              Start Building
+              Go to Settings
             </Button>
           </Link>
         </div>

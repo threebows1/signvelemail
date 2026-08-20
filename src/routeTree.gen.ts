@@ -15,15 +15,10 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppIndexRouteImport } from './routes/app.index'
-import { Route as AppTemplatesRouteImport } from './routes/app.templates'
-import { Route as AppSignatureFormRouteImport } from './routes/app.signature-form'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
-import { Route as AppEmailsRouteImport } from './routes/app.emails'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as AppEditorIdRouteImport } from './routes/app.editor.$id'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicSigImageIdKindRouteImport } from './routes/api/public/sig-image.$id.$kind'
@@ -58,29 +53,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppTemplatesRoute = AppTemplatesRouteImport.update({
-  id: '/templates',
-  path: '/templates',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSignatureFormRoute = AppSignatureFormRouteImport.update({
-  id: '/signature-form',
-  path: '/signature-form',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppEmailsRoute = AppEmailsRouteImport.update({
-  id: '/emails',
-  path: '/emails',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAdminRoute = AppAdminRouteImport.update({
@@ -100,11 +75,6 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AppEditorIdRoute = AppEditorIdRouteImport.update({
-  id: '/editor/$id',
-  path: '/editor/$id',
-  getParentRoute: () => AppRoute,
-} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -132,18 +102,14 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/admin': typeof AppAdminRoute
-  '/app/emails': typeof AppEmailsRoute
   '/app/settings': typeof AppSettingsRoute
-  '/app/signature-form': typeof AppSignatureFormRoute
-  '/app/templates': typeof AppTemplatesRoute
-  '/app/': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/app/editor/$id': typeof AppEditorIdRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
@@ -151,14 +117,9 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/admin': typeof AppAdminRoute
-  '/app/emails': typeof AppEmailsRoute
   '/app/settings': typeof AppSettingsRoute
-  '/app/signature-form': typeof AppSignatureFormRoute
-  '/app/templates': typeof AppTemplatesRoute
-  '/app': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/app/editor/$id': typeof AppEditorIdRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRoutesById {
@@ -172,14 +133,9 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/admin': typeof AppAdminRoute
-  '/app/emails': typeof AppEmailsRoute
   '/app/settings': typeof AppSettingsRoute
-  '/app/signature-form': typeof AppSignatureFormRoute
-  '/app/templates': typeof AppTemplatesRoute
-  '/app/': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/app/editor/$id': typeof AppEditorIdRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
 export interface FileRouteTypes {
@@ -194,18 +150,14 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/app/admin'
-    | '/app/emails'
     | '/app/settings'
-    | '/app/signature-form'
-    | '/app/templates'
-    | '/app/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
-    | '/app/editor/$id'
     | '/api/public/sig-image/$id/$kind'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/app'
     | '/login'
     | '/mcp'
     | '/pricing'
@@ -213,14 +165,9 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/app/admin'
-    | '/app/emails'
     | '/app/settings'
-    | '/app/signature-form'
-    | '/app/templates'
-    | '/app'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
-    | '/app/editor/$id'
     | '/api/public/sig-image/$id/$kind'
   id:
     | '__root__'
@@ -233,14 +180,9 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/app/admin'
-    | '/app/emails'
     | '/app/settings'
-    | '/app/signature-form'
-    | '/app/templates'
-    | '/app/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
-    | '/app/editor/$id'
     | '/api/public/sig-image/$id/$kind'
   fileRoutesById: FileRoutesById
 }
@@ -302,39 +244,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/': {
-      id: '/app/'
-      path: '/'
-      fullPath: '/app/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/templates': {
-      id: '/app/templates'
-      path: '/templates'
-      fullPath: '/app/templates'
-      preLoaderRoute: typeof AppTemplatesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/signature-form': {
-      id: '/app/signature-form'
-      path: '/signature-form'
-      fullPath: '/app/signature-form'
-      preLoaderRoute: typeof AppSignatureFormRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/settings': {
       id: '/app/settings'
       path: '/settings'
       fullPath: '/app/settings'
       preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/emails': {
-      id: '/app/emails'
-      path: '/emails'
-      fullPath: '/app/emails'
-      preLoaderRoute: typeof AppEmailsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/admin': {
@@ -357,13 +271,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/.mcp/list-tools'
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/app/editor/$id': {
-      id: '/app/editor/$id'
-      path: '/editor/$id'
-      fullPath: '/app/editor/$id'
-      preLoaderRoute: typeof AppEditorIdRouteImport
-      parentRoute: typeof AppRoute
     }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
@@ -391,22 +298,12 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
-  AppEmailsRoute: typeof AppEmailsRoute
   AppSettingsRoute: typeof AppSettingsRoute
-  AppSignatureFormRoute: typeof AppSignatureFormRoute
-  AppTemplatesRoute: typeof AppTemplatesRoute
-  AppIndexRoute: typeof AppIndexRoute
-  AppEditorIdRoute: typeof AppEditorIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRoute,
-  AppEmailsRoute: AppEmailsRoute,
   AppSettingsRoute: AppSettingsRoute,
-  AppSignatureFormRoute: AppSignatureFormRoute,
-  AppTemplatesRoute: AppTemplatesRoute,
-  AppIndexRoute: AppIndexRoute,
-  AppEditorIdRoute: AppEditorIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
