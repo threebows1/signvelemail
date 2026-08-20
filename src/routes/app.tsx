@@ -20,6 +20,7 @@ export const Route = createFileRoute("/app")({
 
 function AppLayout() {
   const { pathname } = useLocation();
+  const params = useParams({ strict: false }) as { id?: string };
   const { isStaff } = useAuth();
   
   const navItems = [
