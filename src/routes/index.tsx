@@ -111,10 +111,9 @@ function HeroSection() {
       <div className="animate-slide-up">
         <Kicker>(01) Email signatures, designed</Kicker>
         <h1 className="mt-6 text-5xl md:text-6xl font-[Manrope] font-bold tracking-tighter leading-[0.95] text-balance">
-          '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-          
-          
-          Refine the signature layout so badges and text stay properly aligned on narrow mobile widths and email clients with limited CSS support.
+          Every signature,
+          <br />
+          <Ital>precisely yours.</Ital>
         </h1>
         <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-[42ch] leading-relaxed">
           Browse real signature designs, customize every pixel, and deploy across your whole team — Gmail, Outlook, and Apple Mail in one click.
