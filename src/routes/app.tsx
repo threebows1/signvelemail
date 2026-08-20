@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation, useParams } from "@tanstack/react-router";
 import { 
   LayoutTemplate, 
   User, 
