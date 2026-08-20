@@ -96,7 +96,7 @@ function RailItem({ to, icon: Icon, label, active }: { to: string; icon: any; la
         <div className="absolute inset-y-0 left-0 w-1 bg-[#F38121] rounded-r-full" />
       )}
       <Icon size={24} strokeWidth={active ? 2 : 1.5} />
-      <span className="text-[10px] font-semibold tracking-tight text-center leading-none px-1">
+      <span className="text-[9px] font-bold uppercase tracking-[0.05em] text-center leading-none px-1">
         {label}
       </span>
     </Link>
