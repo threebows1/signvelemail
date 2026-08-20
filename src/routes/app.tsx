@@ -86,28 +86,27 @@ function AppLayout() {
 }
 
 function RailItem({ to, params, icon: Icon, label, exact }: { to: string; params?: any; icon: any; label: string; exact?: boolean }) {
+  const { pathname } = useLocation();
+  const isActive = exact ? pathname === to : pathname.includes(to.replace("/editor/$id", ""));
+
   return (
     <Link
       to={to}
       params={params}
       activeOptions={{ exact }}
-      className={({ isActive }) => `group flex flex-col items-center justify-center gap-1.5 w-full py-3.5 rounded-none transition-all relative ${
+      className={`group flex flex-col items-center justify-center gap-1.5 w-full py-3.5 rounded-none transition-all relative ${
         isActive 
           ? "text-[#F38121]" 
           : "text-[#9E958F] hover:text-[#4A443F]"
       }`}
     >
-      {({ isActive }) => (
-        <>
-          {isActive && (
-            <div className="absolute inset-y-0 left-0 w-1 bg-[#F38121] rounded-r-full" />
-          )}
-          <Icon size={24} strokeWidth={isActive ? 2 : 1.5} />
-          <span className="text-[9px] font-bold uppercase tracking-[0.05em] text-center leading-none px-1">
-            {label}
-          </span>
-        </>
+      {isActive && (
+        <div className="absolute inset-y-0 left-0 w-1 bg-[#F38121] rounded-r-full" />
       )}
+      <Icon size={24} strokeWidth={isActive ? 2 : 1.5} />
+      <span className="text-[9px] font-bold uppercase tracking-[0.05em] text-center leading-none px-1">
+        {label}
+      </span>
     </Link>
   );
 }
