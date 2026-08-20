@@ -30,16 +30,11 @@ function Dashboard() {
     
     const res = await saveSignature(sig);
     if (res.ok) {
-      // In the new layout, we'll have steps, but for now we need an editor route.
-      // Since I deleted app.editor.$id.tsx, I'll recreate a simple one or 
-      // navigate to a general editor path if I had one. 
-      // For now, let's just toast and stay here until I build the editor.
-      toast.success("Signature created! Rebuilding editor...");
-      setCreating(false);
+      navigate({ to: "/app/editor/$id", params: { id } });
     } else {
       toast.error("Failed to create signature");
-      setCreating(false);
     }
+    setCreating(false);
   };
 
   return (
