@@ -38,13 +38,13 @@ function Dashboard() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-8 max-w-7xl mx-auto font-[Inter_Tight]">
       <header className="flex justify-between items-end mb-10">
         <div>
-          <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.2em] text-[#F38121] font-semibold block mb-2">
-            (Workplace)
+          <span className="font-[JetBrains_Mono] text-[10px] uppercase tracking-[0.2em] text-[#F38121] font-bold block mb-2">
+            Workplace
           </span>
-          <h1 className="text-3xl font-[Inter_Tight] font-bold tracking-tight text-[#14121F]">Email Signatures</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-[#14121F]">Email Signatures</h1>
         </div>
         <Button 
           onClick={handleCreate} 
