@@ -999,17 +999,15 @@ function BlankVertical(d: SignatureData) {
 
 
 export const templates: TemplateMeta[] = [
-  { id: "al-riyady", name: "SignVel Corporate", category: "Corporate", layout: "two-column", accent: "bg-[#5B2EFF]", description: "Flagship SignVel layout with gradient logo, icon rows, and disclaimer.", render: SignVelCorporate },
-  { id: "left-line", name: "Left Line", category: "Corporate", layout: "single", accent: "bg-[#5B2EFF]", description: "Simple, border-left layout.", render: LeftLine },
-  { id: "minimal-stacked", name: "Minimal Stacked", category: "Minimal", layout: "single", accent: "bg-neutral-800", description: "Vertically stacked info, no icons.", render: StackedMinimal },
-  { id: "photo-card", name: "Portrait Card", category: "Executive", layout: "two-column", accent: "bg-[#5B2EFF]", description: "Focuses on the person with a large avatar.", render: PhotoCard },
-  { id: "blue-corporate", name: "Corporate Blue", category: "Corporate", layout: "two-column", accent: "bg-blue-800", description: "Tabular layout with serif fonts.", render: CorporateBlue },
-  { id: "banner-bottom", name: "Promo Banner", category: "Bold", layout: "vertical", accent: "bg-orange-600", description: "Standard signature with a colourful bottom banner.", render: BannerBottom },
-  { id: "compact-mono", name: "Compact Mono", category: "Minimal", layout: "single", accent: "bg-black", description: "Monospace font for a developer feel.", render: CompactMono },
-  { id: "executive-serif", name: "Executive Serif", category: "Executive", layout: "single", accent: "bg-neutral-900", description: "Formal serif-based layout.", render: ExecutiveSerif },
-  { id: "green-eco", name: "Eco Friendly", category: "Minimal", layout: "vertical", accent: "bg-green-600", description: "Focus on environment.", render: Green },
-  { id: "bold-modern", name: "Bold Modern", category: "Bold", layout: "vertical", accent: "bg-black", description: "High contrast dark design.", render: BoldModern },
-  ...pack2Templates
+  { id: "al-riyady", name: "Single Column 01", category: "Corporate", layout: "single", accent: "bg-[#5B2EFF]", description: "Clean single column layout.", render: SignVelCorporate },
+  { id: "single-02", name: "Single Column 02", category: "Corporate", layout: "single", accent: "bg-[#5B2EFF]", description: "Single column with distinct sections.", render: LeftLine },
+  { id: "single-03", name: "Single Column 03", category: "Minimal", layout: "single", accent: "bg-neutral-800", description: "Minimal single column.", render: StackedMinimal },
+  { id: "two-01", name: "Two Column 01", category: "Corporate", layout: "two-column", accent: "bg-blue-800", description: "Standard two column corporate.", render: CorporateBlue },
+  { id: "two-02", name: "Two Column 02", category: "Executive", layout: "two-column", accent: "bg-[#5B2EFF]", description: "Executive two column with photo.", render: PhotoCard },
+  { id: "two-03", name: "Two Column 03", category: "Creative", layout: "two-column", accent: "bg-[#5B2EFF]", description: "Creative two column layout.", render: pack2Templates.find(t => t.id === 'script-logotype')?.render || SignVelCorporate },
+  { id: "vertical-01", name: "Vertical 01", category: "Bold", layout: "vertical", accent: "bg-black", description: "Bold vertical layout.", render: BoldModern },
+  { id: "vertical-02", name: "Vertical 02", category: "Minimal", layout: "vertical", accent: "bg-green-600", description: "Minimal vertical layout.", render: Green },
+  { id: "vertical-03", name: "Vertical 03", category: "Bold", layout: "vertical", accent: "bg-orange-600", description: "Vertical with promo banner.", render: BannerBottom },
 ];
 
 
