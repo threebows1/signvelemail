@@ -564,6 +564,9 @@ function BusinessCard(d: SignatureData) {
         <p>{d.mobile}</p>
         <p>{d.address}</p>
       </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} /></div>
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -580,6 +583,9 @@ function ElegantScript(d: SignatureData) {
         <p>{d.email} · {d.phone}</p>
         <p>{d.address}</p>
       </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} /></div>
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -1135,6 +1141,9 @@ export function renderSignature(template: TemplateMeta, d: SignatureData) {
   const base = d.fontSize ?? BASE_FONT_SIZE;
   const scale = Math.max(0.6, Math.min(2, base / BASE_FONT_SIZE));
   const fontOverridden = !!d.fontFamily && d.fontFamily !== DEFAULT_FONT;
+
+  // Multi-phone rendering for templates that support it
+  const phones = d.phones && d.phones.length > 0 ? d.phones : [{ type: "phone", value: d.phone }];
 
   // Normalize so templates keep authoring at the 13px base; the wrapper scales.
   const normalized: SignatureData = {
