@@ -306,6 +306,8 @@ function LeftLine(d: SignatureData) {
             <p data-sig-website="" className="font-bold" style={{ color: d.textColor }}>W: {d.website}</p>
           </div>
           <div className="mt-3"><Socials d={d} color={d.primaryColor} size={22} /></div>
+          <CTA d={d} color={d.primaryColor} />
+          <Disclaimer d={d} />
         </div>
       </div>
     </div>
