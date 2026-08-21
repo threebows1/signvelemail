@@ -426,6 +426,9 @@ function ExecutiveSerif(d: SignatureData) {
         <p>{d.address}</p>
         <p>{d.phone} · {d.email}</p>
       </div>
+      <Socials d={d} color={d.primaryColor} />
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
