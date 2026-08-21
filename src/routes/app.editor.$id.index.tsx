@@ -112,7 +112,7 @@ function EditorPage() {
                         </div>
                         <span className="text-[9px] font-bold uppercase tracking-wider text-[#9E958F] opacity-0 group-hover:opacity-100 transition-opacity">
                           {t.category}
-                        </div>
+                        </span>
                       </div>
                       <div className="mt-2 opacity-60 grayscale-[0.5] group-hover:grayscale-0 group-hover:opacity-100 transition-all scale-[0.6] origin-top-left pointer-events-none border border-[#EFEBE6] p-2 rounded-lg bg-white">
                          {renderSignature(t, sig.data)}
