@@ -1,10 +1,9 @@
-import { createFileRoute, Outlet, useParams, useLocation, Link } from "@tanstack/react-router";
+import { createFileRoute, useParams, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { getSignature, type SavedSignature } from "@/lib/signature-store";
-import { Loader2 } from "lucide-react";
+import { getSignature, type SavedSignature, saveSignature } from "@/lib/signature-store";
+import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { templates, renderSignature } from "@/components/signatures/templates";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/app/editor/$id")({
   component: EditorWrapper,
@@ -12,15 +11,27 @@ export const Route = createFileRoute("/app/editor/$id")({
 
 function EditorWrapper() {
   const { id } = useParams({ from: "/app/editor/$id" });
+  const location = useLocation();
   const [sig, setSig] = useState<SavedSignature | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshSig = async () => {
+    const s = await getSignature(id);
+    if (s) setSig(s);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    getSignature(id).then((s) => {
-      if (s) setSig(s);
-      setLoading(false);
-    });
+    refreshSig();
+    // Listen for storage events to sync across tabs/routes
+    window.addEventListener("storage", refreshSig);
+    return () => window.removeEventListener("storage", refreshSig);
   }, [id]);
+
+  // Re-fetch when the child route changes (meaning a save likely happened)
+  useEffect(() => {
+    refreshSig();
+  }, [location.pathname]);
 
   if (loading) {
     return (
