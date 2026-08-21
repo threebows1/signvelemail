@@ -410,6 +410,9 @@ function CompactMono(d: SignatureData) {
       <p className="mt-2">{d.email}</p>
       <p>{d.mobile}</p>
       <p data-sig-website="">{d.website}</p>
+      <div className="mt-3"><Socials d={d} color={d.primaryColor} /></div>
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
