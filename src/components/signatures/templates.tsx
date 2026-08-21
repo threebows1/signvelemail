@@ -24,6 +24,26 @@ export type TemplateMeta = {
   render: (d: SignatureData) => ReactNode;
 };
 
+const getPhotoStyle = (d: SignatureData) => {
+  const photoWidth = d.photoWidth || 100;
+  return {
+    width: `${photoWidth}px`,
+    height: `${photoWidth}px`,
+    borderRadius: d.cropPhotoCircle ? "50%" : "8px",
+    objectFit: "cover" as const,
+    display: "block",
+  };
+};
+
+const getLogoStyle = (d: SignatureData) => {
+  const logoWidth = d.logoWidth || 150;
+  return {
+    maxWidth: `${logoWidth}px`,
+    height: "auto",
+    display: "block",
+  };
+};
+
 /* ---------- helpers ---------- */
 const Initials = ({ name, bg, fg = "#fff", size = 56 }: { name: string; bg: string; fg?: string; size?: number }) => {
   const initials = name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
@@ -37,11 +57,31 @@ const Initials = ({ name, bg, fg = "#fff", size = 56 }: { name: string; bg: stri
   );
 };
 
-const Avatar = ({ d, size = 56 }: { d: SignatureData; size?: number }) => {
-  if (d.photoUrl) {
-    return <img src={d.photoUrl} alt={d.name} style={{ width: size, height: size }} className="rounded-full object-cover shrink-0" />;
+const Avatar = ({ d, size }: { d: SignatureData; size?: number }) => {
+  if (d.photoUrl || (d.showPlaceholderPhoto !== false && d.photoUrl)) {
+    const style = getPhotoStyle(d);
+    if (size) {
+      style.width = `${size}px`;
+      style.height = `${size}px`;
+    }
+    return <img src={d.photoUrl} alt={d.name} style={style} className="shrink-0" />;
   }
-  return <Initials name={d.name} bg={d.primaryColor} size={size} />;
+  if (d.showPlaceholderPhoto) {
+    const style = getPhotoStyle(d);
+    if (size) {
+      style.width = `${size}px`;
+      style.height = `${size}px`;
+    }
+    return (
+      <div 
+        style={{ ...style, background: "#F3F4F6" }} 
+        className="flex items-center justify-center text-gray-300 shrink-0"
+      >
+        <Smartphone style={{ width: size ? size * 0.5 : 24, height: size ? size * 0.5 : 24 }} />
+      </div>
+    );
+  }
+  return <Initials name={d.name} bg={d.primaryColor} size={size || d.photoWidth || 56} />;
 };
 
 const Socials = ({ d, color, ring = false, size }: { d: SignatureData; color: string; ring?: boolean; size?: number }) => {
@@ -157,6 +197,9 @@ function SignVelCorporate(d: SignatureData) {
   const titleSize = d.separateTitleFontSize && d.titleFontSize ? d.titleFontSize : (d.fontSize ? d.fontSize + 4 : 17);
   const bodySize = d.fontSize ?? 13;
   const gap = d.spacing === "compact" ? 4 : d.spacing === "medium" ? 8 : 16;
+  const logoStyle = getLogoStyle(d);
+  const phones = derivePhones(d);
+
   return (
     <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor, lineHeight: d.lineHeight ?? 1.3, maxWidth: 560 }}>
       <div className="mb-2 flex items-center" style={{ gap: 14 }}>
@@ -169,8 +212,16 @@ function SignVelCorporate(d: SignatureData) {
       </div>
       {d.showDividingLines !== false && <div data-sig-rule="" className="my-3" style={{ height: lineSize, background: lineColor }} />}
       <div className="flex items-start my-4" style={{ gap: gap * 2 }}>
-        {d.logoUrl ? (
-          <img src={d.logoUrl} alt={d.company} className="shrink-0 object-contain" style={{ width: d.logoWidth ?? 150 }} />
+        {(d.logoUrl || d.showPlaceholderLogo) ? (
+          <div className="shrink-0" style={{ width: d.logoWidth || 150 }}>
+            {d.logoUrl ? (
+              <img src={d.logoUrl} alt={d.company} style={logoStyle} className="object-contain" />
+            ) : (
+              <div style={{ ...logoStyle, background: "#F3F4F6", height: 60 }} className="flex items-center justify-center text-gray-300 rounded-lg">
+                <LinkIcon style={{ width: 24, height: 24 }} />
+              </div>
+            )}
+          </div>
         ) : (
           <div className="shrink-0" style={{ width: d.logoWidth ?? 170 }}>
             <svg width="100%" viewBox="0 0 88 37" aria-hidden="true">

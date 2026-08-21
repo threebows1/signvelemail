@@ -52,28 +52,36 @@ function EditorWrapper() {
   const template = templates.find((t) => t.id === sig.templateId) || templates[0];
 
   return (
-    <div className="flex h-full overflow-hidden bg-white font-[Inter_Tight]">
+    <div className="flex h-full overflow-hidden bg-white font-[Inter_Tight] select-none">
       {/* Scrollable Sidebar (Forms) */}
-      <div className="w-[420px] flex flex-col shrink-0 border-r border-[#EFEBE6] bg-white z-20">
-        <Outlet />
+      <div className="w-[460px] flex flex-col shrink-0 border-r border-[#EFEBE6] bg-white z-20 shadow-sm relative">
+        <div className="flex-1 overflow-hidden relative">
+          <Outlet />
+        </div>
       </div>
 
       {/* Sticky Main Area (Preview) */}
       <main className="flex-1 flex flex-col bg-[#F9F7F5] overflow-hidden relative">
-        <header className="h-[72px] px-8 bg-white border-b border-[#EFEBE6] flex items-center justify-between shrink-0 z-10 shadow-sm">
+        <header className="h-[72px] px-8 bg-white border-b border-[#EFEBE6] flex items-center justify-between shrink-0 z-10">
           <div className="flex items-center gap-3">
             <Link to="/app" className="p-2 -ml-2 text-[#9E958F] hover:text-[#4A443F] hover:bg-[#F9F7F5] rounded-xl transition-all">
               <ChevronLeft size={20} />
             </Link>
             <div className="h-4 w-px bg-[#EFEBE6]" />
-            <span className="text-xs font-bold text-[#9E958F] flex items-center gap-1 uppercase tracking-[0.1em]">
+            <span className="text-[10px] font-bold text-[#9E958F] flex items-center gap-2 uppercase tracking-[0.15em]">
               Draft <ChevronRight size={14} className="text-[#CDC8C3]" /> 
               <span className="text-[#4A443F]">{sig.name}</span>
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" className="rounded-full text-[#4A443F] font-bold px-5 hover:bg-[#F9F7F5]">
+          <div className="flex items-center gap-4">
+            <button className="text-[11px] font-bold text-[#9E958F] hover:text-[#4A443F] uppercase tracking-wider transition-colors">
+              Knowledge Base
+            </button>
+            <Button variant="ghost" className="rounded-full text-[#4A443F] font-bold px-5 hover:bg-[#F9F7F5] border border-[#EFEBE6]">
               Share
+            </Button>
+            <Button className="rounded-full bg-[#14121F] hover:bg-[#1E1B2E] text-white font-bold px-6 shadow-lg shadow-[#14121F]/10">
+              Publish Changes
             </Button>
             <Button className="rounded-full bg-[#F38121] hover:bg-[#E6751B] text-white font-bold px-6 shadow-lg shadow-[#F38121]/20">
               Install Signature
@@ -85,20 +93,20 @@ function EditorWrapper() {
           <div className="w-full max-w-[800px] bg-white rounded-3xl shadow-2xl shadow-[#14121F]/5 border border-[#EFEBE6] overflow-hidden">
             {/* Fake Email Header */}
             <div className="px-10 py-8 border-b border-[#F9F7F5] bg-[#FDFCFB]/50">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-[13px] font-bold text-[#9E958F] w-12">To</span>
-                  <div className="flex-1 h-8 bg-[#F9F7F5] rounded-lg border border-[#EFEBE6] px-3 flex items-center">
-                    <span className="text-[13px] text-[#4A443F] font-medium">Your Recipient</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-[13px] font-bold text-[#9E958F] w-12">Subject</span>
-                  <div className="flex-1 h-8 bg-[#F9F7F5] rounded-lg border border-[#EFEBE6] px-3 flex items-center">
-                    <span className="text-[13px] text-[#14121F] font-bold">Check out my new Email Signature</span>
-                  </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-bold text-[#9E958F] w-12 uppercase tracking-wider">To</span>
+                <div className="flex-1 h-9 bg-[#F9F7F5] rounded-xl border border-[#EFEBE6] px-4 flex items-center">
+                  <span className="text-[13px] text-[#4A443F] font-medium">Your Recipient</span>
                 </div>
               </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-bold text-[#9E958F] w-12 uppercase tracking-wider">Subject</span>
+                <div className="flex-1 h-9 bg-[#F9F7F5] rounded-xl border border-[#EFEBE6] px-4 flex items-center">
+                  <span className="text-[13px] text-[#14121F] font-bold">Check out my new Email Signature</span>
+                </div>
+              </div>
+            </div>
             </div>
 
             {/* Signature Content Area */}
