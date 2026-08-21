@@ -223,7 +223,7 @@ function SignVelCorporate(d: SignatureData) {
   const bodySize = d.fontSize ?? 13;
   const gap = d.spacing === "compact" ? 4 : d.spacing === "medium" ? 8 : 16;
   const logoStyle = getLogoStyle(d);
-  const phones = derivePhones(d);
+  const phones = d.phones && d.phones.length > 0 ? d.phones : derivePhones(d);
 
   return (
     <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor, lineHeight: d.lineHeight ?? 1.3, maxWidth: 560 }}>
@@ -273,7 +273,7 @@ function SignVelCorporate(d: SignatureData) {
         )}
         <div className="flex-1" style={{ display: "flex", flexDirection: "column", gap }}>
           <IconRow Icon={Mail} text={d.email} color={accent} d={d} />
-          {derivePhones(d).map((p, i) =>
+          {phones.map((p, i) =>
             p.value ? <IconRow key={i} Icon={p.type === "mobile" ? Smartphone : Phone} text={p.value} color={accent} d={d} /> : null,
           )}
           <IconRow Icon={MapPin} text={d.address} color={accent} d={d} />
@@ -1143,7 +1143,7 @@ export function renderSignature(template: TemplateMeta, d: SignatureData) {
   const fontOverridden = !!d.fontFamily && d.fontFamily !== DEFAULT_FONT;
 
   // Multi-phone rendering for templates that support it
-  const phones = d.phones && d.phones.length > 0 ? d.phones : [{ type: "phone", value: d.phone }];
+  const phones = d.phones && d.phones.length > 0 ? d.phones : [{ type: "main", value: d.phone }, { type: "mobile", value: d.mobile }].filter(p => p.value);
 
   // Normalize so templates keep authoring at the 13px base; the wrapper scales.
   const normalized: SignatureData = {
