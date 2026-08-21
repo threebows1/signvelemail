@@ -473,6 +473,9 @@ function BoldModern(d: SignatureData) {
         <span>{d.mobile}</span>
         <span data-sig-website="" className="col-span-2" style={{ color: d.accentColor }}>{d.website}</span>
       </div>
+      <div className="mt-4 flex gap-3"><Socials d={d} color={d.accentColor || "#fff"} /></div>
+      <CTA d={d} color={d.accentColor || d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -495,6 +498,8 @@ function SplitCard(d: SignatureData) {
           <p><span data-sig-website="" style={{ color: d.mutedColor }}>W</span> {d.website}</p>
         </div>
         <div className="mt-4"><Socials d={d} color={d.primaryColor} size={22} /></div>
+        <CTA d={d} color={d.primaryColor} />
+        <Disclaimer d={d} />
       </div>
     </div>
   );
@@ -513,6 +518,9 @@ function VerticalRibbon(d: SignatureData) {
         <span>📱 {d.mobile}</span>
         <span data-sig-website="">🔗 {d.website}</span>
       </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} /></div>
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -530,6 +538,11 @@ function GradientHeader(d: SignatureData) {
         <span>📞 {d.phone}</span>
         <span>📱 {d.mobile}</span>
         <span data-sig-website="">🌐 {d.website}</span>
+      </div>
+      <div className="px-5 pb-5">
+        <Socials d={d} color={d.primaryColor} />
+        <CTA d={d} color={d.primaryColor} />
+        <Disclaimer d={d} />
       </div>
     </div>
   );
