@@ -11,9 +11,11 @@ import {
   RotateCw, 
   Check, 
   Search,
-  Plus
+  Plus,
+  ArrowRight
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { FIELDS, type FieldKey } from "@/components/signature-form/fields";
 
 export const Route = createFileRoute("/app/editor/$id/")({
   component: EditorPage,
@@ -23,6 +25,7 @@ function EditorPage() {
   const { id } = useParams({ from: "/app/editor/$id" });
   const [sig, setSig] = useState<SavedSignature | null>(null);
   const [search, setSearch] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     getSignature(id).then((s) => setSig(s || null));
@@ -40,12 +43,14 @@ function EditorPage() {
   const handleTemplateSelect = async (templateId: string) => {
     const updated = { ...sig, templateId, updatedAt: Date.now() };
     setSig(updated);
+    setIsSaving(true);
     await saveSignature(updated);
+    setIsSaving(false);
   };
 
   return (
     <div className="flex h-full overflow-hidden bg-white font-[Inter_Tight]">
-      {/* Left Sidebar: Forms/Settings (Templates view by default) */}
+      {/* Left Sidebar: Templates Grid */}
       <aside className="w-[420px] border-r border-[#EFEBE6] bg-white flex flex-col shrink-0 shadow-sm z-20">
         <header className="p-6 border-b border-[#EFEBE6] flex items-center justify-between shrink-0">
           <div>
@@ -59,9 +64,11 @@ function EditorPage() {
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-[#00E5A0] bg-[#00E5A0]/5 px-2.5 py-1 rounded-full">
-            <Check size={14} strokeWidth={3} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Saved</span>
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-300 ${
+            isSaving ? "text-[#9E958F] bg-[#F9F7F5]" : "text-[#00E5A0] bg-[#00E5A0]/5"
+          }`}>
+            <Check size={14} strokeWidth={3} className={isSaving ? "animate-pulse" : ""} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">{isSaving ? "Saving..." : "Saved"}</span>
           </div>
         </header>
         
@@ -90,7 +97,7 @@ function EditorPage() {
                   </span>
                 </div>
                 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-4 pb-8">
                   {filteredTemplates.map((t) => (
                     <div 
                       key={t.id}
@@ -125,15 +132,15 @@ function EditorPage() {
           </section>
         </div>
 
-        <footer className="p-6 border-t border-[#EFEBE6] flex items-center justify-between text-[11px] text-[#9E958F] font-bold uppercase tracking-wider">
-          <div className="flex gap-5">
-            <a href="#" className="hover:text-[#F38121] transition-colors">Help</a>
-            <a href="#" className="hover:text-[#F38121] transition-colors">Terms</a>
-          </div>
-          <div className="flex items-center gap-1.5 text-[#F38121]">
-            <Plus size={12} strokeWidth={3} />
-            <a href="#" className="hover:underline">Custom Template</a>
-          </div>
+        <footer className="p-6 border-t border-[#EFEBE6] flex items-center justify-between">
+           <Link 
+            to="/app/editor/$id/details" 
+            params={{ id }}
+            className="w-full bg-[#14121F] hover:bg-[#1E1B2E] text-white rounded-xl py-3.5 px-6 flex items-center justify-center gap-2 font-bold transition-all shadow-lg shadow-[#14121F]/10 group"
+          >
+            Personal Details
+            <ArrowRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+          </Link>
         </footer>
       </aside>
 
