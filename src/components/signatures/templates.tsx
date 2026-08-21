@@ -451,6 +451,9 @@ function Green(d: SignatureData) {
         <span data-sig-website="">🌱 {d.website}</span>
       </div>
       <p className="mt-3 text-[10px] italic" style={{ color: "#047857" }}>🌍 Please consider the environment before printing this email.</p>
+      <div className="mt-4"><Socials d={d} color="#059669" /></div>
+      <CTA d={d} color="#059669" />
+      <Disclaimer d={d} />
     </div>
   );
 }
