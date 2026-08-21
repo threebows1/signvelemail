@@ -325,6 +325,9 @@ function StackedMinimal(d: SignatureData) {
         <p><span style={{ color: d.mutedColor }}>m</span> {d.mobile}</p>
         <p><span style={{ color: d.mutedColor }}>w</span> <span data-sig-website="" className="underline">{d.website}</span></p>
       </div>
+      <Socials d={d} color={d.primaryColor} />
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
