@@ -1,33 +1,31 @@
-# Plan - Redesign App to Match Reference Image
+# Plan: Split-Screen Editor Overhaul
 
-Rebuilding the application UI to match the "Signature Hound" style reference image, featuring a vertical icon rail and a split-screen editor layout.
-
-## User Review Required
-
-> [!IMPORTANT]
-> The app navigation has been updated to a vertical icon rail. I am now rebuilding the editor workspace to support the split-screen layout with a sticky preview.
+Rebuild the editor to match the "Signature Hound" reference, featuring a vertical navigation rail and a split-screen workspace with a scrollable form sidebar and a sticky live preview.
 
 ## Proposed Changes
 
-### App Shell & Navigation
-- [x] Implement a vertical navigation rail (88px wide) with icons for Templates, Personal Info, Business Info, Design, CTA, Disclaimer, and Analytics.
-- [x] Add active state indicators (orange left border and colored icons).
-- [x] Ensure navigation persists the current signature ID context.
+### Editor Infrastructure
+- Update `src/routes/app.tsx` to include the vertical navigation rail with icons for:
+    - Templates
+    - Personal Info
+    - Business Info
+    - Design
+    - CTA
+    - Disclaimer
+    - Analytics
+- Refactor `src/routes/app.editor.$id.tsx` to act as the main layout container for the split-screen view.
 
-### Dashboard
-- [x] Restore a clean, grid-based dashboard for managing existing signatures.
-- [x] Add a "Create New Signature" workflow that redirects to the editor.
+### Workspace & Forms
+- Create a unified `EditorSidebar` component that dynamically renders form sections based on the active rail selection.
+- Integrate `SignatureForm.tsx` logic into the sidebar, splitting it into modular sections (Personal, Business, etc.).
+- Implement a sticky `SignaturePreview` component in the main area that maintains position while the sidebar scrolls.
 
-### Editor Workspace
-- [ ] Implement a split-screen layout:
-    - **Left Sidebar (420px):** Independent scrolling panel for form inputs and settings.
-    - **Right Preview:** Sticky white area showing the signature inside a "fake" email client shell.
-- [ ] Group editor settings into the tabs defined in the rail (Personal, Business, Design, etc.).
-- [ ] Restore all signature templates for wider variety.
+### User Experience
+- Add a progress indicator for signature completion.
+- Ensure all styling tokens (colors, fonts, sizes) update the preview in real-time.
+- Standardize UI elements (toggles, inputs) to match the Sign Vel brand aesthetic.
 
 ## Technical Details
-
-- **Navigation:** Using TanStack Router `Link` with `activeOptions` and a custom `RailItem` component.
-- **State Management:** Preserving signature ID via route parameters to allow seamless switching between "Personal Info", "Design", etc., while editing the same signature.
-- **Styling:** Using Tailwind CSS for the 88px/420px/flexible layout with sticky positioning for the preview.
-- **Typography:** Standardizing on `Inter Tight` for the interface to match the modern, architectural aesthetic.
+- Use TanStack Router's nested routes and `params` to manage active editor sections.
+- Leverage the existing `signature-store.ts` for real-time persistence and undo/redo state.
+- Use `data-sig-*` attribute injection in `templates.tsx` for granular CSS control.

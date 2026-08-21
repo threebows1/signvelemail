@@ -24,6 +24,12 @@ import { Route as AppEditorIdRouteImport } from './routes/app.editor.$id'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AppEditorIdIndexRouteImport } from './routes/app.editor.$id.index'
+import { Route as AppEditorIdSocialRouteImport } from './routes/app.editor.$id.social'
+import { Route as AppEditorIdDisclaimerRouteImport } from './routes/app.editor.$id.disclaimer'
+import { Route as AppEditorIdDetailsRouteImport } from './routes/app.editor.$id.details'
+import { Route as AppEditorIdDesignRouteImport } from './routes/app.editor.$id.design'
+import { Route as AppEditorIdCtaRouteImport } from './routes/app.editor.$id.cta'
+import { Route as AppEditorIdBusinessRouteImport } from './routes/app.editor.$id.business'
 import { Route as ApiPublicSigImageIdKindRouteImport } from './routes/api/public/sig-image.$id.$kind'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -104,6 +110,36 @@ const AppEditorIdIndexRoute = AppEditorIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppEditorIdRoute,
 } as any)
+const AppEditorIdSocialRoute = AppEditorIdSocialRouteImport.update({
+  id: '/social',
+  path: '/social',
+  getParentRoute: () => AppEditorIdRoute,
+} as any)
+const AppEditorIdDisclaimerRoute = AppEditorIdDisclaimerRouteImport.update({
+  id: '/disclaimer',
+  path: '/disclaimer',
+  getParentRoute: () => AppEditorIdRoute,
+} as any)
+const AppEditorIdDetailsRoute = AppEditorIdDetailsRouteImport.update({
+  id: '/details',
+  path: '/details',
+  getParentRoute: () => AppEditorIdRoute,
+} as any)
+const AppEditorIdDesignRoute = AppEditorIdDesignRouteImport.update({
+  id: '/design',
+  path: '/design',
+  getParentRoute: () => AppEditorIdRoute,
+} as any)
+const AppEditorIdCtaRoute = AppEditorIdCtaRouteImport.update({
+  id: '/cta',
+  path: '/cta',
+  getParentRoute: () => AppEditorIdRoute,
+} as any)
+const AppEditorIdBusinessRoute = AppEditorIdBusinessRouteImport.update({
+  id: '/business',
+  path: '/business',
+  getParentRoute: () => AppEditorIdRoute,
+} as any)
 const ApiPublicSigImageIdKindRoute = ApiPublicSigImageIdKindRouteImport.update({
   id: '/api/public/sig-image/$id/$kind',
   path: '/api/public/sig-image/$id/$kind',
@@ -125,6 +161,12 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/app/editor/$id': typeof AppEditorIdRouteWithChildren
+  '/app/editor/$id/business': typeof AppEditorIdBusinessRoute
+  '/app/editor/$id/cta': typeof AppEditorIdCtaRoute
+  '/app/editor/$id/design': typeof AppEditorIdDesignRoute
+  '/app/editor/$id/details': typeof AppEditorIdDetailsRoute
+  '/app/editor/$id/disclaimer': typeof AppEditorIdDisclaimerRoute
+  '/app/editor/$id/social': typeof AppEditorIdSocialRoute
   '/app/editor/$id/': typeof AppEditorIdIndexRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
@@ -141,6 +183,12 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/app/editor/$id/business': typeof AppEditorIdBusinessRoute
+  '/app/editor/$id/cta': typeof AppEditorIdCtaRoute
+  '/app/editor/$id/design': typeof AppEditorIdDesignRoute
+  '/app/editor/$id/details': typeof AppEditorIdDetailsRoute
+  '/app/editor/$id/disclaimer': typeof AppEditorIdDisclaimerRoute
+  '/app/editor/$id/social': typeof AppEditorIdSocialRoute
   '/app/editor/$id': typeof AppEditorIdIndexRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
@@ -160,6 +208,12 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/app/editor/$id': typeof AppEditorIdRouteWithChildren
+  '/app/editor/$id/business': typeof AppEditorIdBusinessRoute
+  '/app/editor/$id/cta': typeof AppEditorIdCtaRoute
+  '/app/editor/$id/design': typeof AppEditorIdDesignRoute
+  '/app/editor/$id/details': typeof AppEditorIdDetailsRoute
+  '/app/editor/$id/disclaimer': typeof AppEditorIdDisclaimerRoute
+  '/app/editor/$id/social': typeof AppEditorIdSocialRoute
   '/app/editor/$id/': typeof AppEditorIdIndexRoute
   '/api/public/sig-image/$id/$kind': typeof ApiPublicSigImageIdKindRoute
 }
@@ -180,6 +234,12 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/app/editor/$id'
+    | '/app/editor/$id/business'
+    | '/app/editor/$id/cta'
+    | '/app/editor/$id/design'
+    | '/app/editor/$id/details'
+    | '/app/editor/$id/disclaimer'
+    | '/app/editor/$id/social'
     | '/app/editor/$id/'
     | '/api/public/sig-image/$id/$kind'
   fileRoutesByTo: FileRoutesByTo
@@ -196,6 +256,12 @@ export interface FileRouteTypes {
     | '/app'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/app/editor/$id/business'
+    | '/app/editor/$id/cta'
+    | '/app/editor/$id/design'
+    | '/app/editor/$id/details'
+    | '/app/editor/$id/disclaimer'
+    | '/app/editor/$id/social'
     | '/app/editor/$id'
     | '/api/public/sig-image/$id/$kind'
   id:
@@ -214,6 +280,12 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/app/editor/$id'
+    | '/app/editor/$id/business'
+    | '/app/editor/$id/cta'
+    | '/app/editor/$id/design'
+    | '/app/editor/$id/details'
+    | '/app/editor/$id/disclaimer'
+    | '/app/editor/$id/social'
     | '/app/editor/$id/'
     | '/api/public/sig-image/$id/$kind'
   fileRoutesById: FileRoutesById
@@ -339,6 +411,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEditorIdIndexRouteImport
       parentRoute: typeof AppEditorIdRoute
     }
+    '/app/editor/$id/social': {
+      id: '/app/editor/$id/social'
+      path: '/social'
+      fullPath: '/app/editor/$id/social'
+      preLoaderRoute: typeof AppEditorIdSocialRouteImport
+      parentRoute: typeof AppEditorIdRoute
+    }
+    '/app/editor/$id/disclaimer': {
+      id: '/app/editor/$id/disclaimer'
+      path: '/disclaimer'
+      fullPath: '/app/editor/$id/disclaimer'
+      preLoaderRoute: typeof AppEditorIdDisclaimerRouteImport
+      parentRoute: typeof AppEditorIdRoute
+    }
+    '/app/editor/$id/details': {
+      id: '/app/editor/$id/details'
+      path: '/details'
+      fullPath: '/app/editor/$id/details'
+      preLoaderRoute: typeof AppEditorIdDetailsRouteImport
+      parentRoute: typeof AppEditorIdRoute
+    }
+    '/app/editor/$id/design': {
+      id: '/app/editor/$id/design'
+      path: '/design'
+      fullPath: '/app/editor/$id/design'
+      preLoaderRoute: typeof AppEditorIdDesignRouteImport
+      parentRoute: typeof AppEditorIdRoute
+    }
+    '/app/editor/$id/cta': {
+      id: '/app/editor/$id/cta'
+      path: '/cta'
+      fullPath: '/app/editor/$id/cta'
+      preLoaderRoute: typeof AppEditorIdCtaRouteImport
+      parentRoute: typeof AppEditorIdRoute
+    }
+    '/app/editor/$id/business': {
+      id: '/app/editor/$id/business'
+      path: '/business'
+      fullPath: '/app/editor/$id/business'
+      preLoaderRoute: typeof AppEditorIdBusinessRouteImport
+      parentRoute: typeof AppEditorIdRoute
+    }
     '/api/public/sig-image/$id/$kind': {
       id: '/api/public/sig-image/$id/$kind'
       path: '/api/public/sig-image/$id/$kind'
@@ -350,10 +464,22 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppEditorIdRouteChildren {
+  AppEditorIdBusinessRoute: typeof AppEditorIdBusinessRoute
+  AppEditorIdCtaRoute: typeof AppEditorIdCtaRoute
+  AppEditorIdDesignRoute: typeof AppEditorIdDesignRoute
+  AppEditorIdDetailsRoute: typeof AppEditorIdDetailsRoute
+  AppEditorIdDisclaimerRoute: typeof AppEditorIdDisclaimerRoute
+  AppEditorIdSocialRoute: typeof AppEditorIdSocialRoute
   AppEditorIdIndexRoute: typeof AppEditorIdIndexRoute
 }
 
 const AppEditorIdRouteChildren: AppEditorIdRouteChildren = {
+  AppEditorIdBusinessRoute: AppEditorIdBusinessRoute,
+  AppEditorIdCtaRoute: AppEditorIdCtaRoute,
+  AppEditorIdDesignRoute: AppEditorIdDesignRoute,
+  AppEditorIdDetailsRoute: AppEditorIdDetailsRoute,
+  AppEditorIdDisclaimerRoute: AppEditorIdDisclaimerRoute,
+  AppEditorIdSocialRoute: AppEditorIdSocialRoute,
   AppEditorIdIndexRoute: AppEditorIdIndexRoute,
 }
 
