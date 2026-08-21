@@ -1,9 +1,9 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getSignature, saveSignature, type SavedSignature } from "@/lib/signature-store";
-import { Check, RotateCcw, RotateCw, Megaphone } from "lucide-react";
+import { Check, Megaphone, Quote } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/app/editor/$id/cta")({
   component: EditorCTAPage,
@@ -20,7 +20,7 @@ function EditorCTAPage() {
 
   if (!sig) return null;
 
-  const handleUpdate = async (key: string, value: string) => {
+  const handleUpdate = async (key: string, value: any) => {
     const updated = {
       ...sig,
       data: { ...sig.data, [key]: value },
@@ -33,19 +33,9 @@ function EditorCTAPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      <header className="p-6 border-b border-[#EFEBE6] flex items-center justify-between shrink-0">
-        <div>
-          <h2 className="text-xl font-bold text-[#14121F]">Call to Action</h2>
-          <div className="flex items-center gap-4 mt-1">
-            <button className="text-[11px] font-bold text-[#9E958F] hover:text-[#F38121] flex items-center gap-1 uppercase tracking-wider transition-colors">
-              <RotateCcw size={12} /> Undo
-            </button>
-            <button className="text-[11px] font-bold text-[#9E958F] hover:text-[#F38121] flex items-center gap-1 uppercase tracking-wider transition-colors">
-              <RotateCw size={12} /> Redo
-            </button>
-          </div>
-        </div>
+    <div className="flex flex-col h-full bg-white font-[Inter_Tight]">
+      <header className="px-6 py-5 border-b border-[#EFEBE6] flex items-center justify-between shrink-0">
+        <h2 className="text-lg font-bold text-[#14121F]">Add-ons</h2>
         <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-300 ${
           isSaving ? "text-[#9E958F] bg-[#F9F7F5]" : "text-[#00E5A0] bg-[#00E5A0]/5"
         }`}>
@@ -54,49 +44,70 @@ function EditorCTAPage() {
         </div>
       </header>
       
-      <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Megaphone size={16} className="text-[#F38121]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#4A443F]">Button CTA</h3>
+      <div className="flex-1 overflow-y-auto p-6 space-y-10 scrollbar-hide pb-24">
+        <section className="space-y-6">
+          <div className="flex items-center gap-2.5 mb-2">
+            <div className="size-6 rounded-lg bg-[#F38121]/10 flex items-center justify-center">
+              <Megaphone size={14} className="text-[#F38121]" />
+            </div>
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#4A443F]">Call to Action</h3>
           </div>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[#9E958F]">Label</label>
+
+          <div className="flex items-center justify-between p-4 bg-[#F9F7F5] border border-[#EFEBE6] rounded-2xl mb-6">
+            <div className="space-y-0.5">
+              <h3 className="text-sm font-bold text-[#4A443F]">Show CTA Button</h3>
+              <p className="text-[11px] text-[#9E958F] font-medium uppercase tracking-wider">Add a clickable button</p>
+            </div>
+            <Switch 
+              checked={sig.data.showCta}
+              onCheckedChange={(val) => handleUpdate("showCta", val)}
+            />
+          </div>
+
+          <div className="space-y-5">
+            <div className="space-y-2.5">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[#9E958F]">Button Label</label>
               <Input
                 value={sig.data.ctaLabel || ""}
                 onChange={(e) => handleUpdate("ctaLabel", e.target.value)}
                 placeholder="e.g. Book a meeting"
-                className="h-11 bg-[#F9F7F5] border-[#EFEBE6] rounded-xl focus-visible:ring-[#F38121]/20 focus-visible:border-[#F38121]"
+                className="h-12 bg-[#F9F7F5] border-[#EFEBE6] rounded-2xl focus-visible:ring-[#F38121]/20 focus-visible:border-[#F38121] text-sm font-bold text-[#4A443F]"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[#9E958F]">URL</label>
+            <div className="space-y-2.5">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[#9E958F]">Link URL</label>
               <Input
                 value={sig.data.ctaUrl || ""}
                 onChange={(e) => handleUpdate("ctaUrl", e.target.value)}
-                placeholder="https://cal.com/..."
-                className="h-11 bg-[#F9F7F5] border-[#EFEBE6] rounded-xl focus-visible:ring-[#F38121]/20 focus-visible:border-[#F38121]"
+                placeholder="https://cal.com/yourname"
+                className="h-12 bg-[#F9F7F5] border-[#EFEBE6] rounded-2xl focus-visible:ring-[#F38121]/20 focus-visible:border-[#F38121] text-sm font-bold text-[#4A443F]"
               />
             </div>
           </div>
         </section>
 
-        <section className="space-y-4">
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#4A443F]">Tagline & Quotes</h3>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold uppercase tracking-widest text-[#9E958F]">Tagline</label>
-              <Input
-                value={sig.data.tagline || ""}
-                onChange={(e) => handleUpdate("tagline", e.target.value)}
-                placeholder="e.g. Building the future of email"
-                className="h-11 bg-[#F9F7F5] border-[#EFEBE6] rounded-xl focus-visible:ring-[#F38121]/20 focus-visible:border-[#F38121]"
-              />
+        <div className="h-px bg-[#EFEBE6]" />
+
+        <section className="space-y-6">
+          <div className="flex items-center gap-2.5 mb-2">
+            <div className="size-6 rounded-lg bg-[#F38121]/10 flex items-center justify-center">
+              <Quote size={14} className="text-[#F38121]" />
             </div>
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#4A443F]">Tagline</h3>
+          </div>
+
+          <div className="space-y-2.5">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-[#9E958F]">Message</label>
+            <Input
+              value={sig.data.tagline || ""}
+              onChange={(e) => handleUpdate("tagline", e.target.value)}
+              placeholder="e.g. Creating beautiful email signatures"
+              className="h-12 bg-[#F9F7F5] border-[#EFEBE6] rounded-2xl focus-visible:ring-[#F38121]/20 focus-visible:border-[#F38121] text-sm font-bold text-[#4A443F]"
+            />
           </div>
         </section>
       </div>
     </div>
   );
 }
+

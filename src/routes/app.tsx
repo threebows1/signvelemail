@@ -24,14 +24,14 @@ function AppLayout() {
   const { isStaff } = useAuth();
   
   const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutTemplate, to: "/app", exact: true },
-    { id: "templates", label: "Templates", icon: LayoutTemplate, to: "/app/editor/$id" },
-    { id: "personal", label: "Personal Info", icon: User, to: "/app/editor/$id" },
-    { id: "business", label: "Business Info", icon: Building2, to: "/app/editor/$id" },
-    { id: "design", label: "Design", icon: Palette, to: "/app/editor/$id" },
-    { id: "cta", label: "Call to Action", icon: MousePointer2, to: "/app/editor/$id" },
-    { id: "disclaimer", label: "Disclaimer", icon: FileText, to: "/app/editor/$id" },
-    { id: "analytics", label: "Analytics", icon: BarChart3, to: "/app/editor/$id" },
+    { id: "templates", label: "Templates", icon: LayoutTemplate, to: "/app/editor/$id", exact: true },
+    { id: "personal", label: "Personal Info", icon: User, to: "/app/editor/$id/details" },
+    { id: "business", label: "Business Info", icon: Building2, to: "/app/editor/$id/business" },
+    { id: "design", label: "Design", icon: Palette, to: "/app/editor/$id/design" },
+    { id: "social", label: "Social", icon: MousePointer2, to: "/app/editor/$id/social" },
+    { id: "cta", label: "Call to Action", icon: MousePointer2, to: "/app/editor/$id/cta" },
+    { id: "disclaimer", label: "Disclaimer", icon: FileText, to: "/app/editor/$id/disclaimer" },
+    { id: "analytics", label: "Analytics", icon: BarChart3, to: "/app/editor/$id/analytics" },
   ];
 
   return (
@@ -87,7 +87,8 @@ function AppLayout() {
 
 function RailItem({ to, params, icon: Icon, label, exact }: { to: string; params?: any; icon: any; label: string; exact?: boolean }) {
   const { pathname } = useLocation();
-  const isActive = exact ? pathname === to : pathname.startsWith(to.replace("/$id", `/${params?.id}`));
+  const effectiveTo = to.replace("/$id", params?.id ? `/${params.id}` : "");
+  const isActive = exact ? pathname === effectiveTo : pathname.startsWith(effectiveTo);
 
   return (
     <Link
@@ -100,13 +101,21 @@ function RailItem({ to, params, icon: Icon, label, exact }: { to: string; params
           : "text-[#9E958F] hover:text-[#4A443F]"
       }`}
     >
-      {isActive && (
-        <div className="absolute inset-y-0 left-0 w-1 bg-[#F38121] rounded-r-full" />
-      )}
-      <Icon size={24} strokeWidth={isActive ? 2 : 1.5} />
-      <span className="text-[9px] font-bold uppercase tracking-[0.05em] text-center leading-none px-1">
+      <div className={`p-2.5 rounded-2xl transition-all duration-300 ${
+        isActive 
+          ? "bg-[#F38121]/10 shadow-[0_4px_12px_rgba(243,129,33,0.1)]" 
+          : "group-hover:bg-[#F9F7F5]"
+      }`}>
+        <Icon size={22} strokeWidth={isActive ? 2.5 : 2} className="transition-transform duration-300 group-active:scale-90" />
+      </div>
+      <span className={`text-[9px] font-bold uppercase tracking-[0.12em] text-center px-1 transition-colors ${
+        isActive ? "text-[#F38121]" : "text-[#9E958F]"
+      }`}>
         {label}
       </span>
+      {isActive && (
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#F38121] rounded-r-full shadow-[0_0_8px_rgba(243,129,33,0.4)]" />
+      )}
     </Link>
   );
 }

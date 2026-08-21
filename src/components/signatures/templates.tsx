@@ -24,6 +24,26 @@ export type TemplateMeta = {
   render: (d: SignatureData) => ReactNode;
 };
 
+const getPhotoStyle = (d: SignatureData) => {
+  const photoWidth = d.photoWidth || 100;
+  return {
+    width: `${photoWidth}px`,
+    height: `${photoWidth}px`,
+    borderRadius: d.cropPhotoCircle ? "50%" : "8px",
+    objectFit: "cover" as const,
+    display: "block",
+  };
+};
+
+const getLogoStyle = (d: SignatureData) => {
+  const logoWidth = d.logoWidth || 150;
+  return {
+    maxWidth: `${logoWidth}px`,
+    height: "auto",
+    display: "block",
+  };
+};
+
 /* ---------- helpers ---------- */
 const Initials = ({ name, bg, fg = "#fff", size = 56 }: { name: string; bg: string; fg?: string; size?: number }) => {
   const initials = name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
@@ -37,11 +57,31 @@ const Initials = ({ name, bg, fg = "#fff", size = 56 }: { name: string; bg: stri
   );
 };
 
-const Avatar = ({ d, size = 56 }: { d: SignatureData; size?: number }) => {
-  if (d.photoUrl) {
-    return <img src={d.photoUrl} alt={d.name} style={{ width: size, height: size }} className="rounded-full object-cover shrink-0" />;
+const Avatar = ({ d, size }: { d: SignatureData; size?: number }) => {
+  if (d.photoUrl || (d.showPlaceholderPhoto !== false && d.photoUrl)) {
+    const style = getPhotoStyle(d);
+    if (size) {
+      style.width = `${size}px`;
+      style.height = `${size}px`;
+    }
+    return <img src={d.photoUrl} alt={d.name} style={style} className="shrink-0" />;
   }
-  return <Initials name={d.name} bg={d.primaryColor} size={size} />;
+  if (d.showPlaceholderPhoto) {
+    const style = getPhotoStyle(d);
+    if (size) {
+      style.width = `${size}px`;
+      style.height = `${size}px`;
+    }
+    return (
+      <div 
+        style={{ ...style, background: "#F3F4F6" }} 
+        className="flex items-center justify-center text-gray-300 shrink-0"
+      >
+        <Smartphone style={{ width: size ? size * 0.5 : 24, height: size ? size * 0.5 : 24 }} />
+      </div>
+    );
+  }
+  return <Initials name={d.name} bg={d.primaryColor} size={size || d.photoWidth || 56} />;
 };
 
 const Socials = ({ d, color, ring = false, size }: { d: SignatureData; color: string; ring?: boolean; size?: number }) => {
@@ -105,6 +145,31 @@ const Disclaimer = ({ d }: { d: SignatureData }) =>
     </p>
   ) : null;
 
+const CTA = ({ d, color }: { d: SignatureData; color: string }) => {
+  if (!d.showCta || !d.ctaLabel) return null;
+  return (
+    <div className="mt-4">
+      <a
+        href={d.ctaUrl || "#"}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: "inline-block",
+          padding: "8px 20px",
+          backgroundColor: color,
+          color: "#ffffff",
+          borderRadius: "9999px",
+          fontSize: "12px",
+          fontWeight: "bold",
+          textDecoration: "none",
+        }}
+      >
+        {d.ctaLabel}
+      </a>
+    </div>
+  );
+};
+
 const IconRow = ({ Icon, text, color, ring = false, d }: { Icon: any; text: string; color: string; ring?: boolean; d?: SignatureData }) => {
   const style = d?.iconStyle ?? (ring ? "outline" : "solid");
   const iconColor = d?.iconColor || color;
@@ -157,6 +222,9 @@ function SignVelCorporate(d: SignatureData) {
   const titleSize = d.separateTitleFontSize && d.titleFontSize ? d.titleFontSize : (d.fontSize ? d.fontSize + 4 : 17);
   const bodySize = d.fontSize ?? 13;
   const gap = d.spacing === "compact" ? 4 : d.spacing === "medium" ? 8 : 16;
+  const logoStyle = getLogoStyle(d);
+  const phones = derivePhones(d);
+
   return (
     <div className="bg-white p-8" style={{ fontFamily: d.fontFamily, color: d.textColor, lineHeight: d.lineHeight ?? 1.3, maxWidth: 560 }}>
       <div className="mb-2 flex items-center" style={{ gap: 14 }}>
@@ -169,8 +237,16 @@ function SignVelCorporate(d: SignatureData) {
       </div>
       {d.showDividingLines !== false && <div data-sig-rule="" className="my-3" style={{ height: lineSize, background: lineColor }} />}
       <div className="flex items-start my-4" style={{ gap: gap * 2 }}>
-        {d.logoUrl ? (
-          <img src={d.logoUrl} alt={d.company} className="shrink-0 object-contain" style={{ width: d.logoWidth ?? 150 }} />
+        {(d.logoUrl || d.showPlaceholderLogo) ? (
+          <div className="shrink-0" style={{ width: d.logoWidth || 150 }}>
+            {d.logoUrl ? (
+              <img src={d.logoUrl} alt={d.company} style={logoStyle} className="object-contain" />
+            ) : (
+              <div style={{ ...logoStyle, background: "#F3F4F6", height: 60 }} className="flex items-center justify-center text-gray-300 rounded-lg">
+                <LinkIcon style={{ width: 24, height: 24 }} />
+              </div>
+            )}
+          </div>
         ) : (
           <div className="shrink-0" style={{ width: d.logoWidth ?? 170 }}>
             <svg width="100%" viewBox="0 0 88 37" aria-hidden="true">
@@ -209,6 +285,7 @@ function SignVelCorporate(d: SignatureData) {
       )}
       {d.showDividingLines !== false && <div data-sig-rule="" className="mt-4 mb-3" style={{ height: lineSize, background: lineColor }} />}
       <Socials d={d} color={accent} />
+      <CTA d={d} color={accent} />
       <Disclaimer d={d} />
     </div>
   );
@@ -229,6 +306,8 @@ function LeftLine(d: SignatureData) {
             <p data-sig-website="" className="font-bold" style={{ color: d.textColor }}>W: {d.website}</p>
           </div>
           <div className="mt-3"><Socials d={d} color={d.primaryColor} size={22} /></div>
+          <CTA d={d} color={d.primaryColor} />
+          <Disclaimer d={d} />
         </div>
       </div>
     </div>
@@ -246,6 +325,9 @@ function StackedMinimal(d: SignatureData) {
         <p><span style={{ color: d.mutedColor }}>m</span> {d.mobile}</p>
         <p><span style={{ color: d.mutedColor }}>w</span> <span data-sig-website="" className="underline">{d.website}</span></p>
       </div>
+      <Socials d={d} color={d.primaryColor} />
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -265,6 +347,9 @@ function PhotoCard(d: SignatureData) {
           </div>
         </div>
       </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} /></div>
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -325,6 +410,9 @@ function CompactMono(d: SignatureData) {
       <p className="mt-2">{d.email}</p>
       <p>{d.mobile}</p>
       <p data-sig-website="">{d.website}</p>
+      <div className="mt-3"><Socials d={d} color={d.primaryColor} /></div>
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -341,6 +429,9 @@ function ExecutiveSerif(d: SignatureData) {
         <p>{d.address}</p>
         <p>{d.phone} · {d.email}</p>
       </div>
+      <Socials d={d} color={d.primaryColor} />
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -363,6 +454,9 @@ function Green(d: SignatureData) {
         <span data-sig-website="">🌱 {d.website}</span>
       </div>
       <p className="mt-3 text-[10px] italic" style={{ color: "#047857" }}>🌍 Please consider the environment before printing this email.</p>
+      <div className="mt-4"><Socials d={d} color="#059669" /></div>
+      <CTA d={d} color="#059669" />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -379,6 +473,9 @@ function BoldModern(d: SignatureData) {
         <span>{d.mobile}</span>
         <span data-sig-website="" className="col-span-2" style={{ color: d.accentColor }}>{d.website}</span>
       </div>
+      <div className="mt-4 flex gap-3"><Socials d={d} color={d.accentColor || "#fff"} /></div>
+      <CTA d={d} color={d.accentColor || d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -401,6 +498,8 @@ function SplitCard(d: SignatureData) {
           <p><span data-sig-website="" style={{ color: d.mutedColor }}>W</span> {d.website}</p>
         </div>
         <div className="mt-4"><Socials d={d} color={d.primaryColor} size={22} /></div>
+        <CTA d={d} color={d.primaryColor} />
+        <Disclaimer d={d} />
       </div>
     </div>
   );
@@ -419,6 +518,9 @@ function VerticalRibbon(d: SignatureData) {
         <span>📱 {d.mobile}</span>
         <span data-sig-website="">🔗 {d.website}</span>
       </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} /></div>
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -436,6 +538,11 @@ function GradientHeader(d: SignatureData) {
         <span>📞 {d.phone}</span>
         <span>📱 {d.mobile}</span>
         <span data-sig-website="">🌐 {d.website}</span>
+      </div>
+      <div className="px-5 pb-5">
+        <Socials d={d} color={d.primaryColor} />
+        <CTA d={d} color={d.primaryColor} />
+        <Disclaimer d={d} />
       </div>
     </div>
   );
@@ -457,6 +564,9 @@ function BusinessCard(d: SignatureData) {
         <p>{d.mobile}</p>
         <p>{d.address}</p>
       </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} /></div>
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -473,6 +583,9 @@ function ElegantScript(d: SignatureData) {
         <p>{d.email} · {d.phone}</p>
         <p>{d.address}</p>
       </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} /></div>
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
@@ -1028,6 +1141,9 @@ export function renderSignature(template: TemplateMeta, d: SignatureData) {
   const base = d.fontSize ?? BASE_FONT_SIZE;
   const scale = Math.max(0.6, Math.min(2, base / BASE_FONT_SIZE));
   const fontOverridden = !!d.fontFamily && d.fontFamily !== DEFAULT_FONT;
+
+  // Multi-phone rendering for templates that support it
+  const phones = d.phones && d.phones.length > 0 ? d.phones : [{ type: "phone", value: d.phone }];
 
   // Normalize so templates keep authoring at the 13px base; the wrapper scales.
   const normalized: SignatureData = {

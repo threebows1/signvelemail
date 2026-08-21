@@ -31,7 +31,7 @@ export type IconStyle = "solid" | "outline" | "plain" | "none";
 export type SocialIconStyle = "color" | "solid" | "outline" | "plain";
 export type Spacing = "compact" | "medium" | "large";
 export type PhoneType = "main" | "mobile" | "office" | "fax" | "direct" | "home" | "other";
-export type PhoneEntry = { type: PhoneType; value: string };
+export type PhoneEntry = { type: string; value: string };
 
 export type SignatureData = {
   // Identity
@@ -51,14 +51,18 @@ export type SignatureData = {
   photoUrl?: string;
   logoUrl?: string;
   logoWidth?: number;
+  logoHeight?: number;
+  photoWidth?: number;
   cropPhotoCircle?: boolean;
   showPlaceholderPhoto?: boolean;
+  showPlaceholderLogo?: boolean;
   // Extras
   tagline?: string;
   quote?: string;
   disclaimer?: string;
   ctaLabel?: string;
   ctaUrl?: string;
+  showCta?: boolean;
   // Colors
   primaryColor: string;
   accentColor: string;
@@ -155,14 +159,18 @@ export const defaultData: SignatureData = {
   photoUrl: "",
   logoUrl: "",
   logoWidth: 150,
+  logoHeight: 60,
+  photoWidth: 100,
   cropPhotoCircle: true,
   showPlaceholderPhoto: false,
+  showPlaceholderLogo: false,
   tagline: "Signatures worth signing off with.",
   quote: "",
   disclaimer:
     "This email and any attachments are confidential and intended solely for the addressee. If you have received it in error, please notify the sender and delete it from your system.",
   ctaLabel: "Book a meeting",
   ctaUrl: "https://cal.com/signvel",
+  showCta: true,
   primaryColor: "#5B2EFF",
   accentColor: "#00E5A0",
   textColor: "#14121F",
