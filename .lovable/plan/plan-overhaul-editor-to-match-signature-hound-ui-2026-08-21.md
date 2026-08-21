@@ -33,13 +33,14 @@ Rebuild the editor interface to exactly match the provided screenshot, featuring
     - `...social.tsx`: Social icons list and style.
     - `...disclaimer.tsx`: Legal text.
 - **Form Controls:**
-  - Use `Switch` for toggles.
-  - Add `Slider` for "Profile Picture Width".
+  - Use `Switch` from `@/components/ui/switch` for toggles.
+  - Add `Slider` (from shadcn if available, otherwise custom) for "Profile Picture Width".
   - Implement a `PhoneField` component that allows multiple phone numbers with labels (Main, Mobile, etc.) and add/remove actions.
 - **Global Styles:**
-  - Ensure `src/styles.css` includes `Instrument Serif` and `Rubik`.
+  - Ensure `src/styles.css` includes `Instrument Serif` and `Rubik` as defined in project requirements.
 
 ## Security & Verification
 
 - **Validation:** Use Playwright to verify that form updates in the sidebar immediately reflect in the sticky preview.
-- **Data Persistence:** Verify `saveSignature` correctly syncs changes to Supabase.
+- **Responsive:** Ensure the 3-column layout handles smaller screens gracefully (though primary focus is desktop editor).
+- **Data Persistence:** Verify `saveSignature` (debounced/queued) correctly syncs changes to Supabase.
