@@ -1,8 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getSignature, saveSignature, type SavedSignature } from "@/lib/signature-store";
-import { Check, RotateCcw, RotateCw } from "lucide-react";
-import { FIELDS, type FieldKey } from "@/components/signature-form/fields";
+import { Check, RotateCcw, RotateCw, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/app/editor/$id/details")({
   component: EditorDetailsPage,
@@ -12,6 +11,8 @@ function EditorDetailsPage() {
   const { id } = useParams({ from: "/app/editor/$id/details" });
   const [sig, setSig] = useState<SavedSignature | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const photoRef = useRef<HTMLInputElement>(null);
+  const logoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     getSignature(id).then((s) => setSig(s || null));
@@ -19,12 +20,10 @@ function EditorDetailsPage() {
 
   if (!sig) return null;
 
-  const personalFields = FIELDS.filter(f => f.section === "identity");
-
-  const handleUpdate = async (key: FieldKey, value: string) => {
+  const handleUpdate = async (updates: Partial<SavedSignature["data"]>) => {
     const updated = {
       ...sig,
-      data: { ...sig.data, [key]: value },
+      data: { ...sig.data, ...updates },
       updatedAt: Date.now()
     };
     setSig(updated);
@@ -32,6 +31,23 @@ function EditorDetailsPage() {
     await saveSignature(updated);
     setIsSaving(false);
   };
+
+  const handleImageUpload = (kind: "photoUrl" | "logoUrl") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      handleUpdate({ [kind]: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const personalFields = [
+    { key: "fullName", label: "Full Name", placeholder: "Alex Rivera" },
+    { key: "jobTitle", label: "Job Title", placeholder: "Brand Designer" },
+    { key: "department", label: "Department", placeholder: "Design" },
+    { key: "company", label: "Company", placeholder: "Sign Vel" },
+  ];
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -55,21 +71,87 @@ function EditorDetailsPage() {
         </div>
       </header>
       
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
-        {personalFields.map((field) => (
-          <div key={field.key} className="space-y-2">
-            <label className="text-[11px] font-bold uppercase tracking-widest text-[#9E958F]">
-              {field.label}
-            </label>
-            <input
-              type="text"
-              value={(sig.data as any)[field.key] || ""}
-              onChange={(e) => handleUpdate(field.key as FieldKey, e.target.value)}
-              placeholder={field.placeholder}
-              className="w-full h-11 px-4 bg-[#F9F7F5] border-[#EFEBE6] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F38121]/20 focus:border-[#F38121] transition-all text-sm font-medium text-[#4A443F]"
-            />
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
+        {/* Profile & Logo Upload */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <label className="text-[11px] font-bold uppercase tracking-widest text-[#9E958F]">Profile Photo</label>
+            <div 
+              onClick={() => photoRef.current?.click()}
+              className="group relative aspect-square rounded-2xl bg-[#F9F7F5] border-2 border-dashed border-[#EFEBE6] hover:border-[#F38121] transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center gap-2"
+            >
+              {sig.data.photoUrl ? (
+                <>
+                  <img src={sig.data.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleUpdate({ photoUrl: "" }); }}
+                      className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-md"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-3 rounded-full bg-white text-[#F38121] shadow-sm">
+                    <Upload size={20} />
+                  </div>
+                  <span className="text-[10px] font-bold text-[#9E958F] uppercase tracking-wider">Upload Photo</span>
+                </>
+              )}
+              <input ref={photoRef} type="file" className="hidden" accept="image/*" onChange={handleImageUpload("photoUrl")} />
+            </div>
           </div>
-        ))}
+
+          <div className="space-y-3">
+            <label className="text-[11px] font-bold uppercase tracking-widest text-[#9E958F]">Company Logo</label>
+            <div 
+              onClick={() => logoRef.current?.click()}
+              className="group relative aspect-square rounded-2xl bg-[#F9F7F5] border-2 border-dashed border-[#EFEBE6] hover:border-[#F38121] transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center gap-2"
+            >
+              {sig.data.logoUrl ? (
+                <>
+                  <img src={sig.data.logoUrl} alt="Logo" className="w-full h-full object-contain p-4" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleUpdate({ logoUrl: "" }); }}
+                      className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-md"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-3 rounded-full bg-white text-[#F38121] shadow-sm">
+                    <Upload size={20} />
+                  </div>
+                  <span className="text-[10px] font-bold text-[#9E958F] uppercase tracking-wider">Upload Logo</span>
+                </>
+              )}
+              <input ref={logoRef} type="file" className="hidden" accept="image/*" onChange={handleImageUpload("logoUrl")} />
+            </div>
+          </div>
+        </div>
+
+        {/* Form Fields */}
+        <div className="space-y-6">
+          {personalFields.map((field) => (
+            <div key={field.key} className="space-y-2">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-[#9E958F]">
+                {field.label}
+              </label>
+              <input
+                type="text"
+                value={(sig.data as any)[field.key] || ""}
+                onChange={(e) => handleUpdate({ [field.key]: e.target.value })}
+                placeholder={field.placeholder}
+                className="w-full h-11 px-4 bg-[#F9F7F5] border-[#EFEBE6] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F38121]/20 focus:border-[#F38121] transition-all text-sm font-medium text-[#4A443F]"
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
