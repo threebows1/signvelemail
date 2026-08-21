@@ -63,7 +63,7 @@ function EditorDetailsPage() {
             </label>
             <input
               type="text"
-              value={sig.data[field.key as FieldKey] || ""}
+              value={(sig.data as any)[field.key] || ""}
               onChange={(e) => handleUpdate(field.key as FieldKey, e.target.value)}
               placeholder={field.placeholder}
               className="w-full h-11 px-4 bg-[#F9F7F5] border-[#EFEBE6] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F38121]/20 focus:border-[#F38121] transition-all text-sm font-medium text-[#4A443F]"
