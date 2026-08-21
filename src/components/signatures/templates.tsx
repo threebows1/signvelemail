@@ -285,6 +285,7 @@ function SignVelCorporate(d: SignatureData) {
       )}
       {d.showDividingLines !== false && <div data-sig-rule="" className="mt-4 mb-3" style={{ height: lineSize, background: lineColor }} />}
       <Socials d={d} color={accent} />
+      <CTA d={d} color={accent} />
       <Disclaimer d={d} />
     </div>
   );
