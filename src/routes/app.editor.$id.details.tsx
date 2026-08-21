@@ -19,7 +19,7 @@ function EditorDetailsPage() {
 
   if (!sig) return null;
 
-  const personalFields = FIELDS.filter(f => f.section === "identity" && f.key !== "pronouns");
+  const personalFields = FIELDS.filter(f => f.section === "identity");
 
   const handleUpdate = async (key: FieldKey, value: string) => {
     const updated = {
