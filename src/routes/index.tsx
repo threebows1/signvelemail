@@ -69,7 +69,7 @@ function TickerBar() {
   return (
     <div className="w-full bg-foreground text-background text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] py-2 px-6 flex items-center justify-center gap-3">
       <span className="text-accent">New</span>
-      <span className="text-background/70">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            make this app like the one i shared in the image, keep all the options same.</span>
+      <span className="text-background/70">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            in dasahboard remove all signatures except 1\ncheck aall the burttons if they aar working fine.</span>
       <Link to="/pricing" className="hover:text-accent transition-colors">
         Start a 7-day trial →
       </Link>
