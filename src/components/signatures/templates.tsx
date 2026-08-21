@@ -347,6 +347,9 @@ function PhotoCard(d: SignatureData) {
           </div>
         </div>
       </div>
+      <div className="mt-4"><Socials d={d} color={d.primaryColor} /></div>
+      <CTA d={d} color={d.primaryColor} />
+      <Disclaimer d={d} />
     </div>
   );
 }
