@@ -145,6 +145,31 @@ const Disclaimer = ({ d }: { d: SignatureData }) =>
     </p>
   ) : null;
 
+const CTA = ({ d, color }: { d: SignatureData; color: string }) => {
+  if (!d.showCta || !d.ctaLabel) return null;
+  return (
+    <div className="mt-4">
+      <a
+        href={d.ctaUrl || "#"}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: "inline-block",
+          padding: "8px 20px",
+          backgroundColor: color,
+          color: "#ffffff",
+          borderRadius: "9999px",
+          fontSize: "12px",
+          fontWeight: "bold",
+          textDecoration: "none",
+        }}
+      >
+        {d.ctaLabel}
+      </a>
+    </div>
+  );
+};
+
 const IconRow = ({ Icon, text, color, ring = false, d }: { Icon: any; text: string; color: string; ring?: boolean; d?: SignatureData }) => {
   const style = d?.iconStyle ?? (ring ? "outline" : "solid");
   const iconColor = d?.iconColor || color;
