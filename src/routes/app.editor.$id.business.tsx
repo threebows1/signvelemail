@@ -1,7 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { getSignature, saveSignature, type SavedSignature } from "@/lib/signature-store";
-import { Check, RotateCcw, RotateCw, Trash2, Upload, Plus, X } from "lucide-react";
+import { Check, Trash2, Upload, Plus, X, Building2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -78,29 +78,34 @@ function EditorBusinessPage() {
         </div>
       </header>
       
-      <div className="flex-1 overflow-y-auto p-6 space-y-10 scrollbar-hide pb-20">
+      <div className="flex-1 overflow-y-auto p-6 space-y-10 scrollbar-hide pb-24">
         {/* Company Logo Section */}
         <section className="space-y-6">
-          <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#9E958F] block">
-            Company Logo
-          </label>
+          <div className="flex items-center gap-2.5 mb-2">
+            <div className="size-6 rounded-lg bg-[#F38121]/10 flex items-center justify-center">
+              <Building2 size={14} className="text-[#F38121]" />
+            </div>
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#4A443F]">Company Logo</h3>
+          </div>
           
           <div className="flex items-start gap-6">
             <div 
               onClick={() => logoRef.current?.click()}
-              className="group relative size-32 rounded-2xl bg-[#F9F7F5] border-2 border-dashed border-[#EFEBE6] hover:border-[#F38121] transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center gap-2 shrink-0"
+              className="group relative size-32 rounded-3xl bg-[#F9F7F5] border-2 border-dashed border-[#EFEBE6] hover:border-[#F38121] transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center gap-2 shrink-0"
             >
               {sig.data.logoUrl ? (
                 <>
-                  <img src={sig.data.logoUrl} alt="Logo" className="w-full h-full object-contain p-4" />
+                  <img src={sig.data.logoUrl} alt="Logo" className="w-full h-full object-contain p-6" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Trash2 size={20} className="text-white" onClick={(e) => { e.stopPropagation(); handleUpdate({ logoUrl: "" }); }} />
                   </div>
                 </>
               ) : (
                 <>
-                  <Upload size={24} className="text-[#F38121]" />
-                  <span className="text-[10px] font-bold text-[#9E958F] uppercase tracking-wider text-center px-2 leading-tight">
+                  <div className="size-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-[#EFEBE6]">
+                    <Upload size={18} className="text-[#F38121]" />
+                  </div>
+                  <span className="text-[10px] font-bold text-[#9E958F] uppercase tracking-wider text-center px-4 leading-relaxed">
                     Drop logo here or browse
                   </span>
                 </>
@@ -116,10 +121,10 @@ function EditorBusinessPage() {
                   onCheckedChange={(val) => handleUpdate({ showPlaceholderLogo: val })}
                 />
               </div>
-              <div className="space-y-3">
-                <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-[#9E958F]">
+              <div className="space-y-4">
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-[#9E958F]">
                   <span>Logo Width</span>
-                  <span>{sig.data.logoWidth || 150}px</span>
+                  <span className="text-xs text-[#4A443F]">{sig.data.logoWidth || 150}px</span>
                 </div>
                 <Slider 
                   value={[sig.data.logoWidth || 150]}
@@ -127,7 +132,6 @@ function EditorBusinessPage() {
                   max={300}
                   step={1}
                   onValueChange={([val]) => handleUpdate({ logoWidth: val })}
-                  className="py-1"
                 />
               </div>
             </div>
@@ -137,34 +141,34 @@ function EditorBusinessPage() {
         <div className="h-px bg-[#EFEBE6]" />
 
         {/* Business Fields */}
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#9E958F]">Company Name</label>
+        <div className="space-y-8">
+          <div className="space-y-2.5">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-[#9E958F]">Company Name</label>
             <input
               type="text"
               value={sig.data.company || ""}
               onChange={(e) => handleUpdate({ company: e.target.value })}
               placeholder="Sign Vel"
-              className="w-full h-11 px-4 bg-[#F9F7F5] border border-[#EFEBE6] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F38121]/10 focus:border-[#F38121] transition-all text-sm font-medium text-[#4A443F]"
+              className="w-full h-12 px-4 bg-[#F9F7F5] border border-[#EFEBE6] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#F38121]/20 transition-all text-sm font-bold text-[#4A443F]"
             />
           </div>
 
           <div className="space-y-4">
-            <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#9E958F]">Telephone Numbers</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-[#9E958F]">Phone Numbers</label>
             <div className="space-y-3">
               {(sig.data.phones || []).map((phone, idx) => (
                 <div key={idx} className="flex gap-2">
-                  <div className="w-[120px] shrink-0">
+                  <div className="w-[110px] shrink-0">
                     <Select value={phone.type} onValueChange={(val) => updatePhoneType(idx, val)}>
-                      <SelectTrigger className="h-11 bg-[#F9F7F5] border-[#EFEBE6] rounded-xl text-xs font-bold uppercase tracking-wider">
+                      <SelectTrigger className="h-12 bg-[#F9F7F5] border-[#EFEBE6] rounded-2xl text-[10px] font-bold uppercase tracking-widest focus:ring-[#F38121]/20">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="main">Main</SelectItem>
-                        <SelectItem value="mobile">Mobile</SelectItem>
-                        <SelectItem value="office">Office</SelectItem>
-                        <SelectItem value="direct">Direct</SelectItem>
-                        <SelectItem value="fax">Fax</SelectItem>
+                        <SelectItem value="main" className="text-[10px] font-bold uppercase tracking-widest">Main</SelectItem>
+                        <SelectItem value="mobile" className="text-[10px] font-bold uppercase tracking-widest">Mobile</SelectItem>
+                        <SelectItem value="office" className="text-[10px] font-bold uppercase tracking-widest">Office</SelectItem>
+                        <SelectItem value="direct" className="text-[10px] font-bold uppercase tracking-widest">Direct</SelectItem>
+                        <SelectItem value="fax" className="text-[10px] font-bold uppercase tracking-widest">Fax</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -174,45 +178,46 @@ function EditorBusinessPage() {
                       value={phone.value}
                       onChange={(e) => updatePhone(idx, e.target.value)}
                       placeholder="+1 (000) 000-0000"
-                      className="w-full h-11 px-4 bg-[#F9F7F5] border border-[#EFEBE6] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F38121]/10 focus:border-[#F38121] transition-all text-sm font-medium text-[#4A443F]"
+                      className="w-full h-12 px-4 bg-[#F9F7F5] border border-[#EFEBE6] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#F38121]/20 transition-all text-sm font-bold text-[#4A443F] pr-10"
                     />
                     <button 
                       onClick={() => removePhone(idx)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#CDC8C3] hover:text-destructive transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#CDC8C3] hover:text-[#F38121] transition-colors"
                     >
-                      <X size={16} />
+                      <X size={14} strokeWidth={3} />
                     </button>
                   </div>
                 </div>
               ))}
               <button 
                 onClick={addPhone}
-                className="w-full h-11 border-2 border-dashed border-[#EFEBE6] hover:border-[#F38121] hover:text-[#F38121] text-[#9E958F] rounded-xl flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider transition-all"
+                className="w-full h-12 border-2 border-dashed border-[#EFEBE6] hover:border-[#F38121] hover:text-[#F38121] text-[#9E958F] rounded-2xl flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-all group"
               >
-                <Plus size={16} /> Add Another
+                <Plus size={14} strokeWidth={3} className="transition-transform group-hover:rotate-90" />
+                Add Phone Number
               </button>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#9E958F]">Address</label>
+          <div className="space-y-2.5">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-[#9E958F]">Office Address</label>
             <input
               type="text"
               value={sig.data.address || ""}
               onChange={(e) => handleUpdate({ address: e.target.value })}
               placeholder="500 Market Street, Suite 400"
-              className="w-full h-11 px-4 bg-[#F9F7F5] border border-[#EFEBE6] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F38121]/10 focus:border-[#F38121] transition-all text-sm font-medium text-[#4A443F]"
+              className="w-full h-12 px-4 bg-[#F9F7F5] border border-[#EFEBE6] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#F38121]/20 transition-all text-sm font-bold text-[#4A443F]"
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#9E958F]">Website URL</label>
+          <div className="space-y-2.5">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-[#9E958F]">Website URL</label>
             <input
               type="text"
               value={sig.data.website || ""}
               onChange={(e) => handleUpdate({ website: e.target.value })}
               placeholder="signvel.com"
-              className="w-full h-11 px-4 bg-[#F9F7F5] border border-[#EFEBE6] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F38121]/10 focus:border-[#F38121] transition-all text-sm font-medium text-[#4A443F]"
+              className="w-full h-12 px-4 bg-[#F9F7F5] border border-[#EFEBE6] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#F38121]/20 transition-all text-sm font-bold text-[#4A443F]"
             />
           </div>
         </div>
@@ -220,3 +225,4 @@ function EditorBusinessPage() {
     </div>
   );
 }
+
