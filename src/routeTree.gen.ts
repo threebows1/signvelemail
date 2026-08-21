@@ -30,6 +30,7 @@ import { Route as AppEditorIdDetailsRouteImport } from './routes/app.editor.$id.
 import { Route as AppEditorIdDesignRouteImport } from './routes/app.editor.$id.design'
 import { Route as AppEditorIdCtaRouteImport } from './routes/app.editor.$id.cta'
 import { Route as AppEditorIdBusinessRouteImport } from './routes/app.editor.$id.business'
+import { Route as AppEditorIdAnalyticsRouteImport } from './routes/app.editor.$id.analytics'
 import { Route as ApiPublicSigImageIdKindRouteImport } from './routes/api/public/sig-image.$id.$kind'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -140,6 +141,11 @@ const AppEditorIdBusinessRoute = AppEditorIdBusinessRouteImport.update({
   path: '/business',
   getParentRoute: () => AppEditorIdRoute,
 } as any)
+const AppEditorIdAnalyticsRoute = AppEditorIdAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AppEditorIdRoute,
+} as any)
 const ApiPublicSigImageIdKindRoute = ApiPublicSigImageIdKindRouteImport.update({
   id: '/api/public/sig-image/$id/$kind',
   path: '/api/public/sig-image/$id/$kind',
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/app/editor/$id': typeof AppEditorIdRouteWithChildren
+  '/app/editor/$id/analytics': typeof AppEditorIdAnalyticsRoute
   '/app/editor/$id/business': typeof AppEditorIdBusinessRoute
   '/app/editor/$id/cta': typeof AppEditorIdCtaRoute
   '/app/editor/$id/design': typeof AppEditorIdDesignRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/app/editor/$id/analytics': typeof AppEditorIdAnalyticsRoute
   '/app/editor/$id/business': typeof AppEditorIdBusinessRoute
   '/app/editor/$id/cta': typeof AppEditorIdCtaRoute
   '/app/editor/$id/design': typeof AppEditorIdDesignRoute
@@ -208,6 +216,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/app/editor/$id': typeof AppEditorIdRouteWithChildren
+  '/app/editor/$id/analytics': typeof AppEditorIdAnalyticsRoute
   '/app/editor/$id/business': typeof AppEditorIdBusinessRoute
   '/app/editor/$id/cta': typeof AppEditorIdCtaRoute
   '/app/editor/$id/design': typeof AppEditorIdDesignRoute
@@ -234,6 +243,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/app/editor/$id'
+    | '/app/editor/$id/analytics'
     | '/app/editor/$id/business'
     | '/app/editor/$id/cta'
     | '/app/editor/$id/design'
@@ -256,6 +266,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/app/editor/$id/analytics'
     | '/app/editor/$id/business'
     | '/app/editor/$id/cta'
     | '/app/editor/$id/design'
@@ -280,6 +291,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/app/editor/$id'
+    | '/app/editor/$id/analytics'
     | '/app/editor/$id/business'
     | '/app/editor/$id/cta'
     | '/app/editor/$id/design'
@@ -453,6 +465,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEditorIdBusinessRouteImport
       parentRoute: typeof AppEditorIdRoute
     }
+    '/app/editor/$id/analytics': {
+      id: '/app/editor/$id/analytics'
+      path: '/analytics'
+      fullPath: '/app/editor/$id/analytics'
+      preLoaderRoute: typeof AppEditorIdAnalyticsRouteImport
+      parentRoute: typeof AppEditorIdRoute
+    }
     '/api/public/sig-image/$id/$kind': {
       id: '/api/public/sig-image/$id/$kind'
       path: '/api/public/sig-image/$id/$kind'
@@ -464,6 +483,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppEditorIdRouteChildren {
+  AppEditorIdAnalyticsRoute: typeof AppEditorIdAnalyticsRoute
   AppEditorIdBusinessRoute: typeof AppEditorIdBusinessRoute
   AppEditorIdCtaRoute: typeof AppEditorIdCtaRoute
   AppEditorIdDesignRoute: typeof AppEditorIdDesignRoute
@@ -474,6 +494,7 @@ interface AppEditorIdRouteChildren {
 }
 
 const AppEditorIdRouteChildren: AppEditorIdRouteChildren = {
+  AppEditorIdAnalyticsRoute: AppEditorIdAnalyticsRoute,
   AppEditorIdBusinessRoute: AppEditorIdBusinessRoute,
   AppEditorIdCtaRoute: AppEditorIdCtaRoute,
   AppEditorIdDesignRoute: AppEditorIdDesignRoute,

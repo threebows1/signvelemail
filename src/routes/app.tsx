@@ -87,7 +87,7 @@ function AppLayout() {
 
 function RailItem({ to, params, icon: Icon, label, exact }: { to: string; params?: any; icon: any; label: string; exact?: boolean }) {
   const { pathname } = useLocation();
-  const isActive = exact ? pathname === to : pathname.includes(to.replace("/editor/$id", ""));
+  const isActive = exact ? pathname === to : pathname.startsWith(to.replace("/$id", `/${params?.id}`));
 
   return (
     <Link
