@@ -50,7 +50,7 @@ function Kicker({ children }: { children: React.ReactNode }) {
 function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20 selection:text-primary">
-      <Navigation />
+      <TickerBar />
       <Navigation />
       <main>
         <HeroSection />
@@ -69,7 +69,7 @@ function TickerBar() {
   return (
     <div className="w-full bg-foreground text-background text-[10px] font-[JetBrains_Mono] uppercase tracking-[0.18em] py-2 px-6 flex items-center justify-center gap-3">
       <span className="text-accent">New</span>
-      <span className="text-background/70">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            selcted sign does not show in prevew for editing.</span>
+      <span className="text-background/70">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            now the home navigation is twice shown in the home page, remove one please.</span>
       <Link to="/pricing" className="hover:text-accent transition-colors">
         Start a 7-day trial →
       </Link>
