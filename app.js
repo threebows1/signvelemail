@@ -133,8 +133,11 @@ const S = {
   titleColor: '#666666',
 
   accentColor: '#C9962B',
-  logoUrl: null,
-  logoName: '',
+  // Served from alriyady.ae, so it is already a public URL — the one form that
+  // survives being emailed. The 400px-wide version keeps the file small while
+  // staying sharp at the 40px display height.
+  logoUrl: 'https://alriyady.ae/wp-content/uploads/2023/10/Al-Riyady-Corporate-Services-Proerties-Logo-400x163.png',
+  logoName: 'Al Riyady Group',
   logoHeight: 40,
 
   headshotUrl: null,
