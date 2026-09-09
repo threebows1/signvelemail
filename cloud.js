@@ -75,6 +75,31 @@ window.Cloud = (function () {
     return error ? { ok: false, error: error.message } : { ok: true };
   }
 
+  async function signInPassword(email, password) {
+    if (!ready) return { ok: false, error: 'Cloud is not configured.' };
+    const { error } = await db.auth.signInWithPassword({ email, password });
+    return error ? { ok: false, error: error.message } : { ok: true };
+  }
+
+  // With "Confirm email" on, signUp returns no session — the address has to be
+  // verified first. needsConfirm tells the caller which message to show.
+  async function signUp(email, password) {
+    if (!ready) return { ok: false, error: 'Cloud is not configured.' };
+    const redirect = window.location.origin + window.location.pathname;
+    const { data, error } = await db.auth.signUp({
+      email, password, options: { emailRedirectTo: redirect },
+    });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, needsConfirm: !data.session };
+  }
+
+  async function resetPassword(email) {
+    if (!ready) return { ok: false, error: 'Cloud is not configured.' };
+    const redirect = window.location.origin + window.location.pathname;
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: redirect });
+    return error ? { ok: false, error: error.message } : { ok: true };
+  }
+
   async function signOut() {
     if (!ready) return { ok: false };
     await db.auth.signOut();
@@ -134,7 +159,7 @@ window.Cloud = (function () {
   }
 
   return {
-    init, signIn, signOut,
+    init, signIn, signInPassword, signUp, resetPassword, signOut,
     loadSignature, saveSignature, uploadAsset,
     state,
     onChange(fn) { listeners.push(fn); },

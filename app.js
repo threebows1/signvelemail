@@ -1039,7 +1039,7 @@ function setupEvents() {
       if (confirm('Clear your saved signature settings and start over from the defaults?')) resetState();
       return;
     }
-    if (e.target.closest('#signInBtn')) { promptSignIn(); return; }
+    if (e.target.closest('#signInBtn')) { openAuth('signin'); return; }
     if (e.target.closest('#signOutBtn')) {
       Cloud.signOut().then(() => { renderHeader(); showCopyFeedback('Signed out'); });
       return;
@@ -1289,6 +1289,22 @@ function setupEvents() {
     if (darkToggle) { S.darkMode = !S.darkMode; renderStage(); return; }
   });
 
+  // Auth modal
+  const $auth = document.getElementById('authOverlay');
+  if ($auth) {
+    document.getElementById('authClose').addEventListener('click', closeAuth);
+    $auth.addEventListener('click', e => { if (e.target === $auth) closeAuth(); });
+    document.getElementById('authSubmit').addEventListener('click', submitAuth);
+    document.getElementById('authForgot').addEventListener('click', forgotPassword);
+    document.getElementById('authToggle').addEventListener('click', () => {
+      openAuth(authMode === 'signup' ? 'signin' : 'signup');
+    });
+    $auth.addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitAuth();
+      if (e.key === 'Escape') closeAuth();
+    });
+  }
+
   // Export overlay
   document.getElementById('exportClose').addEventListener('click', () => { $exportOverlay.classList.add('hidden'); });
   $exportOverlay.addEventListener('click', e => { if (e.target === $exportOverlay) $exportOverlay.classList.add('hidden'); });
@@ -1313,13 +1329,72 @@ function syncBodyClass() {
 // ═══════════════════════════════════════
 // Cloud sync
 // ═══════════════════════════════════════
-function promptSignIn() {
-  const email = prompt('Sign in with a magic link.\n\nEnter your email address:');
-  if (!email) return;
-  showCopyFeedback('Sending…');
-  Cloud.signIn(email.trim()).then(r => {
-    showCopyFeedback(r.ok ? 'Check your email' : 'Failed');
-    if (!r.ok) alert('Could not send the link:\n\n' + r.error);
+// Email + password auth. The modal doubles as sign-up and password reset so
+// there is only one place to maintain.
+let authMode = 'signin';
+
+function openAuth(mode) {
+  authMode = mode || 'signin';
+  const signup = authMode === 'signup';
+  document.getElementById('authTitle').textContent = signup ? 'Create an account' : 'Sign in';
+  document.getElementById('authSub').textContent = signup
+    ? 'Your signatures sync across devices, and uploaded logos get hosted so they survive being emailed.'
+    : 'Access your saved signatures.';
+  document.getElementById('authSubmit').textContent = signup ? 'Create account' : 'Sign in';
+  document.getElementById('authToggle').textContent = signup ? 'I already have an account' : 'Create an account';
+  document.getElementById('authPassword').setAttribute('autocomplete', signup ? 'new-password' : 'current-password');
+  authMessage('');
+  document.getElementById('authOverlay').classList.remove('hidden');
+  document.getElementById('authEmail').focus();
+}
+
+function closeAuth() {
+  document.getElementById('authOverlay').classList.add('hidden');
+  document.getElementById('authPassword').value = '';
+}
+
+function authMessage(text, kind) {
+  const el = document.getElementById('authMsg');
+  el.textContent = text || '';
+  el.className = 'auth-msg' + (text ? '' : ' hidden') + (kind ? ' is-' + kind : '');
+}
+
+function submitAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  if (!email) { authMessage('Enter your email address.', 'error'); return; }
+  if (!password) { authMessage('Enter your password.', 'error'); return; }
+  if (authMode === 'signup' && password.length < 8) {
+    authMessage('Use at least 8 characters.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('authSubmit');
+  btn.disabled = true;
+  authMessage('Working…');
+
+  const done = (r) => {
+    btn.disabled = false;
+    if (!r.ok) { authMessage(r.error, 'error'); return; }
+    if (r.needsConfirm) {
+      authMessage('Account created. Check your email to confirm the address, then sign in.', 'ok');
+      return;
+    }
+    closeAuth();
+    renderHeader();
+    showCopyFeedback('Signed in');
+  };
+
+  if (authMode === 'signup') Cloud.signUp(email, password).then(done);
+  else Cloud.signInPassword(email, password).then(done);
+}
+
+function forgotPassword() {
+  const email = document.getElementById('authEmail').value.trim();
+  if (!email) { authMessage('Enter your email address first.', 'error'); return; }
+  authMessage('Sending…');
+  Cloud.resetPassword(email).then(r => {
+    authMessage(r.ok ? 'Reset link sent — check your email.' : r.error, r.ok ? 'ok' : 'error');
   });
 }
 

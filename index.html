@@ -33,6 +33,24 @@
       </div>
     </div>
   </div>
+  <div class="auth-overlay hidden" id="authOverlay">
+    <div class="auth-panel">
+      <button class="auth-close" id="authClose" aria-label="Close">✕</button>
+      <h2 class="auth-title" id="authTitle">Sign in</h2>
+      <p class="auth-sub" id="authSub">Access your saved signatures.</p>
+      <label class="auth-label" for="authEmail">Email</label>
+      <input class="input" type="email" id="authEmail" autocomplete="email" placeholder="you@company.com">
+      <label class="auth-label" for="authPassword">Password</label>
+      <input class="input" type="password" id="authPassword" autocomplete="current-password" placeholder="••••••••">
+      <div class="auth-msg hidden" id="authMsg"></div>
+      <button class="btn btn-accent auth-submit" id="authSubmit">Sign in</button>
+      <div class="auth-alt">
+        <button class="auth-link" id="authToggle">Create an account</button>
+        <button class="auth-link" id="authForgot">Forgot password?</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Cloud layer. Loaded before app.js; the editor works without any of it. -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
