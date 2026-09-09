@@ -1,0 +1,10 @@
+{
+  // Static-assets Worker: no build step, no server code — Cloudflare just
+  // serves the files in this directory. See .assetsignore for what is held back.
+  "name": "signvelemail",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./",
+    "not_found_handling": "404-page"
+  }
+}

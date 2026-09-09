@@ -1,0 +1,9 @@
+# Kept out of the public deployment.
+.git
+.gitignore
+.gitattributes
+.assetsignore
+wrangler.jsonc
+server.ps1
+SETUP.md
+supabase
