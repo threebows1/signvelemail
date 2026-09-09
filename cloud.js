@@ -1,0 +1,143 @@
+/* ═══════════════════════════════════════════════════════════
+   Signvel — cloud layer (Supabase)
+
+   Everything that talks to the network lives here, so app.js stays a pure
+   local editor. If this file, its config, or the network is missing, the
+   editor still works: it falls back to localStorage and simply never signs
+   anyone in. That is deliberate — a signature builder that breaks when
+   offline would be worse than one that cannot sync.
+
+   Exposes window.Cloud. Every method resolves rather than throws, and
+   reports failure through the returned object, so callers never need a
+   try/catch around routine use.
+   ═══════════════════════════════════════════════════════════ */
+
+window.Cloud = (function () {
+  const cfg = window.SIGNVEL_CONFIG || {};
+  const lib = window.supabase;
+
+  // Present only when the library loaded AND config was filled in.
+  const ready = !!(lib && cfg.supabaseUrl && cfg.supabaseKey);
+  const db = ready ? lib.createClient(cfg.supabaseUrl, cfg.supabaseKey) : null;
+
+  let session = null;
+  let profile = null;
+  const listeners = [];
+
+  function emit() {
+    listeners.forEach(fn => { try { fn(state()); } catch (e) { /* a bad listener must not stop the others */ } });
+  }
+
+  function state() {
+    return {
+      ready,
+      signedIn: !!session,
+      email: session ? session.user.email : null,
+      userId: session ? session.user.id : null,
+      plan: profile ? profile.plan : 'free',
+    };
+  }
+
+  async function loadProfile() {
+    if (!session) { profile = null; return; }
+    const { data } = await db.from('profiles').select('*').eq('id', session.user.id).single();
+    profile = data || null;
+  }
+
+  // ── Startup ──────────────────────────────────────────────
+  async function init() {
+    if (!ready) return state();
+    try {
+      const { data } = await db.auth.getSession();
+      session = data.session || null;
+      await loadProfile();
+      db.auth.onAuthStateChange(async (_evt, s) => {
+        session = s || null;
+        await loadProfile();
+        emit();
+      });
+    } catch (e) {
+      session = null;
+    }
+    emit();
+    return state();
+  }
+
+  // ── Auth ─────────────────────────────────────────────────
+  // Magic link: no password to forget, and no password for us to store.
+  async function signIn(email) {
+    if (!ready) return { ok: false, error: 'Cloud is not configured.' };
+    const redirect = window.location.origin + window.location.pathname;
+    const { error } = await db.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: redirect },
+    });
+    return error ? { ok: false, error: error.message } : { ok: true };
+  }
+
+  async function signOut() {
+    if (!ready) return { ok: false };
+    await db.auth.signOut();
+    session = null; profile = null;
+    emit();
+    return { ok: true };
+  }
+
+  // ── Signature persistence ────────────────────────────────
+  // One default signature per user for now; the schema already supports
+  // several, and the free plan is capped at one by a database trigger.
+  async function loadSignature() {
+    if (!ready || !session) return null;
+    const { data, error } = await db
+      .from('signatures')
+      .select('id, name, state')
+      .eq('user_id', session.user.id)
+      .order('is_default', { ascending: false })
+      .order('updated_at', { ascending: false })
+      .limit(1);
+    if (error || !data || !data.length) return null;
+    return data[0];
+  }
+
+  async function saveSignature(stateObj, name) {
+    if (!ready || !session) return { ok: false, error: 'Not signed in.' };
+    const existing = await loadSignature();
+    const row = {
+      user_id: session.user.id,
+      name: name || 'My signature',
+      state: stateObj,
+      is_default: true,
+    };
+    const q = existing
+      ? db.from('signatures').update(row).eq('id', existing.id)
+      : db.from('signatures').insert(row);
+    const { error } = await q;
+    return error ? { ok: false, error: error.message } : { ok: true };
+  }
+
+  // ── Storage ──────────────────────────────────────────────
+  // This is the fix for logos breaking in sent mail. An upload here becomes
+  // a real https URL; the data: URIs the browser produces are stripped by
+  // Gmail and Outlook before the recipient ever sees them.
+  async function uploadAsset(file, kind) {
+    if (!ready || !session) return { ok: false, error: 'Sign in to host images.' };
+    const ext = (file.name.split('.').pop() || 'png').toLowerCase();
+    const path = `${session.user.id}/${kind}-${Date.now()}.${ext}`;
+    const { error } = await db.storage.from('brand').upload(path, file, {
+      cacheControl: '31536000',
+      upsert: true,
+      contentType: file.type || undefined,
+    });
+    if (error) return { ok: false, error: error.message };
+    const { data } = db.storage.from('brand').getPublicUrl(path);
+    return { ok: true, url: data.publicUrl, path };
+  }
+
+  return {
+    init, signIn, signOut,
+    loadSignature, saveSignature, uploadAsset,
+    state,
+    onChange(fn) { listeners.push(fn); },
+    get isReady() { return ready; },
+  };
+})();

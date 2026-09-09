@@ -1,0 +1,13 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Local test artefacts
+_selftest.html
+
+# Never commit secrets. config.js holds only the publishable key,
+# which is safe in a public repo; anything secret belongs in the
+# Supabase dashboard as an Edge Function environment variable.
+.env
+.env.*

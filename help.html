@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help &amp; FAQ — Signvel</title>
+  <meta name="description" content="Why logos break when sent, why circles turn square in Outlook, and the other real constraints of HTML email signatures.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body class="page">
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="landing.html" aria-label="Sign Vel home"><svg width="38" height="15.96" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="grad-hlp-1" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#grad-hlp-1)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg><span class="brand-word">Sign<em>Vel</em></span></a>
+      <div class="nav-links">
+        <a href="templates.html">Showcase</a>
+        <a href="install.html">Install</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="help.html" class="current">Help</a>
+      </div>
+      <div class="nav-spacer"></div>
+      <a class="btn-primary btn-sm" href="index.html">Get started</a>
+    </div>
+  </nav>
+
+  <section class="section-tight" style="padding-top:64px;">
+    <div class="wrap-narrow">
+      <p class="eyebrow">Help</p>
+      <h1 class="h2">Why email signatures behave the way they do</h1>
+      <p class="body-text">HTML email is not the web. Clients rewrite your markup, strip what they dislike, and render through engines that predate most of modern CSS. These are the constraints that actually bite, and what to do about each one.</p>
+    </div>
+  </section>
+
+  <section style="padding-bottom:88px;">
+    <div class="wrap-narrow">
+
+      <details class="faq-item" open>
+        <summary>My logo shows in the editor but arrives broken. Why?</summary>
+        <div class="faq-answer">
+          <p class="body-text">This is the single most common problem, and it is not a bug in your signature. When you upload an image, the browser converts it into a <span class="inline-code">data:</span> URI — the picture is embedded directly in the HTML as text. That previews perfectly, because your browser already has the data.</p>
+          <p class="body-text">Gmail and Outlook both strip <span class="inline-code">data:</span> URIs from incoming mail as a security measure. The image tag survives, the image does not, and your recipient sees a broken placeholder.</p>
+          <p class="body-text"><strong>The fix:</strong> upload your logo somewhere public — your own website is ideal — and paste the address into the <strong>image URL</strong> field under the uploader. Uploading is for designing; a hosted URL is for sending.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Why are my circular icons square in Outlook?</summary>
+        <div class="faq-answer">
+          <p class="body-text">Outlook on Windows renders email through Microsoft Word rather than a browser engine. Word does not implement <span class="inline-code">border-radius</span>, so the rounded corners are simply dropped and the badge falls back to its underlying square.</p>
+          <p class="body-text">There is no CSS workaround — no combination of markup produces a real circle in that renderer. The only reliable route is serving the badge as a pre-rendered image, where the circle is baked into the picture itself.</p>
+          <p class="body-text">If you need Outlook fidelity today, switch the contact display to <strong>Icons</strong> or <strong>Labels</strong>, which have nothing to round.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>My icons vanish completely in Outlook. Is that the same issue?</summary>
+        <div class="faq-answer">
+          <p class="body-text">No, that is a separate limitation. The icons are inline SVG, and Outlook's Word renderer does not display SVG at all — so instead of an unstyled icon you get nothing.</p>
+          <p class="body-text">Gmail is inconsistent here too. Apple Mail handles SVG correctly.</p>
+          <p class="body-text">As with the circles, hosted PNG images are the durable answer. Until then, <strong>Labels</strong> mode replaces each icon with a short text label, which every client on earth can render.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Why is the signature built from tables instead of modern CSS?</summary>
+        <div class="faq-answer">
+          <p class="body-text">Because Word's rendering engine has no meaningful support for <span class="inline-code">flexbox</span>, <span class="inline-code">grid</span>, or even reliable <span class="inline-code">float</span>. Nested tables with inline styles are the only layout technique that behaves consistently across Gmail, Outlook, Apple Mail and the long tail of mobile clients.</p>
+          <p class="body-text">It looks dated, and it is — but it is the format that survives. Every layout the editor produces is table-based for this reason.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Does dark mode break my signature?</summary>
+        <div class="faq-answer">
+          <p class="body-text">It can. Some clients invert colours automatically, which can turn dark text on a transparent background into light text on light — or leave a white logo stranded on a white card.</p>
+          <p class="body-text">Use the <strong>Dark</strong> toggle in the preview toolbar to check. If your logo is a solid dark colour, a version with a transparent background and adequate contrast in both modes will save you trouble.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Are my details sent anywhere?</summary>
+        <div class="faq-answer">
+          <p class="body-text">No. The editor runs entirely in your browser. Your name, contact details and uploaded images stay on your machine, saved in your browser's local storage so they are still there next time you open the page.</p>
+          <p class="body-text">Because that storage is per-browser, your settings will not follow you to a different browser, a private window, or another computer. The <strong>Reset</strong> button clears them.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>My signature is too long and Gmail cuts it off.</summary>
+        <div class="faq-answer">
+          <p class="body-text">Gmail truncates signatures beyond roughly 10,000 characters. An embedded logo alone can exceed that, since a 200&nbsp;KB image becomes about 270,000 characters of encoded text.</p>
+          <p class="body-text">Switching to a hosted image URL usually cuts a signature from tens of thousands of characters to a few thousand. If you are still over, shorten the disclaimer — it is normally the next largest piece.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>How should I roll this out to a whole team?</summary>
+        <div class="faq-answer">
+          <p class="body-text">Two approaches, often combined. Per-user signatures give everyone their own contact details and are pasted into each person's mail client — use the section locks so brand settings cannot drift.</p>
+          <p class="body-text">Server-side footers are appended centrally through Google Workspace or a Microsoft 365 transport rule. They cannot be removed by staff, but they also cannot carry personal details, and they appear once per thread rather than per message.</p>
+          <p class="body-text">See the <a href="install.html" style="color:var(--accent);">install guides</a> for the exact steps for each.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Should I use a headshot or a logo?</summary>
+        <div class="faq-answer">
+          <p class="body-text">Both work, but rarely together — two images side by side crowd a signature and double the number of things that can break in transit.</p>
+          <p class="body-text">Client-facing roles usually benefit from a headshot in the <strong>Side by side</strong> layout. Companies that value consistency over familiarity tend to prefer a logo in the <strong>Corporate</strong> layout, which is also easier to standardise across everyone.</p>
+        </div>
+      </details>
+
+    </div>
+  </section>
+
+  <section style="padding-bottom:88px;">
+    <div class="wrap">
+      <div class="cta-band">
+        <h2 class="h2">Still stuck?</h2>
+        <p class="lede">Open the editor and switch between client previews — the compatibility note above the preview usually names the culprit.</p>
+        <div class="btn-row">
+          <a class="btn-primary" href="index.html">Open the editor</a>
+          <a class="btn-secondary" href="install.html">Install guides</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-inner">
+        <a class="brand" href="landing.html" aria-label="Sign Vel home"><svg width="38" height="15.96" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="grad-hlp-2" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#grad-hlp-2)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg><span class="brand-word">Sign<em>Vel</em></span></a>
+        <div class="nav-spacer"></div>
+        <div class="footer-links">
+          <a href="index.html">Editor</a>
+          <a href="templates.html">Showcase</a>
+          <a href="install.html">Install</a>
+          <a href="pricing.html">Pricing</a>
+          <a href="help.html">Help</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,342 @@
+/* ═══════════════════════════════════════════════════════════
+   Signvel — home page (replica of signvel.com)
+
+   Loaded ONLY by landing.html. It does not touch styles.css (the
+   editor) or site.css (the other marketing pages), so changes here
+   cannot reach either.
+
+   Tokens below are the live site's own values, lifted from
+   /assets/styles-Bx_Vd5rp.css. The live site is Tailwind-generated;
+   this is a hand-written static equivalent.
+
+   Every rule is class-scoped. Bare element selectors are avoided so
+   nothing leaks into the signature markup — see the isolation block
+   at the end.
+   ═══════════════════════════════════════════════════════════ */
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0}
+
+:root{
+  --radius:.9rem;
+  --background:#f5f4fb;
+  --foreground:#14121f;
+  --card:#fff;
+  --primary:#5b2eff;
+  --primary-foreground:#fff;
+  --secondary:#eeeaff;
+  --secondary-foreground:#3a1cb0;
+  --muted:#eeeaff;
+  --muted-foreground:#6b6880;
+  --accent:#00e5a0;
+  --accent-foreground:#04231a;
+  --border:#e9e7f2;
+
+  --sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sig:"Rubik",Arial,sans-serif;
+}
+
+.page{
+  font-family:var(--sans);
+  background:var(--background);
+  color:var(--foreground);
+  font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.page ::selection{background:rgba(91,46,255,.2);color:var(--primary)}
+.shell{max-width:80rem;margin:0 auto;padding-left:24px;padding-right:24px}
+
+/* ── Mono eyebrow: "(01) Email signatures, designed" ── */
+.eyebrow{
+  display:block;font-family:var(--mono);font-size:10px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.22em;color:var(--primary);margin:0;
+}
+.eyebrow-dim{color:var(--muted-foreground)}
+.eyebrow-light{color:rgba(255,255,255,.55)}
+
+/* ── Navigation ── */
+.nav{
+  position:sticky;top:0;z-index:50;width:100%;
+  background:rgba(245,244,251,.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:12px 24px;display:flex;align-items:center;justify-content:space-between;
+}
+.nav-left{display:flex;align-items:center;gap:40px}
+.logo{display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.logo-word{font-weight:700;letter-spacing:-.025em;font-size:18px;color:var(--foreground)}
+.logo-word span{color:var(--accent)}
+.nav-links{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:500}
+.nav-links a{color:var(--foreground);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--primary)}
+.nav-right{display:flex;align-items:center;gap:20px}
+.nav-signin{font-size:13px;font-weight:500;color:var(--foreground);text-decoration:none;transition:color .15s}
+.nav-signin:hover{color:var(--primary)}
+
+/* ── Buttons (all pill-shaped, per the reference) ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  white-space:nowrap;cursor:pointer;text-decoration:none;
+  font-family:var(--sans);border:1px solid transparent;border-radius:9999px;
+  transition:background .15s,color .15s,border-color .15s,transform .15s;
+}
+.btn-xs{height:32px;padding:0 20px;font-size:12px;font-weight:500}
+.btn-md{height:44px;padding:0 28px;font-size:14px;font-weight:600}
+.btn-lg{height:44px;padding:0 36px;font-size:14px;font-weight:600}
+.btn-dark{background:var(--foreground);color:var(--background)}
+.btn-dark:hover{background:#26223a}
+.btn-primary{background:var(--primary);color:var(--primary-foreground);box-shadow:0 1px 2px rgba(20,18,31,.08)}
+.btn-primary:hover{background:#4a22db}
+.btn-outline{background:var(--background);color:var(--foreground);border-color:var(--border);box-shadow:0 1px 2px rgba(20,18,31,.05)}
+.btn-outline:hover{background:var(--secondary);color:var(--secondary-foreground)}
+.btn-mint{background:var(--accent);color:var(--accent-foreground);font-weight:500}
+.btn-mint:hover{background:#00cf91}
+.btn-light{background:var(--background);color:var(--foreground);font-weight:600}
+.btn-light:hover{background:#fff}
+.btn-row{display:flex;align-items:center;gap:12px;margin-top:32px}
+
+/* ── Headings ── */
+.h1{
+  font-size:clamp(40px,5.6vw,60px);font-weight:700;letter-spacing:-.05em;
+  line-height:.95;margin:24px 0 0;text-wrap:balance;
+}
+.h1 .serif{
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  color:var(--primary);letter-spacing:normal;
+}
+.h2{
+  font-size:clamp(30px,4.4vw,48px);font-weight:700;letter-spacing:-.03em;
+  line-height:1.02;margin:20px 0 0;
+}
+.h2-tight{max-width:18ch}
+.h3{font-size:clamp(22px,2.4vw,30px);font-weight:700;letter-spacing:-.02em;margin:0 0 12px}
+.lead{
+  font-size:17px;line-height:1.65;color:var(--muted-foreground);
+  max-width:42ch;margin:24px 0 0;
+}
+.lead-light{color:rgba(255,255,255,.62)}
+.body-sm{font-size:14.5px;line-height:1.6;color:var(--muted-foreground);margin:0}
+
+/* ── Hero ── */
+.hero{
+  max-width:80rem;margin:0 auto;padding:64px 24px 80px;
+  display:grid;grid-template-columns:1fr 1.05fr;gap:56px;align-items:center;
+}
+.hero-copy{animation:slideUp .6s cubic-bezier(.22,.61,.36,1) both}
+.hero-visual{animation:slideUp .6s cubic-bezier(.22,.61,.36,1) .12s both}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .hero-copy,.hero-visual{animation:none}
+}
+
+/* Hero stats */
+.stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+  margin:48px 0 0;padding:24px 0 0;border-top:1px solid var(--border);max-width:28rem;
+}
+.stat-num{font-size:24px;font-weight:700;letter-spacing:-.025em;margin:0;line-height:1.1}
+.stat-label{
+  font-family:var(--mono);font-size:10px;text-transform:uppercase;
+  letter-spacing:.18em;color:var(--muted-foreground);margin:4px 0 0;
+}
+
+/* ── Preview card wrapper ── */
+.preview-card{
+  background:#fff;border-radius:16px;padding:28px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.05),0 20px 25px -5px rgba(20,18,31,.1),0 8px 10px -6px rgba(20,18,31,.1);
+}
+.preview-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.preview-tag{
+  font-family:var(--mono);font-size:10px;text-transform:uppercase;
+  letter-spacing:.18em;color:var(--muted-foreground);
+}
+.preview-live{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:10px;text-transform:uppercase;
+  letter-spacing:.18em;color:var(--accent-foreground);
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block}
+.preview-scroll{overflow:hidden}
+
+/* ── Dark showcase section ── */
+.section-dark{background:var(--foreground);color:var(--background);padding:80px 24px}
+.showcase-head{
+  max-width:80rem;margin:0 auto 48px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap;
+}
+.showcase-grid{
+  max-width:80rem;margin:0 auto;
+  display:grid;grid-template-columns:1fr;gap:24px;
+}
+.showcase-item{background:#fff;border-radius:16px;padding:28px 32px;color:var(--foreground)}
+.showcase-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.showcase-cat{
+  font-family:var(--mono);font-size:10px;text-transform:uppercase;
+  letter-spacing:.18em;color:var(--primary);
+}
+.showcase-link{
+  font-size:12.5px;font-weight:600;color:var(--primary);text-decoration:none;
+}
+.showcase-link:hover{text-decoration:underline}
+
+/* Signature left, description right — otherwise a short signature leaves the
+   right two-thirds of a full-width card empty. */
+.showcase-body{
+  display:grid;grid-template-columns:minmax(0,auto) minmax(240px,1fr);
+  gap:48px;align-items:center;
+}
+.showcase-info{max-width:34ch}
+.showcase-info .h3{font-size:21px;margin-bottom:10px}
+.showcase-info .body-sm{margin-bottom:20px}
+.showcase-spec{
+  display:flex;flex-wrap:wrap;gap:6px;margin:0 0 22px;padding:0;list-style:none;
+}
+.showcase-spec li{
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted-foreground);background:var(--background);
+  border-radius:9999px;padding:5px 11px;
+}
+@media (max-width:860px){
+  .showcase-body{grid-template-columns:1fr;gap:28px}
+  .showcase-info{max-width:none}
+}
+
+/* ── Steps ── */
+.section{max-width:80rem;margin:0 auto;padding:80px 24px}
+.steps{margin-top:56px;display:flex;flex-direction:column;gap:28px}
+.step{
+  background:#fff;border:1px solid var(--border);border-radius:20px;padding:34px;
+  display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;
+}
+.step:nth-child(even) .step-visual{order:-1}
+.step-kicker{
+  font-family:var(--mono);font-size:10px;text-transform:uppercase;
+  letter-spacing:.2em;color:var(--muted-foreground);margin:0 0 14px;
+}
+.step-kicker b{color:var(--primary);font-weight:500}
+.step-visual{
+  background:var(--background);border-radius:14px;padding:22px;min-height:180px;
+  display:flex;flex-direction:column;justify-content:center;gap:12px;
+}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  font-size:12.5px;font-weight:500;padding:7px 14px;border-radius:9999px;
+  background:#fff;border:1px solid var(--border);color:var(--foreground);
+}
+.chip-on{background:var(--secondary);border-color:transparent;color:var(--secondary-foreground)}
+.chip-mono{font-family:var(--mono);font-size:11px;letter-spacing:.06em}
+.swatch-row{display:flex;align-items:center;gap:10px}
+.swatch{width:26px;height:26px;border-radius:8px;border:1px solid rgba(20,18,31,.08)}
+.roster{display:flex;flex-direction:column;gap:10px}
+.roster-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;
+}
+.roster-name{font-size:13.5px;font-weight:600;margin:0;line-height:1.3}
+.roster-role{font-size:11.5px;color:var(--muted-foreground);margin:0;line-height:1.3}
+.pill-state{
+  font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.14em;
+  padding:4px 10px;border-radius:9999px;
+}
+.pill-installed{background:rgba(0,229,160,.18);color:#04231a}
+.pill-sent{background:var(--secondary);color:var(--secondary-foreground)}
+
+/* ── Feature grid ── */
+.feature-grid{margin-top:56px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.feature{
+  background:#fff;border:1px solid var(--border);border-radius:18px;padding:28px;
+  transition:transform .15s,border-color .15s;
+}
+.feature:hover{transform:translateY(-2px);border-color:#d9d4ec}
+.feature-cat{
+  font-family:var(--mono);font-size:10px;text-transform:uppercase;
+  letter-spacing:.18em;color:var(--primary);margin:0 0 14px;
+}
+.feature-icon{
+  width:40px;height:40px;border-radius:11px;background:var(--secondary);color:var(--primary);
+  display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+}
+.feature .h3{font-size:18px;margin-bottom:8px}
+
+/* Branding-automatic panel */
+.panel-split{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.panel{background:#fff;border:1px solid var(--border);border-radius:18px;padding:28px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.drop{
+  border:1.5px dashed var(--border);border-radius:12px;padding:18px;text-align:center;
+  font-size:13px;color:var(--muted-foreground);background:var(--background);
+}
+.log-row{
+  display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11px;
+  color:var(--muted-foreground);margin-top:12px;
+}
+.log-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.client-row{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}
+
+/* ── Closing CTA ── */
+.cta{
+  background:var(--foreground);color:var(--background);
+  border-radius:24px;padding:76px 40px;text-align:center;
+  max-width:80rem;margin:0 auto 80px;
+}
+.cta .h2{margin:0 0 18px}
+.cta .lead{margin:0 auto;color:rgba(255,255,255,.6);max-width:36ch}
+.cta .btn-row{justify-content:center}
+
+/* ── Footer ── */
+.footer{border-top:1px solid var(--border);padding:32px 24px}
+.footer-inner{
+  max-width:80rem;margin:0 auto;display:flex;align-items:center;
+  justify-content:space-between;gap:20px;flex-wrap:wrap;
+}
+.footer-copy{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted-foreground);margin:0}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:13px;color:var(--muted-foreground);text-decoration:none}
+.footer-links a:hover{color:var(--foreground)}
+
+/* ── Responsive ── */
+@media (max-width:1000px){
+  .hero{grid-template-columns:1fr;gap:44px;padding-top:48px}
+  .lead{max-width:52ch}
+  .step{grid-template-columns:1fr;gap:26px}
+  .step:nth-child(even) .step-visual{order:0}
+  .feature-grid{grid-template-columns:repeat(2,1fr)}
+  .showcase-grid{grid-template-columns:1fr}
+  .panel-split{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .nav-links{display:none}
+  .feature-grid{grid-template-columns:1fr}
+  .stats{max-width:none}
+  .cta{padding:52px 24px;border-radius:18px}
+  .preview-card{padding:18px}
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Signature isolation
+
+   Signature markup carries its own inline styles. These rules
+   neutralise anything this stylesheet would otherwise inherit into it,
+   so a preview renders exactly as intended.
+
+   If you add a rule above that targets a bare element name, add the
+   matching neutraliser here.
+   ═══════════════════════════════════════════════════════════ */
+.sig-frame{
+  font-family:var(--sig);color:#14121F;line-height:1.3;
+  max-width:100%;overflow-x:auto;
+}
+.sig-frame table{border-collapse:separate;border-spacing:0}
+.sig-frame p{margin:0}
+.sig-frame img{max-width:none;border:0}
+.sig-frame a{text-decoration:none}
+.sig-frame ul,.sig-frame ol{margin:0;padding:0}
+.sig-frame svg{display:block}
+
+/* ── Mail client logos ── */
+.mail-logo{display:inline-flex;line-height:0;flex-shrink:0;vertical-align:middle;margin-right:8px}
+.mail-logo svg{width:20px;height:20px;border-radius:5px;box-shadow:0 0 0 1px rgba(20,18,31,.07)}
+.roster-name{display:flex;align-items:center}
+.chip-logo{display:inline-flex;align-items:center;padding-left:8px}
