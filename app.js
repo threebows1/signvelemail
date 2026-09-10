@@ -135,6 +135,11 @@ const S = {
   titleColor: '#666666',
 
   accentColor: '#C9962B',
+
+  bgEnabled: false,
+  bgColor: '#14121F',
+  bgPadding: 24,
+  bgRadius: 12,
   // Served from alriyady.ae, so it is already a public URL — the one form that
   // survives being emailed. The 400px-wide version keeps the file small while
   // staying sharp at the 40px display height.
@@ -206,7 +211,7 @@ const S = {
 const SCOPED_KEYS = [
   'template','alignment','font','bodySize','fontWeight','textColor','accentColor',
   'contactIconMode','socialStyle','bannerEnabled','bannerMessage','ctaLabel','ctaUrl',
-  'ctaStyle','bannerSubtext','disclaimerEnabled','disclaimerPreset','disclaimerText',
+  'ctaStyle','bannerSubtext','bgEnabled','bgColor','bgPadding','bgRadius','disclaimerEnabled','disclaimerPreset','disclaimerText',
 ];
 
 const scopePresets = {
@@ -408,6 +413,8 @@ function renderSectionContent(i) {
 // ── Section 0: Templates & layout ──
 function renderTemplates() {
   const tmpls = [
+    {id:'colorblock', label:'Colour block', preview:`<div style="display:flex;gap:5px;align-items:stretch"><div style="width:14px;height:22px;background:var(--accent);border-radius:2px"></div><div style="padding-top:2px"><div class="tmpl-block" style="width:22px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:15px;height:2px;margin-bottom:3px"></div><div class="tmpl-block" style="width:20px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:17px;height:2px"></div></div></div>`},
+    {id:'darkcard', label:'Dark card', preview:`<div style="background:#1B2A4A;border-radius:4px;padding:5px;display:flex;gap:4px;align-items:center;width:42px"><div style="width:11px;height:11px;border-radius:50%;background:#4A5B7E;flex-shrink:0"></div><div><div style="width:18px;height:3px;background:#fff;border-radius:1px;margin-bottom:2px"></div><div style="width:13px;height:2px;background:var(--accent);border-radius:1px"></div></div></div>`},
     {id:'split', label:'Split', preview:`<div style="display:flex;gap:4px;align-items:center"><div class="tmpl-block" style="width:11px;height:11px"></div><div><div class="tmpl-block" style="width:16px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:11px;height:2px"></div></div><div style="width:1px;height:15px;background:var(--border)"></div><div><div class="tmpl-block" style="width:15px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:15px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:12px;height:2px"></div></div></div>`},
     {id:'accentbar', label:'Accent bar', preview:`<div style="display:flex;gap:5px;align-items:center"><div style="width:2px;height:20px;background:var(--accent);border-radius:1px"></div><div><div class="tmpl-block" style="width:20px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:15px;height:2px;margin-bottom:3px"></div><div class="tmpl-block" style="width:22px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:18px;height:2px"></div></div><div class="tmpl-block" style="width:10px;height:10px"></div></div>`},
     {id:'spotlight', label:'Spotlight', preview:`<div style="width:40px"><div style="display:flex;gap:4px;align-items:center;margin-bottom:4px"><div class="tmpl-block" style="width:13px;height:13px;border-radius:50%"></div><div style="width:1px;height:13px;background:var(--border)"></div><div><div class="tmpl-block" style="width:18px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:13px;height:2px"></div></div></div><div style="height:11px;background:#141220;border-radius:3px"></div></div>`},
@@ -527,6 +534,23 @@ function renderDesign() {
     ${colorRow('Icon colour', 'iconColor')}
     ${colorRow('Social icon colour', 'socialIconColor')}
   </div>`;
+
+  h += `<div class="opt-group">Background</div>`;
+  h += `<div class="opt-list"><div class="opt-row">
+    <span class="opt-label">Background panel</span>
+    <span class="opt-control"><div class="toggle-switch${S.bgEnabled?' on':''}" data-action="toggleBg"></div></span>
+  </div></div>`;
+  if (S.bgEnabled) {
+    const bgPresets = ['#14121F','#1B2A4A','#0F3D33','#B3221E','#5B2EFF','#F5F4FB'];
+    h += `<div class="field-row"><label class="field-label">Panel presets</label><div class="swatch-row">`;
+    bgPresets.forEach(c => { h += `<div class="swatch${S.bgColor===c?' active':''}" style="background:${c}" data-color="${c}" data-action="bgColorPreset"></div>`; });
+    h += `</div></div>`;
+    h += `<div class="opt-list">${colorRow('Panel colour', 'bgColor')}</div>`;
+    h += `<div class="field-row"><label class="field-label">Panel padding</label><div class="slider-row"><input type="range" min="0" max="48" value="${S.bgPadding}" data-bind="bgPadding"><span class="slider-val">${S.bgPadding}px</span></div></div>`;
+    h += `<div class="field-row"><label class="field-label">Corner radius</label><div class="slider-row"><input type="range" min="0" max="28" value="${S.bgRadius}" data-bind="bgRadius"><span class="slider-val">${S.bgRadius}px</span></div></div>`;
+    if (isDarkColor(S.bgColor)) h += `<div class="inline-note">Dark panel detected — text is switched to a light colour automatically. Your saved text colours return if you turn the panel off.</div>`;
+    h += `<div class="inline-note">Solid panel colours survive in email. Background <em>images</em> do not — Gmail and Outlook strip them.</div>`;
+  }
 
   h += `<div class="opt-group">Contact icons</div>`;
   h += `<div class="opt-list"><div class="opt-row">
@@ -724,7 +748,33 @@ function renderStage() {
 // ═══════════════════════════════════════
 // Signature Preview HTML (table-based)
 // ═══════════════════════════════════════
+// Relative luminance, so a dark background can flip the text to light without
+// the user having to notice and fix it themselves.
+function isDarkColor(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(v => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) < 0.4;
+}
+
+// Wraps whatever the template produced in a background panel. Solid colours are
+// safe in email — it is background *images* that get stripped — so this is done
+// with bgcolor plus an inline background-color for the clients that ignore one.
 function generateSignaturePreview() {
+  const body = buildSignatureBody();
+  if (!S.bgEnabled) return body;
+  const pad = S.bgPadding;
+  const radius = S.bgRadius ? `border-radius:${S.bgRadius}px;` : '';
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tbody><tr>
+    <td bgcolor="${S.bgColor}" style="background-color:${S.bgColor};padding:${pad}px;${radius}">${body}</td>
+  </tr></tbody></table>`;
+}
+
+function buildSignatureBody() {
   const ff = S.font === 'Helvetica Neue' ? "'Helvetica Neue', Helvetica, Arial, sans-serif" :
              S.font === 'Georgia' ? "Georgia, 'Times New Roman', serif" :
              S.font === 'Verdana' ? "Verdana, Geneva, sans-serif" :
@@ -732,15 +782,19 @@ function generateSignaturePreview() {
              "'Courier New', Courier, monospace";
   const fw = S.fontWeight === 'semibold' ? '600' : '400';
   const fs = S.bodySize + 'px';
-  const tc = S.textColor;
+  // On a dark panel the saved text colours would be unreadable, so they are
+  // lifted to light values for the duration of the build. The user's own
+  // settings are untouched — switch the background off and they return.
+  const onDark = S.bgEnabled && isDarkColor(S.bgColor);
+  const tc = onDark ? '#F2F1F7' : S.textColor;
   const ac = S.accentColor;
   const sp = S.blockSpacing + 'px';
   const al = S.alignment;
 
-  const nameStyle = `font-family:${ff};font-size:${parseInt(fs)+2}px;font-weight:700;color:${S.nameColor||tc};line-height:1.3;margin:0;`;
-  const titleStyle = `font-family:${ff};font-size:${fs};font-weight:${fw};color:${S.titleColor||'#666'};line-height:1.3;margin:0;`;
+  const nameStyle = `font-family:${ff};font-size:${parseInt(fs)+2}px;font-weight:700;color:${onDark ? "#FFFFFF" : (S.nameColor||tc)};line-height:1.3;margin:0;`;
+  const titleStyle = `font-family:${ff};font-size:${fs};font-weight:${fw};color:${onDark ? "#B9B6C9" : (S.titleColor||"#666")};line-height:1.3;margin:0;`;
   const fieldStyle = `font-family:${ff};font-size:${parseInt(fs)-1}px;font-weight:${fw};color:${tc};line-height:1.6;margin:0;text-decoration:none;`;
-  const mutedStyle = `font-family:${ff};font-size:${parseInt(fs)-2}px;color:#999;line-height:1.4;`;
+  const mutedStyle = `font-family:${ff};font-size:${parseInt(fs)-2}px;color:${onDark ? '#8F8CA3' : '#999'};line-height:1.4;`;
 
   // Headshot cell
   let headshotHTML = '';
@@ -906,6 +960,62 @@ function generateSignaturePreview() {
     : '';
 
   // ── Assemble by template ──
+  // Solid brand-colour block on the left holding the logo, content on the right.
+  if (S.template === 'colorblock') {
+    const blockW = 140;
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;text-align:${al};"><tbody>
+      <tr>
+        <td width="${blockW}" bgcolor="${ac}" style="width:${blockW}px;background-color:${ac};text-align:center;vertical-align:middle;padding:22px 16px;">
+          ${logoHTML || `<div style="font-family:${ff};font-size:${parseInt(fs)+6}px;font-weight:800;color:#ffffff;line-height:1.2;">${esc(S.company.split(' ')[0] || 'LOGO')}</div>`}
+        </td>
+        <td style="vertical-align:middle;padding:22px 24px;">
+          <p style="font-family:${ff};font-size:${parseInt(fs)+4}px;font-weight:700;letter-spacing:.06em;color:${onDark ? '#FFFFFF' : (S.nameColor||tc)};line-height:1.25;margin:0;">${esc(S.name.toUpperCase())}</p>
+          <p style="${titleStyle}">${esc(S.title)}</p>
+          <p style="font-family:${ff};font-size:${fs};font-weight:700;color:${onDark ? '#FFFFFF' : (S.nameColor||tc)};margin:10px 0 8px;">${esc(S.company.toUpperCase())}</p>
+          ${taglineHTML}
+          ${contactHTML}
+          ${socialHTML ? `<div style="padding-top:${sp};">${socialHTML}</div>` : ''}
+        </td>
+      </tr>
+      ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
+      ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td colspan="2" style="padding:10px 24px 0;"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
+    </tbody></table>`;
+  }
+
+  // Everything on a dark card: headshot left, oversized name, contacts in two
+  // columns. Reads as a designed block rather than a list of details.
+  if (S.template === 'darkcard') {
+    const card = isDarkColor(S.bgColor) && S.bgEnabled ? 'transparent' : '#1B2A4A';
+    const solid = card !== 'transparent';
+    const light = '#F2F1F7';
+    const dim = '#A7A4BC';
+    const pairs = [];
+    for (let i = 0; i < activeContacts.length; i += 2) pairs.push(activeContacts.slice(i, i + 2));
+    const grid = pairs.map(row => `<tr>${row.map(f => `<td style="padding:4px 18px 4px 0;font-family:${ff};font-size:${parseInt(fs)-1}px;color:${light};line-height:1.5;vertical-align:top;">
+        <span style="color:${ac};font-weight:700;">${esc(contactLetters[f.type]||'•')}</span>&nbsp;&nbsp;${esc(f.value)}</td>`).join('')}${row.length < 2 ? '<td></td>' : ''}</tr>`).join('');
+
+    const inner = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tbody><tr>
+        ${S.headshotUrl ? `<td style="vertical-align:middle;padding-right:24px;">${headshotHTML}</td>` : ''}
+        <td style="vertical-align:middle;">
+          <p style="font-family:${ff};font-size:${parseInt(fs)-2}px;letter-spacing:.16em;text-transform:uppercase;color:${ac};margin:0 0 4px;">${esc(S.title)}</p>
+          <p style="font-family:${ff};font-size:${parseInt(fs)+11}px;font-weight:700;color:#ffffff;line-height:1.1;margin:0 0 12px;">${esc(S.name)}</p>
+          ${taglineHTML}
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tbody>${grid}</tbody></table>
+          ${socialHTML ? `<div style="padding-top:${parseInt(sp)+4}px;">${socialHTML}</div>` : ''}
+        </td>
+      </tr></tbody></table>`;
+
+    const wrapped = solid
+      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tbody><tr><td bgcolor="${card}" style="background-color:${card};padding:26px 28px;border-radius:14px;">${inner}</td></tr></tbody></table>`
+      : inner;
+
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
+      <tr><td>${wrapped}</td></tr>
+      ${bannerImgHTML ? `<tr><td style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
+      ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td style="padding-top:${sp};"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
+    </tbody></table>`;
+  }
+
   // Logo left, identity centre, a vertical rule, then contacts on the right.
   if (S.template === 'split') {
     const rule = `<td style="width:1px;background-color:#DDDBE4;font-size:1px;line-height:1px;">&nbsp;</td>`;
@@ -934,7 +1044,7 @@ function generateSignaturePreview() {
         <td style="width:3px;background-color:${ac};font-size:1px;line-height:1px;">&nbsp;</td>
         <td style="vertical-align:top;padding-left:18px;">
           <p style="font-family:${ff};font-size:${parseInt(fs)+3}px;font-weight:700;color:${ac};line-height:1.25;margin:0;">${esc(S.name)}</p>
-          <p style="font-family:${ff};font-size:${parseInt(fs)+1}px;font-weight:700;color:${S.nameColor||tc};line-height:1.3;margin:0 0 8px;">${esc(S.company)}</p>
+          <p style="font-family:${ff};font-size:${parseInt(fs)+1}px;font-weight:700;color:${onDark ? "#FFFFFF" : (S.nameColor||tc)};line-height:1.3;margin:0 0 8px;">${esc(S.company)}</p>
           ${taglineHTML}
           ${contactHTML}
           ${socialHTML ? `<div style="padding-top:${sp};">${socialHTML}</div>` : ''}
@@ -952,8 +1062,8 @@ function generateSignaturePreview() {
   if (S.template === 'spotlight') {
     // Headshot, a vertical rule, then the details — with the campaign banner as
     // a full-width card underneath rather than an inline row.
-    const nameBig = `font-family:${ff};font-size:${parseInt(fs)+5}px;font-weight:700;color:${S.nameColor||tc};line-height:1.25;margin:0;`;
-    const roleBig = `font-family:${ff};font-size:${parseInt(fs)+1}px;font-weight:${fw};color:${S.titleColor||'#666'};line-height:1.35;margin:0 0 10px;`;
+    const nameBig = `font-family:${ff};font-size:${parseInt(fs)+5}px;font-weight:700;color:${onDark ? "#FFFFFF" : (S.nameColor||tc)};line-height:1.25;margin:0;`;
+    const roleBig = `font-family:${ff};font-size:${parseInt(fs)+1}px;font-weight:${fw};color:${onDark ? "#B9B6C9" : (S.titleColor||"#666")};line-height:1.35;margin:0 0 10px;`;
     const lineStyle = `font-family:${ff};font-size:${parseInt(fs)-1}px;color:${tc};line-height:1.65;`;
 
     // Everything except the website stacks; the website shares its line with the
@@ -1236,6 +1346,8 @@ function setupEvents() {
       switch(action) {
         case 'toggleDivider': S.dividerEnabled = !S.dividerEnabled; break;
         case 'toggleContactIcons': S.showContactIcons = !S.showContactIcons; break;
+        case 'toggleBg': S.bgEnabled = !S.bgEnabled; break;
+        case 'bgColorPreset': S.bgColor = togAction.dataset.color; break;
         case 'toggleBanner': S.bannerEnabled = !S.bannerEnabled; break;
         case 'toggleDisclaimer': S.disclaimerEnabled = !S.disclaimerEnabled; break;
         case 'toggleContact': {
