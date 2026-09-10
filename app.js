@@ -798,7 +798,11 @@ function buildSignatureBody() {
 
   // Headshot cell
   let headshotHTML = '';
-  const headshotSize = 64;
+  // Photo-led layouts need a bigger portrait; 64px looks like an afterthought
+  // when it is the main visual element.
+  const headshotSize = S.template === 'darkcard' ? 96
+                     : S.template === 'spotlight' ? 84
+                     : 64;
   const borderRadius = S.headshotShape === 'circle' ? '50%' : S.headshotShape === 'rounded' ? '8px' : '0';
   if (S.headshotUrl) {
     // Crop/zoom: the image is scaled past the frame and pulled back by half the
@@ -827,6 +831,9 @@ function buildSignatureBody() {
   // glyphs all draw with currentColor, so setting the cell colour is enough.
   const ic = S.iconColor || ac;          // contact icon colour
   const sc = S.socialIconColor || ac;    // social icon colour
+  // Divider rules. The old flat #DDDBE4 was invisible at 1px, and vanished
+  // completely once a dark background panel was switched on.
+  const ruleColor = onDark ? 'rgba(255,255,255,.22)' : '#C6C3D4';
   const circleIcon = (svg, filled) => {
     const sz = S.contactIconSize || 22;
     const inner = Math.round(sz * 0.5);
@@ -965,8 +972,11 @@ function buildSignatureBody() {
     const blockW = 140;
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;text-align:${al};"><tbody>
       <tr>
-        <td width="${blockW}" bgcolor="${ac}" style="width:${blockW}px;background-color:${ac};text-align:center;vertical-align:middle;padding:22px 16px;">
-          ${logoHTML || `<div style="font-family:${ff};font-size:${parseInt(fs)+6}px;font-weight:800;color:#ffffff;line-height:1.2;">${esc(S.company.split(' ')[0] || 'LOGO')}</div>`}
+        <td width="${blockW}" bgcolor="${ac}" style="width:${blockW}px;background-color:${ac};text-align:center;vertical-align:middle;padding:20px 14px;">
+          ${logoHTML
+            ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate;border-spacing:0;"><tr><td bgcolor="#FFFFFF" style="background-color:#FFFFFF;border-radius:8px;padding:10px 12px;">${logoHTML}</td></tr></table>`
+            : `<div style="font-family:${ff};font-size:${parseInt(fs)+6}px;font-weight:800;letter-spacing:.04em;color:#ffffff;line-height:1.25;">${esc((S.company||'Logo').split(' ')[0].toUpperCase())}</div>`}
+          <div style="font-family:${ff};font-size:${parseInt(fs)-3}px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.82);margin-top:12px;">${esc(S.title)}</div>
         </td>
         <td style="vertical-align:middle;padding:22px 24px;">
           <p style="font-family:${ff};font-size:${parseInt(fs)+4}px;font-weight:700;letter-spacing:.06em;color:${onDark ? '#FFFFFF' : (S.nameColor||tc)};line-height:1.25;margin:0;">${esc(S.name.toUpperCase())}</p>
@@ -995,7 +1005,7 @@ function buildSignatureBody() {
         <span style="color:${ac};font-weight:700;">${esc(contactLetters[f.type]||'•')}</span>&nbsp;&nbsp;${esc(f.value)}</td>`).join('')}${row.length < 2 ? '<td></td>' : ''}</tr>`).join('');
 
     const inner = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tbody><tr>
-        ${S.headshotUrl ? `<td style="vertical-align:middle;padding-right:24px;">${headshotHTML}</td>` : ''}
+        ${S.headshotUrl ? `<td style="vertical-align:top;padding:2px 24px 0 0;">${headshotHTML}</td>` : ''}
         <td style="vertical-align:middle;">
           <p style="font-family:${ff};font-size:${parseInt(fs)-2}px;letter-spacing:.16em;text-transform:uppercase;color:${ac};margin:0 0 4px;">${esc(S.title)}</p>
           <p style="font-family:${ff};font-size:${parseInt(fs)+11}px;font-weight:700;color:#ffffff;line-height:1.1;margin:0 0 12px;">${esc(S.name)}</p>
@@ -1018,11 +1028,11 @@ function buildSignatureBody() {
 
   // Logo left, identity centre, a vertical rule, then contacts on the right.
   if (S.template === 'split') {
-    const rule = `<td style="width:1px;background-color:#DDDBE4;font-size:1px;line-height:1px;">&nbsp;</td>`;
+    const rule = `<td style="width:1px;background-color:${ruleColor};font-size:1px;line-height:1px;">&nbsp;</td>`;
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
       <tr>
         ${logoHTML ? `<td style="vertical-align:middle;padding-right:22px;">${logoHTML}</td>` : ''}
-        <td style="vertical-align:middle;padding-right:22px;">
+        <td style="vertical-align:middle;padding-right:26px;">
           <p style="${nameStyle}">${esc(S.name)}</p>
           <p style="${titleStyle}">${esc(S.title)}</p>
           ${taglineHTML}
@@ -1030,7 +1040,7 @@ function buildSignatureBody() {
           ${socialHTML ? `<div style="padding-top:${sp};">${socialHTML}</div>` : ''}
         </td>
         ${rule}
-        <td style="vertical-align:middle;padding-left:22px;">${contactHTML}</td>
+        <td style="vertical-align:middle;padding-left:26px;">${contactHTML}</td>
       </tr>
       ${bannerImgHTML ? `<tr><td colspan="4" style="padding-top:${parseInt(sp)+8}px;">${bannerImgHTML}</td></tr>` : bannerHTML ? `<tr><td colspan="4">${bannerInner}</td></tr>` : ''}
       ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td colspan="4" style="padding-top:${sp};"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
@@ -1041,7 +1051,7 @@ function buildSignatureBody() {
   if (S.template === 'accentbar') {
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
       <tr>
-        <td style="width:3px;background-color:${ac};font-size:1px;line-height:1px;">&nbsp;</td>
+        <td width="4" style="width:4px;background-color:${ac};font-size:1px;line-height:1px;">&nbsp;</td>
         <td style="vertical-align:top;padding-left:18px;">
           <p style="font-family:${ff};font-size:${parseInt(fs)+3}px;font-weight:700;color:${ac};line-height:1.25;margin:0;">${esc(S.name)}</p>
           <p style="font-family:${ff};font-size:${parseInt(fs)+1}px;font-weight:700;color:${onDark ? "#FFFFFF" : (S.nameColor||tc)};line-height:1.3;margin:0 0 8px;">${esc(S.company)}</p>
@@ -1049,7 +1059,7 @@ function buildSignatureBody() {
           ${contactHTML}
           ${socialHTML ? `<div style="padding-top:${sp};">${socialHTML}</div>` : ''}
         </td>
-        ${logoHTML ? `<td style="vertical-align:middle;padding-left:28px;">${logoHTML}</td>` : ''}
+        ${logoHTML ? `<td style="vertical-align:top;padding:2px 0 0 20px;">${logoHTML}</td>` : ''}
       </tr>
       ${(S.bannerEnabled && (S.bannerMessage || S.ctaLabel)) ? `<tr><td colspan="3" style="padding-top:${parseInt(sp)+6}px;">
         <p style="font-family:${ff};font-size:${fs};color:${tc};line-height:1.5;margin:0;">${esc(S.bannerMessage)}${S.ctaLabel ? ` <a href="${esc(S.ctaUrl)}" style="color:${ac};text-decoration:underline;font-weight:600;">${esc(S.ctaLabel)}</a>` : ''}</p>
@@ -1091,8 +1101,8 @@ function buildSignatureBody() {
 
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
       <tr>
-        <td style="vertical-align:middle;padding-right:20px;">${headshotHTML}</td>
-        <td style="width:1px;background-color:#DDDBE4;font-size:1px;line-height:1px;">&nbsp;</td>
+        <td style="vertical-align:top;padding:2px 20px 0 0;">${headshotHTML}</td>
+        <td style="width:1px;background-color:${ruleColor};font-size:1px;line-height:1px;">&nbsp;</td>
         <td style="vertical-align:middle;padding-left:20px;">
           <p style="${nameBig}">${esc(S.name)}</p>
           <p style="${roleBig}">${esc(S.title)}</p>
@@ -1136,7 +1146,7 @@ function buildSignatureBody() {
           <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tbody>
             <tr><td><p style="${nameStyle}">${esc(S.name)}</p></td></tr>
             <tr><td><p style="${titleStyle}">${esc(S.title)} · ${esc(S.company)}</p></td></tr>
-            ${logoHTML ? `<tr><td style="padding-top:${sp};">${logoHTML}</td></tr>` : ''}
+            ${logoHTML ? `<tr><td style="padding:${parseInt(sp)+6}px 0 ${parseInt(sp)+2}px;">${logoHTML}</td></tr>` : ''}
             ${dividerHTML}
             <tr><td style="padding-top:${S.dividerEnabled?'0':sp};">${contactHTML}</td></tr>
             ${socialHTML ? `<tr><td style="padding-top:${sp};">${socialHTML}</td></tr>` : ''}
@@ -1151,7 +1161,7 @@ function buildSignatureBody() {
   if (S.template === 'stacked') {
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};${al==='center'?'margin:0 auto;':''}"><tbody>
       <tr><td style="padding-bottom:${sp};${al==='center'?'text-align:center;':''}">${headshotHTML}</td></tr>
-      ${logoHTML ? `<tr><td style="padding-bottom:${sp};${al==='center'?'text-align:center;':''}">${logoHTML}</td></tr>` : ''}
+      ${logoHTML ? `<tr><td style="padding:${parseInt(sp)+4}px 0 ${parseInt(sp)+2}px;${al==='center'?'text-align:center;':''}">${logoHTML}</td></tr>` : ''}
       <tr><td><p style="${nameStyle}">${esc(S.name)}</p></td></tr>
       <tr><td><p style="${titleStyle}">${esc(S.title)} · ${esc(S.company)}</p></td></tr>
       ${dividerHTML}
@@ -1164,18 +1174,19 @@ function buildSignatureBody() {
 
   if (S.template === 'card') {
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody><tr><td>
-      <table role="presentation" cellpadding="16" cellspacing="0" style="border:1px solid #ddd;border-radius:8px;"><tbody>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;border:1px solid ${ruleColor};border-radius:10px;"><tbody>
         <tr>
-          <td style="vertical-align:top;padding-right:12px;">${headshotHTML}</td>
-          <td style="vertical-align:top;">
+          <td style="vertical-align:top;padding:20px 0 0 20px;">${headshotHTML}</td>
+          <td style="vertical-align:top;padding:20px 20px 0 14px;">
             <p style="${nameStyle}">${esc(S.name)}</p>
             <p style="${titleStyle}">${esc(S.title)} · ${esc(S.company)}</p>
-            ${logoHTML ? `<div style="padding-top:${sp};">${logoHTML}</div>` : ''}
+            ${logoHTML ? `<div style="padding-top:${parseInt(sp)+4}px;">${logoHTML}</div>` : ''}
           </td>
         </tr>
-        <tr><td colspan="2" style="padding-top:0;">${contactHTML}</td></tr>
-        ${socialHTML ? `<tr><td colspan="2" style="padding-top:${sp};">${socialHTML}</td></tr>` : ''}
-        ${bannerInner ? `<tr><td colspan="2" style="padding-top:${sp};">${bannerInner}</td></tr>` : ''}
+        <tr><td colspan="2" style="padding:${parseInt(sp)+6}px 20px 0;">${contactHTML}</td></tr>
+        ${socialHTML ? `<tr><td colspan="2" style="padding:${sp} 20px 0;">${socialHTML}</td></tr>` : ''}
+        ${bannerInner ? `<tr><td colspan="2" style="padding:${sp} 20px 0;">${bannerInner}</td></tr>` : ''}
+        <tr><td colspan="2" style="height:20px;font-size:1px;line-height:1px;">&nbsp;</td></tr>
       </tbody></table>
       ${disclaimerHTML ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tbody>${disclaimerHTML}</tbody></table>` : ''}
     </td></tr></tbody></table>`;
