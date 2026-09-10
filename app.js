@@ -402,6 +402,7 @@ function renderSectionContent(i) {
 // ── Section 0: Templates & layout ──
 function renderTemplates() {
   const tmpls = [
+    {id:'spotlight', label:'Spotlight', preview:`<div style="width:40px"><div style="display:flex;gap:4px;align-items:center;margin-bottom:4px"><div class="tmpl-block" style="width:13px;height:13px;border-radius:50%"></div><div style="width:1px;height:13px;background:var(--border)"></div><div><div class="tmpl-block" style="width:18px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:13px;height:2px"></div></div></div><div style="height:11px;background:#141220;border-radius:3px"></div></div>`},
     {id:'corporate', label:'Corporate', preview:`<div style="width:38px"><div class="tmpl-block" style="width:26px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:18px;height:2px;margin-bottom:3px"></div><div style="height:2px;background:var(--accent);margin-bottom:3px"></div><div style="display:flex;gap:3px;align-items:flex-start"><div class="tmpl-block" style="width:9px;height:9px"></div><div><div class="tmpl-block" style="width:22px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:22px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:16px;height:2px"></div></div></div></div>`},
     {id:'side-by-side', label:'Side by side', preview:`<div style="display:flex;gap:3px;align-items:center"><div class="tmpl-block" style="width:16px;height:16px;border-radius:50%"></div><div><div class="tmpl-block" style="width:28px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:20px;height:3px"></div></div></div>`},
     {id:'stacked', label:'Stacked', preview:`<div style="text-align:center"><div class="tmpl-block" style="width:16px;height:16px;border-radius:50%;margin:0 auto 3px"></div><div class="tmpl-block" style="width:28px;height:3px;margin:0 auto 2px"></div><div class="tmpl-block" style="width:20px;height:3px;margin:0 auto"></div></div>`},
@@ -879,6 +880,50 @@ function generateSignaturePreview() {
   }
 
   // ── Assemble by template ──
+  if (S.template === 'spotlight') {
+    // Headshot, a vertical rule, then the details — with the campaign banner as
+    // a full-width card underneath rather than an inline row.
+    const nameBig = `font-family:${ff};font-size:${parseInt(fs)+5}px;font-weight:700;color:${S.nameColor||tc};line-height:1.25;margin:0;`;
+    const roleBig = `font-family:${ff};font-size:${parseInt(fs)+1}px;font-weight:${fw};color:${S.titleColor||'#666'};line-height:1.35;margin:0 0 10px;`;
+    const lineStyle = `font-family:${ff};font-size:${parseInt(fs)-1}px;color:${tc};line-height:1.65;`;
+
+    // Everything except the website stacks; the website shares its line with the
+    // call to action, separated by a rule, as in the reference.
+    const stacked = activeContacts.filter(f => f.type !== 'website');
+    const site = activeContacts.find(f => f.type === 'website');
+    let lines = stacked.map(f => `<div style="${lineStyle}">${esc(f.value)}</div>`).join('');
+    if (site || (S.bannerEnabled && S.ctaLabel)) {
+      const parts = [];
+      if (site) parts.push(`<a href="https://${esc(site.value.replace(/^https?:\/\//,''))}" style="${lineStyle}color:${tc};text-decoration:underline;">${esc(site.value)}</a>`);
+      if (S.bannerEnabled && S.ctaLabel) parts.push(`<a href="${esc(S.ctaUrl)}" style="${lineStyle}color:${tc};text-decoration:underline;">${esc(S.ctaLabel)}</a>`);
+      lines += `<div style="${lineStyle}">${parts.join(`<span style="color:#C9C7D2;padding:0 9px;">|</span>`)}</div>`;
+    }
+
+    const bannerCard = (S.bannerEnabled && (S.bannerMessage || S.ctaLabel)) ? `
+      <tr><td colspan="3" style="padding-top:${parseInt(sp)+10}px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;">
+          <tr><td bgcolor="#141220" style="background-color:#141220;border-radius:12px;padding:22px 24px;">
+            <p style="font-family:${ff};font-size:${parseInt(fs)+7}px;font-weight:700;color:#ffffff;line-height:1.2;margin:0 0 6px;">${esc(S.bannerMessage || 'Email campaign')}</p>
+            ${S.ctaLabel ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;"><tr><td bgcolor="${ac}" style="background-color:${ac};border-radius:9999px;padding:8px 20px;"><a href="${esc(S.ctaUrl)}" style="font-family:${ff};font-size:${parseInt(fs)-1}px;font-weight:600;color:#ffffff;text-decoration:none;white-space:nowrap;">${esc(S.ctaLabel)}</a></td></tr></table>` : ''}
+          </td></tr>
+        </table>
+      </td></tr>` : '';
+
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
+      <tr>
+        <td style="vertical-align:middle;padding-right:20px;">${headshotHTML}</td>
+        <td style="width:1px;background-color:#DDDBE4;font-size:1px;line-height:1px;">&nbsp;</td>
+        <td style="vertical-align:middle;padding-left:20px;">
+          <p style="${nameBig}">${esc(S.name)}</p>
+          <p style="${roleBig}">${esc(S.title)}</p>
+          ${lines}
+        </td>
+      </tr>
+      ${bannerCard}
+      ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td colspan="3" style="padding-top:${sp};"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
+    </tbody></table>`;
+  }
+
   if (S.template === 'corporate') {
     // Full-width accent rule, reused above and below the logo/contact band.
     const rule = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:${S.dividerWidth}px solid ${ac};font-size:1px;line-height:1px;">&nbsp;</td></tr></table>`;
