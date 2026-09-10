@@ -32,6 +32,8 @@ const icons = {
   tiktok: `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>`,
 };
 
+// Single-letter prefixes for the 'letters' display mode: E: M: T: A:
+const contactLetters = {email:'E',mobile:'M',phone:'T',address:'A',website:'W',office:'O',pronouns:'P',booking:'B'};
 const contactIcons = {email:icons.email,mobile:icons.mobile,phone:icons.landline,website:icons.globe,address:icons.mappin,office:icons.building,pronouns:icons.user,booking:icons.calendar};
 const socialIcons = {linkedin:icons.linkedin,x:icons.x,instagram:icons.instagram,youtube:icons.youtube,facebook:icons.facebook,tiktok:icons.tiktok};
 
@@ -151,6 +153,7 @@ const S = {
   name: 'Farrukh Shahzad',
   title: 'Marketing Manager',
   company: 'Al Riyady Group',
+  tagline: '',
 
   contactIconMode: 'circle',
   showContactIcons: true,
@@ -179,6 +182,7 @@ const S = {
   bannerEnabled: false,
   bannerMessage: '',
   bannerSubtext: '',
+  bannerImage: '',
   ctaLabel: '',
   ctaUrl: '',
   ctaStyle: 'solid',
@@ -404,6 +408,8 @@ function renderSectionContent(i) {
 // ── Section 0: Templates & layout ──
 function renderTemplates() {
   const tmpls = [
+    {id:'split', label:'Split', preview:`<div style="display:flex;gap:4px;align-items:center"><div class="tmpl-block" style="width:11px;height:11px"></div><div><div class="tmpl-block" style="width:16px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:11px;height:2px"></div></div><div style="width:1px;height:15px;background:var(--border)"></div><div><div class="tmpl-block" style="width:15px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:15px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:12px;height:2px"></div></div></div>`},
+    {id:'accentbar', label:'Accent bar', preview:`<div style="display:flex;gap:5px;align-items:center"><div style="width:2px;height:20px;background:var(--accent);border-radius:1px"></div><div><div class="tmpl-block" style="width:20px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:15px;height:2px;margin-bottom:3px"></div><div class="tmpl-block" style="width:22px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:18px;height:2px"></div></div><div class="tmpl-block" style="width:10px;height:10px"></div></div>`},
     {id:'spotlight', label:'Spotlight', preview:`<div style="width:40px"><div style="display:flex;gap:4px;align-items:center;margin-bottom:4px"><div class="tmpl-block" style="width:13px;height:13px;border-radius:50%"></div><div style="width:1px;height:13px;background:var(--border)"></div><div><div class="tmpl-block" style="width:18px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:13px;height:2px"></div></div></div><div style="height:11px;background:#141220;border-radius:3px"></div></div>`},
     {id:'corporate', label:'Corporate', preview:`<div style="width:38px"><div class="tmpl-block" style="width:26px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:18px;height:2px;margin-bottom:3px"></div><div style="height:2px;background:var(--accent);margin-bottom:3px"></div><div style="display:flex;gap:3px;align-items:flex-start"><div class="tmpl-block" style="width:9px;height:9px"></div><div><div class="tmpl-block" style="width:22px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:22px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:16px;height:2px"></div></div></div></div>`},
     {id:'side-by-side', label:'Side by side', preview:`<div style="display:flex;gap:3px;align-items:center"><div class="tmpl-block" style="width:16px;height:16px;border-radius:50%"></div><div><div class="tmpl-block" style="width:28px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:20px;height:3px"></div></div></div>`},
@@ -528,8 +534,8 @@ function renderDesign() {
     <span class="opt-control"><div class="toggle-switch${S.showContactIcons?' on':''}" data-action="toggleContactIcons"></div></span>
   </div></div>`;
   if (S.showContactIcons) {
-    h += `<div class="field-row"><label class="field-label">Icon type</label><div class="toggle-group" data-action="contactIconMode"><button class="${S.contactIconMode==='circle'?'active':''}" data-val="circle">Circles</button><button class="${S.contactIconMode==='filled'?'active':''}" data-val="filled">Filled</button><button class="${S.contactIconMode==='icons'?'active':''}" data-val="icons">Plain</button><button class="${S.contactIconMode==='labels'?'active':''}" data-val="labels">Labels</button></div></div>`;
-    if (S.contactIconMode !== 'labels') {
+    h += `<div class="field-row"><label class="field-label">Icon type</label><div class="toggle-group" data-action="contactIconMode"><button class="${S.contactIconMode==='circle'?'active':''}" data-val="circle">Circles</button><button class="${S.contactIconMode==='filled'?'active':''}" data-val="filled">Filled</button><button class="${S.contactIconMode==='icons'?'active':''}" data-val="icons">Plain</button><button class="${S.contactIconMode==='letters'?'active':''}" data-val="letters">Letters</button><button class="${S.contactIconMode==='labels'?'active':''}" data-val="labels">Labels</button></div></div>`;
+    if (S.contactIconMode !== 'labels' && S.contactIconMode !== 'letters') {
       h += `<div class="field-row"><label class="field-label">Icon size</label><div class="slider-row"><input type="range" min="14" max="34" value="${S.contactIconSize}" data-bind="contactIconSize"><span class="slider-val">${S.contactIconSize}px</span></div></div>`;
     }
   }
@@ -578,7 +584,7 @@ function renderMedia() {
 // ── Section 3: Contact fields ──
 function renderContacts() {
   // Values and ordering only — how these rows look lives in Design.
-  let h = '';
+  let h = `<div class="field-row"><label class="field-label">Tagline</label><input class="input" value="${esc(S.tagline)}" data-bind="tagline" placeholder="Optional strapline, shown in italics"></div>`;
   S.contactFields.forEach((f, i) => {
     h += `<div class="list-item${f.enabled?'':' disabled'}">
       <div class="toggle-switch list-check${f.enabled?' on':''}" data-action="toggleContact" data-idx="${i}"></div>
@@ -623,6 +629,8 @@ function renderBanner() {
   if (S.bannerEnabled) {
     h += `<div class="field-row"><label class="field-label">Banner message</label><input class="input" value="${esc(S.bannerMessage)}" data-bind="bannerMessage"></div>`;
     h += `<div class="field-row"><label class="field-label">Banner subtext</label><input class="input" value="${esc(S.bannerSubtext)}" data-bind="bannerSubtext" placeholder="Optional second line"></div>`;
+    h += `<div class="field-row"><label class="field-label">Banner image URL</label><input class="input" type="url" value="${esc(S.bannerImage)}" data-bind="bannerImage" placeholder="https://example.com/campaign.png"></div>`;
+    if (S.bannerImage) h += `<div class="inline-note">A wide image replaces the text banner. Host it publicly — an uploaded copy will be stripped in transit.</div>`;
     h += `<div class="field-row"><label class="field-label">Button label</label><input class="input" value="${esc(S.ctaLabel)}" data-bind="ctaLabel"></div>`;
     h += `<div class="field-row"><label class="field-label">Button URL</label><input class="input" value="${esc(S.ctaUrl)}" data-bind="ctaUrl"></div>`;
     h += `<div class="field-row"><label class="field-label">Button style</label><div class="toggle-group" data-action="ctaStyle"><button class="${S.ctaStyle==='solid'?'active':''}" data-val="solid">Solid</button><button class="${S.ctaStyle==='outline'?'active':''}" data-val="outline">Outline</button><button class="${S.ctaStyle==='pill'?'active':''}" data-val="pill">Pill</button></div></div>`;
@@ -791,6 +799,11 @@ function generateSignaturePreview() {
       if (!S.showContactIcons) {
         return `<tr><td style="padding:3px 0;${fieldStyle}vertical-align:middle;">${val}</td></tr>`;
       }
+      // Letters mode: a bold single-letter prefix instead of an icon. Renders
+      // everywhere, including Outlook, because it is just text.
+      if (S.contactIconMode === 'letters') {
+        return `<tr><td style="padding:3px 7px 3px 0;font-family:${ff};font-size:${parseInt(fs)-1}px;font-weight:700;color:${ic};line-height:1.6;vertical-align:top;white-space:nowrap;">${esc(contactLetters[f.type]||'•')}:</td><td style="padding:3px 0;${fieldStyle}vertical-align:top;">${val}</td></tr>`;
+      }
       if (S.contactIconMode === 'labels') {
         return `<tr><td style="padding:3px 8px 3px 0;${mutedStyle}white-space:nowrap;vertical-align:middle;">${esc(f.label)}:</td><td style="padding:3px 0;${fieldStyle}vertical-align:middle;">${val}</td></tr>`;
       }
@@ -882,7 +895,60 @@ function generateSignaturePreview() {
     disclaimerHTML = `<tr><td style="padding-top:${sp};"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>`;
   }
 
+  const taglineHTML = S.tagline
+    ? `<p style="font-family:${ff};font-size:${fs};font-style:italic;color:${tc};line-height:1.4;margin:0 0 10px;">${esc(S.tagline)}</p>`
+    : '';
+
+  // A hosted campaign image, used in place of the text banner where a template
+  // supports it. Width is capped so it cannot blow out a narrow reading pane.
+  const bannerImgHTML = (S.bannerEnabled && S.bannerImage)
+    ? `<img src="${esc(S.bannerImage)}" width="520" style="display:block;width:100%;max-width:520px;height:auto;border-radius:6px;" alt="${esc(S.bannerMessage || 'Campaign')}">`
+    : '';
+
   // ── Assemble by template ──
+  // Logo left, identity centre, a vertical rule, then contacts on the right.
+  if (S.template === 'split') {
+    const rule = `<td style="width:1px;background-color:#DDDBE4;font-size:1px;line-height:1px;">&nbsp;</td>`;
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
+      <tr>
+        ${logoHTML ? `<td style="vertical-align:middle;padding-right:22px;">${logoHTML}</td>` : ''}
+        <td style="vertical-align:middle;padding-right:22px;">
+          <p style="${nameStyle}">${esc(S.name)}</p>
+          <p style="${titleStyle}">${esc(S.title)}</p>
+          ${taglineHTML}
+          ${activeContacts.find(f=>f.type==='website') ? `<p style="font-family:${ff};font-size:${fs};font-weight:700;color:${ac};margin:6px 0 0;"><a href="https://${esc(activeContacts.find(f=>f.type==='website').value.replace(/^https?:\/\//,''))}" style="color:${ac};text-decoration:none;">${esc(activeContacts.find(f=>f.type==='website').value)}</a></p>` : ''}
+          ${socialHTML ? `<div style="padding-top:${sp};">${socialHTML}</div>` : ''}
+        </td>
+        ${rule}
+        <td style="vertical-align:middle;padding-left:22px;">${contactHTML}</td>
+      </tr>
+      ${bannerImgHTML ? `<tr><td colspan="4" style="padding-top:${parseInt(sp)+8}px;">${bannerImgHTML}</td></tr>` : bannerHTML ? `<tr><td colspan="4">${bannerInner}</td></tr>` : ''}
+      ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td colspan="4" style="padding-top:${sp};"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
+    </tbody></table>`;
+  }
+
+  // Thick accent bar down the left edge, logo on the right, campaign strip below.
+  if (S.template === 'accentbar') {
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
+      <tr>
+        <td style="width:3px;background-color:${ac};font-size:1px;line-height:1px;">&nbsp;</td>
+        <td style="vertical-align:top;padding-left:18px;">
+          <p style="font-family:${ff};font-size:${parseInt(fs)+3}px;font-weight:700;color:${ac};line-height:1.25;margin:0;">${esc(S.name)}</p>
+          <p style="font-family:${ff};font-size:${parseInt(fs)+1}px;font-weight:700;color:${S.nameColor||tc};line-height:1.3;margin:0 0 8px;">${esc(S.company)}</p>
+          ${taglineHTML}
+          ${contactHTML}
+          ${socialHTML ? `<div style="padding-top:${sp};">${socialHTML}</div>` : ''}
+        </td>
+        ${logoHTML ? `<td style="vertical-align:middle;padding-left:28px;">${logoHTML}</td>` : ''}
+      </tr>
+      ${(S.bannerEnabled && (S.bannerMessage || S.ctaLabel)) ? `<tr><td colspan="3" style="padding-top:${parseInt(sp)+6}px;">
+        <p style="font-family:${ff};font-size:${fs};color:${tc};line-height:1.5;margin:0;">${esc(S.bannerMessage)}${S.ctaLabel ? ` <a href="${esc(S.ctaUrl)}" style="color:${ac};text-decoration:underline;font-weight:600;">${esc(S.ctaLabel)}</a>` : ''}</p>
+      </td></tr>` : ''}
+      ${bannerImgHTML ? `<tr><td colspan="3" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
+      ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td colspan="3" style="padding-top:${sp};"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
+    </tbody></table>`;
+  }
+
   if (S.template === 'spotlight') {
     // Headshot, a vertical rule, then the details — with the campaign banner as
     // a full-width card underneath rather than an inline row.
