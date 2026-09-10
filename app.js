@@ -178,6 +178,7 @@ const S = {
 
   bannerEnabled: false,
   bannerMessage: '',
+  bannerSubtext: '',
   ctaLabel: '',
   ctaUrl: '',
   ctaStyle: 'solid',
@@ -201,12 +202,13 @@ const S = {
 const SCOPED_KEYS = [
   'template','alignment','font','bodySize','fontWeight','textColor','accentColor',
   'contactIconMode','socialStyle','bannerEnabled','bannerMessage','ctaLabel','ctaUrl',
-  'ctaStyle','disclaimerEnabled','disclaimerPreset','disclaimerText',
+  'ctaStyle','bannerSubtext','disclaimerEnabled','disclaimerPreset','disclaimerText',
 ];
 
 const scopePresets = {
   sales: {
     bannerEnabled:true, bannerMessage:'Book a 15-minute intro call',
+    bannerSubtext:'No obligation — we will map out your setup options.',
     ctaLabel:'Book time', ctaUrl:'https://alriyadygroup.ae/contact', ctaStyle:'pill',
   },
   legal: {
@@ -620,6 +622,7 @@ function renderBanner() {
   let h = `<div class="field-row"><div class="toggle-row"><label class="field-label">Show banner</label><div class="toggle-switch${S.bannerEnabled?' on':''}" data-action="toggleBanner"></div></div></div>`;
   if (S.bannerEnabled) {
     h += `<div class="field-row"><label class="field-label">Banner message</label><input class="input" value="${esc(S.bannerMessage)}" data-bind="bannerMessage"></div>`;
+    h += `<div class="field-row"><label class="field-label">Banner subtext</label><input class="input" value="${esc(S.bannerSubtext)}" data-bind="bannerSubtext" placeholder="Optional second line"></div>`;
     h += `<div class="field-row"><label class="field-label">Button label</label><input class="input" value="${esc(S.ctaLabel)}" data-bind="ctaLabel"></div>`;
     h += `<div class="field-row"><label class="field-label">Button URL</label><input class="input" value="${esc(S.ctaUrl)}" data-bind="ctaUrl"></div>`;
     h += `<div class="field-row"><label class="field-label">Button style</label><div class="toggle-group" data-action="ctaStyle"><button class="${S.ctaStyle==='solid'?'active':''}" data-val="solid">Solid</button><button class="${S.ctaStyle==='outline'?'active':''}" data-val="outline">Outline</button><button class="${S.ctaStyle==='pill'?'active':''}" data-val="pill">Pill</button></div></div>`;
@@ -855,7 +858,7 @@ function generateSignaturePreview() {
   // Banner & CTA
   let bannerHTML = '';
   let bannerInner = '';
-  if (S.bannerEnabled && (S.bannerMessage || S.ctaLabel)) {
+  if (S.bannerEnabled && (S.bannerMessage || S.bannerSubtext || S.ctaLabel)) {
     let btnHTML = '';
     if (S.ctaLabel) {
       const btnRadius = S.ctaStyle === 'pill' ? '20px' : '4px';
@@ -867,7 +870,7 @@ function generateSignaturePreview() {
     // Kept as a separate inner block so the card template can re-wrap it in its
     // own cell. Regex-splicing the finished row produced nested <td>s.
     bannerInner = `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tbody><tr>
-        <td style="font-family:${ff};font-size:${parseInt(fs)-1}px;color:${tc};font-weight:${fw};">${esc(S.bannerMessage)}</td>
+        <td style="font-family:${ff};font-size:${parseInt(fs)-1}px;color:${tc};font-weight:${fw};">${esc(S.bannerMessage)}${S.bannerSubtext ? `<span style="display:block;font-size:${parseInt(fs)-2}px;color:#8B8898;font-weight:400;line-height:1.45;padding-top:2px;">${esc(S.bannerSubtext)}</span>` : ''}</td>
         ${btnHTML}
       </tr></tbody></table>`;
     bannerHTML = `<tr><td style="padding-top:${sp};">${bannerInner}</td></tr>`;
@@ -899,11 +902,12 @@ function generateSignaturePreview() {
       lines += `<div style="${lineStyle}">${parts.join(`<span style="color:#C9C7D2;padding:0 9px;">|</span>`)}</div>`;
     }
 
-    const bannerCard = (S.bannerEnabled && (S.bannerMessage || S.ctaLabel)) ? `
+    const bannerCard = (S.bannerEnabled && (S.bannerMessage || S.bannerSubtext || S.ctaLabel)) ? `
       <tr><td colspan="3" style="padding-top:${parseInt(sp)+10}px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;">
           <tr><td bgcolor="#141220" style="background-color:#141220;border-radius:12px;padding:22px 24px;">
-            <p style="font-family:${ff};font-size:${parseInt(fs)+7}px;font-weight:700;color:#ffffff;line-height:1.2;margin:0 0 6px;">${esc(S.bannerMessage || 'Email campaign')}</p>
+            <p style="font-family:${ff};font-size:${parseInt(fs)+7}px;font-weight:700;color:#ffffff;line-height:1.2;margin:0;">${esc(S.bannerMessage || 'Email campaign')}</p>
+            ${S.bannerSubtext ? `<p style="font-family:${ff};font-size:${parseInt(fs)-1}px;font-weight:400;color:#B4B1C4;line-height:1.45;margin:6px 0 0;">${esc(S.bannerSubtext)}</p>` : ''}
             ${S.ctaLabel ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;"><tr><td bgcolor="${ac}" style="background-color:${ac};border-radius:9999px;padding:8px 20px;"><a href="${esc(S.ctaUrl)}" style="font-family:${ff};font-size:${parseInt(fs)-1}px;font-weight:600;color:#ffffff;text-decoration:none;white-space:nowrap;">${esc(S.ctaLabel)}</a></td></tr></table>` : ''}
           </td></tr>
         </table>
