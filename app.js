@@ -123,7 +123,36 @@ const DEFAULT_HEADSHOT_URL = sampleHeadshots[0].url;
 // logo. That substitution lasts exactly as long as the shipped sample is
 // untouched: type your own name and it is used on every layout, Corporate
 // included.
+// Signvel's own brand. The layouts double as the product's showcase, so the
+// mark, company and links they preview with are Signvel's — the generated
+// monogram picks the company name up from here, which is what puts "SV ·
+// Signvel" in each layout's theme colour rather than a placeholder.
+//
+// The person is a stand-in, deliberately. These details sit on sixteen demo
+// layouts and on the public showcase page, and a real name, mobile and street
+// address do not belong there.
 const SAMPLE_IDENTITY = {
+  name: 'Elena Marsh',
+  title: 'Head of Partnerships',
+  company: 'Signvel',
+  contacts: {
+    email:   'elena@signvel.com',
+    mobile:  '+971 50 123 4567',
+    phone:   '+971 4 123 4567',
+    address: 'Business Bay, Dubai, UAE',
+    website: 'signvel.com',
+  },
+  socials: {
+    facebook:'signvel', linkedin:'signvel', instagram:'signvel',
+    youtube:'signvel', tiktok:'signvel', x:'signvel',
+  },
+};
+
+// The sample identity that shipped before the layouts carried Signvel branding.
+// Saved state holding it is still a copy of the demo, so it has to keep
+// counting as stock — otherwise anyone who opened the editor while that set
+// was live gets Northwind Studio frozen onto every layout.
+const LEGACY_SAMPLE_IDENTITY = {
   name: 'Elena Marsh',
   title: 'Head of Partnerships',
   company: 'Northwind Studio',
@@ -165,14 +194,19 @@ function matchesIdentity(id) {
   return S.contactFields.every(f => !(f.type in id.contacts) || f.value === id.contacts[f.type]);
 }
 
-// Both shipped identities count as "nobody has typed their own details yet".
-// The app originally shipped with the Al Riyady details in every field, so a
-// saved state still holding them is a copy of the demo rather than a choice —
-// the same reasoning that makes the stock logo recognisable as stock. Without
-// this, anyone carrying that saved state sees the brand details on all
-// seventeen layouts, which is the thing the sample identity exists to stop.
+// Every identity the app has ever shipped counts as "nobody has typed their
+// own details yet". A saved state holding one of them is a copy of the demo
+// rather than a choice — the same reasoning that makes the stock logo
+// recognisable as stock. Anything not on this list belongs to the user, and is
+// then shown on every layout, Corporate included.
+//
+// Retiring a shipped identity means moving it here, never deleting it:
+// whatever is dropped from this list gets frozen onto the layouts of everyone
+// still carrying it.
+const STOCK_IDENTITIES = [SAMPLE_IDENTITY, CORPORATE_IDENTITY, LEGACY_SAMPLE_IDENTITY];
+
 function identityIsStock() {
-  return matchesIdentity(SAMPLE_IDENTITY) || matchesIdentity(CORPORATE_IDENTITY);
+  return STOCK_IDENTITIES.some(matchesIdentity);
 }
 const contactIcons = {email:icons.email,mobile:icons.mobile,phone:icons.landline,website:icons.globe,address:icons.mappin,office:icons.building,pronouns:icons.user,booking:icons.calendar};
 const socialIcons = {linkedin:icons.linkedin,x:icons.x,instagram:icons.instagram,youtube:icons.youtube,facebook:icons.facebook,tiktok:icons.tiktok};
@@ -911,8 +945,8 @@ function renderContacts() {
     // state is the one that looks wrong without a word, because the fields say
     // one thing and sixteen of the seventeen previews say another.
     h += matchesIdentity(CORPORATE_IDENTITY)
-      ? `<div class="inline-note" id="stockNote">These are the Al&nbsp;Riyady details, and the <strong>Corporate</strong> template shows them. Every other layout previews with sample details instead, so the gallery reads as a set of designs rather than the same signature seventeen times. Type over any field above and yours are used on all of them.</div>`
-      : `<div class="inline-note" id="stockNote">These are sample details, so the layouts read as designs rather than as one person's signature. Type over any of them and yours are used everywhere. The <strong>Corporate</strong> template is the exception — it reproduces the Al&nbsp;Riyady signature, and shows those details until you change the ones above.</div>`;
+      ? `<div class="inline-note" id="stockNote">These are the Al&nbsp;Riyady details, and the <strong>Corporate</strong> template shows them. Every other layout previews on Signvel branding instead, so the gallery reads as a set of designs rather than the same signature seventeen times. Type over any field above and yours are used on all of them.</div>`
+      : `<div class="inline-note" id="stockNote">Every layout except <strong>Corporate</strong> previews on Signvel branding, with a stand-in name — so the gallery reads as a set of designs rather than as one person's signature. Corporate reproduces the Al&nbsp;Riyady signature. Type over any field above and your own details are used on all seventeen.</div>`;
   }
 
   h += `<div class="opt-group">Contact details</div>`;
