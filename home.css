@@ -98,14 +98,6 @@ body{margin:0}
 .btn-row{display:flex;align-items:center;gap:12px;margin-top:32px}
 
 /* ── Headings ── */
-.h1{
-  font-size:clamp(40px,5.6vw,60px);font-weight:700;letter-spacing:-.05em;
-  line-height:.95;margin:24px 0 0;text-wrap:balance;
-}
-.h1 .serif{
-  font-family:var(--serif);font-style:italic;font-weight:400;
-  color:var(--primary);letter-spacing:normal;
-}
 .h2{
   font-size:clamp(30px,4.4vw,48px);font-weight:700;letter-spacing:-.03em;
   line-height:1.02;margin:20px 0 0;
@@ -119,35 +111,7 @@ body{margin:0}
 .lead-light{color:rgba(255,255,255,.62)}
 .body-sm{font-size:14.5px;line-height:1.6;color:var(--muted-foreground);margin:0}
 
-/* ── Hero ── */
-.hero{
-  max-width:80rem;margin:0 auto;padding:64px 24px 80px;
-  display:grid;grid-template-columns:1fr 1.05fr;gap:56px;align-items:center;
-}
-.hero-copy{animation:slideUp .6s cubic-bezier(.22,.61,.36,1) both}
-.hero-visual{animation:slideUp .6s cubic-bezier(.22,.61,.36,1) .12s both}
-@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){
-  .hero-copy,.hero-visual{animation:none}
-}
-
-/* Hero stats */
-.stats{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
-  margin:48px 0 0;padding:24px 0 0;border-top:1px solid var(--border);max-width:28rem;
-}
-.stat-num{font-size:24px;font-weight:700;letter-spacing:-.025em;margin:0;line-height:1.1}
-.stat-label{
-  font-family:var(--mono);font-size:10px;text-transform:uppercase;
-  letter-spacing:.18em;color:var(--muted-foreground);margin:4px 0 0;
-}
-
-/* ── Preview card wrapper ── */
-.preview-card{
-  background:#fff;border-radius:16px;padding:28px;
-  box-shadow:0 0 0 1px rgba(0,0,0,.05),0 20px 25px -5px rgba(20,18,31,.1),0 8px 10px -6px rgba(20,18,31,.1);
-}
-.preview-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+/* ── Small status labels, used by the step visuals ── */
 .preview-tag{
   font-family:var(--mono);font-size:10px;text-transform:uppercase;
   letter-spacing:.18em;color:var(--muted-foreground);
@@ -158,7 +122,6 @@ body{margin:0}
   letter-spacing:.18em;color:var(--accent-foreground);
 }
 .live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block}
-.preview-scroll{overflow:hidden}
 
 /* ── Dark showcase section ── */
 .section-dark{background:var(--foreground);color:var(--background);padding:80px 24px}
@@ -298,7 +261,6 @@ body{margin:0}
 
 /* ── Responsive ── */
 @media (max-width:1000px){
-  .hero{grid-template-columns:1fr;gap:44px;padding-top:48px}
   .lead{max-width:52ch}
   .step{grid-template-columns:1fr;gap:26px}
   .step:nth-child(even) .step-visual{order:0}
@@ -309,11 +271,140 @@ body{margin:0}
 @media (max-width:640px){
   .nav-links{display:none}
   .feature-grid{grid-template-columns:1fr}
-  .stats{max-width:none}
   .cta{padding:52px 24px;border-radius:18px}
-  .preview-card{padding:18px}
+  /* A grid item will not shrink below its min-content width unless told to,
+     so a long unbreakable string in one of these cards pushed the whole page
+     sideways on the narrowest phones. */
+  .step{padding:24px;gap:24px}
+  .step > *{min-width:0}
 }
 
+
+/* ═══════════════════════════════════════════════════════════
+   Masthead
+
+   One full-bleed brand panel holding the nav, the headline and a real
+   signature card that hangs over the panel's lower edge. The overlap is the
+   whole trick: the card's bottom half sits on the page background, which is
+   what stops the purple reading as a flat block.
+
+   The panel keeps bottom padding equal to the card's overhang so the section
+   below is never covered — see --card-drop.
+   ═══════════════════════════════════════════════════════════ */
+.mast{
+  --card-drop:120px;
+  /* clip, not hidden: hidden on an ancestor would turn the card's overhang
+     into a scroll container and kill the overlap. */
+  position:relative;isolation:isolate;overflow-x:clip;
+  background:linear-gradient(165deg,#6B3BFF 0%,#5B2EFF 46%,#4A1FE0 100%);
+  color:#fff;
+  padding:0 24px;
+}
+
+/* Decorative only. Soft tinted discs plus an oversized wordmark stroke — the
+   same squiggle as the logo, enlarged and bled off the right edge. */
+.mast-art{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.blob{position:absolute;border-radius:50%;background:rgba(255,255,255,.07)}
+.blob-1{width:780px;height:780px;top:-280px;right:-180px}
+.blob-2{width:520px;height:520px;top:120px;left:-200px;background:rgba(255,255,255,.05)}
+.blob-3{width:340px;height:340px;bottom:-60px;right:22%;background:rgba(0,229,160,.10)}
+.mast-mark{
+  position:absolute;right:-90px;top:34%;width:560px;height:auto;
+  color:rgba(255,255,255,.13);
+}
+
+/* Nav sits on the brand panel, so it drops the light bar and inverts. */
+.nav-brand{
+  position:relative;z-index:2;background:transparent;backdrop-filter:none;
+  border-bottom:0;max-width:80rem;margin:0 auto;padding:20px 0;
+}
+.nav-brand .logo-word{color:#fff}
+.nav-brand .logo-word span{color:var(--accent)}
+.nav-brand .nav-links a{color:rgba(255,255,255,.82)}
+.nav-brand .nav-links a:hover{color:#fff}
+.nav-brand .nav-signin{color:rgba(255,255,255,.82)}
+.nav-brand .nav-signin:hover{color:#fff}
+.nav-brand .nav-right{gap:28px}
+
+.mast-copy{
+  position:relative;z-index:2;max-width:44rem;margin:0 auto;
+  padding:64px 0 0;text-align:center;
+}
+.mast-title{
+  font-size:clamp(40px,6.4vw,72px);font-weight:800;letter-spacing:-.04em;
+  line-height:1.02;margin:0;text-wrap:balance;color:#fff;
+}
+.mast-sub{
+  font-size:clamp(16px,1.9vw,21px);line-height:1.5;font-weight:500;
+  color:rgba(255,255,255,.78);margin:22px auto 0;max-width:34ch;
+}
+.mast-cta{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:12px;margin:36px 0 0;
+}
+.mast-cta .btn{gap:8px}
+
+/* The card. Its own drop shadow does the lifting; the negative bottom margin on
+   .mast is what lets it hang past the panel. */
+.mast-card{
+  position:relative;z-index:2;
+  max-width:47rem;margin:56px auto calc(var(--card-drop) * -1);
+  background:#fff;border-radius:20px;padding:38px 40px;
+  display:flex;justify-content:center;
+  box-shadow:0 30px 60px -20px rgba(20,18,31,.35),0 0 0 1px rgba(20,18,31,.04);
+}
+/* A flex item will not shrink below its content unless told to, and the
+   signature inside is a fixed-width table — without this the card forces the
+   whole document wider than a phone screen. */
+.mast-card > .sig-frame{min-width:0;flex:0 1 auto}
+
+/* ── Mail clients strip ── */
+.clients{
+  max-width:80rem;margin:0 auto;
+  padding:calc(var(--card-drop, 120px) + 76px) 24px 72px;text-align:center;
+}
+.clients-lead{
+  font-size:14.5px;font-weight:500;color:var(--muted-foreground);margin:0 0 22px;
+}
+.clients-row{
+  display:flex;flex-wrap:wrap;align-items:stretch;justify-content:center;
+  gap:10px;margin:0;padding:0;list-style:none;
+}
+.client-tile{
+  display:inline-flex;align-items:center;gap:9px;
+  background:#fff;border:1px solid var(--border);border-radius:12px;
+  padding:11px 16px;font-size:13px;font-weight:600;color:var(--foreground);
+}
+.client-tile .mail-logo{margin-right:0}
+.client-tile .mail-logo svg{width:22px;height:22px}
+.client-tile-more{padding:0}
+.client-tile-more a{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:11px 16px;color:var(--primary);text-decoration:none;font-weight:600;
+}
+.client-tile-more a:hover{color:#4a22db}
+
+@media (max-width:900px){
+  .mast{--card-drop:80px}
+  .mast-card{padding:26px 22px;border-radius:16px;margin-top:40px}
+  .mast-copy{padding-top:44px}
+  .clients{padding-top:calc(80px + 64px)}
+  .nav-brand .nav-links{display:none}
+  .mast-mark{display:none}
+}
+@media (max-width:520px){
+  .mast-cta{flex-direction:column;align-items:stretch}
+  .mast-cta .btn{width:100%;justify-content:center}
+}
+/* Narrowest phones: the nav row is logo + "Sign in" + button, which together
+   outrun a 320px screen. The button already leads to the same place, so the
+   text link is the one to drop. */
+@media (max-width:380px){
+  .nav-brand .nav-signin{display:none}
+  .nav-brand{padding:16px 0}
+  .nav-brand .nav-right{gap:12px}
+  .mast-card{padding:22px 16px}
+}
 /* ═══════════════════════════════════════════════════════════
    Signature isolation
 
