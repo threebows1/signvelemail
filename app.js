@@ -91,15 +91,20 @@ function themeOf(id) { return templateThemes[id] || templateThemes.minimal; }
 // Real hosted URLs, not data: URIs — these are what a signature needs to
 // survive being emailed, and they let someone see a photo layout as it was
 // designed before they have uploaded anything of their own.
+// Ordered deliberately: the first entry is what every photo layout ships with,
+// so it leads with the most signature-like portrait in the set — a collared
+// shirt, an even background and a level expression. The rest are alternatives,
+// and the two shot against black or in sunglasses sit at the end because they
+// read as portraits rather than as someone's work signature.
 const sampleHeadshots = [
-  {id:'h1', label:'Zoe',    url:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=faces'},
-  {id:'h2', label:'Marco',  url:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces'},
-  {id:'h3', label:'Amelia', url:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=faces'},
   {id:'h4', label:'Daniel', url:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=faces'},
+  {id:'h2', label:'Marco',  url:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces'},
+  {id:'h1', label:'Zoe',    url:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=faces'},
+  {id:'h3', label:'Amelia', url:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=faces'},
   {id:'h5', label:'Priya',  url:'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=400&fit=crop&crop=faces'},
-  {id:'h6', label:'James',  url:'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400&h=400&fit=crop&crop=faces'},
   {id:'h7', label:'Nadia',  url:'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=faces'},
   {id:'h8', label:'Oliver', url:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=faces'},
+  {id:'h6', label:'James',  url:'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400&h=400&fit=crop&crop=faces'},
 ];
 
 const sampleBanners = [
@@ -132,6 +137,29 @@ const DEFAULT_HEADSHOT_URL = sampleHeadshots[0].url;
 // layouts and on the public showcase page, and a real name, mobile and street
 // address do not belong there.
 const SAMPLE_IDENTITY = {
+  name: 'Daniel Reyes',
+  title: 'Head of Partnerships',
+  company: 'Signvel',
+  contacts: {
+    email:   'daniel@signvel.com',
+    mobile:  '+971 50 123 4567',
+    phone:   '+971 4 123 4567',
+    address: 'Business Bay, Dubai, UAE',
+    website: 'signvel.com',
+  },
+  socials: {
+    facebook:'signvel', linkedin:'signvel', instagram:'signvel',
+    youtube:'signvel', tiktok:'signvel', x:'signvel',
+  },
+};
+
+// The sample identity that shipped before the layouts carried Signvel branding.
+// Saved state holding it is still a copy of the demo, so it has to keep
+// counting as stock — otherwise anyone who opened the editor while that set
+// was live gets Northwind Studio frozen onto every layout.
+// The Signvel-branded sample that preceded the current one, retired when the
+// demo portrait changed and the name had to follow it.
+const LEGACY_SIGNVEL_IDENTITY = {
   name: 'Elena Marsh',
   title: 'Head of Partnerships',
   company: 'Signvel',
@@ -148,10 +176,6 @@ const SAMPLE_IDENTITY = {
   },
 };
 
-// The sample identity that shipped before the layouts carried Signvel branding.
-// Saved state holding it is still a copy of the demo, so it has to keep
-// counting as stock — otherwise anyone who opened the editor while that set
-// was live gets Northwind Studio frozen onto every layout.
 const LEGACY_SAMPLE_IDENTITY = {
   name: 'Elena Marsh',
   title: 'Head of Partnerships',
@@ -203,7 +227,7 @@ function matchesIdentity(id) {
 // Retiring a shipped identity means moving it here, never deleting it:
 // whatever is dropped from this list gets frozen onto the layouts of everyone
 // still carrying it.
-const STOCK_IDENTITIES = [SAMPLE_IDENTITY, CORPORATE_IDENTITY, LEGACY_SAMPLE_IDENTITY];
+const STOCK_IDENTITIES = [SAMPLE_IDENTITY, CORPORATE_IDENTITY, LEGACY_SIGNVEL_IDENTITY, LEGACY_SAMPLE_IDENTITY];
 
 function identityIsStock() {
   return STOCK_IDENTITIES.some(matchesIdentity);

@@ -38,6 +38,10 @@
     const $ = s => document.querySelector(s);
     const click = el => el && el.dispatchEvent(new MouseEvent('click', {bubbles: true}));
 
+    // Asserted before anything else: later checks click a sample thumbnail,
+    // which changes the live headshot out from under this.
+    if (S.headshotUrl !== sampleHeadshots[0].url) E.push('default headshot is not the first sample');
+
     // Every rail section must open and render something.
     document.querySelectorAll('#rail [data-goto]').forEach(btn => {
       click(btn);
@@ -186,6 +190,25 @@
       S.name = restore.name; S.title = restore.title; S.company = restore.company;
       S.contactFields = restore.fields;
     })();
+
+    // Every retired sample must keep counting as stock. Dropping one freezes
+    // those details onto the layouts of everyone still carrying it, which is
+    // the bug this list exists to prevent.
+    [LEGACY_SIGNVEL_IDENTITY, LEGACY_SAMPLE_IDENTITY].forEach((id, n) => {
+      const keep = {name:S.name, title:S.title, company:S.company,
+                    fields:S.contactFields.map(f => Object.assign({}, f))};
+      S.name = id.name; S.title = id.title; S.company = id.company;
+      S.contactFields = S.contactFields.map(f => (f.type in id.contacts)
+        ? Object.assign({}, f, {value: id.contacts[f.type]}) : f);
+      if (!identityIsStock()) E.push('retired identity ' + n + ' not recognised as stock');
+      S.template = 'spotlight';
+      const h = generateSignaturePreview();
+      if (!h.includes(SAMPLE_IDENTITY.name)) E.push('retired identity ' + n + ': layout did not show the current sample');
+      if (h.includes(id.name)) E.push('retired identity ' + n + ': stale name still rendered');
+      S.name = keep.name; S.title = keep.title; S.company = keep.company;
+      S.contactFields = keep.fields;
+    });
+
 
     // One edited character stops the substitution.
     S.name = 'Ada Lovelace';
