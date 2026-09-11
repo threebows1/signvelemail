@@ -93,18 +93,25 @@ function themeOf(id) { return templateThemes[id] || templateThemes.minimal; }
 // designed before they have uploaded anything of their own.
 // Ordered deliberately: the first entry is what every photo layout ships with,
 // so it leads with the most signature-like portrait in the set — a collared
-// shirt, an even background and a level expression. The rest are alternatives,
-// and the two shot against black or in sunglasses sit at the end because they
-// read as portraits rather than as someone's work signature.
+// shirt, an even background and a warm, level expression. The second is the
+// same brief in a jacket, for anyone who wants the formal version.
+//
+// fit=facearea rather than fit=crop: the plain crop centres the frame, which
+// leaves the face small and low once a layout renders it as a 78px circle.
+// facearea crops around the detected face instead, so every portrait arrives
+// framed the same way whatever the original composition was.
+const SAMPLE_HEADSHOT_CROP = 'w=400&h=400&fit=facearea&facepad=3';
+const unsplash = (id) => `https://images.unsplash.com/${id}?${SAMPLE_HEADSHOT_CROP}`;
+
 const sampleHeadshots = [
-  {id:'h4', label:'Daniel', url:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=faces'},
-  {id:'h2', label:'Marco',  url:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces'},
-  {id:'h1', label:'Zoe',    url:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=faces'},
-  {id:'h3', label:'Amelia', url:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=faces'},
-  {id:'h5', label:'Priya',  url:'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=400&fit=crop&crop=faces'},
-  {id:'h7', label:'Nadia',  url:'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=faces'},
-  {id:'h8', label:'Oliver', url:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=faces'},
-  {id:'h6', label:'James',  url:'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400&h=400&fit=crop&crop=faces'},
+  {id:'m1', label:'Daniel', url:unsplash('photo-1531427186611-ecfd6d936c79')},
+  {id:'m2', label:'Victor', url:unsplash('photo-1560250097-0b93528c311a')},
+  {id:'m3', label:'Marco',  url:unsplash('photo-1507003211169-0a1dd7228f2d')},
+  {id:'h1', label:'Zoe',    url:unsplash('photo-1494790108377-be9c29b29330')},
+  {id:'h3', label:'Amelia', url:unsplash('photo-1438761681033-6461ffad8d80')},
+  {id:'h5', label:'Priya',  url:unsplash('photo-1573497019940-1c28c88b4f3e')},
+  {id:'h7', label:'Nadia',  url:unsplash('photo-1534528741775-53994a69daeb')},
+  {id:'h8', label:'Oliver', url:unsplash('photo-1506794778202-cad84cf45f1d')},
 ];
 
 const sampleBanners = [
