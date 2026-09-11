@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>gen</title></head>
+<body>
+  <div class="app" id="app" style="display:none">
+    <aside class="rail" id="rail"></aside>
+    <div class="workspace"><header class="topbar" id="header"></header>
+      <div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div>
+  </div>
+  <div class="export-overlay hidden" id="exportOverlay"><div class="export-panel">
+    <div class="export-panel-header"><h2>E</h2><button class="export-close" id="exportClose">x</button></div>
+    <pre class="export-code"><code id="exportCode"></code></pre>
+    <div class="export-actions"><button class="btn btn-accent" id="exportCopyBtn">C</button></div></div></div>
+  <div class="auth-overlay hidden" id="authOverlay"><div class="auth-panel">
+    <button class="auth-close" id="authClose">x</button><h2 class="auth-title" id="authTitle">S</h2><p class="auth-sub" id="authSub">.</p>
+    <label class="auth-label" for="authEmail">E</label><input class="input" type="email" id="authEmail">
+    <label class="auth-label" for="authPassword">P</label><input class="input" type="password" id="authPassword">
+    <div class="auth-msg hidden" id="authMsg"></div><button class="btn btn-accent auth-submit" id="authSubmit">G</button>
+    <div class="auth-alt"><button class="auth-link" id="authToggle">a</button><button class="auth-link" id="authForgot">b</button></div></div></div>
+
+  <pre id="out"></pre>
+  <script>try { localStorage.clear(); } catch (e) {}</script>
+  <script src="../config.js"></script>
+  <script src="../cloud.js"></script>
+  <script src="../app.js"></script>
+  <script>
+  (function () {
+    const meta = {
+      corporate:  ['Corporate',   'Name block above, logo beside the contact list, accent rules framing the middle band. The most formal layout, and the one built to match an existing company signature.'],
+      spotlight:  ['Spotlight',   'Portrait, a hairline rule, then the details — with the campaign message as a full-width card underneath rather than squeezed into a line.'],
+      split:      ['Split',       'Mark on the left, identity in the middle, a vertical rule, contacts on the right. Three columns that stay legible because each holds one kind of thing.'],
+      directory:  ['Directory',   'The name leads, the mark sits under it, and the contact list is ruled off to the right with the socials tucked beneath. Reads like a business card.'],
+      accentbar:  ['Accent bar',  'A solid rule down the left edge with the brand mark opposite. Lowercase prefixes keep the contact list quiet so the name carries the block.'],
+      colorblock: ['Colour block','A full-height panel in the theme colour holding the mark, with tracked capitals and a two-column contact grid beside it.'],
+      dark:       ['Dark card',   'Everything on a deep card: portrait in a white frame, the name in two weights, the role in a chip, contacts paired across two columns.'],
+      connect:    ['Connect bar', 'Portrait and details on the left, brand and socials on the right, closed by a full-width invitation bar in the theme colour.'],
+      ribbon:     ['Ribbon',      'A ringed portrait against tracked capitals, with the socials gathered into a single rounded pill at the far right.'],
+      brandmark:  ['Brandmark',   'The mark stacked in its own column, details beside it, socials as bare glyphs. Quiet, and the easiest of the set to read at a glance.'],
+      inline:     ['Inline',      'The shallowest layout here: two lines of identity, the contacts running across in one row, a hairline, then the socials.'],
+      labelled:   ['Labelled',    'Every row carries its own label in the theme colour. The most explicit layout, and the quickest to scan for one specific detail.'],
+      band:       ['Banner band', 'Brand row, a full-width name band, then the details beside the portrait with the website set as a pill.'],
+      editorial:  ['Editorial',   'Set in a display face on a deep ground with the portrait squared off at the right edge. The one layout that reads as printed rather than sent.'],
+      grid:       ['Grid',        'Contacts laid into a ruled grid, each cell labelled above its value, with a ringed portrait alongside. Structured without being stiff.'],
+      feature:    ['Feature',     'The boldest of the set: a ringed portrait on a saturated ground, the name carrying the whole block, contacts paired beneath.'],
+      minimal:    ['Minimal',     'One line of identity, one line of contacts. With no side-by-side cells to collapse, this is the layout least likely to break in an unusual client or at narrow widths.'],
+    };
+    const order = Object.keys(meta);
+
+    // Generic demo content: the marketing gallery is not the place for anyone's
+    // real brand, and the layouts have to stand up on their own.
+    S.name = 'Elena Marsh';
+    S.title = 'Head of Partnerships';
+    S.company = 'Northwind Studio';
+    S.tagline = '';
+    S.logoUrl = DEFAULT_LOGO_URL;   // stock, so the generated mark is used
+    S.headshotUrl = sampleHeadshots[2].url;
+    S.bannerEnabled = false;
+    S.disclaimerEnabled = false;
+    S.contactFields = [
+      {type:'email',   label:'Email',   value:'elena@northwind.com',       enabled:true, removable:false},
+      {type:'mobile',  label:'Mobile',  value:'+44 20 7946 0812',          enabled:true, removable:false},
+      {type:'phone',   label:'Phone',   value:'+44 20 7946 0900',          enabled:true, removable:true},
+      {type:'address', label:'Address', value:'12 Wharf Road, London N1',  enabled:true, removable:false},
+      {type:'website', label:'Website', value:'northwind.com',             enabled:true, removable:false},
+    ];
+    S.socialLinks = [
+      {type:'linkedin',  label:'LinkedIn',  handle:'northwind',  enabled:true},
+      {type:'instagram', label:'Instagram', handle:'northwind',  enabled:true},
+      {type:'x',         label:'X',         handle:'northwind',  enabled:true},
+      {type:'youtube',   label:'YouTube',   handle:'northwind',  enabled:false},
+      {type:'facebook',  label:'Facebook',  handle:'northwind',  enabled:false},
+      {type:'tiktok',    label:'TikTok',    handle:'northwind',  enabled:false},
+    ];
+
+    const cards = order.map(key => {
+      const id = key === 'dark' ? 'darkcard' : key;
+      S.template = id;
+      applyTemplateTheme(id);
+      // Corporate is the one layout that keeps the real brand mark, so it shows
+      // the brand it belongs to rather than the demo identity.
+      const saved = {n:S.name, t:S.title, c:S.company, f:S.contactFields};
+      if (id === 'corporate') {
+        S.name = 'Farrukh Shahzad'; S.title = 'Marketing Manager'; S.company = 'Al Riyady Group';
+        S.contactFields = [
+          {type:'email',   label:'Email',   value:'farrukh@alriyady.ae',                              enabled:true, removable:false},
+          {type:'mobile',  label:'Mobile',  value:'+971 50 274 9769',                                 enabled:true, removable:false},
+          {type:'phone',   label:'Phone',   value:'+971 4 591 8185',                                  enabled:true, removable:true},
+          {type:'address', label:'Address', value:'The Curve Building, Office M 47, Dubai - UAE',     enabled:true, removable:false},
+          {type:'website', label:'Website', value:'alriyadygroup.ae',                                 enabled:true, removable:false},
+        ];
+      }
+      const sig = generateSignaturePreview();
+      S.name = saved.n; S.title = saved.t; S.company = saved.c; S.contactFields = saved.f;
+      return [
+        '        <!-- ' + meta[key][0] + ' -->',
+        '        <div class="tmpl-card">',
+        '          <div class="tmpl-canvas">',
+        '            <div class="sig-frame" style="border:0;padding:0;background:transparent;">',
+        '              ' + sig.replace(/\s*\n\s*/g, ' ').trim(),
+        '            </div>',
+        '          </div>',
+        '          <div class="tmpl-meta">',
+        '            <h2 class="h3">' + meta[key][0] + '</h2>',
+        '            <p class="body-text">' + meta[key][1] + '</p>',
+        '            <div class="tmpl-foot"><a class="btn-secondary btn-sm" href="index.html">Use this template</a></div>',
+        '          </div>',
+        '        </div>',
+        '',
+      ].join('\n');
+    }).join('\n');
+
+    document.getElementById('out').textContent = cards;
+    document.title = 'GEN ' + order.length;
+  })();
+  </script>
+</body>
+</html>

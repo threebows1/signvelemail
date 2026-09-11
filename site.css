@@ -367,3 +367,24 @@ body{margin:0}
 .mail-logo svg{width:20px;height:20px;border-radius:5px;box-shadow:0 0 0 1px rgba(20,18,31,.07)}
 .mail-logo-lg svg{width:30px;height:30px;border-radius:7px}
 .guide-head .mail-logo{margin-right:2px}
+
+/* ── Showcase canvas ──
+   The gallery renders the real signatures, several of which are drawn at up to
+   620px. Letting them compress into a narrower card would misrepresent what the
+   editor produces, so they keep their width and the canvas scrolls instead.
+   Scoped to .tmpl-canvas, so nothing outside the showcase is affected. */
+.tmpl-canvas{justify-content:flex-start}
+.tmpl-canvas > .sig-frame{flex-shrink:0}
+.tmpl-canvas > .sig-frame > table[width]{max-width:none !important}
+
+/* One template per row. Several layouts are drawn up to 620px wide, and a
+   two-column gallery forced them to either wrap or scroll — both of which
+   misrepresent the signature the editor actually produces. */
+.tmpl-gallery{display:grid;grid-template-columns:1fr;gap:20px}
+.tmpl-gallery .tmpl-card{flex-direction:row;align-items:stretch}
+.tmpl-gallery .tmpl-canvas{flex:1;min-width:0;padding:32px 30px}
+.tmpl-gallery .tmpl-meta{flex:0 0 320px;justify-content:center;border-left:1px solid var(--line)}
+@media (max-width:900px){
+  .tmpl-gallery .tmpl-card{flex-direction:column}
+  .tmpl-gallery .tmpl-meta{flex:1 1 auto;border-left:0;border-top:1px solid var(--line)}
+}

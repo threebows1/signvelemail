@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Template contact sheet</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { background:#EFEDF5; font-family:'Helvetica Neue',Arial,sans-serif; margin:0; padding:24px; }
+  #app { display:none !important; }
+  .card { background:#fff; border-radius:14px; padding:22px 24px 26px; margin:0 0 20px; box-shadow:0 2px 10px rgba(0,0,0,.07); }
+  .card h3 { font:600 12px/1 'Helvetica Neue',Arial,sans-serif; letter-spacing:.1em; text-transform:uppercase; color:#8B8898; margin:0 0 16px; }
+  .sig { }
+  #errors { background:#FEE; color:#900; padding:12px; border-radius:8px; margin-bottom:16px; font:13px/1.5 monospace; white-space:pre-wrap; }
+  #errors:empty { display:none; }
+</style>
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="rail" id="rail"></aside>
+    <div class="workspace">
+      <header class="topbar" id="header"></header>
+      <div class="body" id="appBody">
+        <aside class="panel" id="panel"></aside>
+        <main class="stage" id="stage"></main>
+      </div>
+    </div>
+  </div>
+  <div class="export-overlay hidden" id="exportOverlay">
+    <div class="export-panel"><div class="export-panel-header"><h2>Export</h2><button class="export-close" id="exportClose">x</button></div>
+    <pre class="export-code"><code id="exportCode"></code></pre>
+    <div class="export-actions"><button class="btn btn-accent" id="exportCopyBtn">Copy</button></div></div>
+  </div>
+  <div class="auth-overlay hidden" id="authOverlay">
+    <div class="auth-panel"><button class="auth-close" id="authClose">x</button>
+    <h2 class="auth-title" id="authTitle">Sign in</h2><p class="auth-sub" id="authSub">.</p>
+    <label class="auth-label" for="authEmail">Email</label><input class="input" type="email" id="authEmail">
+    <label class="auth-label" for="authPassword">Password</label><input class="input" type="password" id="authPassword">
+    <div class="auth-msg hidden" id="authMsg"></div>
+    <button class="btn btn-accent auth-submit" id="authSubmit">Go</button>
+    <div class="auth-alt"><button class="auth-link" id="authToggle">a</button><button class="auth-link" id="authForgot">b</button></div></div>
+  </div>
+
+  <div id="errors"></div>
+  <div id="sheet"></div>
+
+  <script>
+    window.__errs = [];
+    window.onerror = (m, s, l, c) => { window.__errs.push(m + ' @' + l + ':' + c); };
+    try { localStorage.clear(); } catch (e) {}
+  </script>
+  <script src="../config.js"></script>
+  <script src="../cloud.js"></script>
+  <script src="../app.js"></script>
+  <script>
+    (function () {
+      const out = [];
+      const order = ['corporate','spotlight','split','directory','accentbar','colorblock','darkcard',
+                     'connect','ribbon','brandmark','inline','labelled','band','editorial','grid','feature','minimal'];
+      const slice = location.hash.replace('#','');
+      const shown = slice === 'b' ? order.slice(8) : slice === 'a' ? order.slice(0,8) : order;
+      // Give the photo layouts something to show, and turn on a campaign so the
+      // banner paths are exercised too.
+      S.bannerEnabled = true;
+      S.bannerMessage = 'Email campaign';
+      S.bannerSubtext = 'Lorem ipsum sit dolor sat amet adipiscing';
+      S.ctaLabel = 'Learn more';
+      S.ctaUrl = 'https://example.com';
+      S.disclaimerEnabled = false;
+      S.name = 'Zoe Brown';
+      S.title = 'Head of Marketing';
+      S.company = 'Northwind Studio';
+      S.contactFields = [
+        {type:'email',   label:'Email',   value:'zoe@northwind.com',        enabled:true, removable:false},
+        {type:'mobile',  label:'Mobile',  value:'+1 234 567 890',            enabled:true, removable:false},
+        {type:'phone',   label:'Phone',   value:'+1 646 520 1057',           enabled:true, removable:true},
+        {type:'address', label:'Address', value:'4665 Elm Drive, New York',  enabled:true, removable:false},
+        {type:'website', label:'Website', value:'northwind.com',             enabled:true, removable:false},
+      ];
+
+      shown.forEach(id => {
+        S.template = id;
+        applyTemplateTheme(id);
+        let html = '';
+        try { html = generateSignaturePreview(); }
+        catch (e) { window.__errs.push(id + ': ' + e.message); html = '<b style="color:red">' + id + ' threw: ' + e.message + '</b>'; }
+        out.push('<div class="card"><h3>' + id + '</h3><div class="sig signature-container">' + html + '</div></div>');
+      });
+      document.getElementById('sheet').innerHTML = out.join('');
+
+      // Structural checks that a screenshot cannot catch.
+      const probe = document.createElement('div');
+      order.forEach(id => {
+        S.template = id;
+        applyTemplateTheme(id);
+        probe.innerHTML = generateSignaturePreview();
+        if (probe.querySelector('td > td')) window.__errs.push(id + ': nested <td>');
+        if (probe.querySelector('table table table table table table')) window.__errs.push(id + ': table nesting > 5 deep');
+        if (!probe.textContent.toLowerCase().includes('zoe brown')) window.__errs.push(id + ': name missing from output');
+        if (/undefined|NaN|\[object/.test(probe.innerHTML)) window.__errs.push(id + ': undefined/NaN in markup');
+      });
+      S.template = 'corporate';
+
+      document.getElementById('errors').textContent =
+        window.__errs.length ? 'ERRORS (' + window.__errs.length + '):\n' + window.__errs.join('\n') : '';
+      document.title = window.__errs.length ? 'FAIL ' + window.__errs.length : 'PASS';
+    })();
+  </script>
+</body>
+</html>

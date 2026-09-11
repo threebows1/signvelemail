@@ -40,13 +40,76 @@ const contactLetters = {email:'E',mobile:'M',phone:'T',address:'A',website:'W',o
 // generator tell "the user picked this" apart from "nobody has chosen yet".
 const DEFAULT_LOGO_URL = 'https://alriyady.ae/wp-content/uploads/2023/10/Al-Riyady-Corporate-Services-Proerties-Logo-400x163.png';
 
-// A colour per layout, so the templates read as a varied set. Chosen to sit
-// comfortably beside the gold accent without competing with it.
-const demoLogoPalette = {
-  spotlight:'#4F46E5', split:'#0D9488', accentbar:'#059669', darkcard:'#0EA5E9',
-  colorblock:'#E11D48', 'side-by-side':'#7C3AED', stacked:'#D97706',
-  card:'#0891B2', minimal:'#475569',
+// ───────────── Template themes ─────────────
+// Each layout was drawn against a particular palette and a particular set of
+// treatments, and reads as a different design because of both. Switching
+// template loads the whole record when "Match template design" is on, which is
+// what makes the gallery look like the set it was drawn from rather than
+// seventeen variations on one colour.
+//
+// Everything here is a starting point, never a constraint: every field maps to
+// a control in the Design panel, so a loaded theme can be overridden field by
+// field afterwards and the override survives until the template changes again.
+//
+//   accent   – theme colour: icons, rules, links
+//   accent2  – second colour: chips, bands, campaign cards
+//   panel    – null leaves the background panel alone; a colour switches it on
+//   heading  – display face for the name, '' inherits the body font
+//   social   – social treatment (chip | circle | filled | plain | outline | glyph)
+//   icons    – contact treatment (circle | filled | icons | letters | labels)
+//   cols     – contact columns, 1 or 2
+//   role     – job-title treatment (plain | caps | chip | pill)
+//   caps     – name in capitals
+//   track    – name letter-spacing, in hundredths of an em
+//   shape    – headshot shape, where the layout depends on one
+//   ring     – headshot ring width in px
+const templateThemes = {
+  // The brand layout. Left on Al Riyady gold, and never re-themed.
+  corporate:  {accent:'#C9962B', accent2:'#141220', panel:null, social:'circle', icons:'circle',  cols:1, role:'plain', caps:false, track:0},
+  spotlight:  {accent:'#2563EB', accent2:'#141220', panel:null, social:'plain',  icons:'icons',   cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
+  split:      {accent:'#2E7D74', accent2:'#1F3B37', panel:null, social:'filled', icons:'letters', cols:1, role:'plain', caps:false, track:0},
+  directory:  {accent:'#12A594', accent2:'#0E3B36', panel:null, social:'circle', icons:'letters', cols:1, role:'plain', caps:false, track:0},
+  accentbar:  {accent:'#2FBF71', accent2:'#14532D', panel:null, social:'filled', icons:'letters', cols:1, role:'plain', caps:false, track:0},
+  colorblock: {accent:'#E8342A', accent2:'#1A1A1A', panel:null, social:'glyph',  icons:'letters', cols:2, role:'plain', caps:true,  track:14},
+  darkcard:   {accent:'#3ED6A0', accent2:'#22365C', panel:null, social:'glyph',  icons:'letters', cols:2, role:'chip',  caps:false, track:0,  shape:'rounded'},
+  connect:    {accent:'#1B4FA0', accent2:'#123B7A', panel:null, social:'filled', icons:'icons',   cols:1, role:'caps',  caps:false, track:0,  shape:'circle'},
+  ribbon:     {accent:'#9B7BE8', accent2:'#2C3142', panel:null, social:'filled', icons:'filled',  cols:1, role:'chip',  caps:true,  track:16, shape:'circle', ring:5},
+  brandmark:  {accent:'#2D7FF9', accent2:'#123B7A', panel:null, social:'glyph',  icons:'icons',   cols:1, role:'plain', caps:false, track:0},
+  inline:     {accent:'#2D7FF9', accent2:'#123B7A', panel:null, social:'glyph',  icons:'icons',   cols:1, role:'plain', caps:false, track:0},
+  labelled:   {accent:'#E8553A', accent2:'#7A2415', panel:null, social:'filled', icons:'labels',  cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
+  band:       {accent:'#2563EB', accent2:'#1B49B8', panel:null, social:'filled', icons:'icons',   cols:1, role:'plain', caps:true,  track:2,  shape:'rounded'},
+  editorial:  {accent:'#C8B99C', accent2:'#F5F1E6', panel:'#1E2B4D', social:'circle', icons:'icons', cols:2, role:'plain', caps:true, track:10, shape:'square', heading:'Georgia'},
+  grid:       {accent:'#3FCF8E', accent2:'#111614', panel:'#0D0F0E', social:'filled', icons:'labels', cols:2, role:'caps', caps:false, track:-1, shape:'circle'},
+  feature:    {accent:'#8FCBFF', accent2:'#0E4FA8', panel:'#1668D8', social:'filled', icons:'icons', cols:2, role:'pill', caps:false, track:0, shape:'circle', ring:4},
+  minimal:    {accent:'#475569', accent2:'#1F2937', panel:null, social:'plain',  icons:'icons',   cols:1, role:'plain', caps:false, track:0},
 };
+
+// Falls back to the theme accent, so a layout added later still gets a mark.
+function themeOf(id) { return templateThemes[id] || templateThemes.minimal; }
+
+// ───────────── Sample images ─────────────
+// Real hosted URLs, not data: URIs — these are what a signature needs to
+// survive being emailed, and they let someone see a photo layout as it was
+// designed before they have uploaded anything of their own.
+const sampleHeadshots = [
+  {id:'h1', label:'Zoe',    url:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=faces'},
+  {id:'h2', label:'Marco',  url:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces'},
+  {id:'h3', label:'Amelia', url:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=faces'},
+  {id:'h4', label:'Daniel', url:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=faces'},
+  {id:'h5', label:'Priya',  url:'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=400&fit=crop&crop=faces'},
+  {id:'h6', label:'James',  url:'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400&h=400&fit=crop&crop=faces'},
+  {id:'h7', label:'Nadia',  url:'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=faces'},
+  {id:'h8', label:'Oliver', url:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=faces'},
+];
+
+const sampleBanners = [
+  {id:'b1', label:'Travel',  url:'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1040&h=260&fit=crop'},
+  {id:'b2', label:'Desk',    url:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1040&h=260&fit=crop'},
+  {id:'b3', label:'Team',    url:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1040&h=260&fit=crop'},
+  {id:'b4', label:'Meeting', url:'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1040&h=260&fit=crop'},
+];
+
+const DEFAULT_HEADSHOT_URL = sampleHeadshots[0].url;
 const contactIcons = {email:icons.email,mobile:icons.mobile,phone:icons.landline,website:icons.globe,address:icons.mappin,office:icons.building,pronouns:icons.user,booking:icons.calendar};
 const socialIcons = {linkedin:icons.linkedin,x:icons.x,instagram:icons.instagram,youtube:icons.youtube,facebook:icons.facebook,tiktok:icons.tiktok};
 
@@ -139,15 +202,38 @@ const S = {
   blockSpacing: 8,
   dividerEnabled: true,
   dividerWidth: 2,
+  // 0 means "as wide as the content needs". Anything else caps the signature so
+  // it cannot blow out a narrow reading pane.
+  panelWidth: 0,
+  // Carry a layout's palette across when the template changes. Off keeps your
+  // own colours whatever you switch to.
+  matchTemplateTheme: true,
 
   font: 'Helvetica Neue',
+  // Empty inherits the body font. A separate display face is what makes the
+  // editorial layouts read differently from the rest.
+  headingFont: '',
   bodySize: 14,
   fontWeight: 'regular',
   textColor: '#4A4A48',
   nameColor: '#4A4A48',
   titleColor: '#666666',
 
+  // Name treatment, shared by every layout that prints a name.
+  nameScale: 100,
+  nameUppercase: false,
+  nameTracking: 0,
+  // How the job title is drawn: plain text, a rounded chip, a full pill, or
+  // wide-tracked capitals.
+  roleStyle: 'plain',
+
   accentColor: '#C9962B',
+  // Chips, bands and campaign cards. Distinct from the theme colour so a
+  // layout can carry two without either being guessed from the other.
+  accent2Color: '#141220',
+
+  // Contacts in one column or two. Two is what the wide layouts were drawn for.
+  contactColumns: 1,
 
   bgEnabled: false,
   bgColor: '#14121F',
@@ -160,10 +246,17 @@ const S = {
   logoName: 'Al Riyady Group',
   logoHeight: 40,
 
-  headshotUrl: null,
-  headshotName: '',
-  headshotShape: 'square',
+  // A sample portrait ships by default so the photo layouts look like the
+  // designs they were drawn from before anyone uploads anything.
+  headshotUrl: DEFAULT_HEADSHOT_URL,
+  headshotName: 'Sample portrait',
+  headshotShape: 'circle',
   headshotZoom: 100,
+  // Ring drawn around the portrait. 0 is no ring.
+  photoRing: 0,
+  photoRingColor: '#FFFFFF',
+  // 0 follows the per-template default; anything else overrides it.
+  headshotSize: 0,
 
   uploadError: '',
   storageError: '',
@@ -222,7 +315,8 @@ const S = {
 // the incoming one: your previous edits if you've been there before, otherwise
 // the preset, otherwise the brand default.
 const SCOPED_KEYS = [
-  'template','alignment','font','bodySize','fontWeight','textColor','accentColor',
+  'template','alignment','font','headingFont','bodySize','fontWeight','textColor','accentColor',
+  'accent2Color','nameScale','nameUppercase','nameTracking','roleStyle','contactColumns','panelWidth',
   'contactIconMode','socialStyle','bannerEnabled','bannerMessage','ctaLabel','ctaUrl',
   'ctaStyle','bannerSubtext','bgEnabled','bgColor','bgPadding','bgRadius','disclaimerEnabled','disclaimerPreset','disclaimerText',
 ];
@@ -241,7 +335,7 @@ const scopePresets = {
     template:'minimal', contactIconMode:'labels', socialStyle:'plain', bannerEnabled:false,
   },
   executive: {
-    template:'card', fontWeight:'semibold', socialStyle:'outline', bannerEnabled:false,
+    template:'editorial', fontWeight:'semibold', socialStyle:'outline', bannerEnabled:false,
   },
 };
 
@@ -424,24 +518,59 @@ function renderSectionContent(i) {
 }
 
 // ── Section 0: Templates & layout ──
+// Each card is a miniature of the layout drawn in its own theme colour, so the
+// grid reads as a set of designs rather than seventeen grey wireframes.
+function tmplPreviews() {
+  const A = id => themeOf(id).accent;
+  const B = id => themeOf(id).accent2;
+  const bar = (w, h, c, mb) => `<div style="width:${w}px;height:${h}px;background:${c||'var(--tmpl-ink)'};border-radius:1px;${mb?`margin-bottom:${mb}px`:''}"></div>`;
+  const dot = (s, c) => `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${c};flex-shrink:0"></div>`;
+  const rows = (n, w, c) => Array.from({length:n}, (_, i) => bar(w - i % 2 * 4, 2, c, 2)).join('');
+  return {
+    corporate: `<div style="width:40px">${bar(26,3,0,2)}${bar(18,2,0,3)}<div style="height:2px;background:${A('corporate')};margin-bottom:3px"></div><div style="display:flex;gap:3px"><div style="width:9px;height:9px;background:var(--tmpl-ink);border-radius:1px"></div><div>${rows(3,22)}</div></div></div>`,
+    spotlight: `<div style="width:42px"><div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">${dot(14,'var(--tmpl-ink)')}<div style="width:1px;height:14px;background:var(--border)"></div><div>${bar(18,3,0,2)}${bar(12,2,A('spotlight'))}</div></div><div style="height:12px;background:${B('spotlight')};border-radius:3px"></div></div>`,
+    split: `<div style="display:flex;gap:4px;align-items:center">${dot(12,A('split'))}<div>${bar(15,3,0,2)}${bar(10,2,A('split'))}</div><div style="width:1px;height:16px;background:var(--border)"></div><div>${rows(4,14)}</div></div>`,
+    directory: `<div style="display:flex;gap:5px;align-items:center"><div>${bar(17,3,A('directory'),2)}${bar(11,2,0,4)}${bar(20,4,A('directory'))}</div><div style="width:1px;height:18px;background:var(--border)"></div><div>${rows(3,14)}<div style="display:flex;gap:2px;margin-top:2px">${dot(5,A('directory'))}${dot(5,A('directory'))}${dot(5,A('directory'))}</div></div></div>`,
+    accentbar: `<div style="display:flex;gap:5px"><div style="width:3px;background:${A('accentbar')};border-radius:1px"></div><div>${bar(20,3,A('accentbar'),2)}${bar(15,2,0,3)}${rows(3,18)}<div style="display:flex;gap:2px;margin-top:2px">${dot(5,A('accentbar'))}${dot(5,'#E4A11B')}${dot(5,'#D1568B')}</div></div></div>`,
+    colorblock: `<div style="display:flex;gap:5px;align-items:stretch"><div style="width:16px;height:26px;background:${A('colorblock')};border-radius:2px"></div><div style="padding-top:2px">${bar(22,3,0,3)}${bar(14,2,0,3)}<div style="display:flex;gap:4px">${rows(3,10)}<div>${rows(3,10)}</div></div></div></div>`,
+    darkcard: `<div style="background:${B('darkcard')};border-radius:4px;padding:5px;display:flex;gap:4px;align-items:center;width:44px">${dot(13,'#4A5B7E')}<div>${bar(10,2,A('darkcard'),2)}${bar(19,3,'#fff',2)}<div style="display:flex;gap:3px">${bar(8,2,'#7C89A8')}${bar(8,2,'#7C89A8')}</div></div></div>`,
+    connect: `<div style="width:46px"><div style="display:flex;gap:4px;align-items:center;margin-bottom:3px">${dot(14,'var(--tmpl-ink)')}<div>${bar(16,3,0,2)}${rows(2,14)}</div><div style="margin-left:auto">${dot(6,A('connect'))}</div></div><div style="height:7px;background:${A('connect')};border-radius:2px"></div></div>`,
+    ribbon: `<div style="display:flex;gap:4px;align-items:center"><div style="width:16px;height:16px;border-radius:50%;border:2px solid ${A('ribbon')};background:var(--tmpl-ink);box-sizing:border-box"></div><div>${bar(20,3,A('ribbon'),2)}${bar(12,3,B('ribbon'),2)}${rows(2,18)}</div><div style="background:${A('ribbon')};border-radius:9px;padding:2px 3px;display:flex;gap:2px">${dot(4,'#fff')}${dot(4,'#fff')}</div></div>`,
+    brandmark: `<div style="display:flex;gap:5px"><div>${dot(11,A('brandmark'))}${bar(13,3,A('brandmark'),0)}</div><div>${bar(18,3,0,2)}${bar(12,2,0,3)}${rows(3,20)}</div></div>`,
+    inline: `<div style="width:46px"><div style="display:flex;gap:4px;align-items:center;margin-bottom:3px">${dot(11,A('inline'))}<div>${bar(16,3,0,2)}${bar(11,2)}</div></div><div style="display:flex;gap:3px;margin-bottom:3px">${bar(12,2,A('inline'))}${bar(12,2,A('inline'))}${bar(12,2,A('inline'))}</div><div style="height:1px;background:var(--border);margin-bottom:3px"></div>${bar(20,2)}</div>`,
+    labelled: `<div style="display:flex;gap:5px;align-items:center">${dot(18,A('labelled'))}<div>${bar(18,3,A('labelled'),3)}<div style="display:flex;gap:3px">${rows(3,8,A('labelled'))}<div>${rows(3,14)}</div></div></div></div>`,
+    band: `<div style="width:46px"><div style="display:flex;margin-bottom:3px">${bar(12,4,A('band'))}<div style="margin-left:auto;display:flex;gap:2px">${dot(5,A('band'))}${dot(5,A('band'))}</div></div><div style="height:10px;background:${A('band')};border-radius:2px;margin-bottom:3px"></div><div style="display:flex;gap:4px">${rows(3,14)}<div style="margin-left:auto">${dot(12,'var(--tmpl-ink)')}</div></div></div>`,
+    editorial: `<div style="background:${themeOf('editorial').panel};border-radius:3px;padding:5px;width:44px;display:flex;gap:4px"><div><div style="font:700 7px Georgia,serif;color:${A('editorial')};letter-spacing:.5px;margin-bottom:2px">Aa</div><div style="height:1px;background:${A('editorial')};margin-bottom:3px"></div>${rows(2,16,'#8E97AD')}</div><div style="width:12px;height:22px;background:#7F8CA6;border-radius:2px;flex-shrink:0"></div></div>`,
+    grid: `<div style="background:${themeOf('grid').panel};border-radius:3px;padding:5px;width:44px"><div style="display:flex;gap:4px;align-items:center">${bar(20,4,'#fff',0)}<div style="margin-left:auto">${dot(12,'#2A3B33')}</div></div><div style="height:1px;background:${A('grid')};margin:4px 0"></div><div style="display:flex;gap:4px">${rows(2,10,'#5F6E67')}<div>${rows(2,10,'#5F6E67')}</div></div></div>`,
+    feature: `<div style="background:${themeOf('feature').panel};border-radius:3px;padding:5px;width:44px;display:flex;gap:4px;align-items:center"><div style="width:15px;height:15px;border-radius:50%;border:2px solid #fff;background:#5B9BEA;box-sizing:border-box;flex-shrink:0"></div><div>${bar(18,4,'#fff',2)}${bar(10,3,A('feature'),2)}<div style="display:flex;gap:3px">${bar(7,2,'#A9CCF4')}${bar(7,2,'#A9CCF4')}</div></div></div>`,
+    minimal: `<div>${bar(34,3,0,3)}${bar(24,2)}</div>`,
+  };
+}
+
 function renderTemplates() {
-  const tmpls = [
-    {id:'colorblock', label:'Colour block', preview:`<div style="display:flex;gap:5px;align-items:stretch"><div style="width:14px;height:22px;background:var(--accent);border-radius:2px"></div><div style="padding-top:2px"><div class="tmpl-block" style="width:22px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:15px;height:2px;margin-bottom:3px"></div><div class="tmpl-block" style="width:20px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:17px;height:2px"></div></div></div>`},
-    {id:'darkcard', label:'Dark card', preview:`<div style="background:#1B2A4A;border-radius:4px;padding:5px;display:flex;gap:4px;align-items:center;width:42px"><div style="width:11px;height:11px;border-radius:50%;background:#4A5B7E;flex-shrink:0"></div><div><div style="width:18px;height:3px;background:#fff;border-radius:1px;margin-bottom:2px"></div><div style="width:13px;height:2px;background:var(--accent);border-radius:1px"></div></div></div>`},
-    {id:'split', label:'Split', preview:`<div style="display:flex;gap:4px;align-items:center"><div class="tmpl-block" style="width:11px;height:11px"></div><div><div class="tmpl-block" style="width:16px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:11px;height:2px"></div></div><div style="width:1px;height:15px;background:var(--border)"></div><div><div class="tmpl-block" style="width:15px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:15px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:12px;height:2px"></div></div></div>`},
-    {id:'accentbar', label:'Accent bar', preview:`<div style="display:flex;gap:5px;align-items:center"><div style="width:2px;height:20px;background:var(--accent);border-radius:1px"></div><div><div class="tmpl-block" style="width:20px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:15px;height:2px;margin-bottom:3px"></div><div class="tmpl-block" style="width:22px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:18px;height:2px"></div></div><div class="tmpl-block" style="width:10px;height:10px"></div></div>`},
-    {id:'spotlight', label:'Spotlight', preview:`<div style="width:40px"><div style="display:flex;gap:4px;align-items:center;margin-bottom:4px"><div class="tmpl-block" style="width:13px;height:13px;border-radius:50%"></div><div style="width:1px;height:13px;background:var(--border)"></div><div><div class="tmpl-block" style="width:18px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:13px;height:2px"></div></div></div><div style="height:11px;background:#141220;border-radius:3px"></div></div>`},
-    {id:'corporate', label:'Corporate', preview:`<div style="width:38px"><div class="tmpl-block" style="width:26px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:18px;height:2px;margin-bottom:3px"></div><div style="height:2px;background:var(--accent);margin-bottom:3px"></div><div style="display:flex;gap:3px;align-items:flex-start"><div class="tmpl-block" style="width:9px;height:9px"></div><div><div class="tmpl-block" style="width:22px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:22px;height:2px;margin-bottom:2px"></div><div class="tmpl-block" style="width:16px;height:2px"></div></div></div></div>`},
-    {id:'side-by-side', label:'Side by side', preview:`<div style="display:flex;gap:3px;align-items:center"><div class="tmpl-block" style="width:16px;height:16px;border-radius:50%"></div><div><div class="tmpl-block" style="width:28px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:20px;height:3px"></div></div></div>`},
-    {id:'stacked', label:'Stacked', preview:`<div style="text-align:center"><div class="tmpl-block" style="width:16px;height:16px;border-radius:50%;margin:0 auto 3px"></div><div class="tmpl-block" style="width:28px;height:3px;margin:0 auto 2px"></div><div class="tmpl-block" style="width:20px;height:3px;margin:0 auto"></div></div>`},
-    {id:'card', label:'Card', preview:`<div style="border:1px solid var(--border);border-radius:3px;padding:4px;text-align:center"><div class="tmpl-block" style="width:28px;height:3px;margin:0 auto 2px"></div><div class="tmpl-block" style="width:20px;height:3px;margin:0 auto"></div></div>`},
-    {id:'minimal', label:'Minimal', preview:`<div><div class="tmpl-block" style="width:34px;height:3px;margin-bottom:2px"></div><div class="tmpl-block" style="width:24px;height:2px"></div></div>`},
-  ];
+  const P = tmplPreviews();
+  const labels = {
+    corporate:'Corporate', spotlight:'Spotlight', split:'Split', directory:'Directory',
+    accentbar:'Accent bar', colorblock:'Colour block', darkcard:'Dark card', connect:'Connect bar',
+    ribbon:'Ribbon', brandmark:'Brandmark', inline:'Inline', labelled:'Labelled',
+    band:'Banner band', editorial:'Editorial', grid:'Grid', feature:'Feature', minimal:'Minimal',
+  };
+  const order = ['corporate','spotlight','split','directory','accentbar','colorblock','darkcard',
+                 'connect','ribbon','brandmark','inline','labelled','band','editorial','grid','feature','minimal'];
+
   let h = `<div class="field-row"><label class="field-label">Template</label><div class="template-grid">`;
-  tmpls.forEach(t => {
-    h += `<div class="template-card${S.template===t.id?' active':''}" data-tmpl="${t.id}"><div class="tmpl-preview">${t.preview}</div><div class="tmpl-label">${t.label}</div></div>`;
+  order.forEach(id => {
+    h += `<div class="template-card${S.template===id?' active':''}" data-tmpl="${id}"><div class="tmpl-preview">${P[id]||''}</div><div class="tmpl-label">${labels[id]}</div></div>`;
   });
   h += `</div></div>`;
+
+  h += `<div class="opt-list">
+    <div class="opt-row">
+      <span class="opt-label">Match template design<span class="opt-hint">Loads each layout's colours, icon style and name treatment when you switch. Every one stays editable afterwards.</span></span>
+      <span class="opt-control"><div class="toggle-switch${S.matchTemplateTheme?' on':''}" data-action="toggleMatchTheme"></div></span>
+    </div>
+  </div>`;
+  h += `<div class="add-chips"><button class="chip accent" data-action="applyTheme">Reset to this template's design</button></div>`;
 
   h += `<div class="field-row"><label class="field-label">Alignment</label><div class="toggle-group" data-action="alignment">
     <button class="${S.alignment==='left'?'active':''}" data-val="left">Left</button>
@@ -449,7 +578,40 @@ function renderTemplates() {
     <button class="${S.alignment==='right'?'active':''}" data-val="right">Right</button>
   </div></div>`;
 
+  h += `<div class="field-row"><label class="field-label">Maximum width</label><div class="slider-row"><input type="range" min="0" max="720" step="20" value="${S.panelWidth}" data-bind="panelWidth"><span class="slider-val">${S.panelWidth ? S.panelWidth + 'px' : 'Auto'}</span></div></div>`;
+
   return h;
+}
+
+
+// Loads a layout's palette into the live state. Corporate is the one layout
+// that keeps its own colours whatever else happens — it is the brand signature,
+// not a design in the gallery.
+function applyTemplateTheme(id) {
+  const t = templateThemes[id];
+  if (!t) return;
+  setAccent(t.accent);
+  S.accent2Color = t.accent2;
+  S.headingFont = t.heading || '';
+  if (t.social) S.socialStyle = t.social;
+  if (t.icons) S.contactIconMode = t.icons;
+  if (t.cols) S.contactColumns = t.cols;
+  if (t.role) S.roleStyle = t.role;
+  if (t.shape) S.headshotShape = t.shape;
+  S.nameUppercase = !!t.caps;
+  S.nameTracking = t.track || 0;
+  S.photoRing = t.ring || 0;
+  // A layout drawn on a dark ground needs the panel on to look like itself.
+  // One drawn on white turns it back off — but only if the panel colour is one
+  // a theme set, so a colour the user chose themselves is never thrown away.
+  if (t.panel) {
+    S.bgEnabled = true;
+    S.bgColor = t.panel;
+    if (!S.bgPadding) S.bgPadding = 28;
+    if (!S.bgRadius) S.bgRadius = 14;
+  } else if (S.bgEnabled && Object.keys(templateThemes).some(k => templateThemes[k].panel === S.bgColor)) {
+    S.bgEnabled = false;
+  }
 }
 
 // Changing the theme colour drags the icon colours along, but only while they
@@ -459,6 +621,15 @@ function setAccent(next) {
   if (S.iconColor === prev) S.iconColor = next;
   if (S.socialIconColor === prev) S.socialIconColor = next;
   S.accentColor = next;
+}
+
+// Sliders do not all measure pixels. Two of them mean "follow the template"
+// at zero, and showing "0px" there reads as a broken control.
+function sliderLabel(bind, v) {
+  if (bind === 'nameTracking') return (v / 100).toFixed(2) + 'em';
+  if (bind === 'nameScale' || bind.includes('Zoom')) return v + '%';
+  if (bind === 'panelWidth' || bind === 'headshotSize') return v ? v + 'px' : 'Auto';
+  return v + 'px';
 }
 
 // A labelled row with a free colour picker on the right, matching the compact
@@ -532,8 +703,26 @@ function renderDesign() {
   h += `<div class="field-row"><label class="field-label">Font family</label><select class="input" data-bind="font">`;
   fonts.forEach(f => { h += `<option value="${f}"${S.font===f?' selected':''}>${f}</option>`; });
   h += `</select></div>`;
+  h += `<div class="field-row"><label class="field-label">Display font<span class="field-hint">Used for the name. Falls back to the body font.</span></label><select class="input" data-bind="headingFont">`;
+  h += `<option value=""${S.headingFont===''?' selected':''}>Same as body</option>`;
+  fonts.forEach(f => { h += `<option value="${f}"${S.headingFont===f?' selected':''}>${f}</option>`; });
+  h += `</select></div>`;
   h += `<div class="field-row"><label class="field-label">Font size</label><div class="slider-row"><input type="range" min="11" max="18" value="${S.bodySize}" data-bind="bodySize"><span class="slider-val">${S.bodySize}px</span></div></div>`;
   h += `<div class="field-row"><label class="field-label">Weight</label><div class="toggle-group" data-action="fontWeight"><button class="${S.fontWeight==='regular'?'active':''}" data-val="regular">Regular</button><button class="${S.fontWeight==='semibold'?'active':''}" data-val="semibold">Semibold</button></div></div>`;
+
+  h += `<div class="opt-group">Name &amp; role</div>`;
+  h += `<div class="field-row"><label class="field-label">Name size</label><div class="slider-row"><input type="range" min="70" max="200" step="5" value="${S.nameScale}" data-bind="nameScale"><span class="slider-val">${S.nameScale}%</span></div></div>`;
+  h += `<div class="field-row"><label class="field-label">Letter spacing</label><div class="slider-row"><input type="range" min="-3" max="24" value="${S.nameTracking}" data-bind="nameTracking"><span class="slider-val">${(S.nameTracking/100).toFixed(2)}em</span></div></div>`;
+  h += `<div class="opt-list"><div class="opt-row">
+    <span class="opt-label">Name in capitals</span>
+    <span class="opt-control"><div class="toggle-switch${S.nameUppercase?' on':''}" data-action="toggleNameCaps"></div></span>
+  </div></div>`;
+  h += `<div class="field-row"><label class="field-label">Role style</label><div class="toggle-group" data-action="roleStyle">
+    <button class="${S.roleStyle==='plain'?'active':''}" data-val="plain">Plain</button>
+    <button class="${S.roleStyle==='caps'?'active':''}" data-val="caps">Tracked</button>
+    <button class="${S.roleStyle==='chip'?'active':''}" data-val="chip">Chip</button>
+    <button class="${S.roleStyle==='pill'?'active':''}" data-val="pill">Pill</button>
+  </div></div>`;
 
   h += `<div class="opt-group">Colour</div>`;
   h += `<div class="field-row"><label class="field-label">Theme presets</label><div class="swatch-row">`;
@@ -541,6 +730,7 @@ function renderDesign() {
   h += `</div></div>`;
   h += `<div class="opt-list">
     ${colorRow('Theme colour', 'accentColor')}
+    ${colorRow('Second colour', 'accent2Color')}
     ${colorRow('Name colour', 'nameColor')}
     ${colorRow('Title colour', 'titleColor')}
     ${colorRow('Text colour', 'textColor')}
@@ -565,7 +755,11 @@ function renderDesign() {
     h += `<div class="inline-note">Solid panel colours survive in email. Background <em>images</em> do not — Gmail and Outlook strip them.</div>`;
   }
 
-  h += `<div class="opt-group">Contact icons</div>`;
+  h += `<div class="opt-group">Contact details</div>`;
+  h += `<div class="field-row"><label class="field-label">Columns</label><div class="toggle-group" data-action="contactColumns">
+    <button class="${S.contactColumns===1?'active':''}" data-val="1">One</button>
+    <button class="${S.contactColumns===2?'active':''}" data-val="2">Two</button>
+  </div></div>`;
   h += `<div class="opt-list"><div class="opt-row">
     <span class="opt-label">Show icons</span>
     <span class="opt-control"><div class="toggle-switch${S.showContactIcons?' on':''}" data-action="toggleContactIcons"></div></span>
@@ -598,11 +792,16 @@ function renderDesign() {
 }
 
 // ── Section 2: Logo & headshot ──
+// Which layouts actually read each image. Kept beside the templates rather than
+// inside the panel, because the signature builder needs the same answer.
+const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','card'];
+const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature'];
+
 function renderMedia() {
   // Not every layout has a slot for both images — say so rather than letting
   // someone upload a photo and wonder why nothing changed.
-  const usesLogo = ['corporate','side-by-side','stacked','card'].includes(S.template);
-  const usesHeadshot = ['side-by-side','stacked','card'].includes(S.template);
+  const usesLogo = LOGO_TEMPLATES.includes(S.template);
+  const usesHeadshot = PHOTO_TEMPLATES.includes(S.template);
   const notUsed = (what) => `<div class="inline-note">The <strong>${esc(S.template)}</strong> template has no ${what} slot. These settings are saved, and apply as soon as you pick a layout that uses one.</div>`;
 
   let h = `<div class="opt-group">Logo</div>`;
@@ -613,7 +812,18 @@ function renderMedia() {
   h += `<div class="opt-group">Headshot</div>`;
   if (!usesHeadshot) h += notUsed('headshot');
   h += `<div class="field-row">${renderUploader('headshot', 'A square image crops best. Max 1&nbsp;MB.')}</div>`;
+  // Hosted sample portraits. Picking one is the quickest way to see a photo
+  // layout as it was designed, and because they are real URLs they survive
+  // being emailed — unlike anything uploaded before signing in.
+  h += `<div class="field-row"><label class="field-label">Sample portraits<span class="field-hint">Hosted images, safe to send. Swap in your own any time.</span></label><div class="sample-row">`;
+  sampleHeadshots.forEach(s => {
+    h += `<button class="sample-thumb${S.headshotUrl===s.url?' active':''}" data-action="sampleHeadshot" data-url="${esc(s.url)}" data-label="${esc(s.label)}" title="${esc(s.label)}"><img src="${esc(s.url)}" alt="${esc(s.label)}" loading="lazy"></button>`;
+  });
+  h += `</div></div>`;
   h += `<div class="field-row"><label class="field-label">Shape</label><div class="toggle-group" data-action="headshotShape"><button class="${S.headshotShape==='circle'?'active':''}" data-val="circle">Circle</button><button class="${S.headshotShape==='rounded'?'active':''}" data-val="rounded">Rounded</button><button class="${S.headshotShape==='square'?'active':''}" data-val="square">Square</button></div></div>`;
+  h += `<div class="field-row"><label class="field-label">Photo size<span class="field-hint">Auto follows the template.</span></label><div class="slider-row"><input type="range" min="0" max="140" step="4" value="${S.headshotSize}" data-bind="headshotSize"><span class="slider-val">${S.headshotSize ? S.headshotSize + 'px' : 'Auto'}</span></div></div>`;
+  h += `<div class="field-row"><label class="field-label">Ring width</label><div class="slider-row"><input type="range" min="0" max="10" value="${S.photoRing}" data-bind="photoRing"><span class="slider-val">${S.photoRing}px</span></div></div>`;
+  if (S.photoRing) h += `<div class="opt-list">${colorRow('Ring colour', 'photoRingColor')}</div>`;
   h += `<div class="field-row"><label class="field-label">Crop / zoom</label><div class="slider-row"><input type="range" min="100" max="200" value="${S.headshotZoom}" data-bind="headshotZoom"><span class="slider-val">${S.headshotZoom}%</span></div></div>`;
   return h;
 }
@@ -667,6 +877,12 @@ function renderBanner() {
     h += `<div class="field-row"><label class="field-label">Banner message</label><input class="input" value="${esc(S.bannerMessage)}" data-bind="bannerMessage"></div>`;
     h += `<div class="field-row"><label class="field-label">Banner subtext</label><input class="input" value="${esc(S.bannerSubtext)}" data-bind="bannerSubtext" placeholder="Optional second line"></div>`;
     h += `<div class="field-row"><label class="field-label">Banner image URL</label><input class="input" type="url" value="${esc(S.bannerImage)}" data-bind="bannerImage" placeholder="https://example.com/campaign.png"></div>`;
+    h += `<div class="field-row"><label class="field-label">Sample banners<span class="field-hint">Hosted images, safe to send.</span></label><div class="sample-row is-wide">`;
+    sampleBanners.forEach(b => {
+      h += `<button class="sample-thumb is-wide${S.bannerImage===b.url?' active':''}" data-action="sampleBanner" data-url="${esc(b.url)}" title="${esc(b.label)}"><img src="${esc(b.url)}" alt="${esc(b.label)}" loading="lazy"></button>`;
+    });
+    if (S.bannerImage) h += `<button class="sample-thumb is-clear" data-action="sampleBanner" data-url="" title="No image">None</button>`;
+    h += `</div></div>`;
     if (S.bannerImage) h += `<div class="inline-note">A wide image replaces the text banner. Host it publicly — an uploaded copy will be stripped in transit.</div>`;
     h += `<div class="field-row"><label class="field-label">Button label</label><input class="input" value="${esc(S.ctaLabel)}" data-bind="ctaLabel"></div>`;
     h += `<div class="field-row"><label class="field-label">Button URL</label><input class="input" value="${esc(S.ctaUrl)}" data-bind="ctaUrl"></div>`;
@@ -789,25 +1005,52 @@ function generateSignaturePreview() {
 
 // Built from nested tables rather than SVG, so the demo mark renders in Outlook
 // too — the icon sets elsewhere in this file do not.
-function generatedLogoHTML(ff) {
-  const colour = demoLogoPalette[S.template] || '#4F46E5';
+//
+// `stack` puts the wordmark under the mark instead of beside it, which is what
+// the logo-in-a-column layouts were drawn with. `mono` drops the wordmark
+// entirely, for the layouts where the company name is already set in type.
+function generatedLogoHTML(ff, opts) {
+  const o = opts || {};
+  const colour = o.colour || themeOf(S.template).accent;
   const words = String(S.company || 'Company').trim().split(/\s+/).filter(Boolean);
   const initials = words.map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'CO';
-  const box = Math.max(28, S.logoHeight);
+  const box = Math.max(28, o.size || S.logoHeight);
   const mark = Math.round(box * 0.42);
+  const word = esc(words.slice(0, 2).join(' ') || 'Company');
+  const tile = `<td width="${box}" height="${box}"${o.hollow ? '' : ` bgcolor="${colour}"`} style="width:${box}px;height:${box}px;${o.hollow ? `border:2px solid ${colour};box-sizing:border-box;color:${colour};` : `background-color:${colour};color:#ffffff;`}border-radius:${o.round ? '50%' : Math.round(box * 0.24) + 'px'};text-align:center;vertical-align:middle;font-family:${ff};font-size:${mark}px;font-weight:700;letter-spacing:.02em;line-height:${box - (o.hollow ? 4 : 0)}px;">${esc(initials)}</td>`;
+  const wordStyle = `font-family:${ff};font-size:${Math.round(box * (o.stack ? 0.30 : 0.34))}px;font-weight:800;letter-spacing:${o.stack ? '.06em' : '-.01em'};color:${colour};white-space:nowrap;`;
 
+  if (o.mono) {
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate;border-spacing:0;"><tr>${tile}</tr></table>`;
+  }
+  if (o.stack) {
+    // The tile has to live in a table of its own: sharing a column with the
+    // wider wordmark below makes the cell inherit that width and the square
+    // stretches into a slab.
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;">
+      <tr><td style="text-align:center;padding:0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate;border-spacing:0;"><tr>${tile}</tr></table></td></tr>
+      <tr><td style="padding-top:7px;text-align:center;${wordStyle}">${word}</td></tr></table>`;
+  }
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr>
-    <td width="${box}" height="${box}" bgcolor="${colour}" style="width:${box}px;height:${box}px;background-color:${colour};border-radius:${Math.round(box * 0.24)}px;text-align:center;vertical-align:middle;font-family:${ff};font-size:${mark}px;font-weight:700;letter-spacing:.02em;color:#ffffff;line-height:${box}px;">${esc(initials)}</td>
-    <td style="padding-left:10px;vertical-align:middle;font-family:${ff};font-size:${Math.round(box * 0.34)}px;font-weight:800;letter-spacing:-.01em;color:${colour};white-space:nowrap;">${esc(words.slice(0, 2).join(' ') || 'Company')}</td>
+    ${tile}
+    <td style="padding-left:10px;vertical-align:middle;${wordStyle}">${word}</td>
   </tr></table>`;
 }
 
+// Resolves one of the five shipped font names to a full email-safe stack.
+function fontStack(name) {
+  return name === 'Georgia' ? "Georgia, 'Times New Roman', serif" :
+         name === 'Verdana' ? "Verdana, Geneva, sans-serif" :
+         name === 'Trebuchet MS' ? "'Trebuchet MS', Helvetica, sans-serif" :
+         name === 'Courier New' ? "'Courier New', Courier, monospace" :
+         "'Helvetica Neue', Helvetica, Arial, sans-serif";
+}
+
 function buildSignatureBody() {
-  const ff = S.font === 'Helvetica Neue' ? "'Helvetica Neue', Helvetica, Arial, sans-serif" :
-             S.font === 'Georgia' ? "Georgia, 'Times New Roman', serif" :
-             S.font === 'Verdana' ? "Verdana, Geneva, sans-serif" :
-             S.font === 'Trebuchet MS' ? "'Trebuchet MS', Helvetica, sans-serif" :
-             "'Courier New', Courier, monospace";
+  const ff = fontStack(S.font);
+  // The display face. Falls back to the body font, which is what makes
+  // "Same as body" a real choice rather than a no-op.
+  const hf = S.headingFont ? fontStack(S.headingFont) : ff;
   const fw = S.fontWeight === 'semibold' ? '600' : '400';
   const fs = S.bodySize + 'px';
   // On a dark panel the saved text colours would be unreadable, so they are
@@ -816,46 +1059,106 @@ function buildSignatureBody() {
   const onDark = S.bgEnabled && isDarkColor(S.bgColor);
   const tc = onDark ? '#F2F1F7' : S.textColor;
   const ac = S.accentColor;
+  const a2 = S.accent2Color || '#141220';
   const sp = S.blockSpacing + 'px';
   const al = S.alignment;
+  const bs = parseInt(fs);
+  // Layouts with a full-width band, a ruled grid or a panel need a width to
+  // stretch to, or the table shrink-wraps its content and the design collapses.
+  // A width set in the panel always wins.
+  const templateWidth = {band:600, connect:600, spotlight:560, editorial:620, grid:620, accentbar:560,
+                         feature:620, colorblock:600, darkcard:600, labelled:560, inline:560};
+  const layoutW = S.panelWidth || templateWidth[S.template] || 0;
+  const widthAttr = layoutW ? ` width="${layoutW}"` : '';
+  const widthCss = layoutW ? `width:${layoutW}px;max-width:100%;` : '';
 
-  const nameStyle = `font-family:${ff};font-size:${parseInt(fs)+2}px;font-weight:700;color:${onDark ? "#FFFFFF" : (S.nameColor||tc)};line-height:1.3;margin:0;`;
-  const titleStyle = `font-family:${ff};font-size:${fs};font-weight:${fw};color:${onDark ? "#B9B6C9" : (S.titleColor||"#666")};line-height:1.3;margin:0;`;
-  const fieldStyle = `font-family:${ff};font-size:${parseInt(fs)-1}px;font-weight:${fw};color:${tc};line-height:1.6;margin:0;text-decoration:none;`;
-  const mutedStyle = `font-family:${ff};font-size:${parseInt(fs)-2}px;color:${onDark ? '#8F8CA3' : '#999'};line-height:1.4;`;
+  // ── Name treatment ──
+  // Scale, tracking and capitals are shared by every layout, so a design choice
+  // made once carries across the whole gallery rather than only the layout it
+  // was made on.
+  const nameText = S.nameUppercase ? S.name.toUpperCase() : S.name;
+  const track = S.nameTracking ? `letter-spacing:${(S.nameTracking / 100).toFixed(2)}em;` : '';
+  const nameAt = (base) => Math.max(11, Math.round(base * (S.nameScale / 100)));
+  const nameColor = onDark ? '#FFFFFF' : (S.nameColor || tc);
+  const nameStyleAt = (base, color) => `font-family:${hf};font-size:${nameAt(base)}px;font-weight:700;color:${color || nameColor};line-height:1.25;${track}margin:0;`;
+  const nameStyle = nameStyleAt(bs + 2);
+  const titleStyle = `font-family:${ff};font-size:${fs};font-weight:${fw};color:${onDark ? '#B9B6C9' : (S.titleColor || '#666')};line-height:1.3;margin:0;`;
+  const fieldStyle = `font-family:${ff};font-size:${bs - 1}px;font-weight:${fw};color:${tc};line-height:1.6;margin:0;text-decoration:none;`;
+  const mutedStyle = `font-family:${ff};font-size:${bs - 2}px;color:${onDark ? '#8F8CA3' : '#999'};line-height:1.4;`;
 
-  // Headshot cell
-  let headshotHTML = '';
-  // Photo-led layouts need a bigger portrait; 64px looks like an afterthought
-  // when it is the main visual element.
-  const headshotSize = S.template === 'darkcard' ? 96
-                     : S.template === 'spotlight' ? 84
-                     : 64;
-  const borderRadius = S.headshotShape === 'circle' ? '50%' : S.headshotShape === 'rounded' ? '8px' : '0';
-  if (S.headshotUrl) {
-    // Crop/zoom: the image is scaled past the frame and pulled back by half the
-    // overflow, so it stays centred while the frame keeps its 64px box.
-    const scaled = Math.round(headshotSize * (S.headshotZoom / 100));
-    const offset = Math.round((scaled - headshotSize) / 2);
-    headshotHTML = `<div style="width:${headshotSize}px;height:${headshotSize}px;border-radius:${borderRadius};overflow:hidden;"><img src="${esc(S.headshotUrl)}" width="${scaled}" height="${scaled}" style="display:block;width:${scaled}px;height:${scaled}px;margin:-${offset}px 0 0 -${offset}px;object-fit:cover;object-position:center;" alt="${esc(S.name)}"></div>`;
-  } else {
-    const initials = S.name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    headshotHTML = `<div style="width:${headshotSize}px;height:${headshotSize}px;border-radius:${borderRadius};background:${ac};color:#fff;display:flex;align-items:center;justify-content:center;font-family:${ff};font-size:22px;font-weight:700;line-height:1;">${esc(initials)}</div>`;
+  // ── Role treatment ──
+  // Four ways to draw the job title. A chip or pill needs a table cell to hold
+  // its background in Outlook, so it cannot just be a styled span.
+  function roleHTML(opts) {
+    const o = opts || {};
+    const text = esc(o.text != null ? o.text : S.title);
+    if (!text) return '';
+    const style = o.style || S.roleStyle;
+    const size = o.size || bs;
+    const fgPlain = o.color || (onDark ? '#B9B6C9' : (S.titleColor || '#666'));
+    const mb = o.mb != null ? o.mb : 0;
+    if (style === 'caps') {
+      return `<p style="font-family:${ff};font-size:${Math.max(9, size - 2)}px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:${o.capsColor || ac};line-height:1.4;margin:0 0 ${mb}px;">${text}</p>`;
+    }
+    if (style === 'chip' || style === 'pill') {
+      const bg = o.chipBg || a2;
+      const radius = style === 'pill' ? '9999px' : '4px';
+      return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;margin:0 0 ${mb}px;"${al === 'center' ? ' align="center"' : ''}><tr>
+        <td bgcolor="${bg}" style="background-color:${bg};border-radius:${radius};padding:4px 12px;font-family:${ff};font-size:${Math.max(9, size - 3)}px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:${o.chipFg || '#FFFFFF'};line-height:1.3;white-space:nowrap;">${text}</td>
+      </tr></table>`;
+    }
+    return `<p style="font-family:${ff};font-size:${size}px;font-weight:${fw};color:${fgPlain};line-height:1.35;margin:0 0 ${mb}px;">${text}</p>`;
   }
 
-  // Logo
+  // ── Headshot ──
+  // Photo-led layouts need a bigger portrait; 64px looks like an afterthought
+  // when it is the main visual element. An explicit size overrides all of it.
+  const photoDefaults = {darkcard:110, spotlight:96, feature:104, grid:96, band:104, editorial:140, ribbon:88, labelled:86, connect:78};
+  const photoSize = S.headshotSize || photoDefaults[S.template] || 64;
+  const borderRadius = S.headshotShape === 'circle' ? '50%' : S.headshotShape === 'rounded' ? '10px' : '0';
+
+  // `ring` and `shape` let a layout override the shared photo settings where its
+  // design depends on them — the blue feature panel is not itself without the
+  // white ring, whatever shape the user last picked.
+  function photoHTML(opts) {
+    const o = opts || {};
+    const box = o.size || photoSize;
+    const radius = o.shape ? (o.shape === 'circle' ? '50%' : o.shape === 'rounded' ? '10px' : '0') : borderRadius;
+    const ringW = o.ring != null ? o.ring : S.photoRing;
+    const ringC = o.ringColor || S.photoRingColor;
+    const ring = ringW ? `border:${ringW}px solid ${ringC};` : '';
+    const inner = box - ringW * 2;
+    let img;
+    if (S.headshotUrl) {
+      // Crop/zoom: the image is scaled past the frame and pulled back by half
+      // the overflow, so it stays centred while the frame keeps its box.
+      const scaled = Math.round(inner * (S.headshotZoom / 100));
+      const offset = Math.round((scaled - inner) / 2);
+      img = `<img src="${esc(S.headshotUrl)}" width="${scaled}" height="${scaled}" style="display:block;width:${scaled}px;height:${scaled}px;margin:-${offset}px 0 0 -${offset}px;object-fit:cover;object-position:center;" alt="${esc(S.name)}">`;
+    } else {
+      const initials = S.name.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      img = `<div style="width:${inner}px;height:${inner}px;background:${o.fallback || ac};color:#fff;text-align:center;font-family:${ff};font-size:${Math.round(inner * 0.34)}px;font-weight:700;line-height:${inner}px;">${esc(initials)}</div>`;
+    }
+    return `<div style="width:${box}px;height:${box}px;border-radius:${radius};${ring}box-sizing:border-box;overflow:hidden;">${img}</div>`;
+  }
+  const headshotHTML = photoHTML();
+
+  // ── Logo ──
   // The real company logo is reserved for Corporate. Every other layout shows a
-  // generated monogram instead, so the gallery reads as a set of designs rather
-  // than the same mark nine times. A logo the user actually chose always wins.
-  let logoHTML = '';
+  // generated mark instead, so the gallery reads as a set of designs rather
+  // than the same logo seventeen times. A logo the user chose always wins.
   const usingStockLogo = S.logoUrl === DEFAULT_LOGO_URL;
   const showRealLogo = S.logoUrl && (!usingStockLogo || S.template === 'corporate');
 
-  if (showRealLogo) {
-    logoHTML = `<img src="${esc(S.logoUrl)}" height="${S.logoHeight}" style="display:block;height:${S.logoHeight}px;width:auto;" alt="${esc(S.company)} logo">`;
-  } else if (S.logoUrl) {
-    logoHTML = generatedLogoHTML(ff);
+  function logoAs(opts) {
+    if (!S.logoUrl) return '';
+    if (showRealLogo) {
+      const hh = (opts && opts.size) || S.logoHeight;
+      return `<img src="${esc(S.logoUrl)}" height="${hh}" style="display:block;height:${hh}px;width:auto;" alt="${esc(S.company)} logo">`;
+    }
+    return generatedLogoHTML(ff, opts);
   }
+  const logoHTML = logoAs();
 
   // Contact fields
   // Circle-wrapped icon: outlined ring with the glyph centred, built from nested
@@ -870,49 +1173,93 @@ function buildSignatureBody() {
   // Divider rules. The old flat #DDDBE4 was invisible at 1px, and vanished
   // completely once a dark background panel was switched on.
   const ruleColor = onDark ? 'rgba(255,255,255,.22)' : '#C6C3D4';
-  const circleIcon = (svg, filled) => {
+  const circleIcon = (svg, filled, colour) => {
+    const cc = colour || ic;
     const sz = S.contactIconSize || 22;
     const inner = Math.round(sz * 0.5);
     const scaled = (svg||'')
       .replace(/width="14"/, `width="${inner}"`)
       .replace(/height="14"/, `height="${inner}"`)
       .replace(/<svg /, '<svg style="display:block;margin:0 auto;" ');
-    const glyph = filled ? '#ffffff' : ic;
-    const bg = filled ? `background-color:${ic};` : '';
-    const bgAttr = filled ? ` bgcolor="${ic}"` : '';
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:1.5px solid ${ic};border-radius:50%;color:${glyph};text-align:center;vertical-align:middle;font-size:0;line-height:0;">${scaled}</td></tr></table>`;
+    const glyph = filled ? '#ffffff' : cc;
+    const bg = filled ? `background-color:${cc};` : '';
+    const bgAttr = filled ? ` bgcolor="${cc}"` : '';
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:1.5px solid ${cc};border-radius:50%;color:${glyph};text-align:center;vertical-align:middle;font-size:0;line-height:0;">${scaled}</td></tr></table>`;
   };
 
-  let contactHTML = '';
-  const activeContacts = S.contactFields.filter(f=>f.enabled && f.value);
-  if (activeContacts.length) {
-    contactHTML = activeContacts.map(f => {
-      let val;
-      if (f.type === 'email') val = `<a href="mailto:${esc(f.value)}" style="${fieldStyle}text-decoration:none;color:${tc};">${esc(f.value)}</a>`;
-      else if (f.type === 'website') val = `<a href="https://${esc(f.value.replace(/^https?:\/\//,''))}" style="${fieldStyle}text-decoration:none;color:${ac};font-weight:600;">${esc(f.value)}</a>`;
-      else if (f.type === 'mobile' || f.type === 'phone') val = `<a href="tel:${esc(f.value.replace(/\s/g,''))}" style="${fieldStyle}text-decoration:none;color:${tc};">${esc(f.value)}</a>`;
-      else val = `<span style="${fieldStyle}">${esc(f.value)}</span>`;
+  const activeContacts = S.contactFields.filter(f => f.enabled && f.value);
 
-      if (!S.showContactIcons) {
-        return `<tr><td style="padding:3px 0;${fieldStyle}vertical-align:middle;">${val}</td></tr>`;
-      }
-      // Letters mode: a bold single-letter prefix instead of an icon. Renders
-      // everywhere, including Outlook, because it is just text.
-      if (S.contactIconMode === 'letters') {
-        return `<tr><td style="padding:3px 7px 3px 0;font-family:${ff};font-size:${parseInt(fs)-1}px;font-weight:700;color:${ic};line-height:1.6;vertical-align:top;white-space:nowrap;">${esc(contactLetters[f.type]||'•')}:</td><td style="padding:3px 0;${fieldStyle}vertical-align:top;">${val}</td></tr>`;
-      }
-      if (S.contactIconMode === 'labels') {
-        return `<tr><td style="padding:3px 8px 3px 0;${mutedStyle}white-space:nowrap;vertical-align:middle;">${esc(f.label)}:</td><td style="padding:3px 0;${fieldStyle}vertical-align:middle;">${val}</td></tr>`;
-      }
-      const badged = S.contactIconMode === 'circle' || S.contactIconMode === 'filled';
-      const iconCell = badged
-        ? circleIcon(contactIcons[f.type], S.contactIconMode === 'filled')
-        : `<span style="display:inline-block;vertical-align:middle;color:${ic};width:${Math.round(S.contactIconSize*0.64)}px;height:${Math.round(S.contactIconSize*0.64)}px;">${contactIcons[f.type]||''}</span>`;
-      const pad = badged ? '3px 10px 3px 0' : '1px 6px 1px 0';
-      return `<tr><td style="padding:${pad};vertical-align:middle;font-size:0;line-height:0;">${iconCell}</td><td style="padding:3px 0;${fieldStyle}vertical-align:middle;">${val}</td></tr>`;
-    }).join('');
-    contactHTML = `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tbody>${contactHTML}</tbody></table>`;
+  // One contact row broken into its two halves, so the same row can be laid out
+  // down a single column or paired across two without duplicating the logic.
+  // `opts` lets a layout override the colours its own ground demands.
+  function contactParts(f, opts) {
+    const o = opts || {};
+    const valueColor = o.color || tc;
+    const badgeColor = o.icon || ic;
+    const vs = `font-family:${ff};font-size:${bs - 1}px;font-weight:${fw};color:${valueColor};line-height:1.6;margin:0;text-decoration:none;`;
+    let val;
+    if (f.type === 'email') val = `<a href="mailto:${esc(f.value)}" style="${vs}">${esc(f.value)}</a>`;
+    else if (f.type === 'website') val = `<a href="https://${esc(f.value.replace(/^https?:\/\//, ''))}" style="${vs}color:${o.linkColor || ac};font-weight:600;">${esc(f.value)}</a>`;
+    else if (f.type === 'mobile' || f.type === 'phone') val = `<a href="tel:${esc(f.value.replace(/\s/g, ''))}" style="${vs}">${esc(f.value)}</a>`;
+    else val = `<span style="${vs}">${esc(f.value)}</span>`;
+
+    const mode = o.mode || S.contactIconMode;
+    if (!S.showContactIcons && !o.mode) return {lead: '', leadPad: '', val, valPad: '3px 0', align: 'middle'};
+
+    if (mode === 'letters') {
+      const lower = o.lowercase;
+      const letter = (contactLetters[f.type] || '•');
+      return {
+        lead: `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(lower ? letter.toLowerCase() : letter)}.</span>`,
+        leadPad: '3px 8px 3px 0', val, valPad: '3px 0', align: 'top',
+      };
+    }
+    if (mode === 'labels') {
+      return {
+        lead: `<span style="${mutedStyle}color:${o.labelColor || badgeColor};font-weight:600;white-space:nowrap;">${esc(f.label)}:</span>`,
+        leadPad: '3px 10px 3px 0', val, valPad: '3px 0', align: 'middle',
+      };
+    }
+    const badged = mode === 'circle' || mode === 'filled';
+    const lead = badged
+      ? circleIcon(contactIcons[f.type], mode === 'filled', badgeColor)
+      : `<span style="display:inline-block;vertical-align:middle;color:${badgeColor};width:${Math.round(S.contactIconSize * 0.64)}px;height:${Math.round(S.contactIconSize * 0.64)}px;">${contactIcons[f.type] || ''}</span>`;
+    return {lead, leadPad: badged ? '3px 10px 3px 0' : '1px 7px 1px 0', val, valPad: '3px 0', align: 'middle', raw: true};
   }
+
+  // Lays the active contacts out as a table. `cols` of 2 pairs them across,
+  // which is what the wide layouts were drawn with; `gap` is the space between
+  // the two halves.
+  function contactTable(opts) {
+    const o = opts || {};
+    const list = o.fields || activeContacts;
+    if (!list.length) return '';
+    const cols = o.cols || S.contactColumns || 1;
+    const gap = o.gap != null ? o.gap : 26;
+    const cell = (f, last) => {
+      const p = contactParts(f, o);
+      const rightPad = last ? 0 : gap;
+      if (!p.lead) return `<td colspan="2" style="padding:${p.valPad};padding-right:${rightPad}px;vertical-align:${p.align};">${p.val}</td>`;
+      return `<td style="padding:${p.leadPad};vertical-align:${p.align};${p.raw ? 'font-size:0;line-height:0;' : ''}">${p.lead}</td>
+              <td style="padding:${p.valPad};padding-right:${rightPad}px;vertical-align:${p.align};">${p.val}</td>`;
+    };
+    let rows = '';
+    // A single row with every field laid across it — the shallow inline layout
+    // is the whole point of this mode.
+    if (o.row) {
+      rows = `<tr>` + list.map((f, i) => cell(f, i === list.length - 1)).join('') + `</tr>`;
+    } else if (cols === 2) {
+      for (let i = 0; i < list.length; i += 2) {
+        const pair = list.slice(i, i + 2);
+        rows += `<tr>${cell(pair[0], false)}${pair[1] ? cell(pair[1], true) : '<td></td><td></td>'}</tr>`;
+      }
+    } else {
+      rows = list.map(f => `<tr>${cell(f, true)}</tr>`).join('');
+    }
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tbody>${rows}</tbody></table>`;
+  }
+
+  const contactHTML = contactTable();
 
   // Social
   // Turn the handle typed in the panel into a real profile URL. A handle that
@@ -929,38 +1276,49 @@ function buildSignatureBody() {
     return esc((socialBases[sl.type] || 'https://') + h);
   };
 
-  let socialHTML = '';
-  const activeSocials = S.socialLinks.filter(sl=>sl.enabled);
-  if (activeSocials.length) {
-    const iconSz = S.socialIconSize + 'px';
-    socialHTML = `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tbody><tr>`;
+  const activeSocials = S.socialLinks.filter(sl => sl.enabled);
+
+  // `opts` exists so a layout drawn on a coloured ground can force the treatment
+  // its design needs — white glyphs inside a purple pill, say — without the user
+  // having to reconfigure the shared social settings each time they switch.
+  function socialBlock(opts) {
+    const o = opts || {};
+    if (!activeSocials.length) return '';
+    const style = o.style || S.socialStyle;
+    const colour = o.color || sc;
+    const sz = o.size || S.socialIconSize;
+    const iconSz = sz + 'px';
+    let out = `<table role="presentation" cellpadding="0" cellspacing="0" border="0"${al === 'center' ? ' align="center"' : ''}><tbody><tr>`;
     activeSocials.forEach((sl, idx) => {
-      const gap = idx > 0 ? `padding-left:${S.socialStyle==='plain'?'10':'6'}px;` : '';
+      const gap = idx > 0 ? `padding-left:${o.gap != null ? o.gap : (style === 'plain' ? 10 : 6)}px;` : '';
       const svgIcon = socialIcons[sl.type] || '';
-      if (S.socialStyle === 'circle' || S.socialStyle === 'filled') {
-        // Circle outline style matching Al Riyady signature
-        // Dynamically resize the SVG to fill the icon area correctly
-        const sz = S.socialIconSize;
-        const iconScale = Math.round(sz * 0.55);
+      if (style === 'circle' || style === 'filled' || style === 'glyph') {
+        const iconScale = Math.round(sz * (style === 'glyph' ? 0.78 : 0.55));
         const scaledSvg = svgIcon
           .replace(/width="16"/, `width="${iconScale}"`)
           .replace(/height="16"/, `height="${iconScale}"`)
           .replace(/<svg /, '<svg style="display:block;margin:0 auto;" ');
-        const solid = S.socialStyle === 'filled';
-        const glyph = solid ? '#ffffff' : ac;
-        const bg = solid ? `background-color:${sc};` : '';
-        const bgAttr = solid ? ` bgcolor="${sc}"` : '';
-        socialHTML += `<td style="${gap}vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:2px solid ${sc};border-radius:50%;color:${glyph};text-align:center;vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;color:${glyph};font-size:0;line-height:0;">${scaledSvg}</a></td></tr></table></td>`;
-      } else if (S.socialStyle === 'chip') {
-        socialHTML += `<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background:${sc};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-4}px;color:#fff;text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`;
-      } else if (S.socialStyle === 'outline') {
-        socialHTML += `<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${sc};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-4}px;color:${sc};text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`;
+        // Bare glyph, no ring — the treatment the minimal reference layouts use.
+        if (style === 'glyph') {
+          out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;color:${colour};font-size:0;line-height:0;">${scaledSvg}</a></td>`;
+          return;
+        }
+        const solid = style === 'filled';
+        const glyph = solid ? (o.glyphColor || '#ffffff') : colour;
+        const bg = solid ? `background-color:${colour};` : '';
+        const bgAttr = solid ? ` bgcolor="${colour}"` : '';
+        out += `<td style="${gap}vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:2px solid ${colour};border-radius:50%;color:${glyph};text-align:center;vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;color:${glyph};font-size:0;line-height:0;">${scaledSvg}</a></td></tr></table></td>`;
+      } else if (style === 'chip') {
+        out += `<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="${colour}" style="background-color:${colour};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-4}px;color:#fff;text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`;
+      } else if (style === 'outline') {
+        out += `<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${colour};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-4}px;color:${colour};text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`;
       } else {
-        socialHTML += `<td style="${gap}"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-2}px;color:${sc};text-decoration:none;font-weight:500;">${sl.label}</a></td>`;
+        out += `<td style="${gap}"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-2}px;color:${colour};text-decoration:none;font-weight:500;">${sl.label}</a></td>`;
       }
     });
-    socialHTML += `</tr></tbody></table>`;
+    return out + `</tr></tbody></table>`;
   }
+  const socialHTML = socialBlock();
 
   // Divider
   const dividerHTML = S.dividerEnabled ? `<tr><td style="padding:${sp} 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:${S.dividerWidth}px solid ${ac};font-size:1px;line-height:1px;">&nbsp;</td></tr></table></td></tr>` : '';
@@ -1003,115 +1361,140 @@ function buildSignatureBody() {
     : '';
 
   // ── Assemble by template ──
-  // Solid brand-colour block on the left holding the logo, content on the right.
+  // Shared wrappers. `outer` applies the alignment and the optional maximum
+  // width once, so no individual layout has to remember either.
+  const outer = (rows, extra) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0"${widthAttr} style="border-collapse:separate;border-spacing:0;${widthCss}text-align:${al};${extra || ''}"><tbody>${rows}</tbody></table>`;
+  const discRow = (span, pad) => (S.disclaimerEnabled && S.disclaimerText)
+    ? `<tr><td${span ? ` colspan="${span}"` : ''} style="padding:${pad || sp + ' 0 0'};"><p style="${mutedStyle}margin:0;">${esc(S.disclaimerText)}</p></td></tr>`
+    : '';
+  const hairline = (colour, w) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:${w || 1}px solid ${colour || ruleColor};font-size:1px;line-height:1px;">&nbsp;</td></tr></table>`;
+  const eName = esc(nameText);
+  // Split for the layouts drawn with a two-weight name.
+  const nameWords = S.name.trim().split(/\s+/);
+  const firstWord = nameWords.shift() || '';
+  const restWords = nameWords.join(' ');
+
+  // Solid brand-colour block on the left holding the mark, details on the right.
   if (S.template === 'colorblock') {
-    const blockW = 140;
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;text-align:${al};"><tbody>
+    const blockW = 136;
+    const mark = S.logoUrl
+      ? logoAs({size: 58, colour: '#FFFFFF', hollow: true, mono: true})
+      : `<div style="font-family:${ff};font-size:${bs + 10}px;font-weight:800;letter-spacing:.04em;color:#ffffff;line-height:1.2;">${esc((S.company || 'Logo').split(' ')[0].toUpperCase())}</div>`;
+    return outer(`
       <tr>
-        <td width="${blockW}" bgcolor="${ac}" style="width:${blockW}px;background-color:${ac};text-align:center;vertical-align:middle;padding:20px 14px;">
-          ${logoHTML
-            ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate;border-spacing:0;"><tr><td bgcolor="#FFFFFF" style="background-color:#FFFFFF;border-radius:8px;padding:10px 12px;">${logoHTML}</td></tr></table>`
-            : `<div style="font-family:${ff};font-size:${parseInt(fs)+6}px;font-weight:800;letter-spacing:.04em;color:#ffffff;line-height:1.25;">${esc((S.company||'Logo').split(' ')[0].toUpperCase())}</div>`}
-          <div style="font-family:${ff};font-size:${parseInt(fs)-3}px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.82);margin-top:12px;">${esc(S.title)}</div>
-        </td>
-        <td style="vertical-align:middle;padding:22px 24px;">
-          <p style="font-family:${ff};font-size:${parseInt(fs)+4}px;font-weight:700;letter-spacing:.06em;color:${onDark ? '#FFFFFF' : (S.nameColor||tc)};line-height:1.25;margin:0;">${esc(S.name.toUpperCase())}</p>
-          <p style="${titleStyle}">${esc(S.title)}</p>
-          <p style="font-family:${ff};font-size:${fs};font-weight:700;color:${onDark ? '#FFFFFF' : (S.nameColor||tc)};margin:10px 0 8px;">${esc(S.company.toUpperCase())}</p>
+        <td width="${blockW}" bgcolor="${ac}" style="width:${blockW}px;background-color:${ac};text-align:center;vertical-align:middle;padding:30px 18px;">${mark}</td>
+        <td style="vertical-align:middle;padding:26px 30px;">
+          <p style="${nameStyleAt(bs + 4)}">${eName}</p>
+          ${roleHTML({size: bs - 1, mb: 12})}
+          <p style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;letter-spacing:.06em;color:${nameColor};margin:0 0 12px;">${esc(String(S.company).toUpperCase())}</p>
           ${taglineHTML}
-          ${contactHTML}
-          ${socialHTML ? `<div style="padding-top:${sp};">${socialHTML}</div>` : ''}
+          ${contactTable({gap: 34})}
+          ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialHTML}</div>` : ''}
         </td>
       </tr>
       ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
-      ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td colspan="2" style="padding:10px 24px 0;"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
-    </tbody></table>`;
+      ${discRow(2, `12px 30px 0`)}`);
   }
 
-  // Everything on a dark card: headshot left, oversized name, contacts in two
-  // columns. Reads as a designed block rather than a list of details.
+  // Everything on a dark card: portrait left, two-weight name, role chip, and
+  // the contacts paired across two columns.
   if (S.template === 'darkcard') {
-    const card = isDarkColor(S.bgColor) && S.bgEnabled ? 'transparent' : '#1B2A4A';
+    const card = (S.bgEnabled && isDarkColor(S.bgColor)) ? 'transparent' : a2;
     const solid = card !== 'transparent';
-    const light = '#F2F1F7';
-    const dim = '#A7A4BC';
-    const pairs = [];
-    for (let i = 0; i < activeContacts.length; i += 2) pairs.push(activeContacts.slice(i, i + 2));
-    const grid = pairs.map(row => `<tr>${row.map(f => `<td style="padding:4px 18px 4px 0;font-family:${ff};font-size:${parseInt(fs)-1}px;color:${light};line-height:1.5;vertical-align:top;">
-        <span style="color:${ac};font-weight:700;">${esc(contactLetters[f.type]||'•')}</span>&nbsp;&nbsp;${esc(f.value)}</td>`).join('')}${row.length < 2 ? '<td></td>' : ''}</tr>`).join('');
-
-    const inner = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tbody><tr>
-        ${S.headshotUrl ? `<td style="vertical-align:top;padding:2px 24px 0 0;">${headshotHTML}</td>` : ''}
-        <td style="vertical-align:middle;">
-          <p style="font-family:${ff};font-size:${parseInt(fs)-2}px;letter-spacing:.16em;text-transform:uppercase;color:${ac};margin:0 0 4px;">${esc(S.title)}</p>
-          <p style="font-family:${ff};font-size:${parseInt(fs)+11}px;font-weight:700;color:#ffffff;line-height:1.1;margin:0 0 12px;">${esc(S.name)}</p>
+    const light = '#E8EEF9';
+    const inner = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;width:100%;"><tbody><tr>
+        ${S.headshotUrl ? `<td style="vertical-align:top;padding-right:26px;">${photoHTML({ring: S.photoRing || 5, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>` : ''}
+        <td width="100%" style="width:100%;vertical-align:middle;">
+          <p style="${nameStyleAt(bs + 11, '#FFFFFF')}"><span style="font-weight:400;color:${ac};">${esc(firstWord)}</span>${restWords ? ' ' + esc(restWords) : ''}</p>
+          ${roleHTML({mb: 14, chipBg: solid ? '#33507F' : 'rgba(255,255,255,.16)', capsColor: ac, color: light})}
           ${taglineHTML}
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tbody>${grid}</tbody></table>
-          ${socialHTML ? `<div style="padding-top:${parseInt(sp)+4}px;">${socialHTML}</div>` : ''}
+          ${contactTable({color: light, icon: ac, linkColor: ac, gap: 30})}
+          ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialBlock({color: ac})}</div>` : ''}
         </td>
       </tr></tbody></table>`;
 
     const wrapped = solid
-      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tbody><tr><td bgcolor="${card}" style="background-color:${card};padding:26px 28px;border-radius:14px;">${inner}</td></tr></tbody></table>`
+      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;width:100%;"><tbody><tr><td bgcolor="${card}" style="background-color:${card};padding:28px 30px;border-radius:14px;">${inner}</td></tr></tbody></table>`
       : inner;
 
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
+    return outer(`
       <tr><td>${wrapped}</td></tr>
       ${bannerImgHTML ? `<tr><td style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
-      ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td style="padding-top:${sp};"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
-    </tbody></table>`;
+      ${discRow()}`);
   }
 
-  // Logo left, identity centre, a vertical rule, then contacts on the right.
+  // Mark left, identity centre, a vertical rule, then the contacts on the right.
   if (S.template === 'split') {
     const rule = `<td style="width:1px;background-color:${ruleColor};font-size:1px;line-height:1px;">&nbsp;</td>`;
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
+    const site = activeContacts.find(f => f.type === 'website');
+    return outer(`
       <tr>
-        ${logoHTML ? `<td style="vertical-align:middle;padding-right:22px;">${logoHTML}</td>` : ''}
-        <td style="vertical-align:middle;padding-right:26px;">
-          <p style="${nameStyle}">${esc(S.name)}</p>
-          <p style="${titleStyle}">${esc(S.title)}</p>
+        ${logoHTML ? `<td style="vertical-align:middle;padding-right:26px;">${logoAs({stack: true, size: Math.max(40, S.logoHeight)})}</td>` : ''}
+        <td style="vertical-align:middle;padding-right:28px;">
+          <p style="${nameStyle}">${eName}</p>
+          ${roleHTML({mb: 4})}
           ${taglineHTML}
-          ${activeContacts.find(f=>f.type==='website') ? `<p style="font-family:${ff};font-size:${fs};font-weight:700;color:${ac};margin:6px 0 0;"><a href="https://${esc(activeContacts.find(f=>f.type==='website').value.replace(/^https?:\/\//,''))}" style="color:${ac};text-decoration:none;">${esc(activeContacts.find(f=>f.type==='website').value)}</a></p>` : ''}
-          ${socialHTML ? `<div style="padding-top:${sp};">${socialHTML}</div>` : ''}
+          ${site ? `<p style="font-family:${ff};font-size:${fs};font-weight:700;margin:6px 0 0;"><a href="https://${esc(site.value.replace(/^https?:\/\//, ''))}" style="color:${ac};text-decoration:none;">${esc(site.value)}</a></p>` : ''}
+          ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 4}px;">${socialHTML}</div>` : ''}
         </td>
         ${rule}
-        <td style="vertical-align:middle;padding-left:26px;">${contactHTML}</td>
+        <td style="vertical-align:middle;padding-left:28px;">${contactTable({fields: activeContacts.filter(f => f.type !== 'website')})}</td>
       </tr>
-      ${bannerImgHTML ? `<tr><td colspan="4" style="padding-top:${parseInt(sp)+8}px;">${bannerImgHTML}</td></tr>` : bannerHTML ? `<tr><td colspan="4">${bannerInner}</td></tr>` : ''}
-      ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td colspan="4" style="padding-top:${sp};"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
-    </tbody></table>`;
+      ${bannerImgHTML ? `<tr><td colspan="4" style="padding-top:${parseInt(sp) + 8}px;">${bannerImgHTML}</td></tr>` : bannerInner ? `<tr><td colspan="4" style="padding-top:${sp};">${bannerInner}</td></tr>` : ''}
+      ${discRow(4)}`);
   }
 
-  // Thick accent bar down the left edge, logo on the right, campaign strip below.
-  if (S.template === 'accentbar') {
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
+  // Name-led sibling of Split: identity and mark stacked on the left, contacts
+  // right, socials tucked under them.
+  if (S.template === 'directory') {
+    const rule = `<td style="width:1px;background-color:${ruleColor};font-size:1px;line-height:1px;">&nbsp;</td>`;
+    const site = activeContacts.find(f => f.type === 'website');
+    return outer(`
       <tr>
-        <td width="4" style="width:4px;background-color:${ac};font-size:1px;line-height:1px;">&nbsp;</td>
-        <td style="vertical-align:top;padding-left:18px;">
-          <p style="font-family:${ff};font-size:${parseInt(fs)+3}px;font-weight:700;color:${ac};line-height:1.25;margin:0;">${esc(S.name)}</p>
-          <p style="font-family:${ff};font-size:${parseInt(fs)+1}px;font-weight:700;color:${onDark ? "#FFFFFF" : (S.nameColor||tc)};line-height:1.3;margin:0 0 8px;">${esc(S.company)}</p>
+        <td style="vertical-align:middle;padding-right:30px;">
+          <p style="${nameStyleAt(bs + 3, ac)}">${eName}</p>
+          ${roleHTML({mb: 14})}
+          ${logoHTML ? `<div style="padding-bottom:12px;">${logoAs({size: Math.max(38, S.logoHeight)})}</div>` : ''}
           ${taglineHTML}
-          ${contactHTML}
-          ${socialHTML ? `<div style="padding-top:${sp};">${socialHTML}</div>` : ''}
+          ${site ? `<p style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;margin:0;"><a href="https://${esc(site.value.replace(/^https?:\/\//, ''))}" style="color:${ac};text-decoration:none;">${esc(site.value)}</a></p>` : ''}
         </td>
-        ${logoHTML ? `<td style="vertical-align:top;padding:2px 0 0 20px;">${logoHTML}</td>` : ''}
+        ${rule}
+        <td style="vertical-align:middle;padding-left:30px;">
+          ${contactTable({fields: activeContacts.filter(f => f.type !== 'website')})}
+          ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialHTML}</div>` : ''}
+        </td>
       </tr>
-      ${(S.bannerEnabled && (S.bannerMessage || S.ctaLabel)) ? `<tr><td colspan="3" style="padding-top:${parseInt(sp)+6}px;">
+      ${bannerImgHTML ? `<tr><td colspan="3" style="padding-top:${parseInt(sp) + 8}px;">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(3)}`);
+  }
+
+  // Thick accent bar down the left edge, mark on the right, campaign strip below.
+  if (S.template === 'accentbar') {
+    const barW = Math.max(3, S.dividerWidth + 1);
+    return outer(`
+      <tr>
+        <td width="${barW}" bgcolor="${ac}" style="width:${barW}px;background-color:${ac};font-size:1px;line-height:1px;">&nbsp;</td>
+        <td width="100%" style="width:100%;vertical-align:top;padding-left:20px;">
+          <p style="${nameStyleAt(bs + 3, ac)}">${eName}</p>
+          <p style="font-family:${ff};font-size:${bs + 1}px;font-weight:700;color:${nameColor};line-height:1.3;margin:0 0 8px;">${esc(S.company)}</p>
+          ${roleHTML({mb: 8})}
+          ${taglineHTML}
+          ${contactTable({lowercase: true})}
+          ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 6}px;">${socialHTML}</div>` : ''}
+        </td>
+        ${logoHTML ? `<td style="vertical-align:top;padding:2px 0 0 28px;">${logoAs({stack: true, size: Math.max(44, S.logoHeight)})}</td>` : ''}
+      </tr>
+      ${(S.bannerEnabled && (S.bannerMessage || S.ctaLabel)) ? `<tr><td colspan="3" style="padding-top:${parseInt(sp) + 8}px;">
         <p style="font-family:${ff};font-size:${fs};color:${tc};line-height:1.5;margin:0;">${esc(S.bannerMessage)}${S.ctaLabel ? ` <a href="${esc(S.ctaUrl)}" style="color:${ac};text-decoration:underline;font-weight:600;">${esc(S.ctaLabel)}</a>` : ''}</p>
       </td></tr>` : ''}
       ${bannerImgHTML ? `<tr><td colspan="3" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
-      ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td colspan="3" style="padding-top:${sp};"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
-    </tbody></table>`;
+      ${discRow(3)}`);
   }
 
+  // Portrait, a vertical rule, then the details — with the campaign banner as a
+  // full-width card underneath rather than an inline row.
   if (S.template === 'spotlight') {
-    // Headshot, a vertical rule, then the details — with the campaign banner as
-    // a full-width card underneath rather than an inline row.
-    const nameBig = `font-family:${ff};font-size:${parseInt(fs)+5}px;font-weight:700;color:${onDark ? "#FFFFFF" : (S.nameColor||tc)};line-height:1.25;margin:0;`;
-    const roleBig = `font-family:${ff};font-size:${parseInt(fs)+1}px;font-weight:${fw};color:${onDark ? "#B9B6C9" : (S.titleColor||"#666")};line-height:1.35;margin:0 0 10px;`;
-    const lineStyle = `font-family:${ff};font-size:${parseInt(fs)-1}px;color:${tc};line-height:1.65;`;
-
+    const lineStyle = `font-family:${ff};font-size:${bs - 1}px;color:${tc};line-height:1.65;`;
     // Everything except the website stacks; the website shares its line with the
     // call to action, separated by a rule, as in the reference.
     const stacked = activeContacts.filter(f => f.type !== 'website');
@@ -1119,44 +1502,270 @@ function buildSignatureBody() {
     let lines = stacked.map(f => `<div style="${lineStyle}">${esc(f.value)}</div>`).join('');
     if (site || (S.bannerEnabled && S.ctaLabel)) {
       const parts = [];
-      if (site) parts.push(`<a href="https://${esc(site.value.replace(/^https?:\/\//,''))}" style="${lineStyle}color:${tc};text-decoration:underline;">${esc(site.value)}</a>`);
+      if (site) parts.push(`<a href="https://${esc(site.value.replace(/^https?:\/\//, ''))}" style="${lineStyle}color:${tc};text-decoration:underline;">${esc(site.value)}</a>`);
       if (S.bannerEnabled && S.ctaLabel) parts.push(`<a href="${esc(S.ctaUrl)}" style="${lineStyle}color:${tc};text-decoration:underline;">${esc(S.ctaLabel)}</a>`);
-      lines += `<div style="${lineStyle}">${parts.join(`<span style="color:#C9C7D2;padding:0 9px;">|</span>`)}</div>`;
+      lines += `<div style="${lineStyle}">${parts.join(`<span style="color:${ruleColor};padding:0 9px;">|</span>`)}</div>`;
     }
 
     const bannerCard = (S.bannerEnabled && (S.bannerMessage || S.bannerSubtext || S.ctaLabel)) ? `
-      <tr><td colspan="3" style="padding-top:${parseInt(sp)+10}px;">
+      <tr><td colspan="3" style="padding-top:${parseInt(sp) + 12}px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;">
-          <tr><td bgcolor="#141220" style="background-color:#141220;border-radius:12px;padding:22px 24px;">
-            <p style="font-family:${ff};font-size:${parseInt(fs)+7}px;font-weight:700;color:#ffffff;line-height:1.2;margin:0;">${esc(S.bannerMessage || 'Email campaign')}</p>
-            ${S.bannerSubtext ? `<p style="font-family:${ff};font-size:${parseInt(fs)-1}px;font-weight:400;color:#B4B1C4;line-height:1.45;margin:6px 0 0;">${esc(S.bannerSubtext)}</p>` : ''}
-            ${S.ctaLabel ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;"><tr><td bgcolor="${ac}" style="background-color:${ac};border-radius:9999px;padding:8px 20px;"><a href="${esc(S.ctaUrl)}" style="font-family:${ff};font-size:${parseInt(fs)-1}px;font-weight:600;color:#ffffff;text-decoration:none;white-space:nowrap;">${esc(S.ctaLabel)}</a></td></tr></table>` : ''}
+          <tr><td bgcolor="${a2}" style="background-color:${a2};border-radius:12px;padding:24px 26px;">
+            <p style="font-family:${hf};font-size:${bs + 8}px;font-weight:700;color:#ffffff;line-height:1.2;margin:0;">${esc(S.bannerMessage || 'Email campaign')}</p>
+            ${S.bannerSubtext ? `<p style="font-family:${ff};font-size:${bs - 1}px;font-weight:400;color:rgba(255,255,255,.72);line-height:1.45;margin:6px 0 0;">${esc(S.bannerSubtext)}</p>` : ''}
+            ${S.ctaLabel ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;"><tr><td bgcolor="${ac}" style="background-color:${ac};border-radius:9999px;padding:8px 20px;"><a href="${esc(S.ctaUrl)}" style="font-family:${ff};font-size:${bs - 1}px;font-weight:600;color:#ffffff;text-decoration:none;white-space:nowrap;">${esc(S.ctaLabel)}</a></td></tr></table>` : ''}
           </td></tr>
         </table>
       </td></tr>` : '';
 
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
+    return outer(`
       <tr>
-        <td style="vertical-align:top;padding:2px 20px 0 0;">${headshotHTML}</td>
+        <td style="vertical-align:top;padding:2px 22px 0 0;">${headshotHTML}</td>
         <td style="width:1px;background-color:${ruleColor};font-size:1px;line-height:1px;">&nbsp;</td>
-        <td style="vertical-align:middle;padding-left:20px;">
-          <p style="${nameBig}">${esc(S.name)}</p>
-          <p style="${roleBig}">${esc(S.title)}</p>
+        <td width="100%" style="width:100%;vertical-align:middle;padding-left:22px;">
+          <p style="${nameStyleAt(bs + 5)}">${eName}</p>
+          ${roleHTML({size: bs + 1, mb: 10})}
+          ${taglineHTML}
           ${lines}
         </td>
       </tr>
       ${bannerCard}
-      ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td colspan="3" style="padding-top:${sp};"><p style="${mutedStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
-    </tbody></table>`;
+      ${discRow(3)}`);
+  }
+
+  // Portrait and details left, brand and socials right, with a full-width
+  // invitation bar closing the block.
+  if (S.template === 'connect') {
+    const barText = S.bannerMessage || "Let's connect!";
+    const barCta = S.ctaLabel || 'Schedule a meeting with me';
+    return outer(`
+      <tr>
+        <td style="vertical-align:top;padding:0 22px 0 0;">${headshotHTML}</td>
+        <td width="100%" style="width:100%;vertical-align:top;">
+          <p style="${nameStyleAt(bs + 4)}">${eName}</p>
+          ${roleHTML({mb: 12, capsColor: ac})}
+          ${taglineHTML}
+          ${contactTable()}
+        </td>
+        <td style="vertical-align:top;padding-left:30px;text-align:right;">
+          ${logoHTML ? `<div style="padding-bottom:16px;">${logoAs({stack: true, size: Math.max(38, S.logoHeight)})}</div>` : ''}
+          ${socialHTML}
+        </td>
+      </tr>
+      <tr><td colspan="3" style="padding-top:${parseInt(sp) + 10}px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;"><tr>
+          <td bgcolor="${ac}" style="background-color:${ac};border-radius:6px;padding:12px 22px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+              <td style="font-family:${hf};font-size:${bs + 1}px;font-style:italic;font-weight:600;color:#ffffff;white-space:nowrap;">${esc(barText)}</td>
+              <td style="padding:0 18px;color:rgba(255,255,255,.45);font-size:${bs + 2}px;line-height:1;">|</td>
+              <td style="font-family:${ff};font-size:${bs - 1}px;color:#ffffff;"><a href="${esc(S.ctaUrl || '#')}" style="color:#ffffff;text-decoration:none;">${esc(barCta)} &nbsp;&rarr;</a></td>
+            </tr></table>
+          </td>
+        </tr></table>
+      </td></tr>
+      ${bannerImgHTML ? `<tr><td colspan="3" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(3)}`);
+  }
+
+  // Ringed portrait, tracked capitals, and the socials gathered into a pill.
+  if (S.template === 'ribbon') {
+    const pill = socialHTML ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"${al === 'right' ? '' : ' align="right"'}><tr>
+        <td bgcolor="${ac}" style="background-color:${ac};border-radius:9999px;padding:9px 18px;">${socialBlock({style: 'glyph', color: '#FFFFFF', size: 18, gap: 16})}</td>
+      </tr></table>` : '';
+    return outer(`
+      <tr>
+        <td style="vertical-align:middle;padding-right:24px;">${photoHTML({ring: S.photoRing || 5, ringColor: S.photoRing ? S.photoRingColor : ac})}</td>
+        <td width="100%" style="width:100%;vertical-align:middle;">
+          <p style="${nameStyleAt(bs + 6, ac)}">${eName}</p>
+          ${roleHTML({mb: 12, chipFg: '#FFFFFF'})}
+          ${taglineHTML}
+          ${contactTable({gap: 24})}
+        </td>
+        <td style="vertical-align:middle;padding-left:30px;text-align:right;">
+          ${logoHTML ? `<div style="padding-bottom:18px;">${logoAs({size: Math.max(32, S.logoHeight - 6)})}</div>` : ''}
+          ${pill}
+        </td>
+      </tr>
+      ${bannerImgHTML ? `<tr><td colspan="3" style="padding-top:${parseInt(sp) + 8}px;">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(3)}`);
+  }
+
+  // Mark stacked in its own column, details beside it, socials as bare glyphs.
+  if (S.template === 'brandmark') {
+    return outer(`
+      <tr>
+        ${logoHTML ? `<td style="vertical-align:top;padding:2px 26px 0 0;">${logoAs({stack: true, size: Math.max(40, S.logoHeight)})}</td>` : ''}
+        <td style="vertical-align:top;">
+          <p style="${nameStyleAt(bs + 3)}">${eName}</p>
+          ${roleHTML({size: bs - 1, mb: 12})}
+          ${taglineHTML}
+          ${contactTable()}
+          ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialHTML}</div>` : ''}
+        </td>
+      </tr>
+      ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${parseInt(sp) + 8}px;">${bannerImgHTML}</td></tr>` : bannerInner ? `<tr><td colspan="2" style="padding-top:${sp};">${bannerInner}</td></tr>` : ''}
+      ${discRow(2)}`);
+  }
+
+  // The same brand column, but the details run across instead of down — the
+  // shallowest layout in the set, for people who want two lines and no more.
+  if (S.template === 'inline') {
+    const wide = activeContacts.filter(f => f.type !== 'address');
+    const addr = activeContacts.filter(f => f.type === 'address');
+    return outer(`
+      <tr>
+        ${logoHTML ? `<td style="vertical-align:middle;padding-right:22px;">${logoAs({mono: !showRealLogo, size: Math.max(38, S.logoHeight)})}</td>` : ''}
+        <td width="100%" style="width:100%;vertical-align:middle;">
+          <p style="${nameStyleAt(bs + 3)}">${eName}</p>
+          ${roleHTML({size: bs - 1})}
+        </td>
+      </tr>
+      <tr><td colspan="2" style="padding-top:${parseInt(sp) + 6}px;">
+        ${contactTable({row: true, fields: wide, gap: 24})}
+        ${addr.length ? `<div style="padding-top:2px;">${contactTable({fields: addr})}</div>` : ''}
+      </td></tr>
+      ${socialHTML ? `<tr><td colspan="2" style="padding-top:${parseInt(sp) + 6}px;">${hairline()}</td></tr>
+      <tr><td colspan="2" style="padding-top:${parseInt(sp) + 6}px;">${socialHTML}</td></tr>` : ''}
+      ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(2)}`);
+  }
+
+  // Every row carries its own label, set in the theme colour — the most
+  // explicit layout in the set, and the easiest to scan.
+  if (S.template === 'labelled') {
+    const followRow = socialHTML ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td style="padding:3px 10px 3px 0;${mutedStyle}color:${ac};font-weight:600;white-space:nowrap;vertical-align:middle;">follow me:</td>
+        <td style="vertical-align:middle;">${socialHTML}</td>
+      </tr></table>` : '';
+    return outer(`
+      <tr>
+        <td style="vertical-align:top;padding:0 28px 0 0;">${photoHTML({fallback: ac})}</td>
+        <td width="100%" style="width:100%;vertical-align:top;">
+          <p style="${nameStyleAt(bs + 5, ac)}">${eName}</p>
+          ${roleHTML({size: bs, mb: 14})}
+          ${taglineHTML}
+          ${contactTable({labelColor: ac})}
+          ${followRow ? `<div style="padding-top:${parseInt(sp) + 6}px;">${followRow}</div>` : ''}
+        </td>
+      </tr>
+      ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${parseInt(sp) + 8}px;">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(2)}`);
+  }
+
+  // Brand row, a full-width name band, then details beside the portrait.
+  if (S.template === 'band') {
+    const site = activeContacts.find(f => f.type === 'website');
+    return outer(`
+      <tr>
+        <td width="100%" style="width:100%;vertical-align:middle;">${logoHTML ? logoAs({size: Math.max(30, S.logoHeight - 8)}) : ''}</td>
+        <td style="vertical-align:middle;text-align:right;">${socialHTML}</td>
+      </tr>
+      <tr><td colspan="2" style="padding-top:${parseInt(sp) + 8}px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;"><tr>
+          <td bgcolor="${ac}" style="background-color:${ac};border-radius:8px;padding:20px 26px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+              <td style="vertical-align:middle;font-family:${hf};font-size:${nameAt(bs + 12)}px;font-weight:800;color:#ffffff;line-height:1.1;${track}">${eName}</td>
+              <td style="vertical-align:middle;text-align:right;padding-left:20px;font-family:${ff};font-size:${bs}px;color:rgba(255,255,255,.9);white-space:nowrap;">${esc(S.title)}</td>
+            </tr></table>
+          </td>
+        </tr></table>
+      </td></tr>
+      <tr><td colspan="2" style="padding-top:${parseInt(sp) + 10}px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+          <td width="100%" style="width:100%;vertical-align:top;">
+            ${taglineHTML}
+            ${contactTable({fields: activeContacts.filter(f => f.type !== 'website')})}
+            ${site ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;margin-top:${parseInt(sp) + 6}px;"><tr>
+              <td bgcolor="${ac}" style="background-color:${ac};border-radius:9999px;padding:7px 18px;"><a href="https://${esc(site.value.replace(/^https?:\/\//, ''))}" style="font-family:${ff};font-size:${bs - 2}px;font-weight:600;color:#ffffff;text-decoration:none;white-space:nowrap;">${esc(site.value)}</a></td>
+            </tr></table>` : ''}
+          </td>
+          <td style="vertical-align:top;padding-left:26px;text-align:right;">${headshotHTML}</td>
+        </tr></table>
+      </td></tr>
+      ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(2)}`);
+  }
+
+  // Set in a display face on a deep ground, with the portrait squared off at the
+  // right edge. The one layout in the set that reads as printed rather than sent.
+  if (S.template === 'editorial') {
+    const soft = onDark ? 'rgba(255,255,255,.78)' : tc;
+    return outer(`
+      <tr>
+        <td width="100%" style="width:100%;vertical-align:middle;padding-right:30px;">
+          <p style="font-family:${hf};font-size:${nameAt(bs + 16)}px;font-weight:400;color:${onDark ? '#F3EEE2' : nameColor};line-height:1.1;${track}margin:0 0 10px;">${eName}</p>
+          ${hairline(onDark ? 'rgba(255,255,255,.35)' : ruleColor)}
+          <p style="font-family:${hf};font-size:${bs + 5}px;font-weight:400;color:${soft};line-height:1.3;margin:10px 0 0;">${esc(S.company)}</p>
+          ${roleHTML({size: bs - 1, color: soft, mb: 0})}
+          ${taglineHTML}
+          <div style="padding-top:${parseInt(sp) + 10}px;">${contactTable({color: soft, icon: ac, linkColor: ac, gap: 30})}</div>
+          ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialHTML}</div>` : ''}
+        </td>
+        <td style="vertical-align:top;width:1px;">${photoHTML({size: S.headshotSize || 130})}</td>
+      </tr>
+      ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${parseInt(sp) + 8}px;">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(2)}`);
+  }
+
+  // Contacts laid into a ruled grid, each cell labelled above its value.
+  if (S.template === 'grid') {
+    const line = onDark ? 'rgba(255,255,255,.22)' : ruleColor;
+    const labelC = ac;
+    const valueC = onDark ? '#EDEFEE' : tc;
+    const cols = S.contactColumns === 1 ? 1 : 2;
+    const cells = activeContacts.map(f => `<td style="border-top:1px solid ${line};padding:12px 24px 12px 0;vertical-align:top;">
+        <div style="font-family:${ff};font-size:${bs - 3}px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${labelC};line-height:1.4;margin-bottom:3px;">${esc(f.label)}</div>
+        <div style="font-family:${ff};font-size:${bs - 1}px;color:${valueC};line-height:1.5;">${esc(f.value)}</div>
+      </td>`);
+    let gridRows = '';
+    for (let i = 0; i < cells.length; i += cols) {
+      const row = cells.slice(i, i + cols);
+      while (row.length < cols) row.push(`<td style="border-top:1px solid ${line};">&nbsp;</td>`);
+      gridRows += `<tr>${row.join('')}</tr>`;
+    }
+    return outer(`
+      <tr>
+        <td width="100%" style="width:100%;vertical-align:top;">
+          ${roleHTML({size: bs - 1, mb: 6, capsColor: ac})}
+          <p style="${nameStyleAt(bs + 18, onDark ? '#FFFFFF' : nameColor)}">${eName}</p>
+          ${taglineHTML}
+          <div style="padding-top:${parseInt(sp) + 8}px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tbody>${gridRows}</tbody></table></div>
+        </td>
+        <td style="vertical-align:top;padding-left:30px;">${photoHTML({ring: S.photoRing || 3, ringColor: S.photoRing ? S.photoRingColor : ac})}</td>
+      </tr>
+      ${socialHTML ? `<tr><td colspan="2" style="padding-top:${parseInt(sp) + 10}px;text-align:right;">${socialHTML}</td></tr>` : ''}
+      ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(2)}`);
+  }
+
+  // The boldest of the set: a ringed portrait against a saturated ground, with
+  // the name carrying the whole block.
+  if (S.template === 'feature') {
+    const light = onDark ? '#FFFFFF' : nameColor;
+    const soft = onDark ? 'rgba(255,255,255,.86)' : tc;
+    return outer(`
+      <tr>
+        <td style="vertical-align:middle;padding-right:28px;">${photoHTML({ring: S.photoRing || 4, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>
+        <td width="100%" style="width:100%;vertical-align:middle;">
+          <p style="${nameStyleAt(bs + 14, light)}">${eName}</p>
+          ${roleHTML({mb: 14, chipBg: onDark ? 'rgba(255,255,255,.18)' : a2, chipFg: '#FFFFFF', color: soft, capsColor: ac})}
+          ${taglineHTML}
+          ${contactTable({color: soft, icon: onDark ? '#FFFFFF' : ic, linkColor: ac, gap: 28})}
+          ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialBlock({color: onDark ? '#FFFFFF' : sc, glyphColor: S.bgColor})}</div>` : ''}
+        </td>
+        ${logoHTML ? `<td style="vertical-align:top;padding-left:26px;text-align:right;">${logoAs({size: Math.max(30, S.logoHeight - 8), colour: onDark ? '#FFFFFF' : undefined, hollow: onDark && !showRealLogo})}</td>` : ''}
+      </tr>
+      ${bannerImgHTML ? `<tr><td colspan="3" style="padding-top:${parseInt(sp) + 8}px;">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(3)}`);
   }
 
   if (S.template === 'corporate') {
     // Full-width accent rule, reused above and below the logo/contact band.
-    const rule = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:${S.dividerWidth}px solid ${ac};font-size:1px;line-height:1px;">&nbsp;</td></tr></table>`;
-    const discStyle = `font-family:${ff};font-size:${Math.max(9, parseInt(fs)-4)}px;color:${ac};line-height:1.5;margin:0;`;
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="width:560px;max-width:100%;text-align:${al};"><tbody>
+    const rule = hairline(ac, S.dividerWidth);
+    const discStyle = `font-family:${ff};font-size:${Math.max(9, bs - 4)}px;color:${ac};line-height:1.5;margin:0;`;
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${S.panelWidth || 560}" style="width:${S.panelWidth || 560}px;max-width:100%;text-align:${al};"><tbody>
       <tr><td style="padding-bottom:${sp};">
-        <p style="${nameStyle}">${esc(S.name)}</p>
+        <p style="${nameStyle}">${eName}</p>
         <p style="${titleStyle}">${esc(S.title)}</p>
         <p style="${titleStyle}">${esc(S.company)}</p>
       </td></tr>
@@ -1174,75 +1783,20 @@ function buildSignatureBody() {
     </tbody></table>`;
   }
 
-  if (S.template === 'side-by-side') {
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
-      <tr>
-        <td style="vertical-align:top;padding-right:${parseInt(sp)+6}px;">${headshotHTML}</td>
-        <td style="vertical-align:top;">
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tbody>
-            <tr><td><p style="${nameStyle}">${esc(S.name)}</p></td></tr>
-            <tr><td><p style="${titleStyle}">${esc(S.title)} · ${esc(S.company)}</p></td></tr>
-            ${logoHTML ? `<tr><td style="padding:${parseInt(sp)+6}px 0 ${parseInt(sp)+2}px;">${logoHTML}</td></tr>` : ''}
-            ${dividerHTML}
-            <tr><td style="padding-top:${S.dividerEnabled?'0':sp};">${contactHTML}</td></tr>
-            ${socialHTML ? `<tr><td style="padding-top:${sp};">${socialHTML}</td></tr>` : ''}
-            ${bannerHTML}
-            ${disclaimerHTML}
-          </tbody></table>
-        </td>
-      </tr>
-    </tbody></table>`;
-  }
-
-  if (S.template === 'stacked') {
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};${al==='center'?'margin:0 auto;':''}"><tbody>
-      <tr><td style="padding-bottom:${sp};${al==='center'?'text-align:center;':''}">${headshotHTML}</td></tr>
-      ${logoHTML ? `<tr><td style="padding:${parseInt(sp)+4}px 0 ${parseInt(sp)+2}px;${al==='center'?'text-align:center;':''}">${logoHTML}</td></tr>` : ''}
-      <tr><td><p style="${nameStyle}">${esc(S.name)}</p></td></tr>
-      <tr><td><p style="${titleStyle}">${esc(S.title)} · ${esc(S.company)}</p></td></tr>
-      ${dividerHTML}
-      <tr><td style="padding-top:${S.dividerEnabled?'0':sp};">${contactHTML}</td></tr>
-      ${socialHTML ? `<tr><td style="padding-top:${sp};">${socialHTML}</td></tr>` : ''}
-      ${bannerHTML}
-      ${disclaimerHTML}
-    </tbody></table>`;
-  }
-
-  if (S.template === 'card') {
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody><tr><td>
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;border:1px solid ${ruleColor};border-radius:10px;"><tbody>
-        <tr>
-          <td style="vertical-align:top;padding:20px 0 0 20px;">${headshotHTML}</td>
-          <td style="vertical-align:top;padding:20px 20px 0 14px;">
-            <p style="${nameStyle}">${esc(S.name)}</p>
-            <p style="${titleStyle}">${esc(S.title)} · ${esc(S.company)}</p>
-            ${logoHTML ? `<div style="padding-top:${parseInt(sp)+4}px;">${logoHTML}</div>` : ''}
-          </td>
-        </tr>
-        <tr><td colspan="2" style="padding:${parseInt(sp)+6}px 20px 0;">${contactHTML}</td></tr>
-        ${socialHTML ? `<tr><td colspan="2" style="padding:${sp} 20px 0;">${socialHTML}</td></tr>` : ''}
-        ${bannerInner ? `<tr><td colspan="2" style="padding:${sp} 20px 0;">${bannerInner}</td></tr>` : ''}
-        <tr><td colspan="2" style="height:20px;font-size:1px;line-height:1px;">&nbsp;</td></tr>
-      </tbody></table>
-      ${disclaimerHTML ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tbody>${disclaimerHTML}</tbody></table>` : ''}
-    </td></tr></tbody></table>`;
-  }
-
   // minimal
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="text-align:${al};"><tbody>
-    <tr><td><span style="${nameStyle}">${esc(S.name)}</span><span style="${titleStyle}"> · ${esc(S.title)} · ${esc(S.company)}</span></td></tr>
+  return outer(`
+    <tr><td><span style="${nameStyle}">${eName}</span><span style="${titleStyle}"> · ${esc(S.title)} · ${esc(S.company)}</span></td></tr>
     ${dividerHTML}
     <tr><td style="padding-top:${sp};">
       ${activeContacts.map(f => {
-        if (f.type==='email') return `<a href="mailto:${f.value}" style="${fieldStyle}text-decoration:none;color:${ac};">${f.value}</a>`;
-        if (f.type==='website') return `<a href="https://${f.value.replace(/^https?:\/\//,'')}" style="${fieldStyle}text-decoration:none;color:${ac};">${f.value}</a>`;
+        if (f.type === 'email') return `<a href="mailto:${esc(f.value)}" style="${fieldStyle}color:${ac};">${esc(f.value)}</a>`;
+        if (f.type === 'website') return `<a href="https://${esc(f.value.replace(/^https?:\/\//, ''))}" style="${fieldStyle}color:${ac};">${esc(f.value)}</a>`;
         return `<span style="${fieldStyle}">${esc(f.value)}</span>`;
-      }).join(`<span style="color:#ccc;margin:0 6px;">·</span>`)}
+      }).join(`<span style="color:${ruleColor};margin:0 6px;">·</span>`)}
     </td></tr>
     ${socialHTML ? `<tr><td style="padding-top:${sp};">${socialHTML}</td></tr>` : ''}
     ${bannerHTML}
-    ${disclaimerHTML}
-  </tbody></table>`;
+    ${disclaimerHTML}`);
 }
 
 // ═══════════════════════════════════════
@@ -1364,7 +1918,13 @@ function setupEvents() {
 
     // Template card
     const tmplCard = e.target.closest('[data-tmpl]');
-    if (tmplCard) { S.template = tmplCard.dataset.tmpl; renderPanel(); renderStage(); return; }
+    if (tmplCard) {
+      S.template = tmplCard.dataset.tmpl;
+      // Corporate is the brand signature and keeps its own colours; every other
+      // layout was drawn against a palette, and looks wrong without it.
+      if (S.matchTemplateTheme) applyTemplateTheme(S.template);
+      renderPanel(); renderStage(); return;
+    }
 
     // Toggle groups with data-val. Must be checked BEFORE the generic [data-action]
     // lookup below: the action lives on the wrapping .toggle-group, so closest()
@@ -1379,6 +1939,8 @@ function setupEvents() {
         case 'headshotShape':   S.headshotShape = val; break;
         case 'ctaStyle':        S.ctaStyle = val; break;
         case 'contactIconMode': S.contactIconMode = val; break;
+        case 'roleStyle':       S.roleStyle = val; break;
+        case 'contactColumns':  S.contactColumns = parseInt(val); break;
         default: break;
       }
       renderPanel();
@@ -1394,6 +1956,15 @@ function setupEvents() {
         case 'toggleDivider': S.dividerEnabled = !S.dividerEnabled; break;
         case 'toggleContactIcons': S.showContactIcons = !S.showContactIcons; break;
         case 'toggleBg': S.bgEnabled = !S.bgEnabled; break;
+        case 'toggleMatchTheme': S.matchTemplateTheme = !S.matchTemplateTheme; break;
+        case 'toggleNameCaps': S.nameUppercase = !S.nameUppercase; break;
+        case 'applyTheme': applyTemplateTheme(S.template); break;
+        case 'sampleHeadshot':
+          S.headshotUrl = togAction.dataset.url;
+          S.headshotName = togAction.dataset.label + ' (sample)';
+          S.uploadError = ''; S.storageError = '';
+          break;
+        case 'sampleBanner': S.bannerImage = togAction.dataset.url; break;
         case 'bgColorPreset': S.bgColor = togAction.dataset.color; break;
         case 'toggleBanner': S.bannerEnabled = !S.bannerEnabled; break;
         case 'toggleDisclaimer': S.disclaimerEnabled = !S.disclaimerEnabled; break;
@@ -1467,10 +2038,7 @@ function setupEvents() {
       if (e.target.type === 'range') {
         S[bind] = parseInt(e.target.value);
         const valSpan = e.target.nextElementSibling;
-        if (valSpan) {
-          const suffix = bind.includes('Zoom') ? '%' : 'px';
-          valSpan.textContent = S[bind] + suffix;
-        }
+        if (valSpan) valSpan.textContent = sliderLabel(bind, S[bind]);
       } else if (e.target.tagName === 'SELECT') {
         S[bind] = e.target.value;
       } else if (e.target.tagName === 'TEXTAREA') {
@@ -1778,6 +2346,22 @@ function loadState() {
       contactFields: L.contactFields || 'editable',
     };
   }
+
+  // Three early layouts were replaced by the designs that superseded them.
+  // Without this, a saved state naming one of them falls through the template
+  // chain and silently lands on Minimal — which looks like the editor lost
+  // their signature. Point each at its closest replacement instead, and load
+  // that layout's design so it arrives looking finished.
+  const retired = {'side-by-side':'connect', stacked:'brandmark', card:'labelled'};
+  if (retired[S.template]) {
+    S.template = retired[S.template];
+    if (S.matchTemplateTheme) applyTemplateTheme(S.template);
+  }
+  // Scopes carry their own template, and can strand the same retired names.
+  Object.keys(S.scopeData || {}).forEach(k => {
+    const d = S.scopeData[k];
+    if (d && retired[d.template]) d.template = retired[d.template];
+  });
 }
 
 function resetState() {

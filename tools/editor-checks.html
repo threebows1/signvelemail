@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>panel</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="rail" id="rail"></aside>
+    <div class="workspace">
+      <header class="topbar" id="header"></header>
+      <div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div>
+    </div>
+  </div>
+  <div class="export-overlay hidden" id="exportOverlay"><div class="export-panel">
+    <div class="export-panel-header"><h2>E</h2><button class="export-close" id="exportClose">x</button></div>
+    <pre class="export-code"><code id="exportCode"></code></pre>
+    <div class="export-actions"><button class="btn btn-accent" id="exportCopyBtn">C</button></div></div></div>
+  <div class="auth-overlay hidden" id="authOverlay"><div class="auth-panel">
+    <button class="auth-close" id="authClose">x</button><h2 class="auth-title" id="authTitle">S</h2><p class="auth-sub" id="authSub">.</p>
+    <label class="auth-label" for="authEmail">E</label><input class="input" type="email" id="authEmail">
+    <label class="auth-label" for="authPassword">P</label><input class="input" type="password" id="authPassword">
+    <div class="auth-msg hidden" id="authMsg"></div><button class="btn btn-accent auth-submit" id="authSubmit">G</button>
+    <div class="auth-alt"><button class="auth-link" id="authToggle">a</button><button class="auth-link" id="authForgot">b</button></div></div></div>
+  <pre id="report" style="position:fixed;left:0;bottom:0;background:#fff;z-index:99;font:12px monospace"></pre>
+  <script>
+    window.__errs = [];
+    window.onerror = (m, s, l, c) => { window.__errs.push('JS: ' + m + ' @' + l + ':' + c); };
+    try { localStorage.clear(); } catch (e) {}
+  </script>
+  <script src="../config.js"></script>
+  <script src="../cloud.js"></script>
+  <script src="../app.js"></script>
+  <script>
+  (function () {
+    const E = window.__errs;
+    const $ = s => document.querySelector(s);
+    const click = el => el && el.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+
+    // Every rail section must open and render something.
+    document.querySelectorAll('#rail [data-goto]').forEach(btn => {
+      click(btn);
+      const body = $('#panel .sheet-body');
+      if (!body || body.innerHTML.trim().length < 40) E.push('empty section: ' + btn.dataset.goto);
+    });
+
+    // Templates section: every card must switch the live template.
+    click(document.querySelector('#rail [data-goto="0"]'));
+    const ids = [].map.call(document.querySelectorAll('#panel [data-tmpl]'), c => c.dataset.tmpl);
+    if (ids.length !== 17) E.push('expected 17 template cards, got ' + ids.length);
+    // Each click re-renders the panel, so the card has to be looked up again
+    // every time — a cached NodeList is detached after the first click.
+    ids.forEach(want => {
+      const c = $('#panel [data-tmpl="' + want + '"]');
+      if (!c) { E.push('card vanished: ' + want); return; }
+      click(c);
+      if (S.template !== want) E.push('card did not select: ' + want);
+      if (!$('#stage .signature-container').innerHTML.trim()) E.push('empty preview: ' + want);
+      const prev = $('#panel [data-tmpl="' + want + '"] .tmpl-preview');
+      if (!prev || !prev.innerHTML.trim()) E.push('empty card preview: ' + want);
+    });
+
+    // Maximum width lives with the layout controls, not with Design.
+    if (!$('#panel [data-bind="panelWidth"]')) E.push('missing control: panelWidth');
+
+    // Theme matching: switching with it on must change the accent, off must not.
+    S.matchTemplateTheme = true;
+    click(document.querySelector('#panel [data-tmpl="feature"]'));
+    if (S.accentColor !== templateThemes.feature.accent) E.push('theme not applied on switch');
+    S.matchTemplateTheme = false;
+    S.accentColor = '#123456';
+    click(document.querySelector('#panel [data-tmpl="grid"]'));
+    if (S.accentColor !== '#123456') E.push('theme applied while matching is off');
+    S.matchTemplateTheme = true;
+
+    // Design section: the new controls must be present and must bind.
+    click(document.querySelector('#rail [data-goto="1"]'));
+    ['headingFont','nameScale','nameTracking','accent2Color'].forEach(k => {
+      if (!$('#panel [data-bind="' + k + '"]')) E.push('missing control: ' + k);
+    });
+    ['roleStyle','contactColumns'].forEach(a => {
+      if (!$('#panel [data-action="' + a + '"]')) E.push('missing toggle: ' + a);
+    });
+    const setRange = (k, v) => {
+      const el = $('#panel [data-bind="' + k + '"]');
+      if (!el) return;
+      el.value = v;
+      el.dispatchEvent(new Event('input', {bubbles: true}));
+      if (S[k] !== v) E.push(k + ' did not bind (got ' + S[k] + ')');
+    };
+    setRange('nameScale', 140);
+    setRange('nameTracking', 12);
+    if (!/letter-spacing:0\.12em/.test(generateSignaturePreview())) E.push('nameTracking inert in output');
+    setRange('nameScale', 100);
+    setRange('nameTracking', 0);
+
+    // Role style must actually change the markup.
+    S.template = 'connect';
+    S.roleStyle = 'pill';
+    if (!/border-radius:9999px/.test(generateSignaturePreview())) E.push('roleStyle pill inert');
+    S.roleStyle = 'plain';
+
+    // Contact columns must actually pair rows.
+    S.template = 'brandmark';
+    S.contactColumns = 2;
+    const two = (generateSignaturePreview().match(/<tr>/g) || []).length;
+    S.contactColumns = 1;
+    const one = (generateSignaturePreview().match(/<tr>/g) || []).length;
+    if (!(two < one)) E.push('contactColumns inert (2col ' + two + ' rows, 1col ' + one + ')');
+
+    // Media section: sample portraits must be offered and must apply.
+    click(document.querySelector('#rail [data-goto="2"]'));
+    const thumbs = document.querySelectorAll('#panel [data-action="sampleHeadshot"]');
+    if (thumbs.length !== 8) E.push('expected 8 sample portraits, got ' + thumbs.length);
+    click(thumbs[3]);
+    if (S.headshotUrl !== thumbs[3].dataset.url) E.push('sample portrait did not apply');
+
+    // Banner section: sample banners must be offered once the banner is on.
+    click(document.querySelector('#rail [data-goto="5"]'));
+    const bt = $('#panel [data-action="toggleBanner"]');
+    if (!S.bannerEnabled) click(bt);
+    const bans = document.querySelectorAll('#panel [data-action="sampleBanner"]');
+    if (bans.length < 4) E.push('expected 4 sample banners, got ' + bans.length);
+    click(bans[1]);
+    if (S.bannerImage !== bans[1].dataset.url) E.push('sample banner did not apply');
+
+    // Dark panel: every layout must stay readable on a dark ground.
+    S.bgEnabled = true; S.bgColor = '#14121F';
+    Object.keys(templateThemes).forEach(id => {
+      S.template = id;
+      const h = generateSignaturePreview();
+      if (!h.includes('#14121F')) E.push('bg panel missing on ' + id);
+      if (/undefined|NaN/.test(h)) E.push('undefined/NaN on dark: ' + id);
+    });
+    S.bgEnabled = false;
+
+    // Retired layout names must migrate rather than silently landing on Minimal.
+    Object.keys({'side-by-side':'connect', stacked:'brandmark', card:'labelled'}).forEach(old => {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({template: old})); } catch (e) {}
+      S.template = old;
+      loadState();
+      if (S.template === old || S.template === 'minimal') E.push('retired template not migrated: ' + old);
+    });
+    try { localStorage.clear(); } catch (e) {}
+
+    // Export must still produce the same markup the preview shows.
+    S.template = 'corporate';
+    if (!generateExportHTML().includes('<table')) E.push('export produced no table');
+
+    document.getElementById('report').textContent = E.length ? E.join('\n') : 'all good';
+    document.title = E.length ? 'FAIL ' + E.length : 'PASS';
+  })();
+  </script>
+</body>
+</html>
