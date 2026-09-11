@@ -161,6 +161,32 @@
       if (h.includes(CORPORATE_IDENTITY.contacts.email)) E.push(id + ' leaked the brand email');
       if (h.includes(CORPORATE_IDENTITY.contacts.mobile)) E.push(id + ' leaked the brand mobile');
     });
+    // A saved state carrying the original Al Riyady details is a copy of the
+    // demo, not a choice — it has to behave exactly like the sample state, or
+    // anyone upgrading sees the brand details on all seventeen layouts.
+    (function () {
+      const restore = {name:S.name, title:S.title, company:S.company,
+                       fields:S.contactFields.map(f => Object.assign({}, f))};
+      S.name = CORPORATE_IDENTITY.name;
+      S.title = CORPORATE_IDENTITY.title;
+      S.company = CORPORATE_IDENTITY.company;
+      S.contactFields = S.contactFields.map(f => (f.type in CORPORATE_IDENTITY.contacts)
+        ? Object.assign({}, f, {value: CORPORATE_IDENTITY.contacts[f.type]}) : f);
+      if (!identityIsStock()) E.push('saved Al Riyady state not recognised as stock');
+      S.template = 'corporate';
+      if (!generateSignaturePreview().includes(CORPORATE_IDENTITY.name)) E.push('legacy state: Corporate lost the brand name');
+      ['spotlight','ribbon','band','minimal'].forEach(id => {
+        S.template = id;
+        const h = generateSignaturePreview();
+        if (!h.includes(SAMPLE_IDENTITY.name)) E.push('legacy state: ' + id + ' did not show the sample name');
+        if (h.includes(CORPORATE_IDENTITY.name)) E.push('legacy state: ' + id + ' still shows the brand name');
+        if (h.includes(CORPORATE_IDENTITY.contacts.email)) E.push('legacy state: ' + id + ' still shows the brand email');
+        if (h.includes(CORPORATE_IDENTITY.contacts.address)) E.push('legacy state: ' + id + ' still shows the brand address');
+      });
+      S.name = restore.name; S.title = restore.title; S.company = restore.company;
+      S.contactFields = restore.fields;
+    })();
+
     // One edited character stops the substitution.
     S.name = 'Ada Lovelace';
     if (identityIsStock()) E.push('identityIsStock ignored an edited name');

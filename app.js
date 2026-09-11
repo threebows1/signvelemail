@@ -160,10 +160,19 @@ const CORPORATE_IDENTITY = {
 // True while the identity is still exactly what shipped. One edited character
 // anywhere is enough to stop the Corporate substitution — at that point the
 // details belong to the user, not to the demo.
+function matchesIdentity(id) {
+  if (S.name !== id.name || S.title !== id.title || S.company !== id.company) return false;
+  return S.contactFields.every(f => !(f.type in id.contacts) || f.value === id.contacts[f.type]);
+}
+
+// Both shipped identities count as "nobody has typed their own details yet".
+// The app originally shipped with the Al Riyady details in every field, so a
+// saved state still holding them is a copy of the demo rather than a choice —
+// the same reasoning that makes the stock logo recognisable as stock. Without
+// this, anyone carrying that saved state sees the brand details on all
+// seventeen layouts, which is the thing the sample identity exists to stop.
 function identityIsStock() {
-  const s = SAMPLE_IDENTITY;
-  if (S.name !== s.name || S.title !== s.title || S.company !== s.company) return false;
-  return S.contactFields.every(f => !(f.type in s.contacts) || f.value === s.contacts[f.type]);
+  return matchesIdentity(SAMPLE_IDENTITY) || matchesIdentity(CORPORATE_IDENTITY);
 }
 const contactIcons = {email:icons.email,mobile:icons.mobile,phone:icons.landline,website:icons.globe,address:icons.mappin,office:icons.building,pronouns:icons.user,booking:icons.calendar};
 const socialIcons = {linkedin:icons.linkedin,x:icons.x,instagram:icons.instagram,youtube:icons.youtube,facebook:icons.facebook,tiktok:icons.tiktok};
@@ -898,7 +907,12 @@ function renderContacts() {
   // is — otherwise picking Corporate and seeing different details on it looks
   // like a bug rather than the point.
   if (identityIsStock()) {
-    h += `<div class="inline-note" id="stockNote">These are sample details, so the layouts read as designs rather than as one person's signature. Type over any of them and yours are used everywhere. The <strong>Corporate</strong> template is the exception — it reproduces the Al&nbsp;Riyady signature, and shows those details until you change the ones above.</div>`;
+    // Which set is stored changes what needs explaining: a saved Al Riyady
+    // state is the one that looks wrong without a word, because the fields say
+    // one thing and sixteen of the seventeen previews say another.
+    h += matchesIdentity(CORPORATE_IDENTITY)
+      ? `<div class="inline-note" id="stockNote">These are the Al&nbsp;Riyady details, and the <strong>Corporate</strong> template shows them. Every other layout previews with sample details instead, so the gallery reads as a set of designs rather than the same signature seventeen times. Type over any field above and yours are used on all of them.</div>`
+      : `<div class="inline-note" id="stockNote">These are sample details, so the layouts read as designs rather than as one person's signature. Type over any of them and yours are used everywhere. The <strong>Corporate</strong> template is the exception — it reproduces the Al&nbsp;Riyady signature, and shows those details until you change the ones above.</div>`;
   }
 
   h += `<div class="opt-group">Contact details</div>`;
@@ -1143,12 +1157,18 @@ function buildSignatureBody() {
   const widthCss = layoutW ? `width:${layoutW}px;max-width:100%;` : '';
 
   // ── Identity ──
-  // Corporate reproduces the real brand signature, so while the shipped sample
-  // details are untouched it swaps them for the brand's own. Only the values
-  // are swapped — which rows exist, their order and whether they are switched
-  // on all still come from the panel, so every control keeps working here.
-  const brandIdentity = S.template === 'corporate' && identityIsStock();
-  const who = brandIdentity ? CORPORATE_IDENTITY : null;
+  // While nothing has been personalised, each layout previews with the identity
+  // it is meant to carry: Corporate reproduces the real brand signature, and
+  // every other layout shows sample details so the gallery reads as a set of
+  // designs rather than one signature repeated. Type your own details anywhere
+  // and both substitutions stop — from then on the layouts show you.
+  //
+  // Only the values are swapped. Which rows exist, their order and whether each
+  // is switched on all still come from the panel, so no control is made inert
+  // by the layout you happen to be on.
+  const who = identityIsStock()
+    ? (S.template === 'corporate' ? CORPORATE_IDENTITY : SAMPLE_IDENTITY)
+    : null;
   const pName = who ? who.name : S.name;
   const pTitle = who ? who.title : S.title;
   const pCompany = who ? who.company : S.company;
