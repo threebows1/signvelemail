@@ -144,6 +144,52 @@
     });
     try { localStorage.clear(); } catch (e) {}
 
+    // Identity: sample details everywhere, brand details on Corporate only, and
+    // anything typed wins on every layout including Corporate.
+    S.bgEnabled = false;
+    if (!identityIsStock()) E.push('shipped state is not the sample identity');
+    S.template = 'corporate';
+    const corp = generateSignaturePreview();
+    if (!corp.includes(CORPORATE_IDENTITY.name)) E.push('Corporate did not show the brand name');
+    if (!corp.includes(CORPORATE_IDENTITY.contacts.email)) E.push('Corporate did not show the brand email');
+    if (corp.includes(SAMPLE_IDENTITY.name)) E.push('Corporate leaked the sample name');
+    ['spotlight','split','grid','feature','minimal'].forEach(id => {
+      S.template = id;
+      const h = generateSignaturePreview();
+      if (!h.includes(SAMPLE_IDENTITY.name)) E.push(id + ' did not show the sample name');
+      if (h.includes(CORPORATE_IDENTITY.name)) E.push(id + ' leaked the brand name');
+      if (h.includes(CORPORATE_IDENTITY.contacts.email)) E.push(id + ' leaked the brand email');
+      if (h.includes(CORPORATE_IDENTITY.contacts.mobile)) E.push(id + ' leaked the brand mobile');
+    });
+    // One edited character stops the substitution.
+    S.name = 'Ada Lovelace';
+    if (identityIsStock()) E.push('identityIsStock ignored an edited name');
+    S.template = 'corporate';
+    const edited = generateSignaturePreview();
+    if (!edited.includes('Ada Lovelace')) E.push('Corporate ignored the edited name');
+    if (edited.includes(CORPORATE_IDENTITY.contacts.email)) E.push('Corporate kept brand contacts after an edit');
+    S.name = SAMPLE_IDENTITY.name;
+    // An edited contact value counts too, not just the name.
+    S.contactFields[0].value = 'ada@example.com';
+    if (identityIsStock()) E.push('identityIsStock ignored an edited contact');
+    S.contactFields[0].value = SAMPLE_IDENTITY.contacts.email;
+    if (!identityIsStock()) E.push('identityIsStock did not recover when restored');
+
+    // The panel must offer name, title and company — without them the editor
+    // can only ever produce one person's signature.
+    click(document.querySelector('#rail [data-goto="3"]'));
+    ['name','title','company'].forEach(k => {
+      if (!$('#panel [data-bind="' + k + '"]')) E.push('missing identity field: ' + k);
+    });
+    const nameInput = $('#panel [data-bind="name"]');
+    if (nameInput) {
+      nameInput.value = 'Grace Hopper';
+      nameInput.dispatchEvent(new Event('input', {bubbles: true}));
+      if (S.name !== 'Grace Hopper') E.push('name field did not bind');
+      if ($('#panel #stockNote')) E.push('sample-details note survived an edit');
+      S.name = SAMPLE_IDENTITY.name;
+    }
+
     // Export must still produce the same markup the preview shows.
     S.template = 'corporate';
     if (!generateExportHTML().includes('<table')) E.push('export produced no table');

@@ -110,6 +110,61 @@ const sampleBanners = [
 ];
 
 const DEFAULT_HEADSHOT_URL = sampleHeadshots[0].url;
+
+// ───────────── Identities ─────────────
+// The editor ships with sample details, so the gallery reads as seventeen
+// layouts rather than as one person's signature repeated seventeen times —
+// and so nobody's real address and phone number are the first thing a new
+// user sees.
+//
+// Corporate is the exception. It is the brand signature the app was built to
+// reproduce, so it shows the real Al Riyady details and the real mark, in the
+// same way and for the same reason it is the only layout that shows the real
+// logo. That substitution lasts exactly as long as the shipped sample is
+// untouched: type your own name and it is used on every layout, Corporate
+// included.
+const SAMPLE_IDENTITY = {
+  name: 'Elena Marsh',
+  title: 'Head of Partnerships',
+  company: 'Northwind Studio',
+  contacts: {
+    email:   'elena@northwind.com',
+    mobile:  '+44 20 7946 0812',
+    phone:   '+44 20 7946 0900',
+    address: '12 Wharf Road, London N1',
+    website: 'northwind.com',
+  },
+  socials: {
+    facebook:'northwind', linkedin:'northwind', instagram:'northwind',
+    youtube:'northwind', tiktok:'northwind', x:'northwind',
+  },
+};
+
+const CORPORATE_IDENTITY = {
+  name: 'Farrukh Shahzad',
+  title: 'Marketing Manager',
+  company: 'Al Riyady Group',
+  contacts: {
+    email:   'farrukh@alriyady.ae',
+    mobile:  '+971 50 274 9769',
+    phone:   '+971 4 591 8185',
+    address: 'The Curve Building - Office No. M 47, Dubai - UAE',
+    website: 'alriyadygroup.ae',
+  },
+  socials: {
+    facebook:'alriyady', linkedin:'alriyady', instagram:'alriyady.ae',
+    youtube:'alriyady', tiktok:'alriyady', x:'alriyady',
+  },
+};
+
+// True while the identity is still exactly what shipped. One edited character
+// anywhere is enough to stop the Corporate substitution — at that point the
+// details belong to the user, not to the demo.
+function identityIsStock() {
+  const s = SAMPLE_IDENTITY;
+  if (S.name !== s.name || S.title !== s.title || S.company !== s.company) return false;
+  return S.contactFields.every(f => !(f.type in s.contacts) || f.value === s.contacts[f.type]);
+}
 const contactIcons = {email:icons.email,mobile:icons.mobile,phone:icons.landline,website:icons.globe,address:icons.mappin,office:icons.building,pronouns:icons.user,booking:icons.calendar};
 const socialIcons = {linkedin:icons.linkedin,x:icons.x,instagram:icons.instagram,youtube:icons.youtube,facebook:icons.facebook,tiktok:icons.tiktok};
 
@@ -261,9 +316,11 @@ const S = {
   uploadError: '',
   storageError: '',
 
-  name: 'Farrukh Shahzad',
-  title: 'Marketing Manager',
-  company: 'Al Riyady Group',
+  // Sample details, not anyone's real ones. Corporate substitutes the brand
+  // identity for as long as these are untouched — see identityIsStock.
+  name: SAMPLE_IDENTITY.name,
+  title: SAMPLE_IDENTITY.title,
+  company: SAMPLE_IDENTITY.company,
   tagline: '',
 
   contactIconMode: 'circle',
@@ -272,21 +329,21 @@ const S = {
   iconColor: '#C9962B',
   socialIconColor: '#C9962B',
   contactFields: [
-    {type:'email',   label:'Email',   value:'farrukh@alriyady.ae',                             enabled:true,  removable:false},
-    {type:'mobile',  label:'Mobile',  value:'+971 50 274 9769',                                enabled:true,  removable:false},
-    {type:'phone',   label:'Phone',   value:'+971 4 591 8185',                                 enabled:true,  removable:true},
-    {type:'address', label:'Address', value:'The Curve Building - Office No. M 47, Dubai - UAE', enabled:true, removable:false},
-    {type:'website', label:'Website', value:'alriyadygroup.ae',                                enabled:true,  removable:false},
+    {type:'email',   label:'Email',   value:SAMPLE_IDENTITY.contacts.email,   enabled:true,  removable:false},
+    {type:'mobile',  label:'Mobile',  value:SAMPLE_IDENTITY.contacts.mobile,  enabled:true,  removable:false},
+    {type:'phone',   label:'Phone',   value:SAMPLE_IDENTITY.contacts.phone,   enabled:true,  removable:true},
+    {type:'address', label:'Address', value:SAMPLE_IDENTITY.contacts.address, enabled:true,  removable:false},
+    {type:'website', label:'Website', value:SAMPLE_IDENTITY.contacts.website, enabled:true,  removable:false},
   ],
 
   socialStyle: 'circle',
   socialIconSize: 28,
   socialLinks: [
-    {type:'facebook',  label:'Facebook',  handle:'alriyady',    enabled:true},
-    {type:'linkedin',  label:'LinkedIn',  handle:'alriyady',    enabled:true},
-    {type:'instagram', label:'Instagram', handle:'alriyady.ae', enabled:true},
-    {type:'youtube',   label:'YouTube',   handle:'alriyady',    enabled:true},
-    {type:'tiktok',    label:'TikTok',    handle:'alriyady',    enabled:true},
+    {type:'facebook',  label:'Facebook',  handle:SAMPLE_IDENTITY.socials.facebook,  enabled:true},
+    {type:'linkedin',  label:'LinkedIn',  handle:SAMPLE_IDENTITY.socials.linkedin,  enabled:true},
+    {type:'instagram', label:'Instagram', handle:SAMPLE_IDENTITY.socials.instagram, enabled:true},
+    {type:'youtube',   label:'YouTube',   handle:SAMPLE_IDENTITY.socials.youtube,   enabled:true},
+    {type:'tiktok',    label:'TikTok',    handle:SAMPLE_IDENTITY.socials.tiktok,    enabled:true},
     {type:'x',         label:'X',         handle:'',            enabled:false},
   ],
 
@@ -831,7 +888,20 @@ function renderMedia() {
 // ── Section 3: Contact fields ──
 function renderContacts() {
   // Values and ordering only — how these rows look lives in Design.
-  let h = `<div class="field-row"><label class="field-label">Tagline</label><input class="input" value="${esc(S.tagline)}" data-bind="tagline" placeholder="Optional strapline, shown in italics"></div>`;
+  let h = `<div class="opt-group">Who you are</div>`;
+  h += `<div class="field-row"><label class="field-label">Full name</label><input class="input" value="${esc(S.name)}" data-bind="name" placeholder="Your name"></div>`;
+  h += `<div class="field-row"><label class="field-label">Job title</label><input class="input" value="${esc(S.title)}" data-bind="title" placeholder="Your role"></div>`;
+  h += `<div class="field-row"><label class="field-label">Company</label><input class="input" value="${esc(S.company)}" data-bind="company" placeholder="Your company"></div>`;
+  h += `<div class="field-row"><label class="field-label">Tagline</label><input class="input" value="${esc(S.tagline)}" data-bind="tagline" placeholder="Optional strapline, shown in italics"></div>`;
+
+  // Say plainly that these are not real details yet, and what the one exception
+  // is — otherwise picking Corporate and seeing different details on it looks
+  // like a bug rather than the point.
+  if (identityIsStock()) {
+    h += `<div class="inline-note" id="stockNote">These are sample details, so the layouts read as designs rather than as one person's signature. Type over any of them and yours are used everywhere. The <strong>Corporate</strong> template is the exception — it reproduces the Al&nbsp;Riyady signature, and shows those details until you change the ones above.</div>`;
+  }
+
+  h += `<div class="opt-group">Contact details</div>`;
   S.contactFields.forEach((f, i) => {
     h += `<div class="list-item${f.enabled?'':' disabled'}">
       <div class="toggle-switch list-check${f.enabled?' on':''}" data-action="toggleContact" data-idx="${i}"></div>
@@ -1012,7 +1082,7 @@ function generateSignaturePreview() {
 function generatedLogoHTML(ff, opts) {
   const o = opts || {};
   const colour = o.colour || themeOf(S.template).accent;
-  const words = String(S.company || 'Company').trim().split(/\s+/).filter(Boolean);
+  const words = String(o.company || S.company || 'Company').trim().split(/\s+/).filter(Boolean);
   const initials = words.map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'CO';
   const box = Math.max(28, o.size || S.logoHeight);
   const mark = Math.round(box * 0.42);
@@ -1072,11 +1142,28 @@ function buildSignatureBody() {
   const widthAttr = layoutW ? ` width="${layoutW}"` : '';
   const widthCss = layoutW ? `width:${layoutW}px;max-width:100%;` : '';
 
+  // ── Identity ──
+  // Corporate reproduces the real brand signature, so while the shipped sample
+  // details are untouched it swaps them for the brand's own. Only the values
+  // are swapped — which rows exist, their order and whether they are switched
+  // on all still come from the panel, so every control keeps working here.
+  const brandIdentity = S.template === 'corporate' && identityIsStock();
+  const who = brandIdentity ? CORPORATE_IDENTITY : null;
+  const pName = who ? who.name : S.name;
+  const pTitle = who ? who.title : S.title;
+  const pCompany = who ? who.company : S.company;
+  const pFields = who
+    ? S.contactFields.map(f => (f.type in who.contacts) ? Object.assign({}, f, {value: who.contacts[f.type]}) : f)
+    : S.contactFields;
+  const pSocials = who
+    ? S.socialLinks.map(sl => (sl.handle && sl.type in who.socials) ? Object.assign({}, sl, {handle: who.socials[sl.type]}) : sl)
+    : S.socialLinks;
+
   // ── Name treatment ──
   // Scale, tracking and capitals are shared by every layout, so a design choice
   // made once carries across the whole gallery rather than only the layout it
   // was made on.
-  const nameText = S.nameUppercase ? S.name.toUpperCase() : S.name;
+  const nameText = S.nameUppercase ? pName.toUpperCase() : pName;
   const track = S.nameTracking ? `letter-spacing:${(S.nameTracking / 100).toFixed(2)}em;` : '';
   const nameAt = (base) => Math.max(11, Math.round(base * (S.nameScale / 100)));
   const nameColor = onDark ? '#FFFFFF' : (S.nameColor || tc);
@@ -1091,7 +1178,7 @@ function buildSignatureBody() {
   // its background in Outlook, so it cannot just be a styled span.
   function roleHTML(opts) {
     const o = opts || {};
-    const text = esc(o.text != null ? o.text : S.title);
+    const text = esc(o.text != null ? o.text : pTitle);
     if (!text) return '';
     const style = o.style || S.roleStyle;
     const size = o.size || bs;
@@ -1134,9 +1221,9 @@ function buildSignatureBody() {
       // the overflow, so it stays centred while the frame keeps its box.
       const scaled = Math.round(inner * (S.headshotZoom / 100));
       const offset = Math.round((scaled - inner) / 2);
-      img = `<img src="${esc(S.headshotUrl)}" width="${scaled}" height="${scaled}" style="display:block;width:${scaled}px;height:${scaled}px;margin:-${offset}px 0 0 -${offset}px;object-fit:cover;object-position:center;" alt="${esc(S.name)}">`;
+      img = `<img src="${esc(S.headshotUrl)}" width="${scaled}" height="${scaled}" style="display:block;width:${scaled}px;height:${scaled}px;margin:-${offset}px 0 0 -${offset}px;object-fit:cover;object-position:center;" alt="${esc(pName)}">`;
     } else {
-      const initials = S.name.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const initials = pName.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
       img = `<div style="width:${inner}px;height:${inner}px;background:${o.fallback || ac};color:#fff;text-align:center;font-family:${ff};font-size:${Math.round(inner * 0.34)}px;font-weight:700;line-height:${inner}px;">${esc(initials)}</div>`;
     }
     return `<div style="width:${box}px;height:${box}px;border-radius:${radius};${ring}box-sizing:border-box;overflow:hidden;">${img}</div>`;
@@ -1154,9 +1241,11 @@ function buildSignatureBody() {
     if (!S.logoUrl) return '';
     if (showRealLogo) {
       const hh = (opts && opts.size) || S.logoHeight;
-      return `<img src="${esc(S.logoUrl)}" height="${hh}" style="display:block;height:${hh}px;width:auto;" alt="${esc(S.company)} logo">`;
+      return `<img src="${esc(S.logoUrl)}" height="${hh}" style="display:block;height:${hh}px;width:auto;" alt="${esc(pCompany)} logo">`;
     }
-    return generatedLogoHTML(ff, opts);
+    // The generated mark is built from the company name, so it has to read the
+    // same resolved identity the rest of the layout does.
+    return generatedLogoHTML(ff, Object.assign({company: pCompany}, opts));
   }
   const logoHTML = logoAs();
 
@@ -1187,7 +1276,7 @@ function buildSignatureBody() {
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:1.5px solid ${cc};border-radius:50%;color:${glyph};text-align:center;vertical-align:middle;font-size:0;line-height:0;">${scaled}</td></tr></table>`;
   };
 
-  const activeContacts = S.contactFields.filter(f => f.enabled && f.value);
+  const activeContacts = pFields.filter(f => f.enabled && f.value);
 
   // One contact row broken into its two halves, so the same row can be laid out
   // down a single column or paired across two without duplicating the logic.
@@ -1276,7 +1365,7 @@ function buildSignatureBody() {
     return esc((socialBases[sl.type] || 'https://') + h);
   };
 
-  const activeSocials = S.socialLinks.filter(sl => sl.enabled);
+  const activeSocials = pSocials.filter(sl => sl.enabled);
 
   // `opts` exists so a layout drawn on a coloured ground can force the treatment
   // its design needs — white glyphs inside a purple pill, say — without the user
@@ -1370,7 +1459,7 @@ function buildSignatureBody() {
   const hairline = (colour, w) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:${w || 1}px solid ${colour || ruleColor};font-size:1px;line-height:1px;">&nbsp;</td></tr></table>`;
   const eName = esc(nameText);
   // Split for the layouts drawn with a two-weight name.
-  const nameWords = S.name.trim().split(/\s+/);
+  const nameWords = pName.trim().split(/\s+/);
   const firstWord = nameWords.shift() || '';
   const restWords = nameWords.join(' ');
 
@@ -1379,14 +1468,14 @@ function buildSignatureBody() {
     const blockW = 136;
     const mark = S.logoUrl
       ? logoAs({size: 58, colour: '#FFFFFF', hollow: true, mono: true})
-      : `<div style="font-family:${ff};font-size:${bs + 10}px;font-weight:800;letter-spacing:.04em;color:#ffffff;line-height:1.2;">${esc((S.company || 'Logo').split(' ')[0].toUpperCase())}</div>`;
+      : `<div style="font-family:${ff};font-size:${bs + 10}px;font-weight:800;letter-spacing:.04em;color:#ffffff;line-height:1.2;">${esc((pCompany || 'Logo').split(' ')[0].toUpperCase())}</div>`;
     return outer(`
       <tr>
         <td width="${blockW}" bgcolor="${ac}" style="width:${blockW}px;background-color:${ac};text-align:center;vertical-align:middle;padding:30px 18px;">${mark}</td>
         <td style="vertical-align:middle;padding:26px 30px;">
           <p style="${nameStyleAt(bs + 4)}">${eName}</p>
           ${roleHTML({size: bs - 1, mb: 12})}
-          <p style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;letter-spacing:.06em;color:${nameColor};margin:0 0 12px;">${esc(String(S.company).toUpperCase())}</p>
+          <p style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;letter-spacing:.06em;color:${nameColor};margin:0 0 12px;">${esc(String(pCompany).toUpperCase())}</p>
           ${taglineHTML}
           ${contactTable({gap: 34})}
           ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialHTML}</div>` : ''}
@@ -1476,7 +1565,7 @@ function buildSignatureBody() {
         <td width="${barW}" bgcolor="${ac}" style="width:${barW}px;background-color:${ac};font-size:1px;line-height:1px;">&nbsp;</td>
         <td width="100%" style="width:100%;vertical-align:top;padding-left:20px;">
           <p style="${nameStyleAt(bs + 3, ac)}">${eName}</p>
-          <p style="font-family:${ff};font-size:${bs + 1}px;font-weight:700;color:${nameColor};line-height:1.3;margin:0 0 8px;">${esc(S.company)}</p>
+          <p style="font-family:${ff};font-size:${bs + 1}px;font-weight:700;color:${nameColor};line-height:1.3;margin:0 0 8px;">${esc(pCompany)}</p>
           ${roleHTML({mb: 8})}
           ${taglineHTML}
           ${contactTable({lowercase: true})}
@@ -1665,7 +1754,7 @@ function buildSignatureBody() {
           <td bgcolor="${ac}" style="background-color:${ac};border-radius:8px;padding:20px 26px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
               <td style="vertical-align:middle;font-family:${hf};font-size:${nameAt(bs + 12)}px;font-weight:800;color:#ffffff;line-height:1.1;${track}">${eName}</td>
-              <td style="vertical-align:middle;text-align:right;padding-left:20px;font-family:${ff};font-size:${bs}px;color:rgba(255,255,255,.9);white-space:nowrap;">${esc(S.title)}</td>
+              <td style="vertical-align:middle;text-align:right;padding-left:20px;font-family:${ff};font-size:${bs}px;color:rgba(255,255,255,.9);white-space:nowrap;">${esc(pTitle)}</td>
             </tr></table>
           </td>
         </tr></table>
@@ -1695,7 +1784,7 @@ function buildSignatureBody() {
         <td width="100%" style="width:100%;vertical-align:middle;padding-right:30px;">
           <p style="font-family:${hf};font-size:${nameAt(bs + 16)}px;font-weight:400;color:${onDark ? '#F3EEE2' : nameColor};line-height:1.1;${track}margin:0 0 10px;">${eName}</p>
           ${hairline(onDark ? 'rgba(255,255,255,.35)' : ruleColor)}
-          <p style="font-family:${hf};font-size:${bs + 5}px;font-weight:400;color:${soft};line-height:1.3;margin:10px 0 0;">${esc(S.company)}</p>
+          <p style="font-family:${hf};font-size:${bs + 5}px;font-weight:400;color:${soft};line-height:1.3;margin:10px 0 0;">${esc(pCompany)}</p>
           ${roleHTML({size: bs - 1, color: soft, mb: 0})}
           ${taglineHTML}
           <div style="padding-top:${parseInt(sp) + 10}px;">${contactTable({color: soft, icon: ac, linkColor: ac, gap: 30})}</div>
@@ -1766,8 +1855,8 @@ function buildSignatureBody() {
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${S.panelWidth || 560}" style="width:${S.panelWidth || 560}px;max-width:100%;text-align:${al};"><tbody>
       <tr><td style="padding-bottom:${sp};">
         <p style="${nameStyle}">${eName}</p>
-        <p style="${titleStyle}">${esc(S.title)}</p>
-        <p style="${titleStyle}">${esc(S.company)}</p>
+        <p style="${titleStyle}">${esc(pTitle)}</p>
+        <p style="${titleStyle}">${esc(pCompany)}</p>
       </td></tr>
       ${S.dividerEnabled ? `<tr><td style="padding-bottom:${sp};">${rule}</td></tr>` : ''}
       <tr><td>
@@ -1785,7 +1874,7 @@ function buildSignatureBody() {
 
   // minimal
   return outer(`
-    <tr><td><span style="${nameStyle}">${eName}</span><span style="${titleStyle}"> · ${esc(S.title)} · ${esc(S.company)}</span></td></tr>
+    <tr><td><span style="${nameStyle}">${eName}</span><span style="${titleStyle}"> · ${esc(pTitle)} · ${esc(pCompany)}</span></td></tr>
     ${dividerHTML}
     <tr><td style="padding-top:${sp};">
       ${activeContacts.map(f => {
@@ -2052,6 +2141,7 @@ function setupEvents() {
         S[bind] = e.target.value;
       }
       renderStage();
+      dropStockNote();
     }
 
     // Contact field editing
@@ -2059,6 +2149,7 @@ function setupEvents() {
       const i = parseInt(e.target.dataset.idx);
       S.contactFields[i].value = e.target.value;
       renderStage();
+      dropStockNote();
     }
     // Social handle editing
     if (e.target.dataset.action === 'editSocial') {
@@ -2067,6 +2158,14 @@ function setupEvents() {
       renderStage();
     }
   });
+
+  // The "these are sample details" note stops being true the moment anything
+  // is typed over. Removing just that element beats re-rendering the panel,
+  // which would pull the input out from under the caret mid-word.
+  function dropStockNote() {
+    const note = $panel.querySelector('#stockNote');
+    if (note && !identityIsStock()) note.remove();
+  }
 
   // File uploads
   $panel.addEventListener('change', e => {

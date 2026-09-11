@@ -46,51 +46,23 @@
     };
     const order = Object.keys(meta);
 
-    // Generic demo content: the marketing gallery is not the place for anyone's
-    // real brand, and the layouts have to stand up on their own.
-    S.name = 'Elena Marsh';
-    S.title = 'Head of Partnerships';
-    S.company = 'Northwind Studio';
+    // The shipped state is already the sample identity, and the builder gives
+    // Corporate the brand identity on its own — so leaving the details alone is
+    // what keeps this gallery matching what a new user actually sees. Only the
+    // showcase's own presentation is set here.
     S.tagline = '';
     S.logoUrl = DEFAULT_LOGO_URL;   // stock, so the generated mark is used
     S.headshotUrl = sampleHeadshots[2].url;
     S.bannerEnabled = false;
     S.disclaimerEnabled = false;
-    S.contactFields = [
-      {type:'email',   label:'Email',   value:'elena@northwind.com',       enabled:true, removable:false},
-      {type:'mobile',  label:'Mobile',  value:'+44 20 7946 0812',          enabled:true, removable:false},
-      {type:'phone',   label:'Phone',   value:'+44 20 7946 0900',          enabled:true, removable:true},
-      {type:'address', label:'Address', value:'12 Wharf Road, London N1',  enabled:true, removable:false},
-      {type:'website', label:'Website', value:'northwind.com',             enabled:true, removable:false},
-    ];
-    S.socialLinks = [
-      {type:'linkedin',  label:'LinkedIn',  handle:'northwind',  enabled:true},
-      {type:'instagram', label:'Instagram', handle:'northwind',  enabled:true},
-      {type:'x',         label:'X',         handle:'northwind',  enabled:true},
-      {type:'youtube',   label:'YouTube',   handle:'northwind',  enabled:false},
-      {type:'facebook',  label:'Facebook',  handle:'northwind',  enabled:false},
-      {type:'tiktok',    label:'TikTok',    handle:'northwind',  enabled:false},
-    ];
+    S.socialLinks = S.socialLinks.map(sl =>
+      Object.assign({}, sl, {enabled: ['linkedin', 'instagram', 'facebook'].includes(sl.type)}));
 
     const cards = order.map(key => {
       const id = key === 'dark' ? 'darkcard' : key;
       S.template = id;
       applyTemplateTheme(id);
-      // Corporate is the one layout that keeps the real brand mark, so it shows
-      // the brand it belongs to rather than the demo identity.
-      const saved = {n:S.name, t:S.title, c:S.company, f:S.contactFields};
-      if (id === 'corporate') {
-        S.name = 'Farrukh Shahzad'; S.title = 'Marketing Manager'; S.company = 'Al Riyady Group';
-        S.contactFields = [
-          {type:'email',   label:'Email',   value:'farrukh@alriyady.ae',                              enabled:true, removable:false},
-          {type:'mobile',  label:'Mobile',  value:'+971 50 274 9769',                                 enabled:true, removable:false},
-          {type:'phone',   label:'Phone',   value:'+971 4 591 8185',                                  enabled:true, removable:true},
-          {type:'address', label:'Address', value:'The Curve Building, Office M 47, Dubai - UAE',     enabled:true, removable:false},
-          {type:'website', label:'Website', value:'alriyadygroup.ae',                                 enabled:true, removable:false},
-        ];
-      }
       const sig = generateSignaturePreview();
-      S.name = saved.n; S.title = saved.t; S.company = saved.c; S.contactFields = saved.f;
       return [
         '        <!-- ' + meta[key][0] + ' -->',
         '        <div class="tmpl-card">',
