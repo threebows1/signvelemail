@@ -34,6 +34,19 @@ const icons = {
 
 // Single-letter prefixes for the 'letters' display mode: E: M: T: A:
 const contactLetters = {email:'E',mobile:'M',phone:'T',address:'A',website:'W',office:'O',pronouns:'P',booking:'B'};
+
+// ───────────── Demo logo ─────────────
+// The stock logo that ships as the default. Recognising it is what lets the
+// generator tell "the user picked this" apart from "nobody has chosen yet".
+const DEFAULT_LOGO_URL = 'https://alriyady.ae/wp-content/uploads/2023/10/Al-Riyady-Corporate-Services-Proerties-Logo-400x163.png';
+
+// A colour per layout, so the templates read as a varied set. Chosen to sit
+// comfortably beside the gold accent without competing with it.
+const demoLogoPalette = {
+  spotlight:'#4F46E5', split:'#0D9488', accentbar:'#059669', darkcard:'#0EA5E9',
+  colorblock:'#E11D48', 'side-by-side':'#7C3AED', stacked:'#D97706',
+  card:'#0891B2', minimal:'#475569',
+};
 const contactIcons = {email:icons.email,mobile:icons.mobile,phone:icons.landline,website:icons.globe,address:icons.mappin,office:icons.building,pronouns:icons.user,booking:icons.calendar};
 const socialIcons = {linkedin:icons.linkedin,x:icons.x,instagram:icons.instagram,youtube:icons.youtube,facebook:icons.facebook,tiktok:icons.tiktok};
 
@@ -141,9 +154,9 @@ const S = {
   bgPadding: 24,
   bgRadius: 12,
   // Served from alriyady.ae, so it is already a public URL — the one form that
-  // survives being emailed. The 400px-wide version keeps the file small while
-  // staying sharp at the 40px display height.
-  logoUrl: 'https://alriyady.ae/wp-content/uploads/2023/10/Al-Riyady-Corporate-Services-Proerties-Logo-400x163.png',
+  // survives being emailed. Kept in sync with DEFAULT_LOGO_URL, which is how the
+  // generator knows this is still the stock logo and not one the user chose.
+  logoUrl: DEFAULT_LOGO_URL,
   logoName: 'Al Riyady Group',
   logoHeight: 40,
 
@@ -774,6 +787,21 @@ function generateSignaturePreview() {
   </tr></tbody></table>`;
 }
 
+// Built from nested tables rather than SVG, so the demo mark renders in Outlook
+// too — the icon sets elsewhere in this file do not.
+function generatedLogoHTML(ff) {
+  const colour = demoLogoPalette[S.template] || '#4F46E5';
+  const words = String(S.company || 'Company').trim().split(/\s+/).filter(Boolean);
+  const initials = words.map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'CO';
+  const box = Math.max(28, S.logoHeight);
+  const mark = Math.round(box * 0.42);
+
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr>
+    <td width="${box}" height="${box}" bgcolor="${colour}" style="width:${box}px;height:${box}px;background-color:${colour};border-radius:${Math.round(box * 0.24)}px;text-align:center;vertical-align:middle;font-family:${ff};font-size:${mark}px;font-weight:700;letter-spacing:.02em;color:#ffffff;line-height:${box}px;">${esc(initials)}</td>
+    <td style="padding-left:10px;vertical-align:middle;font-family:${ff};font-size:${Math.round(box * 0.34)}px;font-weight:800;letter-spacing:-.01em;color:${colour};white-space:nowrap;">${esc(words.slice(0, 2).join(' ') || 'Company')}</td>
+  </tr></table>`;
+}
+
 function buildSignatureBody() {
   const ff = S.font === 'Helvetica Neue' ? "'Helvetica Neue', Helvetica, Arial, sans-serif" :
              S.font === 'Georgia' ? "Georgia, 'Times New Roman', serif" :
@@ -816,9 +844,17 @@ function buildSignatureBody() {
   }
 
   // Logo
+  // The real company logo is reserved for Corporate. Every other layout shows a
+  // generated monogram instead, so the gallery reads as a set of designs rather
+  // than the same mark nine times. A logo the user actually chose always wins.
   let logoHTML = '';
-  if (S.logoUrl) {
+  const usingStockLogo = S.logoUrl === DEFAULT_LOGO_URL;
+  const showRealLogo = S.logoUrl && (!usingStockLogo || S.template === 'corporate');
+
+  if (showRealLogo) {
     logoHTML = `<img src="${esc(S.logoUrl)}" height="${S.logoHeight}" style="display:block;height:${S.logoHeight}px;width:auto;" alt="${esc(S.company)} logo">`;
+  } else if (S.logoUrl) {
+    logoHTML = generatedLogoHTML(ff);
   }
 
   // Contact fields
