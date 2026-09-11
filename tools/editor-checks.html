@@ -216,6 +216,30 @@
       S.name = SAMPLE_IDENTITY.name;
     }
 
+    // Admin section: hidden and unreachable unless the profile says otherwise.
+    // isAdmin() reads Cloud, which is unconfigured here, so this is the
+    // signed-out case — the one that matters most.
+    if (isAdmin()) E.push('isAdmin true with no cloud session');
+    const adminIndex = sections.findIndex(s => s.id === 'admin');
+    if (adminIndex < 0) E.push('admin section missing from sections');
+    if (document.querySelector('#rail [data-goto="' + adminIndex + '"]')) {
+      E.push('admin rail button shown to a non-admin');
+    }
+    // Landing on it directly must bounce rather than strand the panel.
+    S.openSection = adminIndex;
+    renderPanel();
+    if (S.openSection === adminIndex) E.push('admin section did not bounce a non-admin');
+    // And its content must refuse even if called straight.
+    if (!/only available to an administrator/.test(renderSectionContent(adminIndex))) {
+      E.push('admin panel rendered figures for a non-admin');
+    }
+    // The figures must never be written to storage.
+    ['adminStats','adminError','adminLoading'].forEach(k => {
+      if (!TRANSIENT_KEYS.includes(k)) E.push(k + ' is not transient');
+    });
+    S.openSection = 0;
+    renderPanel();
+
     // Export must still produce the same markup the preview shows.
     S.template = 'corporate';
     if (!generateExportHTML().includes('<table')) E.push('export produced no table');

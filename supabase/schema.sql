@@ -28,6 +28,18 @@ create table if not exists public.profiles (
   updated_at         timestamptz not null default now()
 );
 
+-- Added after the first release, so this runs as an alter rather than being
+-- folded into the create above — otherwise re-running this file would leave an
+-- existing table without the column.
+--
+-- Grants access to the admin figures in the editor. Like `plan`, it is not
+-- something the browser may set: the trigger below strips any attempt, so the
+-- only way to become an admin is this, run here in the SQL editor:
+--
+--   update public.profiles set is_admin = true where email = 'you@example.com';
+alter table public.profiles
+  add column if not exists is_admin boolean not null default false;
+
 -- ── Signatures ────────────────────────────────────────────
 -- `state` holds the editor's S object verbatim.
 create table if not exists public.signatures (
@@ -98,15 +110,18 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
--- ── Stop the browser editing its own plan ─────────────────
+-- ── Stop the browser editing its own plan or granting itself admin ────
 -- Users may update their profile (name, etc.) but plan and customer id are
 -- billing state and must only move via the webhook's service-role connection.
+-- is_admin is held to the same rule for the same reason: a column that decides
+-- what someone may see is not one the client gets to write.
 create or replace function public.protect_billing_columns()
 returns trigger language plpgsql as $$
 begin
   if auth.role() = 'authenticated' then
     new.plan := old.plan;
     new.stripe_customer_id := old.stripe_customer_id;
+    new.is_admin := old.is_admin;
   end if;
   return new;
 end $$;

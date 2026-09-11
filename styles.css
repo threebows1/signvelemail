@@ -587,3 +587,11 @@ select.input{cursor:pointer;appearance:auto}
   font-size:9.5px;font-weight:600;color:var(--muted);background:none;
   border:1px dashed var(--border);border-radius:6px;width:64px;height:38px;
 }
+
+/* ── Admin figures ──
+   Right-aligned numerals in the shared opt-row, set in the mono face so a
+   column of counts lines up on the digit rather than drifting. */
+.admin-num{
+  font-family:var(--mono);font-size:14px;font-weight:600;
+  color:var(--ink);letter-spacing:.01em;font-variant-numeric:tabular-nums;
+}

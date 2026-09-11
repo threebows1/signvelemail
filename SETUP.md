@@ -93,6 +93,48 @@ In order, each testable before the next:
 
 ---
 
+## Admin figures
+
+The editor has an **Admin** section showing how many people have signed up. It
+only appears for a profile marked `is_admin`, and the numbers come from an Edge
+Function rather than from the browser.
+
+That indirection is the point. Counting users means reading `auth.users`, and
+nothing holding the publishable key can do that — Row Level Security hides
+other people's rows and the admin endpoints reject the key outright. The count
+has to come from somewhere the service-role key can live without being shipped
+to anyone.
+
+**1. Re-run `supabase/schema.sql`** (SQL Editor → paste → Run). It is safe to
+re-run; this adds the `is_admin` column and extends the trigger that already
+stops the browser editing its own plan, so nobody can grant it to themselves.
+
+**2. Make yourself an admin.** In the SQL Editor:
+
+```sql
+update public.profiles set is_admin = true where email = 'farrukh@alriyady.ae';
+```
+
+If that reports `0 rows`, you have not signed up in the app yet — create the
+account first, then run it again.
+
+**3. Deploy the function.** Either
+
+- **Dashboard:** Edge Functions → Deploy a new function → name it exactly
+  `admin-stats` → paste the contents of
+  `supabase/functions/admin-stats/index.ts` → Deploy. Leave "Verify JWT" on.
+- **CLI:** `supabase functions deploy admin-stats`
+
+No keys to set: Supabase injects `SUPABASE_URL`, `SUPABASE_ANON_KEY` and
+`SUPABASE_SERVICE_ROLE_KEY` into every function's environment automatically.
+
+**4. Sign in to the editor.** An **Admin** entry appears at the bottom of the
+left rail. Open it and press *Load figures*.
+
+If you host the editor anywhere besides signvel.com or the workers.dev URL, add
+that origin to `ALLOWED_ORIGINS` at the top of the function — it does not use a
+wildcard, so an unlisted origin is refused.
+
 ## Notes on the schema
 
 - **`signatures.state` is one jsonb column.** The editor's settings object goes
@@ -101,8 +143,10 @@ In order, each testable before the next:
   on gets a real column instead.
 - **Row Level Security is the enforcement**, not the JavaScript. Every table is
   locked to `auth.uid()`.
-- **The browser cannot change its own plan.** `profiles.plan` and
-  `stripe_customer_id` are reset by a trigger on any authenticated update, so
-  only the webhook's service-role connection can move them.
+- **The browser cannot change its own plan.** `profiles.plan`,
+  `stripe_customer_id` and `is_admin` are reset by a trigger on any
+  authenticated update, so only a service-role connection can move them. A
+  column that decides what someone may see or be charged is not one the client
+  gets to write.
 - **The free-plan limit lives in the database**, so it holds even if someone
   calls the REST API directly rather than using the interface.

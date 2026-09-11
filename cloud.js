@@ -35,6 +35,10 @@ window.Cloud = (function () {
       email: session ? session.user.email : null,
       userId: session ? session.user.id : null,
       plan: profile ? profile.plan : 'free',
+      // Only decides whether the panel is offered. The figures themselves come
+      // from an Edge Function that checks this again server-side, so faking it
+      // here reveals nothing.
+      isAdmin: !!(profile && profile.is_admin),
     };
   }
 
@@ -158,9 +162,35 @@ window.Cloud = (function () {
     return { ok: true, url: data.publicUrl, path };
   }
 
+  // ── Admin figures ────────────────────────────────────────
+  // Counting users needs to read auth.users, which no browser key can do —
+  // and should not be able to. The numbers come from the admin-stats Edge
+  // Function, which holds the service-role key in its own environment and
+  // re-checks is_admin before answering.
+  async function adminStats() {
+    if (!ready) return { ok: false, error: 'Cloud is not configured.' };
+    if (!session) return { ok: false, error: 'Sign in first.' };
+    try {
+      const { data, error } = await db.functions.invoke('admin-stats', { method: 'POST' });
+      if (error) {
+        // invoke() reports any non-2xx as a generic FunctionsHttpError, so the
+        // real reason is in the response body rather than the error itself.
+        let detail = error.message;
+        try {
+          const body = await error.context.json();
+          if (body && body.error) detail = body.error;
+        } catch (e) { /* no JSON body — keep the generic message */ }
+        return { ok: false, error: detail };
+      }
+      return { ok: true, stats: data };
+    } catch (e) {
+      return { ok: false, error: e.message || 'Could not reach the server.' };
+    }
+  }
+
   return {
     init, signIn, signInPassword, signUp, resetPassword, signOut,
-    loadSignature, saveSignature, uploadAsset,
+    loadSignature, saveSignature, uploadAsset, adminStats,
     state,
     onChange(fn) { listeners.push(fn); },
     get isReady() { return ready; },

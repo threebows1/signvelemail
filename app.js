@@ -359,6 +359,12 @@ const S = {
   uploadError: '',
   storageError: '',
 
+  // Admin figures. Transient — they come from the server on request and a
+  // saved copy would only ever be shown out of date.
+  adminStats: null,
+  adminError: '',
+  adminLoading: false,
+
   // Sample details, not anyone's real ones. Corporate substitutes the brand
   // identity for as long as these are untouched — see identityIsStock.
   name: SAMPLE_IDENTITY.name,
@@ -470,10 +476,15 @@ const sections = [
   {id:'banner',     title:'Banner & CTA',       short:'Campaign', cat:'Content'},
   {id:'disclaimer', title:'Disclaimer',         short:'Legal',    cat:'Content'},
   {id:'rollout',    title:'Rollout & install',  short:'Rollout',  cat:'Content'},
+  // Hidden from the rail unless the signed-in profile carries is_admin. That
+  // is presentation only — the figures come from an Edge Function that checks
+  // the same flag server-side, so an unhidden button would still get nothing.
+  {id:'admin',      title:'Admin',              short:'Admin',    cat:'Account', adminOnly:true},
 ];
 
 // ───────────── Rail icons ─────────────
 const railIcons = {
+  admin:      `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20v-1.5a4.5 4.5 0 0 1 4.5-4.5h3A4.5 4.5 0 0 1 15 18.5V20"/><circle cx="9" cy="7.5" r="3.5"/><path d="M18 10.5v4M16 12.5h4"/></svg>`,
   templates:  `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`,
   design: `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6V4h16v2M12 4v16M9 20h6"/></svg>`,
   media:      `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.2 6 10a6 6 0 0 1-12 0c0-3.8 6-10 6-10z"/></svg>`,
@@ -557,11 +568,35 @@ function renderAccount() {
 // RENDER: Rail + settings sheet
 // ═══════════════════════════════════════
 // Dark icon rail — one entry per section, grouped by category.
+// Cloud may be absent entirely (offline, or no config), so this has to answer
+// false rather than throw.
+function isAdmin() {
+  return !!(window.Cloud && Cloud.isReady && Cloud.state().isAdmin);
+}
+
+// Fetches the account figures. Guarded against a second click while one is in
+// flight, since the button stays on screen during the request.
+function loadAdminStats() {
+  if (S.adminLoading || !isAdmin()) return;
+  S.adminLoading = true;
+  S.adminError = '';
+  renderPanel();
+  Cloud.adminStats().then(r => {
+    S.adminLoading = false;
+    if (r.ok) { S.adminStats = r.stats; S.adminError = ''; }
+    else { S.adminError = r.error; }
+    renderPanel();
+  });
+}
+
 function renderRail() {
   let html = `<a class="rail-brand" href="landing.html" title="Back to signvel.com home">${icons.logo}</a>
     <nav class="rail-nav">`;
   let lastCat = '';
   sections.forEach((sec, i) => {
+    // Skipping rather than filtering keeps `i` equal to the real index in
+    // `sections`, which is what data-goto and renderSectionContent both use.
+    if (sec.adminOnly && !isAdmin()) return;
     if (sec.cat !== lastCat) {
       html += `<div class="rail-cat">${sec.cat}</div>`;
       lastCat = sec.cat;
@@ -581,7 +616,11 @@ function renderRail() {
 // Settings column — the active section only, with a titled header.
 function renderPanel() {
   renderRail(); // keeps the active highlight and lock badges in step
-  const i = Math.max(0, Math.min(S.openSection, sections.length - 1));
+  let i = Math.max(0, Math.min(S.openSection, sections.length - 1));
+  // A saved openSection can point at the Admin section on a browser that is no
+  // longer signed in as an admin — its rail button is gone, so land somewhere
+  // reachable rather than on a panel with no way out.
+  if (sections[i].adminOnly && !isAdmin()) { i = 0; S.openSection = 0; }
   const sec = sections[i];
   const lockKey = sectionLocks[sec.id];
   const locked = lockKey && S.rolloutLocks[lockKey] === 'locked';
@@ -613,6 +652,7 @@ function renderSectionContent(i) {
     case 5: return renderBanner();
     case 6: return renderDisclaimer();
     case 7: return renderRollout();
+    case 8: return renderAdmin();
     default: return '';
   }
 }
@@ -1024,6 +1064,61 @@ function renderDisclaimer() {
 }
 
 // ── Section 8: Rollout & install ──
+// ── Section 8: Admin ──
+// Figures about the account as a whole. Everything here arrives from the
+// admin-stats Edge Function; nothing is computed in the browser, because
+// nothing in the browser is allowed to see it.
+function renderAdmin() {
+  if (!isAdmin()) {
+    return `<div class="inline-note">This section is only available to an administrator.</div>`;
+  }
+
+  const s = S.adminStats;
+  let h = `<div class="opt-group">Accounts</div>`;
+
+  if (S.adminLoading && !s) {
+    h += `<div class="inline-note">Fetching…</div>`;
+  } else if (!s) {
+    h += `<div class="inline-note">Counting users means reading the auth table, which no browser key can do. These figures come from the <strong>admin-stats</strong> function instead.</div>`;
+  } else {
+    const stat = (label, value, hint) => `<div class="opt-row">
+      <span class="opt-label">${label}${hint ? `<span class="opt-hint">${hint}</span>` : ''}</span>
+      <span class="opt-control"><span class="admin-num">${esc(String(value))}</span></span>
+    </div>`;
+
+    h += `<div class="opt-list">
+      ${stat('Signed-up users', s.users, 'Rows in the auth table')}
+      ${stat('Profiles', s.profiles, 'One per user, created on sign-up')}
+      ${stat('New this week', s.newLast7, 'Last 7 days')}
+      ${stat('New this month', s.newLast30, 'Last 30 days')}
+      ${stat('Saved signatures', s.signatures)}
+    </div>`;
+
+    const plans = Object.keys(s.byPlan || {});
+    if (plans.length) {
+      h += `<div class="opt-group">By plan</div><div class="opt-list">`;
+      plans.sort().forEach(p => { h += stat(p.charAt(0).toUpperCase() + p.slice(1), s.byPlan[p]); });
+      h += `</div>`;
+    }
+
+    // A stale number presented without its timestamp is worse than no number.
+    if (s.generatedAt) {
+      const t = new Date(s.generatedAt);
+      h += `<div class="inline-note">Measured ${esc(t.toLocaleString())}.</div>`;
+    }
+    // profiles should track users exactly; a gap means the sign-up trigger
+    // missed someone, which is worth knowing about rather than averaging over.
+    if (typeof s.users === 'number' && typeof s.profiles === 'number' && s.users !== s.profiles) {
+      h += `<div class="inline-note"><strong>${Math.abs(s.users - s.profiles)}</strong> user${Math.abs(s.users - s.profiles) === 1 ? '' : 's'} without a matching profile row — the sign-up trigger may not have fired for them.</div>`;
+    }
+  }
+
+  if (S.adminError) h += `<div class="uploader-error">${esc(S.adminError)}</div>`;
+
+  h += `<div class="add-chips"><button class="chip accent" data-action="refreshAdminStats">${S.adminLoading ? 'Fetching…' : (s ? 'Refresh' : 'Load figures')}</button></div>`;
+  return h;
+}
+
 function renderRollout() {
   const items = [{key:'typography',label:'Design'},{key:'disclaimer',label:'Disclaimer'},{key:'banner',label:'Banner'},{key:'contactFields',label:'Contact fields'}];
   let h = `<div class="field-row"><label class="field-label">Section permissions</label>`;
@@ -2102,6 +2197,7 @@ function setupEvents() {
         case 'toggleMatchTheme': S.matchTemplateTheme = !S.matchTemplateTheme; break;
         case 'toggleNameCaps': S.nameUppercase = !S.nameUppercase; break;
         case 'applyTheme': applyTemplateTheme(S.template); break;
+        case 'refreshAdminStats': loadAdminStats(); break;
         case 'sampleHeadshot':
           S.headshotUrl = togAction.dataset.url;
           S.headshotName = togAction.dataset.label + ' (sample)';
@@ -2421,7 +2517,18 @@ function adoptCloudState(row) {
 
 function startCloud() {
   if (!window.Cloud || !Cloud.isReady) return;
-  Cloud.onChange(() => renderHeader());
+  // The rail has to redraw too: the Admin button appears and disappears with
+  // the signed-in profile, and signing out must take its contents with it.
+  Cloud.onChange(() => {
+    if (!isAdmin() && sections[S.openSection] && sections[S.openSection].adminOnly) {
+      S.openSection = 0;
+      S.adminStats = null;
+      S.adminError = '';
+      renderPanel();
+    }
+    renderHeader();
+    renderRail();
+  });
   Cloud.init().then(c => {
     renderHeader();
     if (!c.signedIn) return;
@@ -2444,7 +2551,7 @@ function startCloud() {
 // ═══════════════════════════════════════
 const STORAGE_KEY = 'signature-studio-v1';
 // Transient UI state — recomputed each session, never written to storage.
-const TRANSIENT_KEYS = ['uploadError', 'storageError'];
+const TRANSIENT_KEYS = ['uploadError', 'storageError', 'adminStats', 'adminError', 'adminLoading'];
 
 function saveState() {
   try {
