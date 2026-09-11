@@ -305,9 +305,9 @@ body{margin:0}
    same squiggle as the logo, enlarged and bled off the right edge. */
 .mast-art{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 .blob{position:absolute;border-radius:50%;background:rgba(255,255,255,.07)}
-.blob-1{width:780px;height:780px;top:-280px;right:-180px}
-.blob-2{width:520px;height:520px;top:120px;left:-200px;background:rgba(255,255,255,.05)}
-.blob-3{width:340px;height:340px;bottom:-60px;right:22%;background:rgba(0,229,160,.10)}
+.blob-1{width:900px;height:900px;top:-140px;left:-400px;background:rgba(255,255,255,.085)}
+.blob-2{width:640px;height:640px;bottom:-300px;right:-180px;background:rgba(255,255,255,.085)}
+.blob-3{width:300px;height:300px;top:-130px;right:16%;background:rgba(0,229,160,.07)}
 .mast-mark{
   position:absolute;right:-90px;top:34%;width:560px;height:auto;
   color:rgba(255,255,255,.13);
@@ -327,31 +327,62 @@ body{margin:0}
 .nav-brand .nav-right{gap:28px}
 
 .mast-copy{
-  position:relative;z-index:2;max-width:44rem;margin:0 auto;
-  padding:64px 0 0;text-align:center;
+  position:relative;z-index:2;max-width:46rem;margin:0 auto;
+  padding:72px 0 0;text-align:center;
 }
+
+/* Translucent capsule above the headline. */
+.mast-badge{
+  display:inline-flex;align-items:center;gap:9px;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.16);
+  border-radius:9999px;padding:8px 18px;margin:0 0 30px;
+  font-size:13.5px;font-weight:600;color:#fff;letter-spacing:-.005em;
+}
+.mast-badge-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--accent);
+  flex-shrink:0;box-shadow:0 0 0 3px rgba(0,229,160,.22);
+}
+
+/* The headline carries the panel, so it is set as large as the space allows
+   and kept to a measure that breaks it over three lines rather than balancing
+   them — the ragged break is the shape the design was drawn with. */
 .mast-title{
-  font-size:clamp(40px,6.4vw,72px);font-weight:800;letter-spacing:-.04em;
-  line-height:1.02;margin:0;text-wrap:balance;color:#fff;
+  font-size:clamp(42px,7.6vw,88px);font-weight:800;letter-spacing:-.045em;
+  line-height:.96;margin:0 auto;color:#fff;
 }
+/* The three-line break is the shape the hero was drawn with, so it is set
+   explicitly rather than left to the measure. On a phone the same breaks would
+   leave two near-empty lines, so there they give way to natural wrapping.
+
+   Each <br> has a real space before it in the markup: on desktop that space
+   collapses against the break and is never seen, and on a phone it is the only
+   thing keeping the words apart once the break is gone. */
+.ttl-break{display:inline}
+@media (max-width:620px){ .ttl-break{display:none} }
 .mast-sub{
-  font-size:clamp(16px,1.9vw,21px);line-height:1.5;font-weight:500;
-  color:rgba(255,255,255,.78);margin:22px auto 0;max-width:34ch;
+  font-size:clamp(16px,1.75vw,20px);line-height:1.5;font-weight:500;
+  color:rgba(255,255,255,.74);margin:32px auto 0;max-width:40ch;
 }
 .mast-cta{
   display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
-  gap:12px;margin:36px 0 0;
+  gap:14px;margin:38px 0 0;
 }
-.mast-cta .btn{gap:8px}
+/* Every .btn is already a pill; the hero pair only needs to be bigger. */
+.mast-cta .btn{gap:10px;height:56px;padding:0 34px;font-size:15.5px;font-weight:700}
+
+/* Reassurance under the buttons: quiet enough not to compete with them. */
+.mast-fine{
+  font-size:13px;font-weight:500;color:rgba(255,255,255,.55);margin:18px 0 0;
+}
 
 /* The card. Its own drop shadow does the lifting; the negative bottom margin on
    .mast is what lets it hang past the panel. */
 .mast-card{
   position:relative;z-index:2;
-  max-width:47rem;margin:56px auto calc(var(--card-drop) * -1);
-  background:#fff;border-radius:20px;padding:38px 40px;
+  max-width:48rem;margin:64px auto calc(var(--card-drop) * -1);
+  background:#fff;border-radius:26px;padding:44px 46px;
   display:flex;justify-content:center;
-  box-shadow:0 30px 60px -20px rgba(20,18,31,.35),0 0 0 1px rgba(20,18,31,.04);
+  box-shadow:0 36px 70px -24px rgba(20,18,31,.38),0 0 0 1px rgba(20,18,31,.04);
 }
 /* A flex item will not shrink below its content unless told to, and the
    signature inside is a fixed-width table — without this the card forces the
