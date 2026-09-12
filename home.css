@@ -115,7 +115,7 @@ body{margin:0}
 .section-dark{background:var(--foreground);color:var(--background);padding:80px 24px}
 .showcase-head{
   max-width:80rem;margin:0 auto 48px;
-  display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:32px;flex-wrap:wrap;
 }
 
 /* ── Section shell ── */
@@ -363,22 +363,26 @@ body{margin:0}
    inbox cannot honestly be shown on black. */
 .sig-showcase{
   max-width:80rem;margin:0 auto;
-  /* min() so the column can drop below its minimum on a narrow phone; a bare
-     minmax(320px,...) is wider than a 320px screen once padding is taken. */
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:20px;
+  /* 560px so two columns only form when each can hold a signature outright —
+     at 1024 a narrower minimum gave 471px columns, which put a scrollbar
+     inside every slab. min() so the column can still drop below that on a
+     phone, where a bare minmax is wider than the screen itself. */
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(560px,100%),1fr));gap:20px;
 }
 .sig-slab{
   margin:0;background:#fff;border-radius:16px;overflow:hidden;
   display:flex;flex-direction:column;
 }
 .sig-slab-canvas{
-  padding:26px 24px;flex:1;
-  display:flex;align-items:center;justify-content:flex-start;
+  padding:28px 26px;flex:1;
+  /* Centred rather than left-aligned: a short layout beside a full-width one
+     otherwise reads as orphaned in its slab rather than simply smaller. */
+  display:flex;align-items:center;justify-content:center;
   overflow-x:auto;
 }
-/* Scaled down: three real signatures side by side would otherwise need a page
-   twice this wide, and each still has to be legible at a glance. */
-.sig-slab-canvas > .sig-frame{min-width:0;flex:0 1 auto;zoom:.8}
+/* Scaled a little: a 600px signature in a 560px column would wrap contact
+   values mid-number, which reads as a broken layout rather than a small one. */
+.sig-slab-canvas > .sig-frame{min-width:0;flex:0 1 auto;zoom:.92}
 .sig-slab-meta{
   padding:14px 24px 18px;border-top:1px solid var(--border);
   display:flex;flex-direction:column;gap:3px;

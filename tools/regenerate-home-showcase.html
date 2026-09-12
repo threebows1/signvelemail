@@ -40,7 +40,9 @@
     S.socialLinks = S.socialLinks.map(sl =>
       Object.assign({}, sl, {enabled: ['linkedin', 'instagram', 'facebook'].includes(sl.type)}));
 
-    const picks = ['spotlight', 'darkcard', 'ribbon'];
+    // Four that contrast in colour and in structure: a clean portrait layout,
+    // a dark panel, a solid colour block, and a ringed one with a social pill.
+    const picks = ['spotlight', 'darkcard', 'colorblock', 'ribbon'];
     const out = picks.map(id => {
       S.template = id;
       applyTemplateTheme(id);
