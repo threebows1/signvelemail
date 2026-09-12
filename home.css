@@ -111,103 +111,18 @@ body{margin:0}
 .lead-light{color:rgba(255,255,255,.62)}
 .body-sm{font-size:14.5px;line-height:1.6;color:var(--muted-foreground);margin:0}
 
-/* ── Small status labels, used by the step visuals ── */
-.preview-tag{
-  font-family:var(--mono);font-size:10px;text-transform:uppercase;
-  letter-spacing:.18em;color:var(--muted-foreground);
-}
-.preview-live{
-  display:inline-flex;align-items:center;gap:6px;
-  font-family:var(--mono);font-size:10px;text-transform:uppercase;
-  letter-spacing:.18em;color:var(--accent-foreground);
-}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block}
-
 /* ── Dark showcase section ── */
 .section-dark{background:var(--foreground);color:var(--background);padding:80px 24px}
 .showcase-head{
   max-width:80rem;margin:0 auto 48px;
   display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap;
 }
-.showcase-grid{
-  max-width:80rem;margin:0 auto;
-  display:grid;grid-template-columns:1fr;gap:24px;
-}
-.showcase-item{background:#fff;border-radius:16px;padding:28px 32px;color:var(--foreground)}
-.showcase-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
-.showcase-cat{
-  font-family:var(--mono);font-size:10px;text-transform:uppercase;
-  letter-spacing:.18em;color:var(--primary);
-}
-.showcase-link{
-  font-size:12.5px;font-weight:600;color:var(--primary);text-decoration:none;
-}
-.showcase-link:hover{text-decoration:underline}
 
-/* Signature left, description right — otherwise a short signature leaves the
-   right two-thirds of a full-width card empty. */
-.showcase-body{
-  display:grid;grid-template-columns:minmax(0,auto) minmax(240px,1fr);
-  gap:48px;align-items:center;
-}
-.showcase-info{max-width:34ch}
-.showcase-info .h3{font-size:21px;margin-bottom:10px}
-.showcase-info .body-sm{margin-bottom:20px}
-.showcase-spec{
-  display:flex;flex-wrap:wrap;gap:6px;margin:0 0 22px;padding:0;list-style:none;
-}
-.showcase-spec li{
-  font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--muted-foreground);background:var(--background);
-  border-radius:9999px;padding:5px 11px;
-}
-@media (max-width:860px){
-  .showcase-body{grid-template-columns:1fr;gap:28px}
-  .showcase-info{max-width:none}
-}
-
-/* ── Steps ── */
+/* ── Section shell ── */
 .section{max-width:80rem;margin:0 auto;padding:80px 24px}
-.steps{margin-top:56px;display:flex;flex-direction:column;gap:28px}
-.step{
-  background:#fff;border:1px solid var(--border);border-radius:20px;padding:34px;
-  display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;
-}
-.step:nth-child(even) .step-visual{order:-1}
-.step-kicker{
-  font-family:var(--mono);font-size:10px;text-transform:uppercase;
-  letter-spacing:.2em;color:var(--muted-foreground);margin:0 0 14px;
-}
-.step-kicker b{color:var(--primary);font-weight:500}
-.step-visual{
-  background:var(--background);border-radius:14px;padding:22px;min-height:180px;
-  display:flex;flex-direction:column;justify-content:center;gap:12px;
-}
-.chip-row{display:flex;flex-wrap:wrap;gap:8px}
-.chip{
-  font-size:12.5px;font-weight:500;padding:7px 14px;border-radius:9999px;
-  background:#fff;border:1px solid var(--border);color:var(--foreground);
-}
-.chip-on{background:var(--secondary);border-color:transparent;color:var(--secondary-foreground)}
-.chip-mono{font-family:var(--mono);font-size:11px;letter-spacing:.06em}
-.swatch-row{display:flex;align-items:center;gap:10px}
-.swatch{width:26px;height:26px;border-radius:8px;border:1px solid rgba(20,18,31,.08)}
-.roster{display:flex;flex-direction:column;gap:10px}
-.roster-row{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;
-}
-.roster-name{font-size:13.5px;font-weight:600;margin:0;line-height:1.3}
-.roster-role{font-size:11.5px;color:var(--muted-foreground);margin:0;line-height:1.3}
-.pill-state{
-  font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.14em;
-  padding:4px 10px;border-radius:9999px;
-}
-.pill-installed{background:rgba(0,229,160,.18);color:#04231a}
-.pill-sent{background:var(--secondary);color:var(--secondary-foreground)}
 
 /* ── Feature grid ── */
-.feature-grid{margin-top:56px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.feature-grid{margin-top:56px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
 .feature{
   background:#fff;border:1px solid var(--border);border-radius:18px;padding:28px;
   transition:transform .15s,border-color .15s;
@@ -441,6 +356,66 @@ body{margin:0}
   .nav-brand{padding:16px 0}
   .nav-brand .nav-right{gap:12px}
   .mast-card{padding:22px 16px}
+}
+
+/* ── Showcase: real signatures on the dark band ──
+   Each sits on its own light slab, because a signature designed for a white
+   inbox cannot honestly be shown on black. */
+.sig-showcase{
+  max-width:80rem;margin:0 auto;
+  /* min() so the column can drop below its minimum on a narrow phone; a bare
+     minmax(320px,...) is wider than a 320px screen once padding is taken. */
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:20px;
+}
+.sig-slab{
+  margin:0;background:#fff;border-radius:16px;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.sig-slab-canvas{
+  padding:26px 24px;flex:1;
+  display:flex;align-items:center;justify-content:flex-start;
+  overflow-x:auto;
+}
+/* Scaled down: three real signatures side by side would otherwise need a page
+   twice this wide, and each still has to be legible at a glance. */
+.sig-slab-canvas > .sig-frame{min-width:0;flex:0 1 auto;zoom:.8}
+.sig-slab-meta{
+  padding:14px 24px 18px;border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:3px;
+}
+.sig-slab-name{font-size:14px;font-weight:700;letter-spacing:-.01em;color:var(--foreground)}
+.sig-slab-note{font-size:12.5px;line-height:1.5;color:var(--muted-foreground)}
+.showcase-head .lead{max-width:46ch}
+
+/* ── How it works ── */
+.how-grid{
+  margin-top:48px;display:grid;gap:20px;
+  grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));
+}
+.how{
+  background:#fff;border:1px solid var(--border);border-radius:18px;padding:28px 26px;
+}
+.how-num{
+  display:inline-block;font-family:var(--mono);font-size:11px;font-weight:500;
+  letter-spacing:.16em;color:var(--primary);margin-bottom:16px;
+}
+.how .h3{font-size:20px;margin-bottom:10px}
+
+/* ── The band: why it renders ── */
+.band{padding-top:0}
+.band-inner{
+  background:var(--secondary);border-radius:22px;padding:44px 44px 48px;
+  display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start;
+}
+.band-inner .lead{max-width:none;color:var(--secondary-foreground);opacity:.85}
+.band-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:18px}
+.band-list li{
+  font-size:13.5px;line-height:1.55;color:var(--secondary-foreground);
+  opacity:.85;padding-left:18px;border-left:2px solid var(--primary);
+}
+.band-list strong{display:block;font-size:14.5px;font-weight:700;opacity:1;margin-bottom:3px}
+@media (max-width:860px){
+  .band-inner{grid-template-columns:1fr;gap:30px;padding:32px 26px 34px}
 }
 /* ═══════════════════════════════════════════════════════════
    Signature isolation

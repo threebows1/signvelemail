@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>gen</title></head>
+<body>
+  <div class="app" id="app" style="display:none">
+    <aside class="rail" id="rail"></aside>
+    <div class="workspace"><header class="topbar" id="header"></header>
+      <div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div>
+  </div>
+  <div class="export-overlay hidden" id="exportOverlay"><div class="export-panel">
+    <div class="export-panel-header"><h2>E</h2><button class="export-close" id="exportClose">x</button></div>
+    <pre class="export-code"><code id="exportCode"></code></pre>
+    <div class="export-actions"><button class="btn btn-accent" id="exportCopyBtn">C</button></div></div></div>
+  <div class="auth-overlay hidden" id="authOverlay"><div class="auth-panel">
+    <button class="auth-close" id="authClose">x</button><h2 class="auth-title" id="authTitle">S</h2><p class="auth-sub" id="authSub">.</p>
+    <label class="auth-label" for="authEmail">E</label><input class="input" type="email" id="authEmail">
+    <label class="auth-label" for="authPassword">P</label><input class="input" type="password" id="authPassword">
+    <div class="auth-msg hidden" id="authMsg"></div><button class="btn btn-accent auth-submit" id="authSubmit">G</button>
+    <div class="auth-alt"><button class="auth-link" id="authToggle">a</button><button class="auth-link" id="authForgot">b</button></div></div></div>
+
+  <pre id="out"></pre>
+  <script>
+    // These pages advertise what a paid signature looks like, so images render
+    // regardless of plan. Only the editor itself gates them.
+    window.SIGNVEL_SHOW_IMAGES = true;
+    try { localStorage.clear(); } catch (e) {}
+  </script>
+  <script src="../config.js"></script>
+  <script src="../cloud.js"></script>
+  <script src="../app.js"></script>
+  <script>
+  (function () {
+    S.tagline = '';
+    S.logoUrl = DEFAULT_LOGO_URL;
+    S.headshotUrl = sampleHeadshots[0].url;
+    S.bannerEnabled = false;
+    S.disclaimerEnabled = false;
+    S.socialLinks = S.socialLinks.map(sl =>
+      Object.assign({}, sl, {enabled: ['linkedin', 'instagram', 'facebook'].includes(sl.type)}));
+
+    const picks = ['spotlight', 'darkcard', 'ribbon'];
+    const out = picks.map(id => {
+      S.template = id;
+      applyTemplateTheme(id);
+      return '<!--' + id + '-->\n' + generateSignaturePreview().replace(/\s*\n\s*/g, ' ').trim();
+    }).join('\n\n');
+
+    document.getElementById('out').textContent = out;
+    document.title = 'GEN ' + picks.length;
+  })();
+  </script>
+</body>
+</html>
