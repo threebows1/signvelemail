@@ -591,9 +591,20 @@ function renderAccount() {
   if (!c.signedIn) {
     return `<button class="btn" id="signInBtn">Sign in</button>`;
   }
+  // What the account is on, in the words that matter to the person: a live
+  // plan by name, a trial by how long is left, or nothing once both are gone.
+  let badge;
+  if (c.plan && c.plan !== 'free') {
+    badge = `<span class="account-plan">${esc(c.plan)}</span>`;
+  } else if (c.trialActive) {
+    const d = c.trialDaysLeft;
+    badge = `<span class="account-plan is-trial" title="Your trial ends ${esc(new Date(c.trialEndsAt).toLocaleDateString())}">trial · ${d} day${d === 1 ? '' : 's'}</span>`;
+  } else {
+    badge = `<a class="account-plan is-ended" href="pricing.html">trial ended</a>`;
+  }
   return `<span class="account-chip" title="${esc(c.email)}">
       <span class="account-dot"></span>${esc(c.email.split('@')[0])}
-      <span class="account-plan">${esc(c.plan)}</span>
+      ${badge}
     </span>
     <button class="btn" id="signOutBtn">Sign out</button>`;
 }
@@ -631,7 +642,9 @@ function imagesUnlocked() {
   // local checkout or a self-hosted copy stays fully usable.
   if (!(window.Cloud && Cloud.isReady)) return true;
   const c = Cloud.state();
-  return !!(c.signedIn && c.plan && c.plan !== 'free');
+  // A live plan or an unexpired trial. Both, not one — a new account gets
+  // thirty days of the paid features before anything has been bought.
+  return !!(c.signedIn && c.entitled);
 }
 
 // Who has signed up, and what each of them is on.
@@ -1045,8 +1058,8 @@ function renderMedia() {
   // nothing changes, and there is no way to tell why.
   if (!imagesUnlocked()) {
     h += `<div class="inline-note is-locked">
-      <strong>Images need an active plan.</strong>
-      Photographs and uploaded logos appear in your signature once a subscription is running. Until then the layouts use a generated mark and your initials, and everything you set here is saved and waiting.
+      <strong>Your trial has ended.</strong>
+      Photographs and uploaded logos appear in your signature while a trial or a plan is running. For now the layouts use a generated mark and your initials, and everything you set here is saved and waiting.
       <a class="note-link" href="pricing.html">See plans &rarr;</a>
     </div>`;
   }
@@ -1141,7 +1154,7 @@ function renderBanner() {
   if (S.bannerEnabled) {
     h += `<div class="field-row"><label class="field-label">Banner message</label><input class="input" value="${esc(S.bannerMessage)}" data-bind="bannerMessage"></div>`;
     h += `<div class="field-row"><label class="field-label">Banner subtext</label><input class="input" value="${esc(S.bannerSubtext)}" data-bind="bannerSubtext" placeholder="Optional second line"></div>`;
-    if (!imagesUnlocked()) h += `<div class="inline-note is-locked">A campaign image needs an active plan. The message, subtext and button below work on any plan.</div>`;
+    if (!imagesUnlocked()) h += `<div class="inline-note is-locked">A campaign image needs a trial or a plan. The message, subtext and button below work either way.</div>`;
     h += `<div class="field-row"><label class="field-label">Banner image URL</label><input class="input" type="url" value="${esc(S.bannerImage)}" data-bind="bannerImage" placeholder="https://example.com/campaign.png"></div>`;
     h += `<div class="field-row"><label class="field-label">Sample banners<span class="field-hint">Hosted images, safe to send.</span></label><div class="sample-row is-wide">`;
     sampleBanners.forEach(b => {
@@ -1202,6 +1215,15 @@ function renderAdmin() {
       ${stat('Saved signatures', s.signatures)}
     </div>`;
 
+    // Only shown once the function has been redeployed with the trial counts;
+    // an older deployment simply omits them rather than showing zeros.
+    if (typeof s.onTrial === 'number') {
+      h += `<div class="opt-group">Trials</div><div class="opt-list">
+        ${stat('On trial now', s.onTrial, 'Free accounts inside their 30 days')}
+        ${stat('Trial ended', s.expired, 'Past it, and not yet on a plan')}
+      </div>`;
+    }
+
     const plans = Object.keys(s.byPlan || {});
     if (plans.length) {
       h += `<div class="opt-group">By plan</div><div class="opt-list">`;
@@ -1238,10 +1260,17 @@ function renderAdmin() {
     S.adminUsers.forEach(u => {
       const self = u.id === me;
       const joined = u.created_at ? new Date(u.created_at).toLocaleDateString() : '';
+      // Where the account stands, said once: a paid plan speaks for itself, so
+      // the trial is only worth mentioning on a free one.
+      let standing = '';
+      if (u.plan === 'free' && u.trial_ends_at) {
+        const left = Math.ceil((new Date(u.trial_ends_at).getTime() - Date.now()) / 864e5);
+        standing = left > 0 ? ` · trial, ${left} day${left === 1 ? '' : 's'} left` : ' · trial ended';
+      }
       h += `<div class="user-row${self ? ' is-self' : ''}">
         <span class="user-id">
           <span class="user-email">${esc(u.email || '(no email)')}</span>
-          <span class="user-meta">${self ? 'you' : 'joined ' + esc(joined)}${u.is_admin ? ' · admin' : ''}</span>
+          <span class="user-meta">${self ? 'you' : 'joined ' + esc(joined)}${u.is_admin ? ' · admin' : ''}${standing}</span>
         </span>
         <span class="user-plan">`;
       if (self) {

@@ -71,7 +71,7 @@ const PLANS = ['free', 'team', 'org'];
 async function listUsers(admin: any, origin: string | null) {
   const { data, error } = await admin
     .from('profiles')
-    .select('id, email, plan, is_admin, created_at')
+    .select('id, email, plan, is_admin, created_at, trial_ends_at')
     .order('created_at', { ascending: true })
     .limit(500);
   if (error) return json({ error: error.message }, 500, origin);
@@ -103,7 +103,7 @@ async function setPlan(admin: any, body: any, callerId: string, origin: string |
     .from('profiles')
     .update({ plan })
     .eq('id', userId)
-    .select('id, email, plan, is_admin, created_at')
+    .select('id, email, plan, is_admin, created_at, trial_ends_at')
     .single();
 
   if (error) return json({ error: error.message }, 500, origin);
@@ -169,12 +169,22 @@ Deno.serve(async (req) => {
     admin.from('profiles').select('id', { count: 'exact', head: true }),
     admin.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', since(7)),
     admin.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', since(30)),
-    admin.from('profiles').select('plan'),
+    admin.from('profiles').select('plan, trial_ends_at'),
   ]);
 
+  // Counted together so the two add up to the profile count rather than
+  // overlapping: a paid account is reported by its plan, and only a free one
+  // is reported as trialling or expired.
   const byPlan: Record<string, number> = {};
-  (plans.data ?? []).forEach((r: { plan: string }) => {
+  let onTrial = 0;
+  let expired = 0;
+  const now = Date.now();
+  (plans.data ?? []).forEach((r: { plan: string; trial_ends_at: string }) => {
     byPlan[r.plan] = (byPlan[r.plan] ?? 0) + 1;
+    if (r.plan === 'free') {
+      if (r.trial_ends_at && new Date(r.trial_ends_at).getTime() > now) onTrial++;
+      else expired++;
+    }
   });
 
   return json({
@@ -184,6 +194,8 @@ Deno.serve(async (req) => {
     newLast7: week.count ?? 0,
     newLast30: month.count ?? 0,
     byPlan,
+    onTrial,
+    expired,
     generatedAt: new Date().toISOString(),
   }, 200, origin);
 });

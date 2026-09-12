@@ -39,7 +39,26 @@ window.Cloud = (function () {
       // from an Edge Function that checks this again server-side, so faking it
       // here reveals nothing.
       isAdmin: !!(profile && profile.is_admin),
+      // Trial. trialDaysLeft is rounded up, so the last part-day still reads
+      // as "1 day left" rather than "0" while access is genuinely live.
+      trialEndsAt: profile ? profile.trial_ends_at : null,
+      trialActive: trialActive(),
+      trialDaysLeft: trialDaysLeft(),
+      // What the interface actually asks. The same question is asked again by
+      // the storage policies, which is where it is enforced.
+      entitled: !!(profile && (profile.plan !== 'free' || trialActive())),
     };
+  }
+
+  function trialActive() {
+    if (!profile || !profile.trial_ends_at) return false;
+    return new Date(profile.trial_ends_at).getTime() > Date.now();
+  }
+
+  function trialDaysLeft() {
+    if (!profile || !profile.trial_ends_at) return 0;
+    const ms = new Date(profile.trial_ends_at).getTime() - Date.now();
+    return ms > 0 ? Math.ceil(ms / 864e5) : 0;
   }
 
   async function loadProfile() {

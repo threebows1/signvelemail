@@ -40,6 +40,30 @@ create table if not exists public.profiles (
 alter table public.profiles
   add column if not exists is_admin boolean not null default false;
 
+-- Every account starts on a 30-day trial with the paid features switched on.
+-- Kept separate from `plan` rather than added to it as a fourth value: a trial
+-- is a date, not a tier, and someone can be on a paid plan and still have an
+-- unexpired trial date sitting behind it. Entitlement is the OR of the two —
+-- see has_paid_access below.
+--
+-- Adding the column with a default backfills existing rows, so anyone who
+-- signed up before this runs gets their thirty days from today rather than
+-- being expired on arrival.
+alter table public.profiles
+  add column if not exists trial_ends_at timestamptz not null default (now() + interval '30 days');
+
+-- The one question the rest of the schema asks about entitlement, in one
+-- place. security definer so it can read profiles from inside a storage
+-- policy, where the caller only sees their own row.
+create or replace function public.has_paid_access(uid uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.profiles
+    where id = uid
+      and (plan <> 'free' or trial_ends_at > now())
+  );
+$$;
+
 -- ── Signatures ────────────────────────────────────────────
 -- `state` holds the editor's S object verbatim.
 create table if not exists public.signatures (
@@ -113,8 +137,9 @@ create trigger on_auth_user_created
 -- ── Stop the browser editing its own plan or granting itself admin ────
 -- Users may update their profile (name, etc.) but plan and customer id are
 -- billing state and must only move via the webhook's service-role connection.
--- is_admin is held to the same rule for the same reason: a column that decides
--- what someone may see is not one the client gets to write.
+-- is_admin and trial_ends_at are held to the same rule for the same reason: a
+-- column that decides what someone may see, or for how long, is not one the
+-- client gets to write.
 create or replace function public.protect_billing_columns()
 returns trigger language plpgsql as $$
 begin
@@ -122,6 +147,8 @@ begin
     new.plan := old.plan;
     new.stripe_customer_id := old.stripe_customer_id;
     new.is_admin := old.is_admin;
+    -- Otherwise the trial is extended with one PATCH from the browser.
+    new.trial_ends_at := old.trial_ends_at;
   end if;
   return new;
 end $$;
@@ -155,8 +182,10 @@ drop policy if exists "read own subscription" on public.subscriptions;
 create policy "read own subscription" on public.subscriptions for select using (auth.uid() = user_id);
 
 -- ── Plan limits, enforced in the database ─────────────────
--- The free plan gets one signature. Doing this here rather than in JavaScript
--- means it holds even if someone calls the API directly.
+-- One signature unless there is a paid plan. The trial deliberately does not
+-- lift this: thirty days is for trying the product, and the cap is one of the
+-- things being tried. Doing it here rather than in JavaScript means it holds
+-- even if someone calls the API directly.
 create or replace function public.enforce_signature_quota()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare
@@ -167,7 +196,7 @@ begin
   if coalesce(user_plan, 'free') = 'free' then
     select count(*) into existing from public.signatures where user_id = new.user_id;
     if existing >= 1 then
-      raise exception 'The free plan allows one signature. Upgrade to add more.'
+      raise exception 'One signature per account until you are on a plan.'
         using errcode = 'check_violation';
     end if;
   end if;
@@ -194,7 +223,8 @@ drop policy if exists "brand owner delete"  on storage.objects;
 create policy "brand public read" on storage.objects
   for select using (bucket_id = 'brand');
 
--- Hosting an image is a paid feature, and this is where that actually holds.
+-- Hosting an image needs paid access — a live subscription or an unexpired
+-- trial — and this is where that actually holds.
 -- The editor hides images on a free plan, but the signature is assembled in the
 -- visitor's own browser, so that gate is a product boundary rather than a
 -- security one. This is the boundary: a free plan cannot obtain a hosted URL,
@@ -204,10 +234,7 @@ create policy "brand owner write" on storage.objects
   for insert with check (
     bucket_id = 'brand'
     and auth.uid()::text = (storage.foldername(name))[1]
-    and exists (
-      select 1 from public.profiles
-      where id = auth.uid() and plan <> 'free'
-    )
+    and public.has_paid_access(auth.uid())
   );
 
 -- Same rule on replacement: a free plan must not be able to change what sits
@@ -216,10 +243,7 @@ create policy "brand owner update" on storage.objects
   for update using (
     bucket_id = 'brand'
     and auth.uid()::text = (storage.foldername(name))[1]
-    and exists (
-      select 1 from public.profiles
-      where id = auth.uid() and plan <> 'free'
-    )
+    and public.has_paid_access(auth.uid())
   );
 
 create policy "brand owner delete" on storage.objects

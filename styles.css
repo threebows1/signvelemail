@@ -658,6 +658,13 @@ select.input{cursor:pointer;appearance:auto}
   background:var(--accent);border-color:var(--accent);color:#fff;
 }
 .plan-btn:disabled{opacity:.45;cursor:default}
+/* Trial and expiry states on the account chip. */
+.account-plan.is-trial{background:var(--accent-light,rgba(91,46,255,.12));color:var(--accent)}
+.account-plan.is-ended{
+  background:#FDECEC;color:#C0392B;text-decoration:none;cursor:pointer;
+}
+.account-plan.is-ended:hover{background:#FBDCDC}
+
 .plan-tag{
   font-size:10px;font-weight:600;text-transform:capitalize;
   padding:4px 9px;border-radius:9999px;

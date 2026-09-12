@@ -284,6 +284,24 @@
 
       window.SIGNVEL_SHOW_IMAGES = true;
       if (!imagesUnlocked()) E.push('override true did not unlock images');
+
+      // Entitlement is a live plan OR an unexpired trial, and imagesUnlocked
+      // has to read both. Checked against the real function with the override
+      // removed, so this is the code path a signed-in account takes.
+      delete window.SIGNVEL_SHOW_IMAGES;
+      const realCloud = window.Cloud;
+      const asAccount = (o) => {
+        window.Cloud = { isReady: true, state: () => Object.assign(
+          {ready:true, signedIn:true, email:'a@b.com', userId:'u1', isAdmin:false}, o) };
+      };
+      asAccount({plan:'free', entitled:true,  trialActive:true });
+      if (!imagesUnlocked()) E.push('trial: images stayed locked inside the 30 days');
+      asAccount({plan:'free', entitled:false, trialActive:false});
+      if (imagesUnlocked()) E.push('expired: images still unlocked after the trial');
+      asAccount({plan:'team', entitled:true,  trialActive:false});
+      if (!imagesUnlocked()) E.push('paid: images locked on a live plan');
+      window.Cloud = realCloud;
+      window.SIGNVEL_SHOW_IMAGES = true;
       S.template = 'spotlight';
       const paid = generateSignaturePreview();
       if (!paid.includes(shotId)) E.push('paid: headshot missing');
