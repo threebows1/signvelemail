@@ -48,14 +48,13 @@
     setTimeout(() => {
       const open = !overlay.classList.contains('hidden');
       const title = document.getElementById('authTitle').textContent;
-      if (want === 'signin') {
-        if (!open) E.push('#signin did not open the panel');
-        if (!/sign in/i.test(title)) E.push('#signin opened the wrong mode: ' + title);
-      } else if (want === 'signup') {
-        if (!open) E.push('#signup did not open the panel');
+      // Signed out, the gate opens the panel in every case — the fragment
+      // only decides which side of it you land on.
+      if (!open) E.push((want || 'no hash') + ': panel did not open');
+      if (want === 'signup') {
         if (!/create/i.test(title)) E.push('#signup opened the wrong mode: ' + title);
       } else {
-        if (open) E.push('panel opened with no hash asking for it');
+        if (!/sign in/i.test(title)) E.push((want || 'no hash') + ' should be sign in, got: ' + title);
       }
       // The fragment must not linger, or a refresh reopens it.
       if (location.hash) E.push('hash was not cleared: ' + location.hash);

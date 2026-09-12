@@ -607,3 +607,20 @@ select.input{cursor:pointer;appearance:auto}
   font-weight:600;color:var(--accent);text-decoration:none;
 }
 .inline-note .note-link:hover{text-decoration:underline}
+
+/* ── Editor locked behind sign-in ──
+   Applied before the first render, so the editor is never briefly visible to
+   someone without a session. visibility rather than display: the layout stays
+   measured, so nothing reflows when the lock lifts. */
+.app-locked .app{visibility:hidden}
+.app-locked .export-overlay{display:none}
+
+/* With the editor hidden there is nothing behind the panel to close back to,
+   so the close button goes and a link out takes its place. */
+.auth-overlay.is-required .auth-close{display:none}
+.auth-overlay:not(.is-required) .auth-back{display:none}
+.auth-back{margin:18px 0 0;text-align:center}
+.auth-back a{
+  font-size:12.5px;font-weight:500;color:var(--muted);text-decoration:none;
+}
+.auth-back a:hover{color:var(--accent)}

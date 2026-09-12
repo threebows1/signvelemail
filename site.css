@@ -388,3 +388,11 @@ body{margin:0}
   .tmpl-gallery .tmpl-card{flex-direction:column}
   .tmpl-gallery .tmpl-meta{flex:1 1 auto;border-left:0;border-top:1px solid var(--line)}
 }
+
+/* Sign in beside Get started in the nav. Quieter than the button, because
+   most people arriving on these pages do not have an account yet. */
+.nav-signin{
+  font-size:13px;font-weight:500;color:var(--ink);
+  text-decoration:none;margin-right:16px;transition:color .15s;
+}
+.nav-signin:hover{color:var(--accent)}

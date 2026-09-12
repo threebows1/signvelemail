@@ -2519,6 +2519,9 @@ function openAuth(mode) {
 }
 
 function closeAuth() {
+  // While the editor is locked there is nothing behind this panel to return
+  // to, so the close button, the backdrop and Escape all do nothing.
+  if (authRequired) return;
   document.getElementById('authOverlay').classList.add('hidden');
   document.getElementById('authPassword').value = '';
 }
@@ -2591,11 +2594,38 @@ function adoptCloudState(row) {
   return true;
 }
 
+// ── The editor is for account holders ──────────────────────
+// Locked until a session is confirmed. The lock is applied synchronously in
+// init(), before anything renders, so the editor never flashes on screen for
+// someone who is not signed in.
+//
+// Where no cloud is configured there is no account to hold, so nothing locks —
+// a local checkout and a self-hosted copy both stay usable.
+let authRequired = false;
+
+function lockEditor() {
+  authRequired = true;
+  document.body.classList.add('app-locked');
+  document.getElementById('authOverlay').classList.add('is-required');
+  openAuth('signin');
+}
+
+function unlockEditor() {
+  authRequired = false;
+  document.body.classList.remove('app-locked');
+  document.getElementById('authOverlay').classList.remove('is-required');
+  closeAuth();
+}
+
 function startCloud() {
   if (!window.Cloud || !Cloud.isReady) return;
   // The rail has to redraw too: the Admin button appears and disappears with
   // the signed-in profile, and signing out must take its contents with it.
   Cloud.onChange(() => {
+    const c = Cloud.state();
+    // Signing out has to close the editor behind you, not leave it open.
+    if (!c.signedIn) { lockEditor(); }
+    else if (authRequired) { unlockEditor(); }
     if (!isAdmin() && sections[S.openSection] && sections[S.openSection].adminOnly) {
       S.openSection = 0;
       S.adminStats = null;
@@ -2607,7 +2637,8 @@ function startCloud() {
   });
   Cloud.init().then(c => {
     renderHeader();
-    if (!c.signedIn) return;
+    if (!c.signedIn) { lockEditor(); return; }
+    unlockEditor();
     return Cloud.loadSignature().then(row => {
       if (adoptCloudState(row)) {
         if (!(S.openSection >= 0 && S.openSection < sections.length)) S.openSection = 0;
@@ -2780,6 +2811,13 @@ function readFile(file, cb) {
 function init() {
   loadState();
   if (!(S.openSection >= 0 && S.openSection < sections.length)) S.openSection = 0;
+  // Locked before the first render, not after the session resolves — otherwise
+  // the editor is briefly on screen for someone who is not signed in. The
+  // session check below either confirms it or lifts it.
+  if (window.Cloud && Cloud.isReady) {
+    authRequired = true;
+    document.body.classList.add('app-locked');
+  }
   syncBodyClass(); // apply a collapsed state restored from storage
   renderRail();
   renderHeader();
