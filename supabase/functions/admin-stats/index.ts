@@ -43,11 +43,19 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:8787',
 ];
 
+// Every header supabase-js puts on a functions.invoke call. Listing only
+// authorization and content-type is not enough: the client also sends apikey
+// and x-client-info, the browser asks permission for all of them at once, and
+// a preflight that omits any one of them fails the whole request before it is
+// sent. It surfaces as "Failed to send a request to the Edge Function", which
+// names the symptom and not the cause.
+const ALLOWED_HEADERS = 'authorization, content-type, apikey, x-client-info, x-supabase-api-version';
+
 function corsHeaders(origin: string | null) {
   const allow = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
     'Access-Control-Allow-Origin': allow,
-    'Access-Control-Allow-Headers': 'authorization, content-type',
+    'Access-Control-Allow-Headers': ALLOWED_HEADERS,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Vary': 'Origin',
   };
