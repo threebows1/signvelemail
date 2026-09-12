@@ -46,6 +46,8 @@
   <script>
     window.__errs = [];
     window.onerror = (m, s, l, c) => { window.__errs.push(m + ' @' + l + ':' + c); };
+    // The contact sheet checks layout, so images render regardless of plan.
+    window.SIGNVEL_SHOW_IMAGES = true;
     try { localStorage.clear(); } catch (e) {}
   </script>
   <script src="../config.js"></script>

@@ -135,6 +135,38 @@ If you host the editor anywhere besides signvel.com or the workers.dev URL, add
 that origin to `ALLOWED_ORIGINS` at the top of the function — it does not use a
 wildcard, so an unlisted origin is refused.
 
+## Images as a paid feature
+
+Photographs and uploaded logos render in a signature only while a subscription
+is active. Without one the layouts fall back to a generated monogram for the
+company and initials for the person, so a free signature is complete rather
+than visibly broken, and the panel says why.
+
+Two halves, and it is worth being clear which is which:
+
+- **In the editor** it is a product boundary, not a security one. The signature
+  is assembled in the visitor's own browser and copied to their clipboard, so
+  anyone determined can read the markup and put the image back.
+- **In the database** it actually holds. The storage policies refuse uploads
+  and replacements from a free plan, so a free user cannot obtain a hosted URL
+  — and an un-hosted image is stripped by Gmail and Outlook before a recipient
+  ever sees it. That is the part that matters commercially: a bypassed preview
+  still does not survive being sent.
+
+**Re-run `supabase/schema.sql`** to apply the storage policies. Safe to re-run.
+
+To check it from the app: a free account should see the note in Logo &
+headshot and get *"Hosting images needs an active plan"* on upload. To lift it
+for an account before Stripe is wired up:
+
+```sql
+update public.profiles set plan = 'team' where email = 'you@example.com';
+```
+
+The marketing pages are unaffected — they hold static markup generated with
+`window.SIGNVEL_SHOW_IMAGES = true`, because they advertise what a paid
+signature looks like.
+
 ## Notes on the schema
 
 - **`signatures.state` is one jsonb column.** The editor's settings object goes

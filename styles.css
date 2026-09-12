@@ -595,3 +595,15 @@ select.input{cursor:pointer;appearance:auto}
   font-family:var(--mono);font-size:14px;font-weight:600;
   color:var(--ink);letter-spacing:.01em;font-variant-numeric:tabular-nums;
 }
+
+/* A note that explains a gated feature rather than a limitation of the
+   template — tinted so it reads as information, not as an error. */
+.inline-note.is-locked{
+  border-left:3px solid var(--accent);
+  background:var(--accent-light,rgba(91,46,255,.06));
+}
+.inline-note .note-link{
+  display:inline-block;margin-top:6px;
+  font-weight:600;color:var(--accent);text-decoration:none;
+}
+.inline-note .note-link:hover{text-decoration:underline}

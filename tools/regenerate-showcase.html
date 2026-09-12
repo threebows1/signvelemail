@@ -19,7 +19,12 @@
     <div class="auth-alt"><button class="auth-link" id="authToggle">a</button><button class="auth-link" id="authForgot">b</button></div></div></div>
 
   <pre id="out"></pre>
-  <script>try { localStorage.clear(); } catch (e) {}</script>
+  <script>
+    // These pages advertise what a paid signature looks like, so images render
+    // regardless of plan. Only the editor itself gates them.
+    window.SIGNVEL_SHOW_IMAGES = true;
+    try { localStorage.clear(); } catch (e) {}
+  </script>
   <script src="../config.js"></script>
   <script src="../cloud.js"></script>
   <script src="../app.js"></script>

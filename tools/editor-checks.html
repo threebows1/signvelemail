@@ -263,6 +263,55 @@
     S.openSection = 0;
     renderPanel();
 
+    // Images are gated on an active subscription. The gate has to hide the
+    // image without leaving a hole: the layouts already have a monogram and an
+    // initials disc for "no image chosen", and that is what should appear.
+    (function () {
+      const keepOverride = window.SIGNVEL_SHOW_IMAGES;
+      const keepLogo = S.logoUrl, keepShot = S.headshotUrl;
+      const keepBanner = S.bannerImage, keepBannerOn = S.bannerEnabled;
+      S.logoUrl = 'https://example.com/real-logo.png';
+      S.headshotUrl = sampleHeadshots[0].url;
+      // esc() turns the URL's & into &amp; in the markup, so match on the
+      // photo id rather than the whole string.
+      const shotId = S.headshotUrl.match(/photo-[0-9a-f-]+/)[0];
+      S.bannerImage = sampleBanners[0].url;
+      S.bannerEnabled = true;
+
+      window.SIGNVEL_SHOW_IMAGES = true;
+      if (!imagesUnlocked()) E.push('override true did not unlock images');
+      S.template = 'spotlight';
+      const paid = generateSignaturePreview();
+      if (!paid.includes(shotId)) E.push('paid: headshot missing');
+      S.template = 'split';
+      if (!generateSignaturePreview().includes('real-logo.png')) E.push('paid: logo missing');
+
+      window.SIGNVEL_SHOW_IMAGES = false;
+      if (imagesUnlocked()) E.push('override false did not lock images');
+      S.template = 'spotlight';
+      const free = generateSignaturePreview();
+      if (free.includes(shotId)) E.push('free: headshot still rendered');
+      if (!/<div style="width:\d+px;height:\d+px;background:/.test(free)) E.push('free: no initials fallback drawn');
+      S.template = 'split';
+      const freeSplit = generateSignaturePreview();
+      if (freeSplit.includes('real-logo.png')) E.push('free: logo still rendered');
+      if (!freeSplit.includes('Signvel')) E.push('free: generated mark missing');
+      S.template = 'accentbar';
+      if (generateSignaturePreview().includes(sampleBanners[0].url)) E.push('free: banner image still rendered');
+      // Nothing may leak an <img> on a free plan.
+      ['spotlight','split','connect','band','grid','feature','corporate'].forEach(id => {
+        S.template = id;
+        if (/<img\s/i.test(generateSignaturePreview())) E.push('free: ' + id + ' still emits an <img>');
+      });
+      // And the panel must say why rather than looking broken.
+      click(document.querySelector('#rail [data-goto="2"]'));
+      if (!$('#panel .inline-note.is-locked')) E.push('free: media panel does not explain the gate');
+
+      window.SIGNVEL_SHOW_IMAGES = keepOverride;
+      S.logoUrl = keepLogo; S.headshotUrl = keepShot;
+      S.bannerImage = keepBanner; S.bannerEnabled = keepBannerOn;
+    })();
+
     // Export must still produce the same markup the preview shows.
     S.template = 'corporate';
     if (!generateExportHTML().includes('<table')) E.push('export produced no table');

@@ -157,7 +157,18 @@ window.Cloud = (function () {
       upsert: true,
       contentType: file.type || undefined,
     });
-    if (error) return { ok: false, error: error.message };
+    if (error) {
+      // The storage policy refuses uploads from a free plan. Postgres reports
+      // that as a row-level security violation, which is accurate and useless
+      // to the person reading it.
+      const denied = /row-level security|violates|not authorized|403/i.test(error.message || '');
+      return {
+        ok: false,
+        error: denied
+          ? 'Hosting images needs an active plan. Your upload was not saved.'
+          : error.message,
+      };
+    }
     const { data } = db.storage.from('brand').getPublicUrl(path);
     return { ok: true, url: data.publicUrl, path };
   }

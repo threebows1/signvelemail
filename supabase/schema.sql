@@ -194,14 +194,32 @@ drop policy if exists "brand owner delete"  on storage.objects;
 create policy "brand public read" on storage.objects
   for select using (bucket_id = 'brand');
 
+-- Hosting an image is a paid feature, and this is where that actually holds.
+-- The editor hides images on a free plan, but the signature is assembled in the
+-- visitor's own browser, so that gate is a product boundary rather than a
+-- security one. This is the boundary: a free plan cannot obtain a hosted URL,
+-- and an un-hosted image is stripped by Gmail and Outlook before a recipient
+-- ever sees it.
 create policy "brand owner write" on storage.objects
   for insert with check (
-    bucket_id = 'brand' and auth.uid()::text = (storage.foldername(name))[1]
+    bucket_id = 'brand'
+    and auth.uid()::text = (storage.foldername(name))[1]
+    and exists (
+      select 1 from public.profiles
+      where id = auth.uid() and plan <> 'free'
+    )
   );
 
+-- Same rule on replacement: a free plan must not be able to change what sits
+-- at a hosted URL either.
 create policy "brand owner update" on storage.objects
   for update using (
-    bucket_id = 'brand' and auth.uid()::text = (storage.foldername(name))[1]
+    bucket_id = 'brand'
+    and auth.uid()::text = (storage.foldername(name))[1]
+    and exists (
+      select 1 from public.profiles
+      where id = auth.uid() and plan <> 'free'
+    )
   );
 
 create policy "brand owner delete" on storage.objects

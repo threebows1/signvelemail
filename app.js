@@ -605,6 +605,32 @@ function isAdmin() {
   return !!(window.Cloud && Cloud.isReady && Cloud.state().isAdmin);
 }
 
+// ───────────── Images as a paid feature ─────────────
+// Photographs and uploaded logos render only while a subscription is active.
+// Without one the layouts fall back to what they already do when no image has
+// been chosen — a generated monogram for the company, initials for the person
+// — so a free signature is complete rather than visibly broken.
+//
+// Be clear about what this is: the signature is assembled in the visitor's own
+// browser and copied to their clipboard, so this gate is a product boundary,
+// not a security one. Anyone determined can read the markup and put the image
+// back. The enforcement that actually holds is in the database — the storage
+// policy in schema.sql refuses uploads from a free plan, so a free user cannot
+// get a hosted URL, and an un-hosted image is stripped by Gmail and Outlook
+// before a recipient ever sees it.
+//
+// window.SIGNVEL_SHOW_IMAGES overrides the answer. The marketing pages and the
+// showcase generator set it true, because they are advertising what a paid
+// signature looks like. Nothing in the editor's own interface sets it.
+function imagesUnlocked() {
+  if (typeof window.SIGNVEL_SHOW_IMAGES === 'boolean') return window.SIGNVEL_SHOW_IMAGES;
+  // No cloud configured at all means no billing exists to gate against — a
+  // local checkout or a self-hosted copy stays fully usable.
+  if (!(window.Cloud && Cloud.isReady)) return true;
+  const c = Cloud.state();
+  return !!(c.signedIn && c.plan && c.plan !== 'free');
+}
+
 // Fetches the account figures. Guarded against a second click while one is in
 // flight, since the button stays on screen during the request.
 function loadAdminStats() {
@@ -975,7 +1001,19 @@ function renderMedia() {
   const usesHeadshot = PHOTO_TEMPLATES.includes(S.template);
   const notUsed = (what) => `<div class="inline-note">The <strong>${esc(S.template)}</strong> template has no ${what} slot. These settings are saved, and apply as soon as you pick a layout that uses one.</div>`;
 
-  let h = `<div class="opt-group">Logo</div>`;
+  let h = '';
+
+  // Without this the preview looks broken rather than gated: you pick a photo,
+  // nothing changes, and there is no way to tell why.
+  if (!imagesUnlocked()) {
+    h += `<div class="inline-note is-locked">
+      <strong>Images need an active plan.</strong>
+      Photographs and uploaded logos appear in your signature once a subscription is running. Until then the layouts use a generated mark and your initials, and everything you set here is saved and waiting.
+      <a class="note-link" href="pricing.html">See plans &rarr;</a>
+    </div>`;
+  }
+
+  h += `<div class="opt-group">Logo</div>`;
   if (!usesLogo) h += notUsed('logo');
   h += `<div class="field-row">${renderUploader('logo', 'PNG or SVG with a transparent background works best. Max 1&nbsp;MB.')}</div>`;
   h += `<div class="field-row"><label class="field-label">Logo height</label><div class="slider-row"><input type="range" min="20" max="72" value="${S.logoHeight}" data-bind="logoHeight"><span class="slider-val">${S.logoHeight}px</span></div></div>`;
@@ -1065,6 +1103,7 @@ function renderBanner() {
   if (S.bannerEnabled) {
     h += `<div class="field-row"><label class="field-label">Banner message</label><input class="input" value="${esc(S.bannerMessage)}" data-bind="bannerMessage"></div>`;
     h += `<div class="field-row"><label class="field-label">Banner subtext</label><input class="input" value="${esc(S.bannerSubtext)}" data-bind="bannerSubtext" placeholder="Optional second line"></div>`;
+    if (!imagesUnlocked()) h += `<div class="inline-note is-locked">A campaign image needs an active plan. The message, subtext and button below work on any plan.</div>`;
     h += `<div class="field-row"><label class="field-label">Banner image URL</label><input class="input" type="url" value="${esc(S.bannerImage)}" data-bind="bannerImage" placeholder="https://example.com/campaign.png"></div>`;
     h += `<div class="field-row"><label class="field-label">Sample banners<span class="field-hint">Hosted images, safe to send.</span></label><div class="sample-row is-wide">`;
     sampleBanners.forEach(b => {
@@ -1377,6 +1416,10 @@ function buildSignatureBody() {
     return `<p style="font-family:${ff};font-size:${size}px;font-weight:${fw};color:${fgPlain};line-height:1.35;margin:0 0 ${mb}px;">${text}</p>`;
   }
 
+  // Photographs and uploaded logos are gated on an active subscription; see
+  // imagesUnlocked. Resolved once here so every image path agrees.
+  const showImages = imagesUnlocked();
+
   // ── Headshot ──
   // Photo-led layouts need a bigger portrait; 64px looks like an afterthought
   // when it is the main visual element. An explicit size overrides all of it.
@@ -1396,7 +1439,7 @@ function buildSignatureBody() {
     const ring = ringW ? `border:${ringW}px solid ${ringC};` : '';
     const inner = box - ringW * 2;
     let img;
-    if (S.headshotUrl) {
+    if (S.headshotUrl && showImages) {
       // Crop/zoom: the image is scaled past the frame and pulled back by half
       // the overflow, so it stays centred while the frame keeps its box.
       const scaled = Math.round(inner * (S.headshotZoom / 100));
@@ -1415,7 +1458,9 @@ function buildSignatureBody() {
   // generated mark instead, so the gallery reads as a set of designs rather
   // than the same logo seventeen times. A logo the user chose always wins.
   const usingStockLogo = S.logoUrl === DEFAULT_LOGO_URL;
-  const showRealLogo = S.logoUrl && (!usingStockLogo || S.template === 'corporate');
+  // A real logo is an image, so it waits for a subscription too. The generated
+  // mark is table markup rather than a file, so it still draws.
+  const showRealLogo = showImages && S.logoUrl && (!usingStockLogo || S.template === 'corporate');
 
   function logoAs(opts) {
     if (!S.logoUrl) return '';
@@ -1625,7 +1670,7 @@ function buildSignatureBody() {
 
   // A hosted campaign image, used in place of the text banner where a template
   // supports it. Width is capped so it cannot blow out a narrow reading pane.
-  const bannerImgHTML = (S.bannerEnabled && S.bannerImage)
+  const bannerImgHTML = (S.bannerEnabled && S.bannerImage && showImages)
     ? `<img src="${esc(S.bannerImage)}" width="520" style="display:block;width:100%;max-width:520px;height:auto;border-radius:6px;" alt="${esc(S.bannerMessage || 'Campaign')}">`
     : '';
 
