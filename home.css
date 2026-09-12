@@ -125,9 +125,7 @@ body{margin:0}
 .feature-grid{margin-top:56px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
 .feature{
   background:#fff;border:1px solid var(--border);border-radius:18px;padding:28px;
-  transition:transform .15s,border-color .15s;
 }
-.feature:hover{transform:translateY(-2px);border-color:#d9d4ec}
 .feature-cat{
   font-family:var(--mono);font-size:10px;text-transform:uppercase;
   letter-spacing:.18em;color:var(--primary);margin:0 0 14px;
@@ -358,37 +356,52 @@ body{margin:0}
   .mast-card{padding:22px 16px}
 }
 
-/* ── Showcase: real signatures on the dark band ──
-   Each sits on its own light slab, because a signature designed for a white
-   inbox cannot honestly be shown on black. */
-.sig-showcase{
-  max-width:80rem;margin:0 auto;
-  /* 560px so two columns only form when each can hold a signature outright —
-     at 1024 a narrower minimum gave 471px columns, which put a scrollbar
-     inside every slab. min() so the column can still drop below that on a
-     phone, where a bare minmax is wider than the screen itself. */
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(560px,100%),1fr));gap:20px;
+/* ── Showcase: a tabbed gallery of real signatures ──
+   One at a time at full size, rather than several squeezed side by side. The
+   panels all sit in the markup and the script only toggles them, so without
+   JavaScript this degrades to the whole set shown in order. */
+.gallery{max-width:80rem;margin:0 auto}
+
+.gallery-tabs{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:24px;
 }
-.sig-slab{
-  margin:0;background:#fff;border-radius:16px;overflow:hidden;
-  display:flex;flex-direction:column;
+.gallery-tab{
+  font-family:var(--sans);font-size:13px;font-weight:600;
+  padding:9px 18px;border-radius:9999px;cursor:pointer;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.72);
+  transition:background .15s,color .15s,border-color .15s;
 }
-.sig-slab-canvas{
-  padding:28px 26px;flex:1;
-  /* Centred rather than left-aligned: a short layout beside a full-width one
-     otherwise reads as orphaned in its slab rather than simply smaller. */
+.gallery-tab:hover{background:rgba(255,255,255,.13);color:#fff}
+.gallery-tab.is-on{
+  background:var(--accent);border-color:var(--accent);color:var(--accent-foreground);
+}
+.gallery-tab:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* The signature sits on white, because that is the ground it was designed for
+   and the one an inbox will give it. */
+.gallery-canvas{
+  background:#fff;border-radius:16px;padding:34px 32px;
   display:flex;align-items:center;justify-content:center;
+  /* Hugs whichever signature is showing rather than sitting at a fixed width:
+     the layouts differ by a couple of hundred pixels, and a card sized for the
+     widest leaves the narrowest stranded in white. The minimum stops it
+     collapsing around the shortest one. */
+  width:fit-content;min-width:min(620px,100%);max-width:100%;margin:0 auto;
   overflow-x:auto;
 }
-/* Scaled a little: a 600px signature in a 560px column would wrap contact
-   values mid-number, which reads as a broken layout rather than a small one. */
-.sig-slab-canvas > .sig-frame{min-width:0;flex:0 1 auto;zoom:.92}
-.sig-slab-meta{
-  padding:14px 24px 18px;border-top:1px solid var(--border);
-  display:flex;flex-direction:column;gap:3px;
+.gallery-canvas > .sig-frame{min-width:0;flex:0 1 auto}
+.gallery-note{
+  font-size:13.5px;line-height:1.6;color:rgba(255,255,255,.62);
+  margin:18px auto 0;max-width:62ch;text-align:center;
 }
-.sig-slab-name{font-size:14px;font-weight:700;letter-spacing:-.01em;color:var(--foreground)}
-.sig-slab-note{font-size:12.5px;line-height:1.5;color:var(--muted-foreground)}
+
+/* Only the switch is animated, and only for people who want motion. */
+@media (prefers-reduced-motion:no-preference){
+  .gallery-panel:not([hidden]){animation:galleryIn .22s ease-out both}
+  @keyframes galleryIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+
 .showcase-head .lead{max-width:46ch}
 
 /* ── How it works ── */
@@ -447,3 +460,19 @@ body{margin:0}
 .mail-logo svg{width:20px;height:20px;border-radius:5px;box-shadow:0 0 0 1px rgba(20,18,31,.07)}
 .roster-name{display:flex;align-items:center}
 .chip-logo{display:inline-flex;align-items:center;padding-left:8px}
+
+/* ── Hover behaviour on the cards below ──
+   Kept to a small lift and a border change: enough that a card reads as a
+   thing rather than a paragraph in a box, without turning a static page into
+   something that moves whenever the pointer crosses it. */
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  .how,.feature{transition:transform .16s ease-out,border-color .16s,box-shadow .16s}
+  .how:hover,.feature:hover{
+    transform:translateY(-3px);border-color:#D9D4EC;
+    box-shadow:0 14px 30px -14px rgba(20,18,31,.16);
+  }
+  .band-list li{transition:border-color .16s}
+  .band-list li:hover{border-left-color:var(--accent)}
+  .client-tile{transition:transform .14s ease-out,border-color .14s}
+  .client-tile:hover{transform:translateY(-2px);border-color:#D9D4EC}
+}

@@ -42,7 +42,9 @@
 
     // Four that contrast in colour and in structure: a clean portrait layout,
     // a dark panel, a solid colour block, and a ringed one with a social pill.
-    const picks = ['spotlight', 'darkcard', 'colorblock', 'ribbon'];
+    // Six that contrast: light portrait, dark card, solid colour block, purple
+    // ring, serif on navy, and a ruled grid on black.
+    const picks = ['spotlight', 'darkcard', 'colorblock', 'ribbon', 'editorial', 'grid'];
     const out = picks.map(id => {
       S.template = id;
       applyTemplateTheme(id);

@@ -34,3 +34,8 @@ what keeps those copies honest rather than hand-edited.
 Prints the three signatures shown on the home page's dark band (Spotlight,
 Dark card, Ribbon). Run it after changing those templates, then paste each into
 the matching `.sig-slab-canvas` in `index.html`.
+
+### `gallery-check.html` — home page signature gallery
+Drives the tabbed gallery on the home page: that each tab shows its own panel
+and only its own, that `aria-selected` and the roving tabindex follow, that the
+arrow keys move and wrap, and that every panel holds real signature markup.

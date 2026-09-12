@@ -1,0 +1,53 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>gallery</title>
+<style>body{margin:0;font:12px monospace}iframe{width:1280px;height:900px;border:0}</style></head>
+<body>
+<iframe id="f" src="../index.html"></iframe>
+<pre id="out"></pre>
+<script>
+document.getElementById('f').addEventListener('load', function () {
+  const d = this.contentDocument;
+  const E = [];
+  const tabs = [].slice.call(d.querySelectorAll('.gallery-tab'));
+  const panels = [].slice.call(d.querySelectorAll('.gallery-panel'));
+
+  if (!tabs.length) E.push('no tabs found');
+  if (tabs.length !== panels.length) E.push('tabs ' + tabs.length + ' but panels ' + panels.length);
+
+  // Exactly one panel visible at rest.
+  const visible = () => panels.filter(p => !p.hidden);
+  if (visible().length !== 1) E.push('at rest ' + visible().length + ' panels visible, want 1');
+  if (!tabs[0].classList.contains('is-on')) E.push('first tab not marked on at rest');
+
+  // Every tab selects its own panel, and only its own.
+  tabs.forEach((t, i) => {
+    t.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    const shown = visible();
+    if (shown.length !== 1) E.push(t.textContent + ': ' + shown.length + ' panels visible');
+    else if (shown[0].id !== 'panel-' + t.dataset.sig) E.push(t.textContent + ': showed ' + shown[0].id);
+    if (t.getAttribute('aria-selected') !== 'true') E.push(t.textContent + ': aria-selected not true');
+    if (t.tabIndex !== 0) E.push(t.textContent + ': selected tab not in the tab order');
+    const others = tabs.filter((x, n) => n !== i);
+    if (others.some(x => x.getAttribute('aria-selected') === 'true')) E.push(t.textContent + ': another tab still selected');
+    if (others.some(x => x.tabIndex !== -1)) E.push(t.textContent + ': another tab still tabbable');
+  });
+
+  // Arrow keys move along and wrap.
+  tabs[0].dispatchEvent(new MouseEvent('click', {bubbles: true}));
+  tabs[0].dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true}));
+  if (!tabs[1].classList.contains('is-on')) E.push('ArrowRight did not advance');
+  tabs[0].dispatchEvent(new MouseEvent('click', {bubbles: true}));
+  tabs[0].dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowLeft', bubbles: true}));
+  if (!tabs[tabs.length - 1].classList.contains('is-on')) E.push('ArrowLeft did not wrap to the end');
+  tabs[0].dispatchEvent(new KeyboardEvent('keydown', {key: 'End', bubbles: true}));
+
+  // Each panel must actually contain a signature, not an empty shell.
+  panels.forEach(p => {
+    if (!p.querySelector('.sig-frame table')) E.push(p.id + ': no signature markup');
+    if (/undefined|NaN/.test(p.innerHTML)) E.push(p.id + ': undefined/NaN in markup');
+  });
+
+  document.getElementById('out').textContent = E.length ? E.join('\n') : 'ok — ' + tabs.length + ' tabs, ' + panels.length + ' panels';
+  document.title = E.length ? 'FAIL ' + E.length : 'PASS';
+});
+</script>
+</body></html>
