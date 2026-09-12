@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Vel — Email Signature Editor</title>
+  <meta name="description" content="Create professional, email-client-safe signatures with live preview for Gmail, Outlook, and Apple Mail.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="rail" id="rail"></aside>
+    <div class="workspace">
+      <header class="topbar" id="header"></header>
+      <div class="body" id="appBody">
+        <aside class="panel" id="panel"></aside>
+        <main class="stage" id="stage"></main>
+      </div>
+    </div>
+  </div>
+  <div class="export-overlay hidden" id="exportOverlay">
+    <div class="export-panel">
+      <div class="export-panel-header">
+        <h2>Export HTML</h2>
+        <button class="export-close" id="exportClose">✕</button>
+      </div>
+      <pre class="export-code"><code id="exportCode"></code></pre>
+      <div class="export-actions">
+        <button class="btn btn-accent" id="exportCopyBtn">Copy HTML</button>
+      </div>
+    </div>
+  </div>
+  <div class="auth-overlay hidden" id="authOverlay">
+    <div class="auth-panel">
+      <button class="auth-close" id="authClose" aria-label="Close">✕</button>
+      <h2 class="auth-title" id="authTitle">Sign in</h2>
+      <p class="auth-sub" id="authSub">Access your saved signatures.</p>
+      <label class="auth-label" for="authEmail">Email</label>
+      <input class="input" type="email" id="authEmail" autocomplete="email" placeholder="you@company.com">
+      <label class="auth-label" for="authPassword">Password</label>
+      <input class="input" type="password" id="authPassword" autocomplete="current-password" placeholder="••••••••">
+      <div class="auth-msg hidden" id="authMsg"></div>
+      <button class="btn btn-accent auth-submit" id="authSubmit">Sign in</button>
+      <div class="auth-alt">
+        <button class="auth-link" id="authToggle">Create an account</button>
+        <button class="auth-link" id="authForgot">Forgot password?</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cloud layer. Loaded before app.js; the editor works without any of it. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="cloud.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

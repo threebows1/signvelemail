@@ -647,7 +647,7 @@ function loadAdminStats() {
 }
 
 function renderRail() {
-  let html = `<a class="rail-brand" href="landing.html" title="Back to signvel.com home">${icons.logo}</a>
+  let html = `<a class="rail-brand" href="index.html" title="Back to signvel.com home">${icons.logo}</a>
     <nav class="rail-nav">`;
   let lastCat = '';
   sections.forEach((sec, i) => {
