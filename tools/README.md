@@ -29,3 +29,8 @@ template, copy the contents of the `<pre>`, and replace the cards between
 `<div class="tmpl-gallery">` and its closing `</div>`. The page holds static
 copies so it has no dependency on `app.js` at runtime; regenerating from here is
 what keeps those copies honest rather than hand-edited.
+
+### `regenerate-home-showcase.html` — home page signatures
+Prints the three signatures shown on the home page's dark band (Spotlight,
+Dark card, Ribbon). Run it after changing those templates, then paste each into
+the matching `.sig-slab-canvas` in `index.html`.
