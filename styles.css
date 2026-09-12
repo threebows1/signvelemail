@@ -624,3 +624,42 @@ select.input{cursor:pointer;appearance:auto}
   font-size:12.5px;font-weight:500;color:var(--muted);text-decoration:none;
 }
 .auth-back a:hover{color:var(--accent)}
+
+/* ── Admin: accounts and access ── */
+.user-list{
+  border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;margin-bottom:12px;
+}
+.user-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 11px;border-bottom:1px solid var(--border);
+}
+.user-row:last-child{border-bottom:none}
+.user-row.is-self{background:var(--accent-light,rgba(91,46,255,.05))}
+.user-id{display:flex;flex-direction:column;min-width:0}
+.user-email{
+  font-size:11.5px;font-weight:500;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.user-meta{font-size:10px;color:var(--muted);margin-top:2px}
+.user-plan{display:flex;align-items:center;gap:4px;flex-shrink:0}
+
+/* Three states shown at once rather than a dropdown: with only three plans a
+   row reads faster than a select, and the current one is visible without
+   opening anything. */
+.plan-btn{
+  font-size:10px;font-weight:600;letter-spacing:.02em;text-transform:capitalize;
+  padding:4px 9px;border-radius:9999px;cursor:pointer;
+  border:1px solid var(--border);background:none;color:var(--muted);
+  transition:all .12s;
+}
+.plan-btn:hover:not(:disabled){border-color:var(--muted);color:var(--ink)}
+.plan-btn.active{
+  background:var(--accent);border-color:var(--accent);color:#fff;
+}
+.plan-btn:disabled{opacity:.45;cursor:default}
+.plan-tag{
+  font-size:10px;font-weight:600;text-transform:capitalize;
+  padding:4px 9px;border-radius:9999px;
+  background:var(--border);color:var(--muted);
+}

@@ -178,11 +178,16 @@ window.Cloud = (function () {
   // and should not be able to. The numbers come from the admin-stats Edge
   // Function, which holds the service-role key in its own environment and
   // re-checks is_admin before answering.
-  async function adminStats() {
+  // Every admin call goes through the same function, which re-checks is_admin
+  // server-side before doing anything. `action` picks the job.
+  async function adminCall(action, payload) {
     if (!ready) return { ok: false, error: 'Cloud is not configured.' };
     if (!session) return { ok: false, error: 'Sign in first.' };
     try {
-      const { data, error } = await db.functions.invoke('admin-stats', { method: 'POST' });
+      const { data, error } = await db.functions.invoke('admin-stats', {
+        method: 'POST',
+        body: Object.assign({ action }, payload || {}),
+      });
       if (error) {
         // invoke() reports any non-2xx as a generic FunctionsHttpError, so the
         // real reason is in the response body rather than the error itself.
@@ -193,15 +198,27 @@ window.Cloud = (function () {
         } catch (e) { /* no JSON body — keep the generic message */ }
         return { ok: false, error: detail };
       }
-      return { ok: true, stats: data };
+      return { ok: true, data: data };
     } catch (e) {
       return { ok: false, error: e.message || 'Could not reach the server.' };
     }
   }
 
+  const adminStats = () =>
+    adminCall('stats').then(r => r.ok ? { ok: true, stats: r.data } : r);
+
+  const adminUsers = () =>
+    adminCall('users').then(r => r.ok ? { ok: true, users: r.data.users || [] } : r);
+
+  // Grants or removes paid access for someone else. The function refuses a
+  // plan outside the allowed set, and refuses the caller's own account.
+  const adminSetPlan = (userId, plan) =>
+    adminCall('setPlan', { userId, plan }).then(r => r.ok ? { ok: true, user: r.data.user } : r);
+
   return {
     init, signIn, signInPassword, signUp, resetPassword, signOut,
-    loadSignature, saveSignature, uploadAsset, adminStats,
+    loadSignature, saveSignature, uploadAsset,
+    adminStats, adminUsers, adminSetPlan,
     state,
     onChange(fn) { listeners.push(fn); },
     get isReady() { return ready; },

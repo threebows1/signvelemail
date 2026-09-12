@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════
-// admin-stats — counts for the editor's Admin panel
+// admin-stats — the editor's Admin panel: counts, the user list, and
+// granting paid access
 //
 // Counting users means reading auth.users, and nothing holding a browser key
 // can do that: Row Level Security hides other people's rows, and the admin
@@ -17,7 +18,11 @@
 //      id sent in the body — a caller can put anything there.
 //   3. Look up is_admin for that user with the service-role client. The column
 //      is trigger-protected, so nobody can grant it to themselves.
-//   4. Only then run the counts.
+//   4. Only then do the work — counts, the user list, or a plan change.
+//
+// The plan change is the only write. It addresses the account by id rather
+// than email, refuses anything outside the allowed plans, and refuses to
+// change the caller's own plan. is_admin is not settable here at all.
 //
 // Deploy:  supabase functions deploy admin-stats
 // ═══════════════════════════════════════════════════════════
@@ -55,6 +60,57 @@ function json(body: unknown, status: number, origin: string | null) {
   });
 }
 
+// The only values the plan column accepts. Checked here as well as by the
+// column's own constraint, so a bad value is a clear 400 rather than a
+// database error surfacing through the interface.
+const PLANS = ['free', 'team', 'org'];
+
+// Who exists, and what they are on. Reads profiles rather than auth.users:
+// everything the panel shows lives there, and it keeps the row a plan change
+// has to target the same row that was listed.
+async function listUsers(admin: any, origin: string | null) {
+  const { data, error } = await admin
+    .from('profiles')
+    .select('id, email, plan, is_admin, created_at')
+    .order('created_at', { ascending: true })
+    .limit(500);
+  if (error) return json({ error: error.message }, 500, origin);
+  return json({ users: data ?? [] }, 200, origin);
+}
+
+// Grants or removes paid access.
+//
+// This is the one write in the function, so it is the one that has to be
+// careful. The plan is checked against the allowed list; the target is
+// addressed by id rather than by email, so two accounts sharing an address
+// cannot be confused for each other; and an admin cannot change their own
+// plan, which keeps "I upgraded myself" out of the audit trail and makes the
+// panel a tool for granting access to other people rather than to oneself.
+//
+// is_admin is deliberately not settable here. Granting administrator rights
+// stays a SQL statement someone has to write on purpose.
+async function setPlan(admin: any, body: any, callerId: string, origin: string | null) {
+  const userId = String(body?.userId || '');
+  const plan = String(body?.plan || '');
+
+  if (!userId) return json({ error: 'Which account?' }, 400, origin);
+  if (!PLANS.includes(plan)) return json({ error: 'Unknown plan.' }, 400, origin);
+  if (userId === callerId) {
+    return json({ error: 'Change your own plan from the SQL editor, not here.' }, 400, origin);
+  }
+
+  const { data, error } = await admin
+    .from('profiles')
+    .update({ plan })
+    .eq('id', userId)
+    .select('id, email, plan, is_admin, created_at')
+    .single();
+
+  if (error) return json({ error: error.message }, 500, origin);
+  if (!data) return json({ error: 'No such account.' }, 404, origin);
+  return json({ user: data }, 200, origin);
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('Origin');
 
@@ -90,7 +146,17 @@ Deno.serve(async (req) => {
   // than they need to know.
   if (!profile?.is_admin) return json({ error: 'Not permitted.' }, 403, origin);
 
-  // ── 4. Counts ──
+  // ── 4. Which job? ──
+  // One function rather than three, so there is one place where the checks
+  // above live and one thing to deploy.
+  const body = await req.json().catch(() => ({}));
+  const action = body?.action || 'stats';
+
+  if (action === 'users') return listUsers(admin, origin);
+  if (action === 'setPlan') return setPlan(admin, body, uid, origin);
+  if (action !== 'stats') return json({ error: 'Unknown action.' }, 400, origin);
+
+  // ── 5. Counts (the default action) ──
   // listUsers is paged; the total comes back regardless of perPage, so ask for
   // the smallest page that still returns it rather than pulling every row.
   const { data: page, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1 });

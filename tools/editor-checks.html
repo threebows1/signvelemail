@@ -256,10 +256,14 @@
     if (!/only available to an administrator/.test(renderSectionContent(adminIndex))) {
       E.push('admin panel rendered figures for a non-admin');
     }
-    // The figures must never be written to storage.
-    ['adminStats','adminError','adminLoading'].forEach(k => {
-      if (!TRANSIENT_KEYS.includes(k)) E.push(k + ' is not transient');
-    });
+    // Nothing the admin panel fetches may be written to storage.
+    ['adminStats','adminError','adminLoading','adminUsers','adminUsersLoading','adminBusy']
+      .forEach(k => { if (!TRANSIENT_KEYS.includes(k)) E.push(k + ' is not transient'); });
+    // The account list and the plan controls are admin-only too.
+    const adminPanel = renderSectionContent(adminIndex);
+    if (/setUserPlan|loadAdminUsers/.test(adminPanel)) {
+      E.push('admin panel exposed account controls to a non-admin');
+    }
     S.openSection = 0;
     renderPanel();
 
