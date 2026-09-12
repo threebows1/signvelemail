@@ -333,7 +333,7 @@ body{margin:0}
 
 /* Translucent capsule above the headline. */
 .mast-badge{
-  display:inline-flex;align-items:center;gap:9px;
+  display:inline-flex;align-items:center;gap:7px;
   background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.16);
   border-radius:9999px;padding:6px 15px;margin:0 0 16px;
   font-size:13.5px;font-weight:600;color:#fff;letter-spacing:-.005em;
@@ -379,8 +379,8 @@ body{margin:0}
    .mast is what lets it hang past the panel. */
 .mast-card{
   position:relative;z-index:2;
-  max-width:68rem;margin:22px auto calc(var(--card-drop) * -1);
-  background:#fff;border-radius:22px;padding:22px 28px;
+  width:fit-content;max-width:100%;margin:22px auto calc(var(--card-drop) * -1);
+  background:#fff;border-radius:20px;padding:22px 26px;
   display:flex;justify-content:center;
   box-shadow:0 36px 70px -24px rgba(20,18,31,.38),0 0 0 1px rgba(20,18,31,.04);
 }
@@ -398,26 +398,26 @@ body{margin:0}
 /* ── Mail clients strip ── */
 .clients{
   max-width:80rem;margin:0 auto;
-  padding:calc(var(--card-drop, 120px) + 76px) 24px 72px;text-align:center;
+  padding:calc(var(--card-drop, 120px) + 34px) 24px 48px;text-align:center;
 }
 .clients-lead{
-  font-size:14.5px;font-weight:500;color:var(--muted-foreground);margin:0 0 22px;
+  font-size:13.5px;font-weight:500;color:var(--muted-foreground);margin:0 0 16px;
 }
 .clients-row{
   display:flex;flex-wrap:wrap;align-items:stretch;justify-content:center;
-  gap:10px;margin:0;padding:0;list-style:none;
+  gap:8px;margin:0;padding:0;list-style:none;
 }
 .client-tile{
-  display:inline-flex;align-items:center;gap:9px;
+  display:inline-flex;align-items:center;gap:7px;
   background:#fff;border:1px solid var(--border);border-radius:12px;
-  padding:11px 16px;font-size:13px;font-weight:600;color:var(--foreground);
+  padding:8px 13px;font-size:12.5px;font-weight:600;color:var(--foreground);
 }
 .client-tile .mail-logo{margin-right:0}
-.client-tile .mail-logo svg{width:22px;height:22px}
+.client-tile .mail-logo svg{width:18px;height:18px}
 .client-tile-more{padding:0}
 .client-tile-more a{
   display:inline-flex;align-items:center;gap:6px;
-  padding:11px 16px;color:var(--primary);text-decoration:none;font-weight:600;
+  padding:8px 13px;font-size:12.5px;color:var(--primary);text-decoration:none;font-weight:600;
 }
 .client-tile-more a:hover{color:#4a22db}
 
