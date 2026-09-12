@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>hash</title><link rel="stylesheet" href="../styles.css"></head>
+<body>
+  <div class="app" id="app">
+    <aside class="rail" id="rail"></aside>
+    <div class="workspace"><header class="topbar" id="header"></header>
+      <div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div>
+  </div>
+  <div class="export-overlay hidden" id="exportOverlay"><div class="export-panel">
+    <div class="export-panel-header"><h2>E</h2><button class="export-close" id="exportClose">x</button></div>
+    <pre class="export-code"><code id="exportCode"></code></pre>
+    <div class="export-actions"><button class="btn btn-accent" id="exportCopyBtn">C</button></div></div></div>
+  <div class="auth-overlay hidden" id="authOverlay"><div class="auth-panel">
+    <button class="auth-close" id="authClose">x</button><h2 class="auth-title" id="authTitle">S</h2><p class="auth-sub" id="authSub">.</p>
+    <label class="auth-label" for="authEmail">E</label><input class="input" type="email" id="authEmail">
+    <label class="auth-label" for="authPassword">P</label><input class="input" type="password" id="authPassword">
+    <div class="auth-msg hidden" id="authMsg"></div><button class="btn btn-accent auth-submit" id="authSubmit">G</button>
+    <div class="auth-alt"><button class="auth-link" id="authToggle">a</button><button class="auth-link" id="authForgot">b</button></div></div></div>
+  <pre id="report" style="position:fixed;left:0;bottom:0;background:#fff;z-index:99;font:12px monospace"></pre>
+  <script>
+    window.__errs = [];
+    window.onerror = (m, s, l, c) => { window.__errs.push('JS: ' + m + ' @' + l + ':' + c); };
+    // Captured before app.js loads, because openAuthFromHash clears the
+    // fragment as soon as it has read it.
+    window.__wantHash = (location.hash || '').replace('#', '');
+    try { localStorage.clear(); } catch (e) {}
+    // A signed-out cloud, so the panel is the correct thing to open.
+    window.Cloud = {
+      isReady: true,
+      state: () => ({ready:true, signedIn:false, email:null, userId:null, plan:'free', isAdmin:false}),
+      onChange(fn) {}, init() { return Promise.resolve(this.state()); },
+      loadSignature() { return Promise.resolve(null); },
+      saveSignature() { return Promise.resolve({ok:true}); },
+      uploadAsset() { return Promise.resolve({ok:false, error:'stub'}); },
+      signOut() { return Promise.resolve({ok:true}); },
+      adminStats() { return Promise.resolve({ok:false, error:'stub'}); },
+    };
+  </script>
+  <script src="../config.js"></script>
+  <script src="../app.js"></script>
+  <script>
+  (function () {
+    const E = window.__errs;
+    const overlay = document.getElementById('authOverlay');
+    const want = window.__wantHash;
+    // Cloud.init() resolves on a microtask, so let it settle before checking.
+    setTimeout(() => {
+      const open = !overlay.classList.contains('hidden');
+      const title = document.getElementById('authTitle').textContent;
+      if (want === 'signin') {
+        if (!open) E.push('#signin did not open the panel');
+        if (!/sign in/i.test(title)) E.push('#signin opened the wrong mode: ' + title);
+      } else if (want === 'signup') {
+        if (!open) E.push('#signup did not open the panel');
+        if (!/create/i.test(title)) E.push('#signup opened the wrong mode: ' + title);
+      } else {
+        if (open) E.push('panel opened with no hash asking for it');
+      }
+      // The fragment must not linger, or a refresh reopens it.
+      if (location.hash) E.push('hash was not cleared: ' + location.hash);
+      document.getElementById('report').textContent = E.length ? E.join('\n') : 'ok (' + (want || 'no hash') + ')';
+      document.title = E.length ? 'FAIL ' + E.length : 'PASS';
+    }, 60);
+  })();
+  </script>
+</body>
+</html>

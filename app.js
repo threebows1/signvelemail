@@ -2787,6 +2787,27 @@ function init() {
   renderStage();
   setupEvents();
   startCloud();
+  openAuthFromHash();
+}
+
+// The marketing pages link here for "Sign in" and "Get started". Without this
+// those links just drop someone into the editor with the panel they were
+// after nowhere in sight — they have to find the button in the top bar and
+// press it themselves, which is not what they clicked.
+//
+// Cloud may still be starting up, so this waits for it rather than opening a
+// sign-in panel over an editor that turns out to be signed in already.
+function openAuthFromHash() {
+  const want = (location.hash || '').replace('#', '');
+  if (want !== 'signin' && want !== 'signup') return;
+  // Clear it straight away, so a refresh does not reopen the panel and the
+  // fragment does not linger in the address bar.
+  history.replaceState(null, '', location.pathname + location.search);
+  if (!window.Cloud || !Cloud.isReady) return;
+
+  const show = () => { if (!Cloud.state().signedIn) openAuth(want); };
+  // init() runs before Cloud.init() has resolved, so ask once it has.
+  Cloud.init().then(show);
 }
 
 init();
