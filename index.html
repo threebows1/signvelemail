@@ -50,7 +50,6 @@
       <div class="nav-right">
         <div class="nav-links">
           <a href="#showcase">Showcase</a>
-          <a href="templates.html">Templates</a>
           <a href="pricing.html">Pricing</a>
         </div>
         <a class="nav-signin" href="editor.html#signin">Sign in</a>
@@ -64,7 +63,10 @@
       <p class="mast-sub">One easy way to keep every signature on-brand.</p>
       <div class="mast-cta">
         <a class="btn btn-lg btn-dark" href="editor.html#signup">Sign up for free <span aria-hidden="true">&rarr;</span></a>
-        <a class="btn btn-lg btn-light" href="templates.html">Browse layouts <span aria-hidden="true">&rarr;</span></a>
+        <!-- Points at the gallery further down this page rather than at
+             /templates, which is behind sign-in. The hero keeps both buttons
+             because its shape is settled; only the destination changes. -->
+        <a class="btn btn-lg btn-light" href="#showcase">Browse layouts <span aria-hidden="true">&rarr;</span></a>
       </div>
       
       <p class="mast-fine">30 days free &middot; no credit card &middot; one signature</p>
@@ -106,7 +108,10 @@
           <h2 class="h2">Seventeen designs.<br>Every one of them real.</h2>
           <p class="lead lead-light">These are the actual table-based signatures the editor produces — the same markup you paste into Gmail, rendered here as it renders there.</p>
         </div>
-        <a class="btn btn-md btn-mint" href="templates.html">See all seventeen</a>
+        <!-- The gallery below shows six of the seventeen. With /templates
+             behind sign-in the rest are in the editor, so the button says so
+             rather than promising a page a signed-out visitor cannot open. -->
+        <a class="btn btn-md btn-mint" href="editor.html#signup">Start free to see all 17</a>
       </div>
 
       <!-- Tabbed gallery. Every signature is in the markup; the script below
@@ -510,7 +515,7 @@
       <nav class="footer-cols" aria-label="Footer">
         <div class="footer-col">
           <p class="footer-head">Product</p>
-          <a href="templates.html">Templates</a>
+          <a href="#showcase">Showcase</a>
           <a href="pricing.html">Pricing</a>
           <a href="install.html">Install</a>
         </div>

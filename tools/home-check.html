@@ -144,6 +144,19 @@ document.getElementById('f').addEventListener('load', function () {
   if (/Go to Settings/.test(text)) E.push('CTA still says "Go to Settings"');
   if (/Changelog/.test(text)) E.push('footer still links a Changelog that does not exist');
 
+  // ── Nothing here points at the gated templates page ──
+  // /templates is behind sign-in, so a link to it from the home page is a
+  // dead end for exactly the visitors the home page is written for.
+  const toTemplates = [].slice.call(d.querySelectorAll('a[href*="templates"]'))
+    .map(a => (a.textContent.trim() || a.getAttribute('aria-label') || '?') + ' → ' + a.getAttribute('href'));
+  if (toTemplates.length) E.push('links to the gated templates page: ' + toTemplates.join('; '));
+
+  // Every in-page anchor must actually land on something.
+  [].slice.call(d.querySelectorAll('a[href^="#"]')).forEach(a => {
+    const id = a.getAttribute('href').slice(1);
+    if (id && !d.getElementById(id)) E.push('anchor ' + a.getAttribute('href') + ' has no target');
+  });
+
   // ── Reveal must never leave anything permanently invisible ──
   const hiddenForever = [].slice.call(d.querySelectorAll('.reveal')).filter(el => {
     const r = el.getBoundingClientRect();
