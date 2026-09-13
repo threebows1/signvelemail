@@ -163,61 +163,242 @@
       </div>
     </section>
 
-    <!-- ══ 03 HOW IT WORKS ══ -->
+    <!-- ══ 03 HOW IT WORKS ══
+         A stepper rather than three cards: the rail on the left selects, the
+         stage on the right shows what that step actually looks like. Every
+         panel is in the markup, so with the script absent the section degrades
+         to all three shown in order. -->
     <section class="section">
       <span class="eyebrow">(02) How it works</span>
       <h2 class="h2 h2-tight">Three steps, about five minutes.</h2>
 
-      <div class="how-grid">
+      <div class="steps">
+        <div class="step-rail" role="tablist" aria-label="How it works">
 
-        <div class="how">
-          <span class="how-num">01</span>
-          <h3 class="h3">Pick a layout</h3>
-          <p class="body-sm">Seventeen to choose from, each with its own palette, icon treatment and name styling. Switch between them at any point — your details carry across.</p>
+          <button class="step-btn is-on" role="tab" id="step-tab-1" aria-controls="step-panel-1" aria-selected="true" tabindex="0">
+            <span class="step-num">01</span>
+            <span class="step-copy">
+              <span class="step-title">Pick a layout</span>
+              <span class="step-text">Seventeen to choose from, each with its own palette, icon treatment and name styling. Switch at any point — your details carry across.</span>
+            </span>
+          </button>
+
+          <button class="step-btn" role="tab" id="step-tab-2" aria-controls="step-panel-2" aria-selected="false" tabindex="-1">
+            <span class="step-num">02</span>
+            <span class="step-copy">
+              <span class="step-title">Make it yours</span>
+              <span class="step-text">Your photo, your logo, your colours and type. Watch it redraw as you go — in Gmail, Outlook, Apple Mail, on a phone, and in dark mode.</span>
+            </span>
+          </button>
+
+          <button class="step-btn" role="tab" id="step-tab-3" aria-controls="step-panel-3" aria-selected="false" tabindex="-1">
+            <span class="step-num">03</span>
+            <span class="step-copy">
+              <span class="step-title">Put it in your mail</span>
+              <span class="step-text">Copy it straight across, or export the raw HTML. Step-by-step guides for every major client on Windows and Mac.</span>
+            </span>
+          </button>
+
         </div>
 
-        <div class="how">
-          <span class="how-num">02</span>
-          <h3 class="h3">Make it yours</h3>
-          <p class="body-sm">Your photo, your logo, your colours and type. Watch it redraw as you go, in Gmail, Outlook, Apple Mail, on a phone, and in dark mode.</p>
-        </div>
+        <div class="step-stage">
 
-        <div class="how">
-          <span class="how-num">03</span>
-          <h3 class="h3">Put it in your mail</h3>
-          <p class="body-sm">Copy it straight across, or export the raw HTML. Step-by-step guides for every major client on Windows and Mac.</p>
-        </div>
+          <!-- 01 — layout picker -->
+          <div class="step-panel" role="tabpanel" id="step-panel-1" aria-labelledby="step-tab-1">
+            <div class="mock">
+              <div class="mock-bar"><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-name">Layouts</span><span class="mock-tag">17</span></div>
+              <div class="mock-body">
+                <div class="pick-grid" role="group" aria-label="Example layouts">
+                  <button class="pick is-on" type="button" aria-pressed="true">
+                    <span class="wire" aria-hidden="true"><i class="w-face"></i><i class="w-lines"><b></b><b class="s"></b><b class="s"></b></i></span>
+                    <span class="pick-name">Spotlight</span>
+                  </button>
+                  <button class="pick" type="button" aria-pressed="false">
+                    <span class="wire wire-col" aria-hidden="true"><i class="w-rule"></i><i class="w-lines"><b></b><b class="s"></b><b class="s"></b></i></span>
+                    <span class="pick-name">Corporate</span>
+                  </button>
+                  <button class="pick" type="button" aria-pressed="false">
+                    <span class="wire" aria-hidden="true"><i class="w-panel"></i><i class="w-lines"><b></b><b class="s"></b><b class="s"></b></i></span>
+                    <span class="pick-name">Colour block</span>
+                  </button>
+                  <button class="pick" type="button" aria-pressed="false">
+                    <span class="wire wire-dark" aria-hidden="true"><i class="w-face sq"></i><i class="w-lines"><b></b><b class="s"></b><b class="s"></b></i></span>
+                    <span class="pick-name">Dark card</span>
+                  </button>
+                  <button class="pick" type="button" aria-pressed="false">
+                    <span class="wire" aria-hidden="true"><i class="w-lines"><b></b><b class="s"></b><b class="s"></b></i><i class="w-lines"><b></b><b class="s"></b><b class="s"></b></i></span>
+                    <span class="pick-name">Grid</span>
+                  </button>
+                  <button class="pick" type="button" aria-pressed="false">
+                    <span class="wire" aria-hidden="true"><i class="w-bar"></i><i class="w-lines"><b></b><b class="s"></b><b class="s"></b></i></span>
+                    <span class="pick-name">Accent bar</span>
+                  </button>
+                </div>
+                <p class="mock-note">Every layout keeps the same details — switching is one click, not a rebuild.</p>
+              </div>
+            </div>
+          </div>
 
+          <!-- 02 — brand controls, wired to the preview beside them -->
+          <div class="step-panel" role="tabpanel" id="step-panel-2" aria-labelledby="step-tab-2" hidden>
+            <div class="mock brand-mock" style="--mock-accent:#5B2EFF;">
+              <div class="mock-bar"><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-name">Brand</span><span class="mock-tag live">Live</span></div>
+              <div class="mock-body">
+
+                <div class="ctrl">
+                  <p class="ctrl-label">Theme colour</p>
+                  <div class="swatches" role="group" aria-label="Theme colour">
+                    <button class="swatch is-on" type="button" data-color="#5B2EFF" style="--sw:#5B2EFF" aria-label="Violet" aria-pressed="true"></button>
+                    <button class="swatch" type="button" data-color="#00A87E" style="--sw:#00A87E" aria-label="Green" aria-pressed="false"></button>
+                    <button class="swatch" type="button" data-color="#C9962B" style="--sw:#C9962B" aria-label="Gold" aria-pressed="false"></button>
+                    <button class="swatch" type="button" data-color="#D64550" style="--sw:#D64550" aria-label="Red" aria-pressed="false"></button>
+                    <button class="swatch" type="button" data-color="#1668D8" style="--sw:#1668D8" aria-label="Blue" aria-pressed="false"></button>
+                    <button class="swatch" type="button" data-color="#14121F" style="--sw:#14121F" aria-label="Ink" aria-pressed="false"></button>
+                  </div>
+                </div>
+
+                <div class="ctrl">
+                  <p class="ctrl-label">Typeface</p>
+                  <div class="pills" role="group" aria-label="Typeface">
+                    <button class="pill is-on" type="button" data-font="helv" aria-pressed="true">Helvetica</button>
+                    <button class="pill" type="button" data-font="serif" aria-pressed="false">Georgia</button>
+                    <button class="pill" type="button" data-font="treb" aria-pressed="false">Trebuchet</button>
+                  </div>
+                </div>
+
+                <div class="mini-sig">
+                  <span class="mini-face" aria-hidden="true"></span>
+                  <span class="mini-text">
+                    <span class="mini-name">Daniel Reyes</span>
+                    <span class="mini-role">Head of Partnerships</span>
+                    <span class="mini-rule" aria-hidden="true"></span>
+                    <span class="mini-row">daniel@signvel.com</span>
+                    <span class="mini-row">+971 50 123 4567</span>
+                    <span class="mini-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                  </span>
+                </div>
+
+                <p class="mock-note">Try the swatches — that is the editor's own behaviour, redrawing on every change.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 03 — install -->
+          <div class="step-panel" role="tabpanel" id="step-panel-3" aria-labelledby="step-tab-3" hidden>
+            <div class="mock">
+              <div class="mock-bar"><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-name">Install</span></div>
+              <div class="mock-body">
+                <div class="code-row">
+                  <code class="code-snip">&lt;table role="presentation" cellpadding="0"&gt;…&lt;/table&gt;</code>
+                  <button class="copy-btn" type="button">Copy HTML</button>
+                </div>
+                <ul class="install-list">
+                  <li><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(3 3) scale(.75)"><path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></g></svg></span><span class="il-name">Gmail</span><a href="install.html">Guide <span aria-hidden="true">&rarr;</span></a></li>
+                  <li><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><path d="M13.4 7.1h8.1c.4 0 .7.3.7.7v8.4c0 .4-.3.7-.7.7h-8.1z" fill="#28A8EA"/><path d="M13.9 8.9l4.1 2.7 4.1-2.7" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="1.6" y="4.6" width="11.8" height="14.8" rx="1.8" fill="#0364B8"/><ellipse cx="7.5" cy="12" rx="3" ry="3.9" fill="none" stroke="#fff" stroke-width="2"/></svg></span><span class="il-name">Outlook</span><a href="install.html">Guide <span aria-hidden="true">&rarr;</span></a></li>
+                  <li><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="2.4" y="6" width="19.2" height="12" rx="3" fill="#1F8DF5"/><path d="M5.2 9.1l6.8 5 6.8-5" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="il-name">Apple Mail</span><a href="install.html">Guide <span aria-hidden="true">&rarr;</span></a></li>
+                </ul>
+                <p class="mock-note">Seven clients covered, on Windows, Mac, iOS and Android.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </section>
 
     <!-- ══ 04 WHY IT RENDERS ══
-         The part that is genuinely hard, and the reason the product exists. -->
+         The part that is genuinely hard, and the reason the product exists.
+         The toggle shows the claim rather than only asserting it. -->
     <section class="section band">
       <div class="band-inner">
-        <div>
+        <div class="band-copy">
           <span class="eyebrow">(03) The difficult part</span>
           <h2 class="h2 h2-tight">Most signatures break in Outlook.</h2>
           <p class="lead">Outlook renders mail through Word. It ignores rounded corners, drops inline SVG, and undoes half of what a browser would accept. Gmail strips background images and cuts a long message off entirely. A signature that looks right in the builder and arrives broken is worse than no signature at all.</p>
+
+          <ul class="band-list">
+            <li>
+              <strong>Nested tables, inline styles</strong>
+              No flexbox, no grid, no stylesheet — the only markup every client agrees on.
+            </li>
+            <li>
+              <strong>Images hosted, not embedded</strong>
+              Uploads become real URLs. The data: URIs a browser produces are stripped before the recipient sees them.
+            </li>
+            <li>
+              <strong>Checked against the clients</strong>
+              Every layout rendered and read in Gmail, Outlook, Apple Mail, Yahoo, Thunderbird and Proton.
+            </li>
+            <li>
+              <strong>Falls back rather than breaks</strong>
+              No photo, no logo, images switched off — the layout still reads as a finished signature.
+            </li>
+          </ul>
         </div>
-        <ul class="band-list">
-          <li>
-            <strong>Nested tables, inline styles</strong>
-            No flexbox, no grid, no stylesheet — the only markup every client agrees on.
-          </li>
-          <li>
-            <strong>Images hosted, not embedded</strong>
-            Uploads become real URLs. The data: URIs a browser produces are stripped before the recipient sees them.
-          </li>
-          <li>
-            <strong>Checked against the clients</strong>
-            Every layout rendered and read in Gmail, Outlook, Apple Mail, Yahoo, Thunderbird and Proton.
-          </li>
-          <li>
-            <strong>Falls back rather than breaks</strong>
-            No photo, no logo, images switched off — the layout still reads as a finished signature.
-          </li>
-        </ul>
+
+        <div class="ba">
+          <div class="ba-tabs" role="tablist" aria-label="How a signature arrives">
+            <button class="ba-tab is-on" role="tab" id="ba-tab-1" aria-controls="ba-panel-1" aria-selected="true" tabindex="0">Pasted from a document</button>
+            <button class="ba-tab" role="tab" id="ba-tab-2" aria-controls="ba-panel-2" aria-selected="false" tabindex="-1">Built here</button>
+          </div>
+
+          <div class="ba-stage">
+            <div class="ba-panel" role="tabpanel" id="ba-panel-1" aria-labelledby="ba-tab-1">
+              <p class="ba-head"><span class="ba-chip bad">As it arrives in Outlook</span></p>
+              <div class="ba-sig broken">
+                <span class="ba-img" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 16l5-4 4 3 3-3 6 5"/><path d="M4 4l16 16"/></svg></span>
+                <span class="ba-body">
+                  <span class="ba-name">Daniel Reyes</span>
+                  <span class="ba-line">Head of PartnershipsSignvel</span>
+                  <span class="ba-line link">daniel@signvel.com</span>
+                  <span class="ba-line link">+971 50 123 4567</span>
+                  <span class="ba-line faint">[cid:image001.png@01D9A4]</span>
+                </span>
+              </div>
+              <ul class="ba-faults">
+                <li>Logo stripped — it was pasted, not hosted</li>
+                <li>Spacing collapsed, two fields run together</li>
+                <li>Rounded corners and icons dropped by Word</li>
+              </ul>
+            </div>
+
+            <div class="ba-panel" role="tabpanel" id="ba-panel-2" aria-labelledby="ba-tab-2" hidden>
+              <p class="ba-head"><span class="ba-chip good">As it arrives in Outlook</span></p>
+              <div class="ba-sig">
+                <span class="ba-face" aria-hidden="true"></span>
+                <span class="ba-body">
+                  <span class="ba-name">Daniel Reyes</span>
+                  <span class="ba-line">Head of Partnerships · Signvel</span>
+                  <span class="ba-rule" aria-hidden="true"></span>
+                  <span class="ba-line">daniel@signvel.com</span>
+                  <span class="ba-line">+971 50 123 4567</span>
+                  <span class="ba-line accent">signvel.com</span>
+                </span>
+              </div>
+              <ul class="ba-faults ok">
+                <li>Portrait and logo served from a real URL</li>
+                <li>Spacing held by table cells, not margins</li>
+                <li>Square fallbacks where Word refuses a radius</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Names the clients the claim above is actually made against,
+               rather than leaving "checked against the clients" abstract. -->
+          <div class="ba-checked">
+            <p class="ba-checked-head">Every layout rendered and read in</p>
+            <ul class="ba-checked-list">
+              <li>Gmail</li>
+              <li>Outlook 2016–365</li>
+              <li>Outlook.com</li>
+              <li>Apple Mail</li>
+              <li>iOS Mail</li>
+              <li>Yahoo</li>
+              <li>Thunderbird</li>
+              <li>Proton</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -228,13 +409,20 @@
 
       <div class="feature-grid">
 
-        <div class="feature">
+        <div class="feature feature-wide">
           <p class="feature-cat">Layouts</p>
           <div class="feature-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
           </div>
           <h3 class="h3">17 layouts</h3>
           <p class="body-sm">From a formal corporate block to full-bleed colour panels. Each ships with its own palette and treatments, and every one of them stays editable.</p>
+          <div class="feature-strip" aria-hidden="true">
+            <span class="strip-wire"><i></i><b></b><b class="s"></b></span>
+            <span class="strip-wire dark"><i></i><b></b><b class="s"></b></span>
+            <span class="strip-wire"><i class="sq"></i><b></b><b class="s"></b></span>
+            <span class="strip-wire accent"><i></i><b></b><b class="s"></b></span>
+            <span class="strip-more">+13</span>
+          </div>
         </div>
 
         <div class="feature">
@@ -273,23 +461,33 @@
           <p class="body-sm">LinkedIn, Instagram, Facebook, YouTube, TikTok and X — as chips, rings, filled discs, bare glyphs or plain text, in any order and any colour.</p>
         </div>
 
-        <div class="feature">
-          <p class="feature-cat">Install</p>
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11.5l4 4 4-4M4 19h16"/></svg>
+        <a class="feature feature-full" href="install.html">
+          <div class="feature-full-inner">
+            <div class="feature-full-copy">
+              <p class="feature-cat">Install</p>
+              <h3 class="h3">Into any mail client</h3>
+              <p class="body-sm">Copy as a rich signature or export the raw HTML, with an illustrated guide for each of these.</p>
+            </div>
+            <div class="feature-clients">
+              <span class="fc">Gmail</span><span class="fc">Outlook</span><span class="fc">Apple&nbsp;Mail</span><span class="fc">Yahoo</span><span class="fc">Thunderbird</span><span class="fc">Proton</span><span class="fc">iCloud</span>
+              <span class="fc-go">Setup guides <span aria-hidden="true">&rarr;</span></span>
+            </div>
           </div>
-          <h3 class="h3">Into any mail client</h3>
-          <p class="body-sm">Copy as a rich signature or export the raw HTML, with illustrated guides for Gmail, Outlook, Apple Mail, Yahoo, Thunderbird, Proton and iCloud.</p>
-        </div>
+        </a>
 
       </div>
     </section>
+
     <!-- ══ CLOSING ══ -->
-    <section class="cta">
-      <h2 class="h2">Build your signature<br>in minutes.</h2>
-      <p class="lead lead-light">Start free for 7 days. No credit card required.</p>
-      <div class="btn-row">
-        <a class="btn btn-lg btn-light" href="editor.html#signup">Go to Settings</a>
+    <section class="cta-wrap">
+      <div class="cta">
+        <span class="eyebrow eyebrow-light">Get started</span>
+        <h2 class="h2">Build your signature<br>in minutes.</h2>
+        <p class="lead lead-light">Thirty days free with every feature switched on. One signature, no card.</p>
+        <div class="btn-row">
+          <a class="btn btn-lg btn-light" href="editor.html#signup">Start free for 30 days</a>
+          <a class="btn btn-lg btn-ghost" href="pricing.html">See pricing</a>
+        </div>
       </div>
     </section>
 
@@ -297,51 +495,178 @@
 
   <footer class="footer">
     <div class="footer-inner">
-      <p class="footer-copy">© 2026</p>
-      <div class="footer-links">
-        <a href="help.html">Security</a>
-        <a href="help.html">Legal</a>
-        <a href="templates.html">Changelog</a>
+      <div class="footer-brand">
+        <!-- Same .logo markup as the masthead, but on a white ground, so the
+             stroke takes the ink colour rather than the panel's white. -->
+        <a class="logo" href="index.html" aria-label="Sign Vel home">
+          <svg width="40" height="16.8" viewBox="0 0 88 37" aria-hidden="true">
+            <path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="#14121F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="76" cy="27" r="5" fill="#00E5A0"/>
+          </svg>
+          <span class="logo-word">Sign<span>Vel</span></span>
+        </a>
+        <p class="footer-tag">Email signatures that arrive the way you built them.</p>
       </div>
+      <nav class="footer-cols" aria-label="Footer">
+        <div class="footer-col">
+          <p class="footer-head">Product</p>
+          <a href="templates.html">Templates</a>
+          <a href="pricing.html">Pricing</a>
+          <a href="install.html">Install</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-head">Support</p>
+          <a href="help.html">Help centre</a>
+          <a href="mailto:hello@signvel.com">Contact</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-head">Account</p>
+          <a href="editor.html#signin">Sign in</a>
+          <a href="editor.html#signup">Start free</a>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-base">
+      <p class="footer-copy">© 2026 Signvel</p>
+      <p class="footer-copy">Built in Dubai</p>
     </div>
   </footer>
 
-  <script>
-  // Tabbed signature gallery. Every panel is already in the page, so with the
-  // script absent the section degrades to all six shown in order rather than
-  // to nothing.
-  (function () {
-    const tabs = [].slice.call(document.querySelectorAll('.gallery-tab'));
-    const panels = [].slice.call(document.querySelectorAll('.gallery-panel'));
-    if (!tabs.length) return;
 
-    function show(i, moveFocus) {
-      tabs.forEach(function (t, n) {
-        const on = n === i;
-        t.classList.toggle('is-on', on);
-        t.setAttribute('aria-selected', on ? 'true' : 'false');
-        // Roving tabindex: only the selected tab is in the tab order, so Tab
-        // moves past the whole strip rather than through every layout.
-        t.tabIndex = on ? 0 : -1;
-        panels[n].hidden = !on;
+  <script>
+  (function () {
+
+    /* ── Tablists ─────────────────────────────────────────────
+       One implementation for all three: the signature gallery, the
+       how-it-works stepper, and the before/after toggle in the band.
+       Each panel is already in the markup and only `hidden` toggles,
+       so with this script absent every section degrades to showing
+       everything in order rather than to showing nothing. */
+    function wireTabs(list) {
+      const tabs = [].slice.call(list.querySelectorAll('[role="tab"]'));
+      // Resolved by aria-controls rather than by position, so the panels do
+      // not have to be siblings of the tabs or in the same order.
+      const panels = tabs.map(function (t) {
+        return document.getElementById(t.getAttribute('aria-controls'));
       });
-      if (moveFocus) tabs[i].focus();
+      if (!tabs.length || panels.some(function (p) { return !p; })) return;
+
+      function show(i, moveFocus) {
+        tabs.forEach(function (t, n) {
+          const on = n === i;
+          t.classList.toggle('is-on', on);
+          t.setAttribute('aria-selected', on ? 'true' : 'false');
+          // Roving tabindex: only the selected tab is in the tab order, so Tab
+          // moves past the whole strip rather than through every option.
+          t.tabIndex = on ? 0 : -1;
+          panels[n].hidden = !on;
+        });
+        if (moveFocus) tabs[i].focus();
+      }
+
+      tabs.forEach(function (t, i) {
+        t.addEventListener('click', function () { show(i); });
+        t.addEventListener('keydown', function (e) {
+          const last = tabs.length - 1;
+          let next = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = i === last ? 0 : i + 1;
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = i === 0 ? last : i - 1;
+          if (e.key === 'Home') next = 0;
+          if (e.key === 'End') next = last;
+          if (next === null) return;
+          e.preventDefault();
+          show(next, true);
+        });
+      });
     }
 
-    tabs.forEach(function (t, i) {
-      t.addEventListener('click', function () { show(i); });
-      t.addEventListener('keydown', function (e) {
-        const last = tabs.length - 1;
-        let next = null;
-        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = i === last ? 0 : i + 1;
-        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = i === 0 ? last : i - 1;
-        if (e.key === 'Home') next = 0;
-        if (e.key === 'End') next = last;
-        if (next === null) return;
-        e.preventDefault();
-        show(next, true);
+    [].slice.call(document.querySelectorAll('[role="tablist"]')).forEach(wireTabs);
+
+
+    /* ── A group of buttons where exactly one is pressed ──────
+       Used by the layout thumbnails, the colour swatches and the
+       typeface pills. `after` receives the button that was chosen. */
+    function wireChoice(group, selector, after) {
+      if (!group) return;
+      const items = [].slice.call(group.querySelectorAll(selector));
+      items.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          items.forEach(function (b) {
+            const on = b === btn;
+            b.classList.toggle('is-on', on);
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+          });
+          if (after) after(btn);
+        });
       });
-    });
+    }
+
+    wireChoice(document.querySelector('.pick-grid'), '.pick');
+
+    // The swatches and pills drive the miniature signature next to them via
+    // custom properties on the card, which is the same shape as the editor's
+    // own behaviour: change a setting, the preview redraws.
+    const brandMock = document.querySelector('.brand-mock');
+    if (brandMock) {
+      wireChoice(brandMock.querySelector('.swatches'), '.swatch', function (btn) {
+        brandMock.style.setProperty('--mock-accent', btn.dataset.color);
+      });
+      wireChoice(brandMock.querySelector('.pills'), '.pill', function (btn) {
+        brandMock.setAttribute('data-font', btn.dataset.font);
+      });
+    }
+
+
+    /* ── Copy button on the install mock ─────────────────────
+       Copies a short sample of the export so the button does something
+       real. Clipboard access can be refused (an insecure origin, or a
+       browser that withholds it), so the label only claims success when
+       the write actually resolved. */
+    const copyBtn = document.querySelector('.copy-btn');
+    if (copyBtn) {
+      const SAMPLE = '<table role="presentation" cellpadding="0" cellspacing="0" border="0">\n  <tr><td style="font-family:Helvetica,Arial,sans-serif;">Daniel Reyes</td></tr>\n</table>';
+      let resetAt = 0;
+      copyBtn.addEventListener('click', function () {
+        const done = function (text, cls) {
+          copyBtn.textContent = text;
+          copyBtn.className = 'copy-btn ' + cls;
+          const mine = resetAt = Date.now();
+          setTimeout(function () {
+            if (resetAt !== mine) return;   // a later click owns the label now
+            copyBtn.textContent = 'Copy HTML';
+            copyBtn.className = 'copy-btn';
+          }, 1800);
+        };
+        if (!navigator.clipboard || !navigator.clipboard.writeText) {
+          done('Not available', 'is-off');
+          return;
+        }
+        navigator.clipboard.writeText(SAMPLE)
+          .then(function () { done('Copied', 'is-done'); })
+          .catch(function () { done('Not available', 'is-off'); });
+      });
+    }
+
+
+    /* ── Reveal on scroll ────────────────────────────────────
+       Purely decorative, so it is opt-in twice over: the class is only
+       added when IntersectionObserver exists, and the transition itself
+       is inside a prefers-reduced-motion guard in the stylesheet. If
+       either is missing the elements are simply visible from the start. */
+    if ('IntersectionObserver' in window) {
+      const targets = [].slice.call(document.querySelectorAll('.section > .eyebrow, .section > .h2, .steps, .band-inner, .feature, .cta'));
+      if (targets.length) {
+        const io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (!e.isIntersecting) return;
+            e.target.classList.add('is-in');
+            io.unobserve(e.target);
+          });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+        targets.forEach(function (el) { el.classList.add('reveal'); io.observe(el); });
+      }
+    }
+
   })();
   </script>
 

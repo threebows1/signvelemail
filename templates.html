@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Templates — Signvel</title>
   <meta name="description" content="Seventeen email signature layouts — from a formal corporate block to full-bleed colour panels — rendered exactly as they export.">
+  <!-- Held back from search while the gallery is behind sign-in. A crawler is
+       always signed out, so it would only ever reach the gate anyway. -->
+  <meta name="robots" content="noindex, nofollow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -19,6 +22,25 @@
     gtag('js', new Date());
     gtag('config', 'G-0KGVSNEJVC');
   </script>
+
+  <!-- ── Signed-in only ──────────────────────────────────────
+       The gallery is held behind the sign-in wall. The markup is in the
+       page, so this is a product boundary rather than a security one —
+       anything genuinely protected is protected by Row Level Security
+       and the storage policies, not by a redirect. What it does buy is
+       that the page is not a public shopfront while the templates are
+       being finished, which is what `noindex` above says as well.
+
+       The hiding is applied before the body renders and lifted only once
+       Cloud.init() has resolved, so a signed-out visitor never sees the
+       gallery flash up before the redirect.
+
+       Written inline rather than in site.css because the other marketing
+       pages load that file and none of them should be hidden. -->
+  <style>html.gate-pending body{visibility:hidden}</style>
+  <!-- The class is added by script rather than written into the markup, so
+       with scripting off nothing is ever hidden: the page simply shows. -->
+  <script>document.documentElement.classList.add('gate-pending');</script>
 </head>
 <body class="page">
 
@@ -310,6 +332,46 @@
       </div>
     </div>
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="cloud.js"></script>
+  <script>
+  // Resolve the session, then either show the gallery or send the visitor to
+  // the editor's sign-in panel.
+  //
+  // Every failure path here shows the page rather than hiding it. A blocked
+  // CDN, a missing config.js or a Supabase outage must not leave a blank
+  // screen — and none of them are worth defending against, because this gate
+  // decides what is on a marketing page, not what an account may read. The
+  // real boundaries are the RLS policies and the storage rules.
+  (function () {
+    const root = document.documentElement;
+    let settled = false;
+
+    function reveal() {
+      settled = true;
+      root.classList.remove('gate-pending');
+    }
+
+    function sendToSignIn() {
+      settled = true;
+      // replace() rather than assign(), so Back returns to wherever the
+      // visitor came from instead of bouncing off this redirect again.
+      window.location.replace('editor.html#signin');
+    }
+
+    // Nothing should ever leave the page hidden for longer than this, whatever
+    // goes wrong upstream.
+    setTimeout(function () { if (!settled) reveal(); }, 2500);
+
+    if (!(window.Cloud && Cloud.isReady)) { reveal(); return; }
+
+    Cloud.init()
+      .then(function (state) { state.signedIn ? reveal() : sendToSignIn(); })
+      .catch(reveal);
+  })();
+  </script>
 
 </body>
 </html>

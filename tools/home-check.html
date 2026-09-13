@@ -1,0 +1,183 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>home</title>
+<style>body{margin:0;font:12px monospace}iframe{width:1280px;height:900px;border:0}</style></head>
+<body>
+<iframe id="f" src="../index.html"></iframe>
+<pre id="out"></pre>
+<script>
+// Drives the interactive parts of the home page below the hero: the
+// how-it-works stepper, the layout thumbnails, the brand controls that
+// redraw the miniature signature, the copy button, and the before/after
+// toggle in the band. Also checks that nothing overflows sideways at the
+// three widths that matter.
+// A thrown error would otherwise leave the title reading "home", which looks
+// like the suite never ran rather than like it fell over.
+window.addEventListener('error', function (e) {
+  document.title = 'ERROR';
+  document.getElementById('out').textContent = (e.message || 'unknown') + ' @line ' + (e.lineno || '?');
+});
+
+document.getElementById('f').addEventListener('load', function () {
+  const d = this.contentDocument;
+  const w = this.contentWindow;
+  const E = [];
+  const click = el => el.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+  const key = (el, k) => el.dispatchEvent(new KeyboardEvent('keydown', {key: k, bubbles: true}));
+
+  // ── Every tablist on the page, driven the same way ──
+  // There are three now (gallery, stepper, before/after) and they share one
+  // implementation, so a break in one is a break in all three.
+  const lists = [].slice.call(d.querySelectorAll('[role="tablist"]'));
+  if (lists.length !== 3) E.push('expected 3 tablists, found ' + lists.length);
+
+  lists.forEach(list => {
+    const label = list.getAttribute('aria-label') || '(unlabelled)';
+    const tabs = [].slice.call(list.querySelectorAll('[role="tab"]'));
+    const panels = tabs.map(t => d.getElementById(t.getAttribute('aria-controls')));
+
+    if (!tabs.length) { E.push(label + ': no tabs'); return; }
+    if (panels.some(p => !p)) { E.push(label + ': a tab points at a missing panel'); return; }
+
+    const visible = () => panels.filter(p => !p.hidden);
+    if (visible().length !== 1) E.push(label + ': at rest ' + visible().length + ' panels visible, want 1');
+
+    tabs.forEach((t, i) => {
+      click(t);
+      const shown = visible();
+      if (shown.length !== 1) E.push(label + '/' + i + ': ' + shown.length + ' panels visible');
+      else if (shown[0] !== panels[i]) E.push(label + '/' + i + ': showed the wrong panel');
+      if (t.getAttribute('aria-selected') !== 'true') E.push(label + '/' + i + ': aria-selected not true');
+      if (t.tabIndex !== 0) E.push(label + '/' + i + ': selected tab not in the tab order');
+      if (!t.classList.contains('is-on')) E.push(label + '/' + i + ': is-on not applied');
+      const others = tabs.filter((x, n) => n !== i);
+      if (others.some(x => x.getAttribute('aria-selected') === 'true')) E.push(label + '/' + i + ': another tab still selected');
+      if (others.some(x => x.tabIndex !== -1)) E.push(label + '/' + i + ': another tab still tabbable');
+    });
+
+    // Arrow keys move along and wrap in both directions.
+    click(tabs[0]);
+    key(tabs[0], 'ArrowRight');
+    if (!tabs[1 % tabs.length].classList.contains('is-on')) E.push(label + ': ArrowRight did not advance');
+    click(tabs[0]);
+    key(tabs[0], 'ArrowLeft');
+    if (!tabs[tabs.length - 1].classList.contains('is-on')) E.push(label + ': ArrowLeft did not wrap');
+    click(tabs[0]);
+  });
+
+  // ── The stepper specifically ──
+  const steps = [].slice.call(d.querySelectorAll('.step-btn'));
+  if (steps.length !== 3) E.push('expected 3 steps, found ' + steps.length);
+  if (!d.querySelector('#step-panel-1 .pick-grid')) E.push('step 1 has no layout thumbnails');
+  if (!d.querySelector('#step-panel-2 .mini-sig')) E.push('step 2 has no miniature signature');
+  if (!d.querySelector('#step-panel-3 .install-list')) E.push('step 3 has no install list');
+
+  // ── Layout thumbnails: exactly one pressed, and clicking moves it ──
+  const picks = [].slice.call(d.querySelectorAll('.pick'));
+  if (picks.length !== 6) E.push('expected 6 layout thumbnails, found ' + picks.length);
+  const pressed = () => picks.filter(p => p.getAttribute('aria-pressed') === 'true');
+  if (pressed().length !== 1) E.push('thumbnails: ' + pressed().length + ' pressed at rest, want 1');
+  click(picks[3]);
+  if (pressed().length !== 1) E.push('thumbnails: ' + pressed().length + ' pressed after a click');
+  if (picks[3].getAttribute('aria-pressed') !== 'true') E.push('thumbnails: clicked one did not become pressed');
+  if (!picks[3].classList.contains('is-on')) E.push('thumbnails: is-on not applied');
+  if (picks[0].classList.contains('is-on')) E.push('thumbnails: previous one still marked on');
+
+  // ── Brand controls actually redraw the preview ──
+  // The point of the panel is that a setting change is visible immediately,
+  // so this reads the computed colour off the preview rather than trusting
+  // that the custom property was set.
+  const mock = d.querySelector('.brand-mock');
+  const role = d.querySelector('.mini-role');
+  const rule = d.querySelector('.mini-rule');
+  if (!mock || !role || !rule) {
+    E.push('brand mock missing');
+  } else {
+    const swatches = [].slice.call(mock.querySelectorAll('.swatch'));
+    if (swatches.length !== 6) E.push('expected 6 swatches, found ' + swatches.length);
+    const before = w.getComputedStyle(role).color;
+    const target = swatches.find(s => s.dataset.color === '#C9962B');
+    if (!target) E.push('gold swatch missing');
+    else {
+      click(target);
+      const after = w.getComputedStyle(role).color;
+      const ruleBg = w.getComputedStyle(rule).backgroundColor;
+      if (after === before) E.push('swatch did not change the preview colour');
+      if (after !== 'rgb(201, 150, 43)') E.push('preview colour is ' + after + ', want rgb(201, 150, 43)');
+      if (ruleBg !== 'rgb(201, 150, 43)') E.push('preview rule is ' + ruleBg + ', want rgb(201, 150, 43)');
+      if (swatches.filter(s => s.getAttribute('aria-pressed') === 'true').length !== 1) E.push('more than one swatch pressed');
+    }
+
+    const pills = [].slice.call(mock.querySelectorAll('.pill'));
+    if (pills.length !== 3) E.push('expected 3 typeface pills, found ' + pills.length);
+    const sig = d.querySelector('.mini-sig');
+    const font0 = w.getComputedStyle(sig).fontFamily;
+    click(pills[1]);
+    const font1 = w.getComputedStyle(sig).fontFamily;
+    if (font1 === font0) E.push('typeface pill did not change the preview font');
+    if (!/Georgia/i.test(font1)) E.push('preview font is ' + font1 + ', want Georgia');
+    click(pills[0]);
+  }
+
+  // ── Copy button ──
+  // Clipboard access is refused on file://, so the button must report that
+  // rather than claiming a copy that never happened.
+  const copy = d.querySelector('.copy-btn');
+  if (!copy) E.push('copy button missing');
+  else {
+    const label0 = copy.textContent.trim();
+    click(copy);
+    setTimeout(function () {
+      const label1 = copy.textContent.trim();
+      if (label1 === label0) E.push('copy button gave no feedback');
+      if (!/Copied|Not available/.test(label1)) E.push('copy button said "' + label1 + '"');
+      finish();
+    }, 120);
+  }
+
+  // ── Before/after panels have real content ──
+  if (!d.querySelector('#ba-panel-1 .ba-sig.broken')) E.push('before panel: no broken signature');
+  if (!d.querySelector('#ba-panel-2 .ba-face')) E.push('after panel: no portrait');
+  if (d.querySelectorAll('.ba-faults li').length !== 6) E.push('expected 3 faults per panel');
+
+  // ── Content the page must not claim ──
+  const text = d.body.innerText;
+  if (/7 days/.test(text)) E.push('still says "7 days" — the trial is 30');
+  if (/Go to Settings/.test(text)) E.push('CTA still says "Go to Settings"');
+  if (/Changelog/.test(text)) E.push('footer still links a Changelog that does not exist');
+
+  // ── Reveal must never leave anything permanently invisible ──
+  const hiddenForever = [].slice.call(d.querySelectorAll('.reveal')).filter(el => {
+    const r = el.getBoundingClientRect();
+    // Only judge what is on screen; below-the-fold elements reveal on scroll.
+    return r.top < w.innerHeight && r.bottom > 0 && w.getComputedStyle(el).opacity === '0';
+  });
+  if (hiddenForever.length) E.push(hiddenForever.length + ' visible element(s) still at opacity 0');
+
+  // ── No sideways overflow ──
+  // Measured inside an exact-width frame rather than from a screenshot:
+  // headless Edge clamps its viewport to 504px, so a narrow window renders
+  // a cropped 504px layout and reports a width that was never used.
+  let pending = 3;
+  [360, 768, 1280].forEach(width => {
+    const probe = document.createElement('iframe');
+    probe.style.cssText = 'width:' + width + 'px;height:800px;border:0;position:absolute;left:-9999px';
+    probe.src = '../index.html';
+    probe.addEventListener('load', function () {
+      const pd = probe.contentDocument.documentElement;
+      if (pd.scrollWidth > pd.clientWidth + 1) {
+        E.push(width + 'px: page scrolls sideways (' + pd.scrollWidth + ' > ' + pd.clientWidth + ')');
+      }
+      if (!--pending) finish();
+    });
+    document.body.appendChild(probe);
+  });
+
+  let done = 0;
+  function finish() {
+    // Both the copy-button timeout and the three width probes have to land.
+    if (++done < 2) return;
+    document.getElementById('out').textContent = E.length ? E.join('\n') : 'ok — 3 tablists, 6 thumbnails, 6 swatches, no overflow at 360/768/1280';
+    document.title = E.length ? 'FAIL ' + E.length : 'PASS';
+  }
+});
+</script>
+</body></html>
