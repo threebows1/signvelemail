@@ -52,6 +52,14 @@ Drives the tabbed gallery on the home page: that each tab shows its own panel
 and only its own, that `aria-selected` and the roving tabindex follow, that the
 arrow keys move and wrap, and that every panel holds real signature markup.
 
+It also measures the white card on every tab and fails if it is not the same
+size each time. The layouts run from 440×199 to 668×360, so a card sized to its
+contents jumped on every press and moved the rest of the section with it. The
+card is measured as rendered rather than read off the stylesheet, so a change
+to its padding or to any one signature's width is caught as well — and a second
+assertion catches the opposite mistake, a card too small for the widest layout
+quietly clipping it.
+
 ### `home-check.html` — home page, everything below the hero
 Drives the three tablists (gallery, how-it-works stepper, before/after toggle)
 through the same generic implementation they share, then the layout thumbnails,

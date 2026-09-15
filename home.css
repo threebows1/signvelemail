@@ -486,11 +486,14 @@ body{margin:0}
 .gallery-canvas{
   background:#fff;border-radius:16px;padding:34px 32px;
   display:flex;align-items:center;justify-content:center;
-  /* Hugs whichever signature is showing rather than sitting at a fixed width:
-     the layouts differ by a couple of hundred pixels, and a card sized for the
-     widest leaves the narrowest stranded in white. The minimum stops it
-     collapsing around the shortest one. */
-  width:fit-content;min-width:min(620px,100%);max-width:100%;margin:0 auto;
+  /* One size for all six, rather than hugging whichever is showing. The
+     layouts run from 440x199 (Ribbon) to 668x360 (Grid), so a box that hugged
+     its contents resized in both directions on every tab press — which moved
+     the note underneath and shifted the rest of the section with it.
+     Sized to the largest, with the smaller ones centred in the space:
+     668 + 64 of padding across, 360 + 68 down. Re-measure before changing
+     these; tools/gallery-check.html asserts the box does not move. */
+  width:100%;max-width:732px;min-height:428px;margin:0 auto;
   overflow-x:auto;
 }
 .gallery-canvas > .sig-frame{min-width:0;flex:0 1 auto}
@@ -499,6 +502,11 @@ body{margin:0}
   margin:18px auto 0;max-width:62ch;text-align:center;
 }
 
+/* Narrow screens scroll the signature sideways rather than shrinking it, so
+   the height is still needed — the padding is not. */
+@media (max-width:760px){
+  .gallery-canvas{padding:22px 18px;min-height:404px}
+}
 /* Only the switch is animated, and only for people who want motion. */
 @media (prefers-reduced-motion:no-preference){
   .gallery-panel:not([hidden]){animation:galleryIn .22s ease-out both}

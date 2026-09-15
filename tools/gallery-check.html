@@ -46,6 +46,41 @@ document.getElementById('f').addEventListener('load', function () {
     if (/undefined|NaN/.test(p.innerHTML)) E.push(p.id + ': undefined/NaN in markup');
   });
 
+  // The white card must not resize as tabs are pressed. The layouts run from
+  // 440x199 to 668x360, so a box that hugged its contents moved the note under
+  // it and shifted the rest of the section on every press. Measured on the
+  // card itself rather than read off the stylesheet, so a change to padding or
+  // to a signature's own width is caught too.
+  const boxes = tabs.map(function (t) {
+    t.click();
+    const r = d.querySelector('.gallery-panel:not([hidden]) .gallery-canvas').getBoundingClientRect();
+    return {tab: t.textContent.trim(), w: Math.round(r.width), h: Math.round(r.height)};
+  });
+  const first = boxes[0];
+  boxes.forEach(function (b) {
+    if (b.w !== first.w || b.h !== first.h) {
+      E.push('the card resizes: ' + first.tab + ' is ' + first.w + 'x' + first.h +
+             ' but ' + b.tab + ' is ' + b.w + 'x' + b.h);
+    }
+  });
+
+  // And nothing may be clipped inside it — a fixed box that is too small for
+  // the widest layout trades a moving card for a cut-off signature.
+  panels.forEach(function (p) {
+    const was = p.hidden;
+    p.hidden = false;
+    const c = p.querySelector('.gallery-canvas');
+    const f = p.querySelector('.sig-frame');
+    if (f.scrollWidth > c.clientWidth + 1) {
+      E.push(p.id + ': signature is ' + f.scrollWidth + 'px wide in a ' + c.clientWidth + 'px card');
+    }
+    if (f.scrollHeight > c.clientHeight + 1) {
+      E.push(p.id + ': signature is ' + f.scrollHeight + 'px tall in a ' + c.clientHeight + 'px card');
+    }
+    p.hidden = was;
+  });
+  tabs[0].click();
+
   document.getElementById('out').textContent = E.length ? E.join('\n') : 'ok — ' + tabs.length + ' tabs, ' + panels.length + ' panels';
   document.title = E.length ? 'FAIL ' + E.length : 'PASS';
 });
