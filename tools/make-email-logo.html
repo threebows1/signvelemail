@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>gen</title></head>
+<body style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;margin:32px;background:#fff;color:#14121F;">
+
+<!--
+  Signvel — email logo generator
+
+  The auth email templates cannot use the site's inline <svg> mark: Gmail,
+  Outlook and Yahoo all strip SVG out of mail. This renders that same mark to a
+  PNG the templates can reference by URL.
+
+  Run it, click Download, and save the file to the repository root as
+  email-logo.png. The root is what Cloudflare serves, so it publishes to
+  https://signvel.com/email-logo.png — the address the templates point at.
+
+  Drawn at 3x and displayed at 48x20 so it stays sharp on a retina screen.
+  The mark is the path from index.html, recoloured for a light ground: the
+  nav draws it white on the brand panel, mail needs it dark on #F5F4FB.
+-->
+
+<h1 style="font-size:19px;margin:0 0 6px;">Email logo</h1>
+<p style="font-size:14px;color:#4A4A55;margin:0 0 22px;line-height:1.6;max-width:44em;">
+  Save as <code>email-logo.png</code> in the repository root, then deploy. The
+  templates in <code>supabase/email-templates/</code> already point at
+  <code>https://signvel.com/email-logo.png</code>.
+</p>
+
+<canvas id="c" width="144" height="60" style="width:144px;height:60px;border:1px solid #E9E7F2;border-radius:6px;"></canvas>
+
+<p style="margin:22px 0 0;">
+  <a id="dl" download="email-logo.png"
+     style="display:inline-block;background:#5B2EFF;color:#fff;font-size:14px;font-weight:700;padding:11px 24px;border-radius:8px;text-decoration:none;">Download email-logo.png</a>
+</p>
+
+<p style="font-size:13px;color:#6B6880;margin:26px 0 8px;">At the size mail shows it, beside the wordmark:</p>
+<div style="background:#F5F4FB;padding:20px;border-radius:10px;display:inline-block;">
+  <img id="preview" width="48" height="20" alt="" style="display:inline-block;vertical-align:middle;margin-right:9px;">
+  <span style="font-size:21px;font-weight:800;letter-spacing:-.02em;color:#14121F;vertical-align:middle;">Sign<span style="color:#00B37E;">Vel</span></span>
+</div>
+
+<pre id="out" style="display:none"></pre>
+
+<script>
+(function () {
+  const SCALE = 144 / 88;              // viewBox is 0 0 88 37
+  const ctx = document.getElementById('c').getContext('2d');
+
+  // A flat ground rather than transparency. The header it sits on is a known
+  // flat colour, and Outlook's handling of PNG alpha is the one thing here
+  // with a history of rendering as a black box.
+  ctx.fillStyle = '#F5F4FB';
+  ctx.fillRect(0, 0, 144, 60);
+
+  ctx.scale(SCALE, SCALE);
+  ctx.translate(0, (60 / SCALE - 37) / 2);
+
+  const mark = new Path2D('M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9');
+  ctx.strokeStyle = '#14121F';
+  ctx.lineWidth = 6;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.stroke(mark);
+
+  ctx.beginPath();
+  ctx.arc(76, 27, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#00B37E';
+  ctx.fill();
+
+  const url = document.getElementById('c').toDataURL('image/png');
+  document.getElementById('dl').href = url;
+  document.getElementById('preview').src = url;
+
+  // Also emitted as bare base64 into #out, so the PNG can be produced
+  // headlessly by tools/make-email-logo.ps1 without a manual download.
+  document.getElementById('out').textContent = url.slice(url.indexOf(',') + 1);
+
+  document.title = 'PASS — 144x60 png ready';
+})();
+</script>
+</body>
+</html>

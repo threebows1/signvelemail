@@ -69,3 +69,20 @@ source for the meta tag, the cloud scripts, the redirect target and the reveal
 fallback, then watches what the framed page actually does. A redirect and a
 reveal are both correct outcomes — the failure it is looking for is neither,
 which leaves a permanently blank page.
+
+### `make-email-logo.html` — auth email logo
+Draws the mark from `index.html` onto a canvas and hands back a PNG. The auth
+email templates cannot use the inline `<svg>`: Gmail, Outlook and Yahoo all
+strip SVG out of mail, so the mark has to be a raster served over HTTPS.
+
+Rendered at 144×60 and displayed at 48×20, so it stays sharp on a retina
+screen. The ground is filled with `#F5F4FB` to match the email header rather
+than left transparent — Outlook's handling of PNG alpha is the one thing here
+with a history of rendering as a black box.
+
+Either open it and click **Download**, or run it headlessly, which writes the
+file straight to the repository root where Cloudflare serves it from:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/make-email-logo.ps1
+```
