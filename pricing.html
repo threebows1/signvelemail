@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pricing — Signvel</title>
-  <meta name="description" content="Every account starts with 30 days free and one signature. Team and organisation plans add more signatures, brand locking and Workspace rollout.">
+  <meta name="description" content="Five signatures free for 30 days, no card. Then $1.99 a month for one signature, $4.99 for five, $16.99 for twenty or more — 25% off paid yearly.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -32,75 +32,105 @@
         <a href="help.html">Help</a>
       </div>
       <div class="nav-spacer"></div>
-      <a class="nav-signin" href="editor.html#signin">Sign in</a>
-      <a class="btn-primary btn-sm" href="editor.html#signup">Get started</a>
+      <a class="nav-signin" href="signin.html">Sign in</a>
+      <a class="btn-primary btn-sm" href="signup.html">Get started</a>
     </div>
   </nav>
 
-  <section class="section-tight" style="padding-top:64px;">
+  <section class="section-tight" style="padding:64px 0 0;">
     <div class="wrap">
-      <div class="section-head center">
+      <div class="section-head center" style="margin-bottom:38px;">
         <p class="eyebrow">Pricing</p>
-        <h1 class="h2">30 days free,<br>then pick a plan</h1>
-        <p class="body-text">The editor is free to use for your own signature. Paid plans exist for keeping a whole team consistent — shared brand settings, locked sections, and rollout.</p>
+        <h1 class="h2">Five signatures free,<br>for thirty days</h1>
+        <p class="body-text">Every feature is switched on during the trial, and no card is asked for. After that, pick the plan that matches how many signatures you need to keep looking right.</p>
       </div>
     </div>
   </section>
 
   <section style="padding-bottom:72px;">
     <div class="wrap">
-      <div class="grid grid-3">
+
+      <div class="center" style="text-align:center;">
+        <div class="billing-toggle" id="billingToggle" role="group" aria-label="Billing period">
+          <button type="button" class="billing-opt" data-period="monthly" aria-pressed="true">Monthly</button>
+          <button type="button" class="billing-opt" data-period="yearly" aria-pressed="false">Yearly <span class="billing-save">Save 25%</span></button>
+        </div>
+      </div>
+
+      <div class="grid grid-4">
 
         <div class="price-card">
+          <p class="price-seats">5 signatures</p>
           <h2 class="h3">Trial</h2>
-          <p class="body-text">Everything switched on, for one signature.</p>
+          <p class="body-text">The whole product, for a month.</p>
           <p class="price-amount">Free</p>
-          <p class="price-period">30 days · no card</p>
+          <p class="price-period price-note">30 days · no card</p>
           <ul class="price-list">
+            <li>Up to five signatures</li>
             <li>All seventeen templates</li>
-            <li>Your photo and logo, hosted so they survive being sent</li>
+            <li>Photo and logo hosted, so they survive being sent</li>
             <li>Live Gmail, Outlook, Apple Mail and mobile preview</li>
-            <li>Full brand controls — colour, logo, typography, spacing</li>
             <li>Copy as rich signature or export raw HTML</li>
-            <li>One signature, synced to your account</li>
           </ul>
-          <a class="btn-secondary" href="editor.html#signup">Start your 30 days</a>
+          <a class="btn-secondary" href="signup.html">Start your 30 days</a>
+        </div>
+
+        <div class="price-card">
+          <p class="price-seats">1 signature</p>
+          <h2 class="h3">Solo</h2>
+          <p class="body-text">One person, one signature, kept current.</p>
+          <p class="price-amount"><span class="price-num" data-monthly="$1.99" data-yearly="$1.49">$1.99</span><span class="price-period"> / month</span></p>
+          <p class="price-period price-note" data-monthly="Billed monthly" data-yearly="$17.91 billed yearly">Billed monthly</p>
+          <ul class="price-list">
+            <li>One signature, synced across your devices</li>
+            <li>All seventeen templates</li>
+            <li>Hosted logo and photo</li>
+            <li>Full brand controls — colour, logo, type, spacing</li>
+            <li>Change it once, paste it everywhere</li>
+          </ul>
+          <a class="btn-secondary" href="signup.html">Choose Solo</a>
         </div>
 
         <div class="price-card featured">
           <span class="price-badge">Most popular</span>
+          <p class="price-seats">5 signatures</p>
           <h2 class="h3">Team</h2>
-          <p class="body-text">For keeping a company on-brand.</p>
-          <p class="price-amount">$4<span class="price-period"> / user / month</span></p>
-          <p class="price-period">Billed annually</p>
+          <p class="body-text">A small team that should look like one company.</p>
+          <p class="price-amount"><span class="price-num" data-monthly="$4.99" data-yearly="$3.74">$4.99</span><span class="price-period"> / month</span></p>
+          <p class="price-period price-note" data-monthly="Billed monthly" data-yearly="$44.91 billed yearly">Billed monthly</p>
           <ul class="price-list">
-            <li>Everything in Personal</li>
+            <li>Everything in Solo, for five signatures</li>
             <li>Shared brand defaults across the team</li>
             <li>Lock sections so only approved fields stay editable</li>
             <li>Department scopes — Sales, Legal, Engineering, Executive</li>
-            <li>Hosted logo and icon images, so nothing breaks when sent</li>
             <li>Campaign banners with an expiry date</li>
           </ul>
-          <a class="btn-primary" href="editor.html#signup">Start a trial</a>
+          <a class="btn-primary" href="signup.html">Choose Team</a>
         </div>
 
         <div class="price-card">
-          <h2 class="h3">Organisation</h2>
-          <p class="body-text">For centrally managed rollout.</p>
-          <p class="price-amount">Talk to us</p>
-          <p class="price-period">Annual agreement</p>
+          <p class="price-seats">20+ signatures</p>
+          <h2 class="h3">Business</h2>
+          <p class="body-text">Rollout across a whole company.</p>
+          <p class="price-amount"><span class="price-num" data-monthly="$16.99" data-yearly="$12.74">$16.99</span><span class="price-period"> / month</span></p>
+          <p class="price-period price-note" data-monthly="Billed monthly" data-yearly="$152.91 billed yearly">Billed monthly</p>
           <ul class="price-list">
-            <li>Everything in Team</li>
+            <li>Everything in Team, from twenty signatures up</li>
             <li>Google Workspace append-footer rollout</li>
             <li>Microsoft 365 transport rule deployment</li>
             <li>Directory sync, so details follow staff changes</li>
             <li>Compliance disclaimers per region or entity</li>
-            <li>Named support contact</li>
           </ul>
-          <a class="btn-secondary" href="mailto:farrukh@alriyady.ae?subject=Signature%20Studio%20—%20Organisation%20plan">Get in touch</a>
+          <a class="btn-secondary" href="signup.html">Choose Business</a>
         </div>
 
       </div>
+
+      <p class="footer-note" style="text-align:center;margin-top:26px;">
+        More than a few hundred people, or need an invoice and an agreement?
+        <a href="mailto:farrukh@alriyady.ae?subject=Signvel%20—%20larger%20rollout" style="color:var(--accent);font-weight:600;">Talk to us</a>.
+      </p>
+
     </div>
   </section>
 
@@ -111,17 +141,24 @@
       </div>
 
       <details class="faq-item">
-        <summary>Is the free plan limited in what it can produce?</summary>
+        <summary>What happens when the 30 days are up?</summary>
         <div class="faq-answer">
-          <p class="body-text">No. The signature you build on the free plan is the same markup a paid plan produces — every template, control and export option is available. What you pay for is managing many people's signatures together, not a better signature.</p>
+          <p class="body-text">Nothing is deleted and nothing is charged — no card is taken to begin with. Your account stays, your signatures stay, and you pick a plan when you are ready. Until you do, hosted images stop being served, so anything already sent keeps working while anything new needs a plan behind it.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Does a cheaper plan produce a worse signature?</summary>
+        <div class="faq-answer">
+          <p class="body-text">No. Solo, Team and Business all produce identical markup, with all seventeen templates and every design control. The difference is how many signatures the plan covers and whether you get the tools for keeping other people's consistent — shared brand defaults, locked sections, directory sync.</p>
         </div>
       </details>
 
       <details class="faq-item">
         <summary>What does "hosted images" actually buy me?</summary>
         <div class="faq-answer">
-          <p class="body-text">On the free plan, an uploaded logo is embedded directly into the signature. That previews correctly but gets stripped by Gmail and Outlook, so recipients see a broken image — you need to host the file somewhere yourself and paste the URL.</p>
-          <p class="body-text">Paid plans host your logo and icon set for you, which also means circular icon badges can be served as images and keep their shape in Outlook.</p>
+          <p class="body-text">Without it, an uploaded logo is embedded directly into the signature. That previews correctly but gets stripped by Gmail and Outlook, so recipients see a broken image — you would need to host the file somewhere yourself and paste in the URL.</p>
+          <p class="body-text">Every plan, and the trial, hosts your logo and icon set for you. It also means circular icon badges can be served as images, which is the only way they keep their shape in Outlook.</p>
         </div>
       </details>
 
@@ -145,9 +182,9 @@
     <div class="wrap">
       <div class="cta-band">
         <h2 class="h2">Try it before you decide</h2>
-        <p class="lede">Sign up and every feature is switched on for 30 days — one signature, no card.</p>
+        <p class="lede">Sign up and every feature is switched on for 30 days — five signatures, no card.</p>
         <div class="btn-row">
-          <a class="btn-primary" href="editor.html#signup">Open the editor</a>
+          <a class="btn-primary" href="signup.html">Open the editor</a>
           <a class="btn-secondary" href="templates.html">Browse templates</a>
         </div>
       </div>
@@ -160,16 +197,42 @@
         <a class="brand" href="index.html" aria-label="Sign Vel home"><svg width="38" height="15.96" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="grad-prc-2" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#grad-prc-2)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg><span class="brand-word">Sign<em>Vel</em></span></a>
         <div class="nav-spacer"></div>
         <div class="footer-links">
-          <a href="editor.html#signup">Editor</a>
+          <a href="signup.html">Editor</a>
           <a href="templates.html">Showcase</a>
           <a href="install.html">Install</a>
           <a href="pricing.html">Pricing</a>
           <a href="help.html">Help</a>
         </div>
       </div>
-      <p class="footer-note" style="margin-top:18px;">Plan names and prices here are placeholders for the design — set your own before this goes live.</p>
+      <p class="footer-note" style="margin-top:18px;">© <span class="footer-year">2026</span> Signvel. All rights reserved.</p>
     </div>
   </footer>
 
+
+  <!-- The billing toggle. The prices live in data- attributes on the page so
+       the yearly figures are visible in the markup rather than computed in a
+       script somebody has to run to find out what anything costs. -->
+  <script>
+  (function () {
+    const toggle = document.getElementById("billingToggle");
+    if (!toggle) return;
+    const opts = toggle.querySelectorAll(".billing-opt");
+    function swap(period) {
+      document.querySelectorAll("[data-" + period + "]").forEach(function (el) {
+        el.textContent = el.dataset[period];
+      });
+      opts.forEach(function (b) {
+        b.setAttribute("aria-pressed", String(b.dataset.period === period));
+      });
+    }
+    toggle.addEventListener("click", function (e) {
+      const b = e.target.closest(".billing-opt");
+      if (b) swap(b.dataset.period);
+    });
+  })();
+  </script>
+
+  <!-- The copyright year, so the footer does not go stale every January. -->
+  <script>document.querySelectorAll(".footer-year").forEach(function (e) { e.textContent = new Date().getFullYear(); });</script>
 </body>
 </html>

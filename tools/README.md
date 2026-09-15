@@ -86,3 +86,33 @@ file straight to the repository root where Cloudflare serves it from:
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/make-email-logo.ps1
 ```
+
+### `auth-pages-check.html` — signin, signup and reset
+Reads the source of all three pages for the ids `auth.js` reaches for and the
+script order it depends on, then drives `auth.js` itself against a stubbed
+Cloud: validation, the confirm-email branch, an error coming back from the
+server, and a reset link arriving without a recovery session.
+
+The last block is the one worth keeping. `?next=` is how the editor sends
+somebody to sign in and gets them back, and a query string is attacker-supplied
+— so five hostile values are pushed through it and the destination has to come
+out as `editor.html` every time.
+
+### `pricing-check.html` — the billing toggle
+Flips the toggle in a frame and checks the figures, not the classes. The yearly
+column is asserted as arithmetic — monthly × 12 × 0.75 — so editing a monthly
+price without editing its yearly twin fails here rather than on the page.
+
+### `gate-check.html` — the editor lock
+The editor is for account holders, so it locks before the first render and
+sends anyone without a session to `signin.html?next=editor.html`. Run it with
+`#out`, `#in` and `#off` — signed out, signed in, and no cloud configured at
+all, the local-checkout case that must not lock anyone out of their own copy.
+
+`window.__navigate` is how it reads the destination: `lockEditor()` calls that
+seam instead of `location.replace` when a harness has provided one, so the
+redirect can be asserted without the harness leaving the page mid-run.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/run-check.ps1 "gate-check.html#out"
+```

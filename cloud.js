@@ -87,13 +87,21 @@ window.Cloud = (function () {
   }
 
   // ── Auth ─────────────────────────────────────────────────
+  // Every link mailed out has to return to a page chosen on purpose, not to
+  // whichever page happened to send it. A confirmation opened from signup.html
+  // would otherwise land back on the form the account no longer needs, and a
+  // reset link would land somewhere with no field to type a new password into.
+  function pageUrl(file) {
+    const dir = window.location.pathname.replace(/[^/]*$/, '');
+    return window.location.origin + dir + file;
+  }
+
   // Magic link: no password to forget, and no password for us to store.
   async function signIn(email) {
     if (!ready) return { ok: false, error: 'Cloud is not configured.' };
-    const redirect = window.location.origin + window.location.pathname;
     const { error } = await db.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: redirect },
+      options: { emailRedirectTo: pageUrl('editor.html') },
     });
     return error ? { ok: false, error: error.message } : { ok: true };
   }
@@ -108,18 +116,28 @@ window.Cloud = (function () {
   // verified first. needsConfirm tells the caller which message to show.
   async function signUp(email, password) {
     if (!ready) return { ok: false, error: 'Cloud is not configured.' };
-    const redirect = window.location.origin + window.location.pathname;
     const { data, error } = await db.auth.signUp({
-      email, password, options: { emailRedirectTo: redirect },
+      email, password, options: { emailRedirectTo: pageUrl('editor.html') },
     });
     if (error) return { ok: false, error: error.message };
     return { ok: true, needsConfirm: !data.session };
   }
 
+  // Sends the reset link. It returns to reset.html, which is the only page
+  // that offers a new-password field.
   async function resetPassword(email) {
     if (!ready) return { ok: false, error: 'Cloud is not configured.' };
-    const redirect = window.location.origin + window.location.pathname;
-    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: redirect });
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: pageUrl('reset.html') });
+    return error ? { ok: false, error: error.message } : { ok: true };
+  }
+
+  // Sets a new password on the session already in hand. Following a reset link
+  // that session is the recovery one Supabase established from the URL; from
+  // inside the account it is the ordinary one. Either way the check that the
+  // caller is who they say they are has already happened.
+  async function updatePassword(password) {
+    if (!ready) return { ok: false, error: 'Cloud is not configured.' };
+    const { error } = await db.auth.updateUser({ password });
     return error ? { ok: false, error: error.message } : { ok: true };
   }
 
@@ -235,7 +253,7 @@ window.Cloud = (function () {
     adminCall('setPlan', { userId, plan }).then(r => r.ok ? { ok: true, user: r.data.user } : r);
 
   return {
-    init, signIn, signInPassword, signUp, resetPassword, signOut,
+    init, signIn, signInPassword, signUp, resetPassword, updatePassword, signOut,
     loadSignature, saveSignature, uploadAsset,
     adminStats, adminUsers, adminSetPlan,
     state,

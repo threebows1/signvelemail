@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>pricing</title></head>
+<body>
+<!--
+  Signvel — the pricing page
+
+  Drives the billing toggle in a frame and checks the numbers it produces,
+  rather than checking that a class changed. Prices are the one thing on this
+  site a visitor acts on directly, and a toggle that silently shows the wrong
+  figure is worse than one that visibly does not move.
+
+  The yearly column is asserted as arithmetic — monthly x 12 x 0.75 — so
+  editing a monthly price without editing its yearly twin fails here instead
+  of on the page.
+-->
+  <iframe id="f" src="../pricing.html" style="width:1200px;height:900px;border:0"></iframe>
+  <pre id="report" style="font:12px monospace;white-space:pre-wrap"></pre>
+
+<script>
+const E = [];
+window.onerror = (m, s, l, c) => { E.push('JS: ' + m + ' @' + l + ':' + c); };
+
+// The monthly price of each paid tier, and how many signatures it covers.
+const TIERS = [
+  {name:'Solo',     monthly:1.99,  seats:'1 signature'},
+  {name:'Team',     monthly:4.99,  seats:'5 signatures'},
+  {name:'Business', monthly:16.99, seats:'20+ signatures'},
+];
+const DISCOUNT = 0.25;
+
+function money(n) { return '$' + n.toFixed(2); }
+
+// Started on the frame's content rather than after a guessed delay: under a
+// virtual time budget a fixed wait is a race, and this passed alone then came
+// back unfinished in a full run.
+//
+// readyState is not the signal to use. An iframe that has not navigated yet is
+// sitting on about:blank, which reports "complete" — checking it starts the run
+// against an empty document, and every assertion below then fails for the wrong
+// reason. Waiting for a price to exist is the honest test.
+const frame = document.getElementById('f');
+let started = false;
+
+function start() {
+  if (started) return;
+  const d = frame.contentDocument;
+  if (!d || !d.querySelector('.price-num')) return;   // about:blank, or still loading
+  started = true;
+  clearInterval(poll);
+  run(d);
+}
+
+frame.addEventListener('load', start);
+const poll = setInterval(start, 50);
+setTimeout(function () {
+  clearInterval(poll);
+  if (!started) { E.push('pricing.html never rendered a price in the frame'); done(); }
+}, 6000);
+
+function run(d) {
+
+  const text = d.body.innerText;
+  const nums  = [].slice.call(d.querySelectorAll('.price-num'));
+  const notes = [].slice.call(d.querySelectorAll('.price-note[data-monthly]'));
+  const opts  = [].slice.call(d.querySelectorAll('.billing-opt'));
+
+  if (nums.length !== TIERS.length) E.push('expected ' + TIERS.length + ' priced tiers, found ' + nums.length);
+  if (opts.length !== 2) E.push('expected a two-option billing toggle, found ' + opts.length);
+
+  // The trial, and the claim the rest of the site makes about it
+  if (!/Free/.test(text)) E.push('no free trial tier on the page');
+  if (!/30 days/.test(text)) E.push('the 30-day trial is not stated');
+  if (/7 days/.test(text)) E.push('still says "7 days" — the trial is 30');
+  if (!/five signatures|Five signatures|5 signatures/.test(text)) E.push('the trial no longer says five signatures');
+
+  // Monthly is what loads
+  if (opts.length === 2 && opts[0].getAttribute('aria-pressed') !== 'true') {
+    E.push('the page does not open on monthly');
+  }
+  nums.forEach(function (el, i) {
+    const want = money(TIERS[i].monthly);
+    if (el.textContent.trim() !== want) {
+      E.push(TIERS[i].name + ': monthly shows ' + el.textContent.trim() + ', expected ' + want);
+    }
+    if (el.dataset.monthly !== want) E.push(TIERS[i].name + ': data-monthly is ' + el.dataset.monthly + ', expected ' + want);
+  });
+
+  // Every tier names how many signatures it covers
+  const seats = [].slice.call(d.querySelectorAll('.price-seats')).map(function (e) { return e.textContent.trim(); });
+  TIERS.forEach(function (t) {
+    if (seats.indexOf(t.seats) === -1) E.push(t.name + ': no tier is labelled "' + t.seats + '"');
+  });
+
+  // Flip to yearly
+  opts[1].dispatchEvent(new d.defaultView.MouseEvent('click', {bubbles:true}));
+
+  setTimeout(function () {
+    if (opts[1].getAttribute('aria-pressed') !== 'true') E.push('yearly was clicked but never became pressed');
+    if (opts[0].getAttribute('aria-pressed') !== 'false') E.push('monthly stayed pressed after switching to yearly');
+
+    nums.forEach(function (el, i) {
+      const t = TIERS[i];
+      const want = money(t.monthly * (1 - DISCOUNT));
+      if (el.textContent.trim() !== want) {
+        E.push(t.name + ': yearly shows ' + el.textContent.trim() + ', but ' + DISCOUNT * 100 + '% off ' + money(t.monthly) + ' is ' + want);
+      }
+    });
+
+    // The annual total in the note has to agree with the per-month figure
+    notes.forEach(function (el, i) {
+      const t = TIERS[i];
+      const wantTotal = money(t.monthly * 12 * (1 - DISCOUNT));
+      const shown = el.textContent.trim();
+      if (shown.indexOf(wantTotal) === -1) {
+        E.push(t.name + ': yearly note reads "' + shown + '", expected it to contain ' + wantTotal);
+      }
+      if (!/yearly/i.test(shown)) E.push(t.name + ': yearly note does not say it is billed yearly');
+    });
+
+    // And back again, so the toggle is not one-way
+    opts[0].dispatchEvent(new d.defaultView.MouseEvent('click', {bubbles:true}));
+    setTimeout(function () {
+      nums.forEach(function (el, i) {
+        if (el.textContent.trim() !== money(TIERS[i].monthly)) {
+          E.push(TIERS[i].name + ': switching back to monthly did not restore ' + money(TIERS[i].monthly));
+        }
+      });
+      done();
+    }, 40);
+  }, 40);
+}
+
+function done() {
+  document.getElementById('report').textContent = E.length ? E.join('\n') : 'ok';
+  document.title = E.length ? 'FAIL ' + E.length : 'PASS';
+}
+</script>
+</body>
+</html>

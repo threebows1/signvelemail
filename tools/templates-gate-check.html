@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>gate</title>
+﻿<!DOCTYPE html><html><head><meta charset="UTF-8"><title>gate</title>
 <style>body{margin:0;font:12px monospace}iframe{width:1100px;height:700px;border:0}</style></head>
 <body>
 <iframe id="f" src="../templates.html"></iframe>
@@ -10,14 +10,14 @@
 //
 //  * The source. Read with fetch() rather than off the iframe, because when
 //    the gate works the iframe is no longer showing templates.html by the
-//    time a load event is worth inspecting — it has already redirected, and
-//    every assertion about the markup would then be read off editor.html and
+//    time a load event is worth inspecting â€” it has already redirected, and
+//    every assertion about the markup would then be read off signin.html and
 //    fail for the wrong reason.
 //
 //  * The behaviour. Either outcome is correct: a redirect means the cloud
 //    layer loaded and found nobody signed in; a revealed page means it could
 //    not load at all and the gate failed open. The failure with teeth is the
-//    third case — neither, leaving a permanently blank page.
+//    third case â€” neither, leaving a permanently blank page.
 window.addEventListener('error', function (e) {
   document.title = 'ERROR';
   document.getElementById('out').textContent = (e.message || 'unknown') + ' @line ' + (e.lineno || '?');
@@ -28,11 +28,11 @@ let staticDone = false, behaviourDone = false;
 
 function report(note) {
   if (!staticDone || !behaviourDone) return;
-  document.getElementById('out').textContent = E.length ? E.join('\n') : 'ok — ' + note;
+  document.getElementById('out').textContent = E.length ? E.join('\n') : 'ok â€” ' + note;
   document.title = E.length ? 'FAIL ' + E.length : 'PASS';
 }
 
-// ── 1. The source ──
+// â”€â”€ 1. The source â”€â”€
 fetch('../templates.html').then(r => r.text()).then(function (src) {
   const head = src.slice(0, src.indexOf('</head>'));
 
@@ -47,10 +47,10 @@ fetch('../templates.html').then(r => r.text()).then(function (src) {
   // The hiding rule must be keyed off a class the script adds, not one written
   // into the markup, so scripting:off shows the page instead of a blank.
   if (/<body[^>]*class="[^"]*gate-pending/.test(src)) {
-    E.push('gate-pending is written into the body tag — scripting off would blank the page');
+    E.push('gate-pending is written into the body tag â€” scripting off would blank the page');
   }
   if (!/classList\.add\('gate-pending'\)/.test(src)) E.push('nothing adds the gate class');
-  if (!/editor\.html#signin/.test(src)) E.push('gate does not redirect to the sign-in panel');
+  if (!/signin\.html/.test(src)) E.push('gate does not redirect to the sign-in page');
   // Whatever goes wrong upstream, the page must not stay hidden.
   if (!/setTimeout/.test(src)) E.push('no fallback that reveals the page if the cloud layer never answers');
 
@@ -62,7 +62,7 @@ fetch('../templates.html').then(r => r.text()).then(function (src) {
   report(note);
 });
 
-// ── 2. The behaviour ──
+// â”€â”€ 2. The behaviour â”€â”€
 let note = '';
 const frame = document.getElementById('f');
 setTimeout(function () {
@@ -70,16 +70,16 @@ setTimeout(function () {
   let href = '';
   try { href = w.location.href; } catch (e) { href = '(cross-origin)'; }
 
-  // Matched on the path, not the fragment: the editor reads #signin and then
-  // clears it with history.replaceState, so by the time this runs the href is
-  // a bare editor.html and looking for the fragment finds nothing.
-  if (/\/editor\.html(?:[#?].*)?$/.test(href)) {
-    note = 'noindex set; signed out, redirected to the editor sign-in panel';
+  // Matched on the path with an optional tail: sign-in is its own page now,
+  // so there is no fragment to account for, but ?next= can ride along behind
+  // the path and must not stop this matching.
+  if (/\/signin\.html(?:[#?].*)?$/.test(href)) {
+    note = 'noindex set; signed out, redirected to the sign-in page';
   } else {
     const d = frame.contentDocument;
     const vis = d ? w.getComputedStyle(d.body).visibility : 'no document';
     if (vis !== 'visible') {
-      E.push('neither redirected nor revealed — page left hidden (visibility: ' + vis + ')');
+      E.push('neither redirected nor revealed â€” page left hidden (visibility: ' + vis + ')');
     } else if (d.documentElement.classList.contains('gate-pending')) {
       E.push('gate-pending never lifted');
     } else if (!d.querySelector('.tmpl-gallery')) {

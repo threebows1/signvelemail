@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choose a new password — Signvel</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-0KGVSNEJVC"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-0KGVSNEJVC');
+  </script>
+</head>
+<body class="page" data-auth-page="reset">
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html" aria-label="Sign Vel home"><svg width="38" height="15.96" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="grad-rs-1" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#grad-rs-1)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg><span class="brand-word">Sign<em>Vel</em></span></a>
+      <div class="nav-spacer"></div>
+      <a class="nav-signin" href="signin.html">Sign in</a>
+    </div>
+  </nav>
+
+  <main class="auth-main">
+    <div class="wrap">
+      <div class="auth-solo">
+
+        <div class="auth-card">
+          <h1 class="auth-title">Choose a new password</h1>
+          <p class="auth-sub">You reached this from the link we emailed, which is how we know it is you. Pick something new and you will be signed in.</p>
+
+          <div class="auth-msg hidden" id="authMsg" role="status" aria-live="polite"></div>
+
+          <form id="authForm" novalidate>
+            <div class="field">
+              <label class="field-label" for="authPassword">New password</label>
+              <input class="field-input" type="password" id="authPassword" name="password" autocomplete="new-password" placeholder="At least 8 characters" required>
+              <p class="field-hint">Eight characters minimum. Longer is better than complicated.</p>
+            </div>
+            <div class="field">
+              <label class="field-label" for="authConfirm">Confirm new password</label>
+              <input class="field-input" type="password" id="authConfirm" name="confirm" autocomplete="new-password" placeholder="••••••••" required>
+            </div>
+            <button class="btn-primary auth-submit" type="submit" id="authSubmit">Save new password</button>
+          </form>
+
+          <!-- Shown by auth.js when the page loads without a recovery session:
+               the link was used already, has expired, or arrived forwarded and
+               stripped of the fragment that carries the token. -->
+          <div id="resetExpired" hidden>
+            <p class="field-hint" style="font-size:14px;margin:0 0 18px;">Reset links last an hour and work once. Start again from the sign-in page and a fresh one will be on its way.</p>
+            <a class="btn-primary auth-submit" href="signin.html">Back to sign in</a>
+          </div>
+
+          <div class="auth-alt">
+            <a href="signin.html">Back to sign in</a>
+            <a href="help.html">Get help</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-inner">
+        <a class="brand" href="index.html" aria-label="Sign Vel home"><svg width="38" height="15.96" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="grad-rs-2" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#grad-rs-2)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg><span class="brand-word">Sign<em>Vel</em></span></a>
+        <div class="nav-spacer"></div>
+        <div class="footer-links">
+          <a href="signin.html">Sign in</a>
+          <a href="signup.html">Create an account</a>
+          <a href="help.html">Help</a>
+        </div>
+      </div>
+      <p class="footer-note" style="margin-top:18px;">© <span class="footer-year">2026</span> Signvel. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="cloud.js"></script>
+  <script src="auth.js"></script>
+
+  <!-- The copyright year, so the footer does not go stale every January. -->
+  <script>document.querySelectorAll(".footer-year").forEach(function (e) { e.textContent = new Date().getFullYear(); });</script>
+</body>
+</html>

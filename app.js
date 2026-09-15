@@ -1,11 +1,11 @@
-/* ═══════════════════════════════════════════════════════════
-   Signature Studio — app.js
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   Signature Studio â€” app.js
    Full single-page email-signature editor
-   ═══════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-// ───────────── SVG Icons ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ SVG Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const icons = {
-  // Signvel brand mark — editor chrome only, never used inside a signature.
+  // Signvel brand mark â€” editor chrome only, never used inside a signature.
   logo: `<svg width="34" height="14.3" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="sv-editor-grad" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#sv-editor-grad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg>`,
   chevron: `<svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
   email: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4l-10 8L2 4"/></svg>`,
@@ -35,12 +35,12 @@ const icons = {
 // Single-letter prefixes for the 'letters' display mode: E: M: T: A:
 const contactLetters = {email:'E',mobile:'M',phone:'T',address:'A',website:'W',office:'O',pronouns:'P',booking:'B'};
 
-// ───────────── Demo logo ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Demo logo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // The stock logo that ships as the default. Recognising it is what lets the
 // generator tell "the user picked this" apart from "nobody has chosen yet".
 const DEFAULT_LOGO_URL = 'https://alriyady.ae/wp-content/uploads/2023/10/Al-Riyady-Corporate-Services-Proerties-Logo-400x163.png';
 
-// ───────────── Template themes ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Template themes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Each layout was drawn against a particular palette and a particular set of
 // treatments, and reads as a different design because of both. Switching
 // template loads the whole record when "Match template design" is on, which is
@@ -51,18 +51,18 @@ const DEFAULT_LOGO_URL = 'https://alriyady.ae/wp-content/uploads/2023/10/Al-Riya
 // a control in the Design panel, so a loaded theme can be overridden field by
 // field afterwards and the override survives until the template changes again.
 //
-//   accent   – theme colour: icons, rules, links
-//   accent2  – second colour: chips, bands, campaign cards
-//   panel    – null leaves the background panel alone; a colour switches it on
-//   heading  – display face for the name, '' inherits the body font
-//   social   – social treatment (chip | circle | filled | plain | outline | glyph)
-//   icons    – contact treatment (circle | filled | icons | letters | labels)
-//   cols     – contact columns, 1 or 2
-//   role     – job-title treatment (plain | caps | chip | pill)
-//   caps     – name in capitals
-//   track    – name letter-spacing, in hundredths of an em
-//   shape    – headshot shape, where the layout depends on one
-//   ring     – headshot ring width in px
+//   accent   â€“ theme colour: icons, rules, links
+//   accent2  â€“ second colour: chips, bands, campaign cards
+//   panel    â€“ null leaves the background panel alone; a colour switches it on
+//   heading  â€“ display face for the name, '' inherits the body font
+//   social   â€“ social treatment (chip | circle | filled | plain | outline | glyph)
+//   icons    â€“ contact treatment (circle | filled | icons | letters | labels)
+//   cols     â€“ contact columns, 1 or 2
+//   role     â€“ job-title treatment (plain | caps | chip | pill)
+//   caps     â€“ name in capitals
+//   track    â€“ name letter-spacing, in hundredths of an em
+//   shape    â€“ headshot shape, where the layout depends on one
+//   ring     â€“ headshot ring width in px
 const templateThemes = {
   // The brand layout. Left on Al Riyady gold, and never re-themed.
   corporate:  {accent:'#C9962B', accent2:'#141220', panel:null, social:'circle', icons:'circle',  cols:1, role:'plain', caps:false, track:0},
@@ -87,12 +87,12 @@ const templateThemes = {
 // Falls back to the theme accent, so a layout added later still gets a mark.
 function themeOf(id) { return templateThemes[id] || templateThemes.minimal; }
 
-// ───────────── Sample images ─────────────
-// Real hosted URLs, not data: URIs — these are what a signature needs to
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Sample images â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Real hosted URLs, not data: URIs â€” these are what a signature needs to
 // survive being emailed, and they let someone see a photo layout as it was
 // designed before they have uploaded anything of their own.
 // Ordered deliberately: the first entry is what every photo layout ships with,
-// so it leads with the most signature-like portrait in the set — a collared
+// so it leads with the most signature-like portrait in the set â€” a collared
 // shirt, an even background and a warm, level expression. The second is the
 // same brief in a jacket, for anyone who wants the formal version.
 //
@@ -123,9 +123,9 @@ const sampleBanners = [
 
 const DEFAULT_HEADSHOT_URL = sampleHeadshots[0].url;
 
-// ───────────── Identities ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Identities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // The editor ships with sample details, so the gallery reads as seventeen
-// layouts rather than as one person's signature repeated seventeen times —
+// layouts rather than as one person's signature repeated seventeen times â€”
 // and so nobody's real address and phone number are the first thing a new
 // user sees.
 //
@@ -136,8 +136,8 @@ const DEFAULT_HEADSHOT_URL = sampleHeadshots[0].url;
 // untouched: type your own name and it is used on every layout, Corporate
 // included.
 // Signvel's own brand. The layouts double as the product's showcase, so the
-// mark, company and links they preview with are Signvel's — the generated
-// monogram picks the company name up from here, which is what puts "SV ·
+// mark, company and links they preview with are Signvel's â€” the generated
+// monogram picks the company name up from here, which is what puts "SV Â·
 // Signvel" in each layout's theme colour rather than a placeholder.
 //
 // The person is a stand-in, deliberately. These details sit on sixteen demo
@@ -162,7 +162,7 @@ const SAMPLE_IDENTITY = {
 
 // The sample identity that shipped before the layouts carried Signvel branding.
 // Saved state holding it is still a copy of the demo, so it has to keep
-// counting as stock — otherwise anyone who opened the editor while that set
+// counting as stock â€” otherwise anyone who opened the editor while that set
 // was live gets Northwind Studio frozen onto every layout.
 // The Signvel-branded sample that preceded the current one, retired when the
 // demo portrait changed and the name had to follow it.
@@ -218,7 +218,7 @@ const CORPORATE_IDENTITY = {
 };
 
 // True while the identity is still exactly what shipped. One edited character
-// anywhere is enough to stop the Corporate substitution — at that point the
+// anywhere is enough to stop the Corporate substitution â€” at that point the
 // details belong to the user, not to the demo.
 function matchesIdentity(id) {
   if (S.name !== id.name || S.title !== id.title || S.company !== id.company) return false;
@@ -227,7 +227,7 @@ function matchesIdentity(id) {
 
 // Every identity the app has ever shipped counts as "nobody has typed their
 // own details yet". A saved state holding one of them is a copy of the demo
-// rather than a choice — the same reasoning that makes the stock logo
+// rather than a choice â€” the same reasoning that makes the stock logo
 // recognisable as stock. Anything not on this list belongs to the user, and is
 // then shown on every layout, Corporate included.
 //
@@ -242,10 +242,10 @@ function identityIsStock() {
 const contactIcons = {email:icons.email,mobile:icons.mobile,phone:icons.landline,website:icons.globe,address:icons.mappin,office:icons.building,pronouns:icons.user,booking:icons.calendar};
 const socialIcons = {linkedin:icons.linkedin,x:icons.x,instagram:icons.instagram,youtube:icons.youtube,facebook:icons.facebook,tiktok:icons.tiktok};
 
-// ───────────── Mail client logos ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Mail client logos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Gmail, Thunderbird, Proton, iCloud and Zoho use the official marks from
 // simple-icons. Outlook and Yahoo were withdrawn from that set over trademark,
-// so those two are brand-coloured approximations — swap in official assets if
+// so those two are brand-coloured approximations â€” swap in official assets if
 // you have licence to.
 const mailLogos = {
   gmail: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(3 3) scale(.75)"><path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></g></svg>`,
@@ -258,22 +258,22 @@ const mailLogos = {
   mobile: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="7.5" y="3.4" width="9" height="17.2" rx="2.4" fill="none" stroke="#6B6880" stroke-width="1.7"/><path d="M10.6 17.8h2.8" stroke="#6B6880" stroke-width="1.7" stroke-linecap="round"/></svg>`,
 };
 
-// ───────────── Disclaimer presets ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Disclaimer presets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const disclaimerPresets = {
   standard: 'This email and any attachments are confidential and intended solely for the addressee. If you have received this email in error, please notify the sender immediately and delete this email.',
   short: 'This email is confidential. If received in error, please delete and notify the sender.',
   regulated: 'This email and any attachments are confidential and may be legally privileged. Any unauthorized use, disclosure, or distribution is strictly prohibited. If you are not the intended recipient, please contact the sender immediately and delete all copies. This communication does not constitute legal, financial, or professional advice.',
 };
 
-// ───────────── Compatibility notes ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Compatibility notes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const compatNotes = {
-  gmail:       {icon:'ℹ', text:'Gmail strips background images and clips messages over ~102KB.', warning:false},
-  outlook:     {icon:'⚠', text:'Outlook renders through Word — no border-radius, and inline SVG does not display.', warning:true},
-  apple:       {icon:'✓', text:'Apple Mail has the best rendering engine — full CSS support.', warning:false},
-  yahoo:       {icon:'⚠', text:'Yahoo Mail drops <style> blocks — only inline styles survive.', warning:true},
-  thunderbird: {icon:'✓', text:'Thunderbird uses Gecko — strong CSS support, close to a browser.', warning:false},
-  proton:      {icon:'ℹ', text:'Proton Mail sanitises remote content; images may need approval per sender.', warning:false},
-  mobile:      {icon:'ℹ', text:'Responsive rendering varies by client and OS version.', warning:false},
+  gmail:       {icon:'â„¹', text:'Gmail strips background images and clips messages over ~102KB.', warning:false},
+  outlook:     {icon:'âš ', text:'Outlook renders through Word â€” no border-radius, and inline SVG does not display.', warning:true},
+  apple:       {icon:'âœ“', text:'Apple Mail has the best rendering engine â€” full CSS support.', warning:false},
+  yahoo:       {icon:'âš ', text:'Yahoo Mail drops <style> blocks â€” only inline styles survive.', warning:true},
+  thunderbird: {icon:'âœ“', text:'Thunderbird uses Gecko â€” strong CSS support, close to a browser.', warning:false},
+  proton:      {icon:'â„¹', text:'Proton Mail sanitises remote content; images may need approval per sender.', warning:false},
+  mobile:      {icon:'â„¹', text:'Responsive rendering varies by client and OS version.', warning:false},
 };
 
 // Preview tabs, in the order they appear above the stage.
@@ -287,36 +287,36 @@ const previewClients = [
   {id:'mobile',      label:'Mobile'},
 ];
 
-// ───────────── Install hints ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Install hints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Install targets: the logo, the steps, and which clipboard action each needs.
 const installTargets = [
   {id:'gmail',       logo:'gmail',       label:'Gmail',        time:'1 min', use:'Copy signature',
-   steps:['Settings → See all settings → General.','Scroll to Signature, click Create new, name it.','Paste with Ctrl/Cmd+V.','Set the defaults for new mail and replies.','Save Changes at the bottom of the page.'],
+   steps:['Settings â†’ See all settings â†’ General.','Scroll to Signature, click Create new, name it.','Paste with Ctrl/Cmd+V.','Set the defaults for new mail and replies.','Save Changes at the bottom of the page.'],
    note:'Keep the whole signature under ~10,000 characters or Gmail clips it. A hosted logo URL is the main saving.'},
   {id:'outlook365',  logo:'outlook',     label:'Outlook 365',  time:'2 min', use:'Copy signature',
-   steps:['Settings → Mail → Compose and reply.','Paste into the Email signature box.','Name it, then choose new messages, replies, or both.','Save, and send yourself a test.'],
+   steps:['Settings â†’ Mail â†’ Compose and reply.','Paste into the Email signature box.','Name it, then choose new messages, replies, or both.','Save, and send yourself a test.'],
    note:'Word renders the message, so rounded icon badges arrive square and inline SVG will not show at all.'},
   {id:'applemail',   logo:'apple',       label:'Apple Mail',   time:'1 min', use:'Copy signature',
-   steps:['Mail → Settings → Signatures.','Pick the account, click + to add one.','Clear the placeholder, paste with Cmd+V.','Untick "Always match my default message font".'],
-   note:'The most faithful of the desktop clients — if it looks right here, the design is sound.'},
+   steps:['Mail â†’ Settings â†’ Signatures.','Pick the account, click + to add one.','Clear the placeholder, paste with Cmd+V.','Untick "Always match my default message font".'],
+   note:'The most faithful of the desktop clients â€” if it looks right here, the design is sound.'},
   {id:'yahoo',       logo:'yahoo',       label:'Yahoo Mail',   time:'1 min', use:'Copy signature',
-   steps:['Settings → More Settings → Mailboxes.','Select your address, toggle the signature on.','Paste into the box.','Changes save on their own.'],
+   steps:['Settings â†’ More Settings â†’ Mailboxes.','Select your address, toggle the signature on.','Paste into the box.','Changes save on their own.'],
    note:'Yahoo strips <style> blocks. Everything here is inline already, so it comes through intact.'},
   {id:'thunderbird', logo:'thunderbird', label:'Thunderbird',  time:'2 min', use:'Export HTML',
-   steps:['Account Settings → select your account.','Tick "Use HTML".','Paste the exported source into the signature box.'],
+   steps:['Account Settings â†’ select your account.','Tick "Use HTML".','Paste the exported source into the signature box.'],
    note:'Thunderbird wants raw HTML rather than a rich paste, so use Export HTML for this one.'},
   {id:'proton',      logo:'proton',      label:'Proton Mail',  time:'1 min', use:'Export HTML',
-   steps:['Settings → All settings → Identity and addresses.','Edit your address, enable the signature.','Switch the box to code view and paste the source.'],
-   note:'Proton sanitises remote content — recipients may need to allow images from your address once.'},
+   steps:['Settings â†’ All settings â†’ Identity and addresses.','Edit your address, enable the signature.','Switch the box to code view and paste the source.'],
+   note:'Proton sanitises remote content â€” recipients may need to allow images from your address once.'},
   {id:'icloud',      logo:'icloud',      label:'iCloud Mail',  time:'1 min', use:'Copy signature',
-   steps:['iCloud Mail → Settings (gear) → Preferences.','Open Composing and tick the signature box.','Paste with Cmd+V.'],
-   note:'Web iCloud Mail accepts a rich paste but strips some spacing — check a test send.'},
+   steps:['iCloud Mail â†’ Settings (gear) â†’ Preferences.','Open Composing and tick the signature box.','Paste with Cmd+V.'],
+   note:'Web iCloud Mail accepts a rich paste but strips some spacing â€” check a test send.'},
   {id:'workspace',   logo:'gmail',       label:'Workspace push', time:'Admin', use:'Export HTML',
-   steps:['Admin console → Apps → Google Workspace → Gmail.','Open Compliance, find Append footer.','Choose the organisational unit.','Paste the exported HTML and save.'],
+   steps:['Admin console â†’ Apps â†’ Google Workspace â†’ Gmail.','Open Compliance, find Append footer.','Choose the organisational unit.','Paste the exported HTML and save.'],
    note:'Server-side footers append once per thread and staff cannot edit them, so personal details still need per-user signatures.'},
 ];
 
-// ───────────── State ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const S = {
   scope: 'default',
   scopeData: {},
@@ -368,7 +368,7 @@ const S = {
   bgColor: '#14121F',
   bgPadding: 24,
   bgRadius: 12,
-  // Served from alriyady.ae, so it is already a public URL — the one form that
+  // Served from alriyady.ae, so it is already a public URL â€” the one form that
   // survives being emailed. Kept in sync with DEFAULT_LOGO_URL, which is how the
   // generator knows this is still the stock logo and not one the user chose.
   logoUrl: DEFAULT_LOGO_URL,
@@ -390,7 +390,7 @@ const S = {
   uploadError: '',
   storageError: '',
 
-  // Admin figures. Transient — they come from the server on request and a
+  // Admin figures. Transient â€” they come from the server on request and a
   // saved copy would only ever be shown out of date.
   adminStats: null,
   adminError: '',
@@ -400,7 +400,7 @@ const S = {
   adminBusy: '',
 
   // Sample details, not anyone's real ones. Corporate substitutes the brand
-  // identity for as long as these are untouched — see identityIsStock.
+  // identity for as long as these are untouched â€” see identityIsStock.
   name: SAMPLE_IDENTITY.name,
   title: SAMPLE_IDENTITY.title,
   company: SAMPLE_IDENTITY.company,
@@ -442,14 +442,14 @@ const S = {
   disclaimerPreset: 'standard',
   disclaimerText: 'The content of this email is confidential and intended for the recipient specified in message only. It is strictly forbidden to share any part of this message with any third party, without a written consent of the sender. If you received this message by mistake, please reply to this message and follow with its deletion, so that we can ensure such a mistake does not occur in the future.',
 
-  // Everything editable by default. Locks are opt-in from Rollout & install —
+  // Everything editable by default. Locks are opt-in from Rollout & install â€”
   // shipping sections pre-locked just blocks the person setting up their own
   // signature.
   rolloutLocks: {typography:'editable',disclaimer:'editable',banner:'editable',contactFields:'editable'},
   installTarget: 'outlook365',
 };
 
-// ───────────── Scopes ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Scopes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // A scope is a departmental override sitting on top of the brand default.
 // Switching scopes stashes whatever you had under the outgoing scope, then loads
 // the incoming one: your previous edits if you've been there before, otherwise
@@ -464,7 +464,7 @@ const SCOPED_KEYS = [
 const scopePresets = {
   sales: {
     bannerEnabled:true, bannerMessage:'Book a 15-minute intro call',
-    bannerSubtext:'No obligation — we will map out your setup options.',
+    bannerSubtext:'No obligation â€” we will map out your setup options.',
     ctaLabel:'Book time', ctaUrl:'https://alriyadygroup.ae/contact', ctaStyle:'pill',
   },
   legal: {
@@ -493,14 +493,14 @@ function applyScope(next) {
   SCOPED_KEYS.forEach(k => { if (k in source) S[k] = source[k]; });
 }
 
-// ───────────── Rollout locks ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Rollout locks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Maps a panel section to the lock that governs it. A locked section renders
 // dimmed and non-interactive until it is unlocked in Rollout & install.
 const sectionLocks = {
   design:'typography', disclaimer:'disclaimer', banner:'banner', contacts:'contactFields',
 };
 
-// ───────────── Sections meta ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Sections meta â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const sections = [
   {id:'templates',  title:'Templates & layout', short:'Layout',   cat:'Design'},
   {id:'design',     title:'Design',             short:'Design',   cat:'Design'},
@@ -511,12 +511,12 @@ const sections = [
   {id:'disclaimer', title:'Disclaimer',         short:'Legal',    cat:'Content'},
   {id:'rollout',    title:'Rollout & install',  short:'Rollout',  cat:'Content'},
   // Hidden from the rail unless the signed-in profile carries is_admin. That
-  // is presentation only — the figures come from an Edge Function that checks
+  // is presentation only â€” the figures come from an Edge Function that checks
   // the same flag server-side, so an unhidden button would still get nothing.
   {id:'admin',      title:'Admin',              short:'Admin',    cat:'Account', adminOnly:true},
 ];
 
-// ───────────── Rail icons ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Rail icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const railIcons = {
   admin:      `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20v-1.5a4.5 4.5 0 0 1 4.5-4.5h3A4.5 4.5 0 0 1 15 18.5V20"/><circle cx="9" cy="7.5" r="3.5"/><path d="M18 10.5v4M16 12.5h4"/></svg>`,
   templates:  `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`,
@@ -532,9 +532,9 @@ const railIcons = {
 // Short status line shown at the right of each section header.
 function sectionMeta(id) {
   switch (id) {
-    case 'templates':  return `${S.template} · ${S.alignment}`;
-    case 'design':     return `${S.font} · ${S.bodySize}px`;
-    case 'media':      return `${S.logoUrl?'Logo':'No logo'} · ${S.headshotUrl?'Photo':'Initials'}`;
+    case 'templates':  return `${S.template} Â· ${S.alignment}`;
+    case 'design':     return `${S.font} Â· ${S.bodySize}px`;
+    case 'media':      return `${S.logoUrl?'Logo':'No logo'} Â· ${S.headshotUrl?'Photo':'Initials'}`;
     case 'contacts':   return `${S.contactFields.filter(f=>f.enabled && f.value).length} of ${S.contactFields.length} shown`;
     case 'social':     return `${S.socialLinks.filter(s=>s.enabled).length} active`;
     case 'banner':     return S.bannerEnabled ? 'Banner on' : 'Banner off';
@@ -544,7 +544,7 @@ function sectionMeta(id) {
   }
 }
 
-// ───────────── DOM refs ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ DOM refs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const $header = document.getElementById('header');
 const $panel  = document.getElementById('panel');
 const $stage  = document.getElementById('stage');
@@ -552,9 +552,9 @@ const $body   = document.getElementById('appBody');
 const $exportOverlay = document.getElementById('exportOverlay');
 const $exportCode    = document.getElementById('exportCode');
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // RENDER: Header
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function renderHeader() {
   const collapseIcon = S.panelCollapsed
     ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>`
@@ -598,7 +598,7 @@ function renderAccount() {
     badge = `<span class="account-plan">${esc(c.plan)}</span>`;
   } else if (c.trialActive) {
     const d = c.trialDaysLeft;
-    badge = `<span class="account-plan is-trial" title="Your trial ends ${esc(new Date(c.trialEndsAt).toLocaleDateString())}">trial · ${d} day${d === 1 ? '' : 's'}</span>`;
+    badge = `<span class="account-plan is-trial" title="Your trial ends ${esc(new Date(c.trialEndsAt).toLocaleDateString())}">trial Â· ${d} day${d === 1 ? '' : 's'}</span>`;
   } else {
     badge = `<a class="account-plan is-ended" href="pricing.html">trial ended</a>`;
   }
@@ -609,26 +609,26 @@ function renderAccount() {
     <button class="btn" id="signOutBtn">Sign out</button>`;
 }
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // RENDER: Rail + settings sheet
-// ═══════════════════════════════════════
-// Dark icon rail — one entry per section, grouped by category.
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Dark icon rail â€” one entry per section, grouped by category.
 // Cloud may be absent entirely (offline, or no config), so this has to answer
 // false rather than throw.
 function isAdmin() {
   return !!(window.Cloud && Cloud.isReady && Cloud.state().isAdmin);
 }
 
-// ───────────── Images as a paid feature ─────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Images as a paid feature â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Photographs and uploaded logos render only while a subscription is active.
 // Without one the layouts fall back to what they already do when no image has
-// been chosen — a generated monogram for the company, initials for the person
-// — so a free signature is complete rather than visibly broken.
+// been chosen â€” a generated monogram for the company, initials for the person
+// â€” so a free signature is complete rather than visibly broken.
 //
 // Be clear about what this is: the signature is assembled in the visitor's own
 // browser and copied to their clipboard, so this gate is a product boundary,
 // not a security one. Anyone determined can read the markup and put the image
-// back. The enforcement that actually holds is in the database — the storage
+// back. The enforcement that actually holds is in the database â€” the storage
 // policy in schema.sql refuses uploads from a free plan, so a free user cannot
 // get a hosted URL, and an un-hosted image is stripped by Gmail and Outlook
 // before a recipient ever sees it.
@@ -638,11 +638,11 @@ function isAdmin() {
 // signature looks like. Nothing in the editor's own interface sets it.
 function imagesUnlocked() {
   if (typeof window.SIGNVEL_SHOW_IMAGES === 'boolean') return window.SIGNVEL_SHOW_IMAGES;
-  // No cloud configured at all means no billing exists to gate against — a
+  // No cloud configured at all means no billing exists to gate against â€” a
   // local checkout or a self-hosted copy stays fully usable.
   if (!(window.Cloud && Cloud.isReady)) return true;
   const c = Cloud.state();
-  // A live plan or an unexpired trial. Both, not one — a new account gets
+  // A live plan or an unexpired trial. Both, not one â€” a new account gets
   // thirty days of the paid features before anything has been bought.
   return !!(c.signedIn && c.entitled);
 }
@@ -662,7 +662,7 @@ function loadAdminUsers() {
 }
 
 // Grants or removes paid access. The row is updated from what the server
-// returns rather than from what was asked for — if the function refused, or
+// returns rather than from what was asked for â€” if the function refused, or
 // clamped the value, the list shows what is actually stored.
 function setUserPlan(userId, plan) {
   if (!userId || !plan || S.adminBusy || !isAdmin()) return;
@@ -721,12 +721,12 @@ function renderRail() {
   document.getElementById('rail').innerHTML = html;
 }
 
-// Settings column — the active section only, with a titled header.
+// Settings column â€” the active section only, with a titled header.
 function renderPanel() {
   renderRail(); // keeps the active highlight and lock badges in step
   let i = Math.max(0, Math.min(S.openSection, sections.length - 1));
   // A saved openSection can point at the Admin section on a browser that is no
-  // longer signed in as an admin — its rail button is gone, so land somewhere
+  // longer signed in as an admin â€” its rail button is gone, so land somewhere
   // reachable rather than on a panel with no way out.
   if (sections[i].adminOnly && !isAdmin()) { i = 0; S.openSection = 0; }
   const sec = sections[i];
@@ -765,7 +765,7 @@ function renderSectionContent(i) {
   }
 }
 
-// ── Section 0: Templates & layout ──
+// â”€â”€ Section 0: Templates & layout â”€â”€
 // Each card is a miniature of the layout drawn in its own theme colour, so the
 // grid reads as a set of designs rather than seventeen grey wireframes.
 function tmplPreviews() {
@@ -833,7 +833,7 @@ function renderTemplates() {
 
 
 // Loads a layout's palette into the live state. Corporate is the one layout
-// that keeps its own colours whatever else happens — it is the brand signature,
+// that keeps its own colours whatever else happens â€” it is the brand signature,
 // not a design in the gallery.
 function applyTemplateTheme(id) {
   const t = templateThemes[id];
@@ -850,7 +850,7 @@ function applyTemplateTheme(id) {
   S.nameTracking = t.track || 0;
   S.photoRing = t.ring || 0;
   // A layout drawn on a dark ground needs the panel on to look like itself.
-  // One drawn on white turns it back off — but only if the panel colour is one
+  // One drawn on white turns it back off â€” but only if the panel colour is one
   // a theme set, so a colour the user chose themselves is never thrown away.
   if (t.panel) {
     S.bgEnabled = true;
@@ -863,7 +863,7 @@ function applyTemplateTheme(id) {
 }
 
 // Changing the theme colour drags the icon colours along, but only while they
-// still match it — once either has been set deliberately, it stays put.
+// still match it â€” once either has been set deliberately, it stays put.
 function setAccent(next) {
   const prev = S.accentColor;
   if (S.iconColor === prev) S.iconColor = next;
@@ -892,7 +892,7 @@ function colorRow(label, key) {
   </div>`;
 }
 
-// ── Shared image uploader (drop zone + preview) ──
+// â”€â”€ Shared image uploader (drop zone + preview) â”€â”€
 // `kind` is 'logo' or 'headshot'; state lives at S[kind+'Url'] / S[kind+'Name'].
 const UPLOAD_ACCEPT = 'image/png,image/jpeg,image/gif,image/svg+xml,image/webp';
 
@@ -924,13 +924,13 @@ function renderUploader(kind, hint) {
   if (url) {
     const isHosted = /^https?:\/\//i.test(url);
     h += isHosted
-      ? `<div class="asset-state is-hosted">${icons.check} Hosted — this URL works in sent mail.</div>`
+      ? `<div class="asset-state is-hosted">${icons.check} Hosted â€” this URL works in sent mail.</div>`
       : `<div class="asset-state is-local">Local copy only. Gmail and Outlook strip embedded images, so recipients will see it broken. ${window.Cloud && Cloud.isReady && !Cloud.state().signedIn ? 'Sign in to host it.' : 'Paste a hosted URL below.'}</div>`;
   }
   if (S.uploadError) h += `<div class="uploader-error">${esc(S.uploadError)}</div>`;
   if (S.storageError) h += `<div class="uploader-error">${esc(S.storageError)}</div>`;
   // A hosted URL is both tiny to store and the only form that survives being
-  // sent — email clients strip the data: URIs that uploads produce.
+  // sent â€” email clients strip the data: URIs that uploads produce.
   const link = url && /^https?:\/\//i.test(url) ? url : '';
   h += `<div class="uploader-url">
     <span class="uploader-url-label">or paste an image URL</span>
@@ -939,7 +939,7 @@ function renderUploader(kind, hint) {
   return h;
 }
 
-// ── Section 1: Design ──
+// â”€â”€ Section 1: Design â”€â”€
 // Every visual control in one place: type, colour, icon treatment, rules and
 // spacing. The content sections keep only the values that go in the signature.
 function renderDesign() {
@@ -999,8 +999,8 @@ function renderDesign() {
     h += `<div class="opt-list">${colorRow('Panel colour', 'bgColor')}</div>`;
     h += `<div class="field-row"><label class="field-label">Panel padding</label><div class="slider-row"><input type="range" min="0" max="48" value="${S.bgPadding}" data-bind="bgPadding"><span class="slider-val">${S.bgPadding}px</span></div></div>`;
     h += `<div class="field-row"><label class="field-label">Corner radius</label><div class="slider-row"><input type="range" min="0" max="28" value="${S.bgRadius}" data-bind="bgRadius"><span class="slider-val">${S.bgRadius}px</span></div></div>`;
-    if (isDarkColor(S.bgColor)) h += `<div class="inline-note">Dark panel detected — text is switched to a light colour automatically. Your saved text colours return if you turn the panel off.</div>`;
-    h += `<div class="inline-note">Solid panel colours survive in email. Background <em>images</em> do not — Gmail and Outlook strip them.</div>`;
+    if (isDarkColor(S.bgColor)) h += `<div class="inline-note">Dark panel detected â€” text is switched to a light colour automatically. Your saved text colours return if you turn the panel off.</div>`;
+    h += `<div class="inline-note">Solid panel colours survive in email. Background <em>images</em> do not â€” Gmail and Outlook strip them.</div>`;
   }
 
   h += `<div class="opt-group">Contact details</div>`;
@@ -1039,14 +1039,14 @@ function renderDesign() {
   return h;
 }
 
-// ── Section 2: Logo & headshot ──
+// â”€â”€ Section 2: Logo & headshot â”€â”€
 // Which layouts actually read each image. Kept beside the templates rather than
 // inside the panel, because the signature builder needs the same answer.
 const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','card'];
 const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature'];
 
 function renderMedia() {
-  // Not every layout has a slot for both images — say so rather than letting
+  // Not every layout has a slot for both images â€” say so rather than letting
   // someone upload a photo and wonder why nothing changed.
   const usesLogo = LOGO_TEMPLATES.includes(S.template);
   const usesHeadshot = PHOTO_TEMPLATES.includes(S.template);
@@ -1074,7 +1074,7 @@ function renderMedia() {
   h += `<div class="field-row">${renderUploader('headshot', 'A square image crops best. Max 1&nbsp;MB.')}</div>`;
   // Hosted sample portraits. Picking one is the quickest way to see a photo
   // layout as it was designed, and because they are real URLs they survive
-  // being emailed — unlike anything uploaded before signing in.
+  // being emailed â€” unlike anything uploaded before signing in.
   h += `<div class="field-row"><label class="field-label">Sample portraits<span class="field-hint">Hosted images, safe to send. Swap in your own any time.</span></label><div class="sample-row">`;
   sampleHeadshots.forEach(s => {
     h += `<button class="sample-thumb${S.headshotUrl===s.url?' active':''}" data-action="sampleHeadshot" data-url="${esc(s.url)}" data-label="${esc(s.label)}" title="${esc(s.label)}"><img src="${esc(s.url)}" alt="${esc(s.label)}" loading="lazy"></button>`;
@@ -1088,9 +1088,9 @@ function renderMedia() {
   return h;
 }
 
-// ── Section 3: Contact fields ──
+// â”€â”€ Section 3: Contact fields â”€â”€
 function renderContacts() {
-  // Values and ordering only — how these rows look lives in Design.
+  // Values and ordering only â€” how these rows look lives in Design.
   let h = `<div class="opt-group">Who you are</div>`;
   h += `<div class="field-row"><label class="field-label">Full name</label><input class="input" value="${esc(S.name)}" data-bind="name" placeholder="Your name"></div>`;
   h += `<div class="field-row"><label class="field-label">Job title</label><input class="input" value="${esc(S.title)}" data-bind="title" placeholder="Your role"></div>`;
@@ -1098,7 +1098,7 @@ function renderContacts() {
   h += `<div class="field-row"><label class="field-label">Tagline</label><input class="input" value="${esc(S.tagline)}" data-bind="tagline" placeholder="Optional strapline, shown in italics"></div>`;
 
   // Say plainly that these are not real details yet, and what the one exception
-  // is — otherwise picking Corporate and seeing different details on it looks
+  // is â€” otherwise picking Corporate and seeing different details on it looks
   // like a bug rather than the point.
   if (identityIsStock()) {
     // Which set is stored changes what needs explaining: a saved Al Riyady
@@ -1106,7 +1106,7 @@ function renderContacts() {
     // one thing and sixteen of the seventeen previews say another.
     h += matchesIdentity(CORPORATE_IDENTITY)
       ? `<div class="inline-note" id="stockNote">These are the Al&nbsp;Riyady details, and the <strong>Corporate</strong> template shows them. Every other layout previews on Signvel branding instead, so the gallery reads as a set of designs rather than the same signature seventeen times. Type over any field above and yours are used on all of them.</div>`
-      : `<div class="inline-note" id="stockNote">Every layout except <strong>Corporate</strong> previews on Signvel branding, with a stand-in name — so the gallery reads as a set of designs rather than as one person's signature. Corporate reproduces the Al&nbsp;Riyady signature. Type over any field above and your own details are used on all seventeen.</div>`;
+      : `<div class="inline-note" id="stockNote">Every layout except <strong>Corporate</strong> previews on Signvel branding, with a stand-in name â€” so the gallery reads as a set of designs rather than as one person's signature. Corporate reproduces the Al&nbsp;Riyady signature. Type over any field above and your own details are used on all seventeen.</div>`;
   }
 
   h += `<div class="opt-group">Contact details</div>`;
@@ -1132,9 +1132,9 @@ function renderContacts() {
   return h;
 }
 
-// ── Section 5: Social icons ──
+// â”€â”€ Section 5: Social icons â”€â”€
 function renderSocial() {
-  // Handles and ordering only — icon style, size and colour live in Design.
+  // Handles and ordering only â€” icon style, size and colour live in Design.
   let h = '';
   S.socialLinks.forEach((sl, i) => {
     h += `<div class="list-item${sl.enabled?'':' disabled'}">
@@ -1148,7 +1148,7 @@ function renderSocial() {
   return h;
 }
 
-// ── Section 6: Banner & CTA ──
+// â”€â”€ Section 6: Banner & CTA â”€â”€
 function renderBanner() {
   let h = `<div class="field-row"><div class="toggle-row"><label class="field-label">Show banner</label><div class="toggle-switch${S.bannerEnabled?' on':''}" data-action="toggleBanner"></div></div></div>`;
   if (S.bannerEnabled) {
@@ -1162,7 +1162,7 @@ function renderBanner() {
     });
     if (S.bannerImage) h += `<button class="sample-thumb is-clear" data-action="sampleBanner" data-url="" title="No image">None</button>`;
     h += `</div></div>`;
-    if (S.bannerImage) h += `<div class="inline-note">A wide image replaces the text banner. Host it publicly — an uploaded copy will be stripped in transit.</div>`;
+    if (S.bannerImage) h += `<div class="inline-note">A wide image replaces the text banner. Host it publicly â€” an uploaded copy will be stripped in transit.</div>`;
     h += `<div class="field-row"><label class="field-label">Button label</label><input class="input" value="${esc(S.ctaLabel)}" data-bind="ctaLabel"></div>`;
     h += `<div class="field-row"><label class="field-label">Button URL</label><input class="input" value="${esc(S.ctaUrl)}" data-bind="ctaUrl"></div>`;
     h += `<div class="field-row"><label class="field-label">Button style</label><div class="toggle-group" data-action="ctaStyle"><button class="${S.ctaStyle==='solid'?'active':''}" data-val="solid">Solid</button><button class="${S.ctaStyle==='outline'?'active':''}" data-val="outline">Outline</button><button class="${S.ctaStyle==='pill'?'active':''}" data-val="pill">Pill</button></div></div>`;
@@ -1170,7 +1170,7 @@ function renderBanner() {
   return h;
 }
 
-// ── Section 7: Disclaimer ──
+// â”€â”€ Section 7: Disclaimer â”€â”€
 function renderDisclaimer() {
   let h = `<div class="field-row"><div class="toggle-row"><label class="field-label">Show disclaimer</label><div class="toggle-switch${S.disclaimerEnabled?' on':''}" data-action="toggleDisclaimer"></div></div></div>`;
   if (S.disclaimerEnabled) {
@@ -1184,8 +1184,8 @@ function renderDisclaimer() {
   return h;
 }
 
-// ── Section 8: Rollout & install ──
-// ── Section 8: Admin ──
+// â”€â”€ Section 8: Rollout & install â”€â”€
+// â”€â”€ Section 8: Admin â”€â”€
 // Figures about the account as a whole. Everything here arrives from the
 // admin-stats Edge Function; nothing is computed in the browser, because
 // nothing in the browser is allowed to see it.
@@ -1198,7 +1198,7 @@ function renderAdmin() {
   let h = `<div class="opt-group">Accounts</div>`;
 
   if (S.adminLoading && !s) {
-    h += `<div class="inline-note">Fetching…</div>`;
+    h += `<div class="inline-note">Fetchingâ€¦</div>`;
   } else if (!s) {
     h += `<div class="inline-note">Counting users means reading the auth table, which no browser key can do. These figures come from the <strong>admin-stats</strong> function instead.</div>`;
   } else {
@@ -1239,15 +1239,15 @@ function renderAdmin() {
     // profiles should track users exactly; a gap means the sign-up trigger
     // missed someone, which is worth knowing about rather than averaging over.
     if (typeof s.users === 'number' && typeof s.profiles === 'number' && s.users !== s.profiles) {
-      h += `<div class="inline-note"><strong>${Math.abs(s.users - s.profiles)}</strong> user${Math.abs(s.users - s.profiles) === 1 ? '' : 's'} without a matching profile row — the sign-up trigger may not have fired for them.</div>`;
+      h += `<div class="inline-note"><strong>${Math.abs(s.users - s.profiles)}</strong> user${Math.abs(s.users - s.profiles) === 1 ? '' : 's'} without a matching profile row â€” the sign-up trigger may not have fired for them.</div>`;
     }
   }
 
   if (S.adminError) h += `<div class="uploader-error">${esc(S.adminError)}</div>`;
 
-  h += `<div class="add-chips"><button class="chip accent" data-action="refreshAdminStats">${S.adminLoading ? 'Fetching…' : (s ? 'Refresh' : 'Load figures')}</button></div>`;
+  h += `<div class="add-chips"><button class="chip accent" data-action="refreshAdminStats">${S.adminLoading ? 'Fetchingâ€¦' : (s ? 'Refresh' : 'Load figures')}</button></div>`;
 
-  // ── Granting paid access ──
+  // â”€â”€ Granting paid access â”€â”€
   h += `<div class="opt-group">Accounts &amp; access</div>`;
   const me = (window.Cloud && Cloud.isReady) ? Cloud.state().userId : null;
 
@@ -1265,12 +1265,12 @@ function renderAdmin() {
       let standing = '';
       if (u.plan === 'free' && u.trial_ends_at) {
         const left = Math.ceil((new Date(u.trial_ends_at).getTime() - Date.now()) / 864e5);
-        standing = left > 0 ? ` · trial, ${left} day${left === 1 ? '' : 's'} left` : ' · trial ended';
+        standing = left > 0 ? ` Â· trial, ${left} day${left === 1 ? '' : 's'} left` : ' Â· trial ended';
       }
       h += `<div class="user-row${self ? ' is-self' : ''}">
         <span class="user-id">
           <span class="user-email">${esc(u.email || '(no email)')}</span>
-          <span class="user-meta">${self ? 'you' : 'joined ' + esc(joined)}${u.is_admin ? ' · admin' : ''}${standing}</span>
+          <span class="user-meta">${self ? 'you' : 'joined ' + esc(joined)}${u.is_admin ? ' Â· admin' : ''}${standing}</span>
         </span>
         <span class="user-plan">`;
       if (self) {
@@ -1289,8 +1289,8 @@ function renderAdmin() {
     h += `</div>`;
   }
 
-  h += `<div class="add-chips"><button class="chip accent" data-action="loadAdminUsers">${S.adminUsersLoading ? 'Fetching…' : (S.adminUsers ? 'Refresh list' : 'Load accounts')}</button></div>`;
-  h += `<div class="inline-note">Administrator rights are not granted here — that stays a SQL statement someone has to write deliberately.</div>`;
+  h += `<div class="add-chips"><button class="chip accent" data-action="loadAdminUsers">${S.adminUsersLoading ? 'Fetchingâ€¦' : (S.adminUsers ? 'Refresh list' : 'Load accounts')}</button></div>`;
+  h += `<div class="inline-note">Administrator rights are not granted here â€” that stays a SQL statement someone has to write deliberately.</div>`;
   return h;
 }
 
@@ -1324,16 +1324,16 @@ function renderRollout() {
   return h;
 }
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // RENDER: Stage (toolbar + email mock)
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function renderStage() {
   const clients = previewClients;
   const cn = compatNotes[S.client] || compatNotes.gmail;
   // Check for pill CTA + Outlook warning
   let warningOverride = null;
   if (S.client === 'outlook' && S.bannerEnabled && S.ctaStyle === 'pill') {
-    warningOverride = {icon:'⚠', text:'Pill CTA loses its border-radius in Outlook.', warning:true};
+    warningOverride = {icon:'âš ', text:'Pill CTA loses its border-radius in Outlook.', warning:true};
   }
   const note = warningOverride || cn;
 
@@ -1362,9 +1362,9 @@ function renderStage() {
   scheduleAllSaves();
 }
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Signature Preview HTML (table-based)
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Relative luminance, so a dark background can flip the text to light without
 // the user having to notice and fix it themselves.
 function isDarkColor(hex) {
@@ -1379,7 +1379,7 @@ function isDarkColor(hex) {
 }
 
 // Wraps whatever the template produced in a background panel. Solid colours are
-// safe in email — it is background *images* that get stripped — so this is done
+// safe in email â€” it is background *images* that get stripped â€” so this is done
 // with bgcolor plus an inline background-color for the clients that ignore one.
 function generateSignaturePreview() {
   const body = buildSignatureBody();
@@ -1392,7 +1392,7 @@ function generateSignaturePreview() {
 }
 
 // Built from nested tables rather than SVG, so the demo mark renders in Outlook
-// too — the icon sets elsewhere in this file do not.
+// too â€” the icon sets elsewhere in this file do not.
 //
 // `stack` puts the wordmark under the mark instead of beside it, which is what
 // the logo-in-a-column layouts were drawn with. `mono` drops the wordmark
@@ -1443,7 +1443,7 @@ function buildSignatureBody() {
   const fs = S.bodySize + 'px';
   // On a dark panel the saved text colours would be unreadable, so they are
   // lifted to light values for the duration of the build. The user's own
-  // settings are untouched — switch the background off and they return.
+  // settings are untouched â€” switch the background off and they return.
   const onDark = S.bgEnabled && isDarkColor(S.bgColor);
   const tc = onDark ? '#F2F1F7' : S.textColor;
   const ac = S.accentColor;
@@ -1460,12 +1460,12 @@ function buildSignatureBody() {
   const widthAttr = layoutW ? ` width="${layoutW}"` : '';
   const widthCss = layoutW ? `width:${layoutW}px;max-width:100%;` : '';
 
-  // ── Identity ──
+  // â”€â”€ Identity â”€â”€
   // While nothing has been personalised, each layout previews with the identity
   // it is meant to carry: Corporate reproduces the real brand signature, and
   // every other layout shows sample details so the gallery reads as a set of
   // designs rather than one signature repeated. Type your own details anywhere
-  // and both substitutions stop — from then on the layouts show you.
+  // and both substitutions stop â€” from then on the layouts show you.
   //
   // Only the values are swapped. Which rows exist, their order and whether each
   // is switched on all still come from the panel, so no control is made inert
@@ -1483,7 +1483,7 @@ function buildSignatureBody() {
     ? S.socialLinks.map(sl => (sl.handle && sl.type in who.socials) ? Object.assign({}, sl, {handle: who.socials[sl.type]}) : sl)
     : S.socialLinks;
 
-  // ── Name treatment ──
+  // â”€â”€ Name treatment â”€â”€
   // Scale, tracking and capitals are shared by every layout, so a design choice
   // made once carries across the whole gallery rather than only the layout it
   // was made on.
@@ -1497,7 +1497,7 @@ function buildSignatureBody() {
   const fieldStyle = `font-family:${ff};font-size:${bs - 1}px;font-weight:${fw};color:${tc};line-height:1.6;margin:0;text-decoration:none;`;
   const mutedStyle = `font-family:${ff};font-size:${bs - 2}px;color:${onDark ? '#8F8CA3' : '#999'};line-height:1.4;`;
 
-  // ── Role treatment ──
+  // â”€â”€ Role treatment â”€â”€
   // Four ways to draw the job title. A chip or pill needs a table cell to hold
   // its background in Outlook, so it cannot just be a styled span.
   function roleHTML(opts) {
@@ -1525,7 +1525,7 @@ function buildSignatureBody() {
   // imagesUnlocked. Resolved once here so every image path agrees.
   const showImages = imagesUnlocked();
 
-  // ── Headshot ──
+  // â”€â”€ Headshot â”€â”€
   // Photo-led layouts need a bigger portrait; 64px looks like an afterthought
   // when it is the main visual element. An explicit size overrides all of it.
   const photoDefaults = {darkcard:110, spotlight:96, feature:104, grid:96, band:104, editorial:140, ribbon:88, labelled:86, connect:78};
@@ -1533,7 +1533,7 @@ function buildSignatureBody() {
   const borderRadius = S.headshotShape === 'circle' ? '50%' : S.headshotShape === 'rounded' ? '10px' : '0';
 
   // `ring` and `shape` let a layout override the shared photo settings where its
-  // design depends on them — the blue feature panel is not itself without the
+  // design depends on them â€” the blue feature panel is not itself without the
   // white ring, whatever shape the user last picked.
   function photoHTML(opts) {
     const o = opts || {};
@@ -1558,7 +1558,7 @@ function buildSignatureBody() {
   }
   const headshotHTML = photoHTML();
 
-  // ── Logo ──
+  // â”€â”€ Logo â”€â”€
   // The real company logo is reserved for Corporate. Every other layout shows a
   // generated mark instead, so the gallery reads as a set of designs rather
   // than the same logo seventeen times. A logo the user chose always wins.
@@ -1627,7 +1627,7 @@ function buildSignatureBody() {
 
     if (mode === 'letters') {
       const lower = o.lowercase;
-      const letter = (contactLetters[f.type] || '•');
+      const letter = (contactLetters[f.type] || 'â€¢');
       return {
         lead: `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(lower ? letter.toLowerCase() : letter)}.</span>`,
         leadPad: '3px 8px 3px 0', val, valPad: '3px 0', align: 'top',
@@ -1663,7 +1663,7 @@ function buildSignatureBody() {
               <td style="padding:${p.valPad};padding-right:${rightPad}px;vertical-align:${p.align};">${p.val}</td>`;
     };
     let rows = '';
-    // A single row with every field laid across it — the shallow inline layout
+    // A single row with every field laid across it â€” the shallow inline layout
     // is the whole point of this mode.
     if (o.row) {
       rows = `<tr>` + list.map((f, i) => cell(f, i === list.length - 1)).join('') + `</tr>`;
@@ -1698,7 +1698,7 @@ function buildSignatureBody() {
   const activeSocials = pSocials.filter(sl => sl.enabled);
 
   // `opts` exists so a layout drawn on a coloured ground can force the treatment
-  // its design needs — white glyphs inside a purple pill, say — without the user
+  // its design needs â€” white glyphs inside a purple pill, say â€” without the user
   // having to reconfigure the shared social settings each time they switch.
   function socialBlock(opts) {
     const o = opts || {};
@@ -1717,7 +1717,7 @@ function buildSignatureBody() {
           .replace(/width="16"/, `width="${iconScale}"`)
           .replace(/height="16"/, `height="${iconScale}"`)
           .replace(/<svg /, '<svg style="display:block;margin:0 auto;" ');
-        // Bare glyph, no ring — the treatment the minimal reference layouts use.
+        // Bare glyph, no ring â€” the treatment the minimal reference layouts use.
         if (style === 'glyph') {
           out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;color:${colour};font-size:0;line-height:0;">${scaledSvg}</a></td>`;
           return;
@@ -1779,7 +1779,7 @@ function buildSignatureBody() {
     ? `<img src="${esc(S.bannerImage)}" width="520" style="display:block;width:100%;max-width:520px;height:auto;border-radius:6px;" alt="${esc(S.bannerMessage || 'Campaign')}">`
     : '';
 
-  // ── Assemble by template ──
+  // â”€â”€ Assemble by template â”€â”€
   // Shared wrappers. `outer` applies the alignment and the optional maximum
   // width once, so no individual layout has to remember either.
   const outer = (rows, extra) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0"${widthAttr} style="border-collapse:separate;border-spacing:0;${widthCss}text-align:${al};${extra || ''}"><tbody>${rows}</tbody></table>`;
@@ -1910,7 +1910,7 @@ function buildSignatureBody() {
       ${discRow(3)}`);
   }
 
-  // Portrait, a vertical rule, then the details — with the campaign banner as a
+  // Portrait, a vertical rule, then the details â€” with the campaign banner as a
   // full-width card underneath rather than an inline row.
   if (S.template === 'spotlight') {
     const lineStyle = `font-family:${ff};font-size:${bs - 1}px;color:${tc};line-height:1.65;`;
@@ -2026,7 +2026,7 @@ function buildSignatureBody() {
       ${discRow(2)}`);
   }
 
-  // The same brand column, but the details run across instead of down — the
+  // The same brand column, but the details run across instead of down â€” the
   // shallowest layout in the set, for people who want two lines and no more.
   if (S.template === 'inline') {
     const wide = activeContacts.filter(f => f.type !== 'address');
@@ -2049,7 +2049,7 @@ function buildSignatureBody() {
       ${discRow(2)}`);
   }
 
-  // Every row carries its own label, set in the theme colour — the most
+  // Every row carries its own label, set in the theme colour â€” the most
   // explicit layout in the set, and the easiest to scan.
   if (S.template === 'labelled') {
     const followRow = socialHTML ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
@@ -2204,31 +2204,31 @@ function buildSignatureBody() {
 
   // minimal
   return outer(`
-    <tr><td><span style="${nameStyle}">${eName}</span><span style="${titleStyle}"> · ${esc(pTitle)} · ${esc(pCompany)}</span></td></tr>
+    <tr><td><span style="${nameStyle}">${eName}</span><span style="${titleStyle}"> Â· ${esc(pTitle)} Â· ${esc(pCompany)}</span></td></tr>
     ${dividerHTML}
     <tr><td style="padding-top:${sp};">
       ${activeContacts.map(f => {
         if (f.type === 'email') return `<a href="mailto:${esc(f.value)}" style="${fieldStyle}color:${ac};">${esc(f.value)}</a>`;
         if (f.type === 'website') return `<a href="https://${esc(f.value.replace(/^https?:\/\//, ''))}" style="${fieldStyle}color:${ac};">${esc(f.value)}</a>`;
         return `<span style="${fieldStyle}">${esc(f.value)}</span>`;
-      }).join(`<span style="color:${ruleColor};margin:0 6px;">·</span>`)}
+      }).join(`<span style="color:${ruleColor};margin:0 6px;">Â·</span>`)}
     </td></tr>
     ${socialHTML ? `<tr><td style="padding-top:${sp};">${socialHTML}</td></tr>` : ''}
     ${bannerHTML}
     ${disclaimerHTML}`);
 }
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Export HTML (fully inlined, table-based)
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function generateExportHTML() {
   const html = generateSignaturePreview();
   return `<!-- Signature Studio Export -->\n${html}`;
 }
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Copy & Export
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function copySignature() {
   const html = generateSignaturePreview();
   const el = document.createElement('div');
@@ -2250,12 +2250,12 @@ function copySignature() {
   sel.removeAllRanges();
 
   if (ok) {
-    showCopyFeedback('Copied ✓');
+    showCopyFeedback('Copied âœ“');
   } else {
     navigator.clipboard.writeText(html).then(() => {
-      showCopyFeedback('Copied ✓');
+      showCopyFeedback('Copied âœ“');
     }).catch(() => {
-      showCopyFeedback('Blocked — use Export HTML');
+      showCopyFeedback('Blocked â€” use Export HTML');
     });
   }
 }
@@ -2271,9 +2271,9 @@ function showExport() {
   $exportOverlay.classList.remove('hidden');
 }
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Event delegation
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function setupEvents() {
   // Header events
   $header.addEventListener('click', e => {
@@ -2287,7 +2287,7 @@ function setupEvents() {
       if (confirm('Clear your saved signature settings and start over from the defaults?')) resetState();
       return;
     }
-    if (e.target.closest('#signInBtn')) { openAuth('signin'); return; }
+    if (e.target.closest('#signInBtn')) { location.href = 'signin.html'; return; }
     if (e.target.closest('#signOutBtn')) {
       Cloud.signOut().then(() => { renderHeader(); showCopyFeedback('Signed out'); });
       return;
@@ -2310,7 +2310,7 @@ function setupEvents() {
     const item = e.target.closest('[data-goto]');
     if (!item) return;
     S.openSection = parseInt(item.dataset.goto);
-    // Picking a section while the panel is hidden should bring it back —
+    // Picking a section while the panel is hidden should bring it back â€”
     // otherwise the click looks like it did nothing.
     if (S.panelCollapsed) {
       S.panelCollapsed = false;
@@ -2322,7 +2322,7 @@ function setupEvents() {
 
   // Panel events
   $panel.addEventListener('click', e => {
-    // Leave form controls alone — they carry data-action for the input/change
+    // Leave form controls alone â€” they carry data-action for the input/change
     // listeners, and re-rendering the panel on click would swap the element out
     // from under the user: a file input loses its dialog result, a text input
     // loses focus and caret position mid-edit.
@@ -2508,7 +2508,7 @@ function setupEvents() {
       acceptUpload(upAction, e.target.files[0]);
       return;
     }
-    // Image URL fields commit on blur/Enter, not per keystroke — a half-typed
+    // Image URL fields commit on blur/Enter, not per keystroke â€” a half-typed
     // URL would just render as a broken image.
     if (upAction === 'logoUrl' || upAction === 'headshotUrl') {
       const kind = upAction === 'logoUrl' ? 'logo' : 'headshot';
@@ -2566,21 +2566,6 @@ function setupEvents() {
     if (darkToggle) { S.darkMode = !S.darkMode; renderStage(); return; }
   });
 
-  // Auth modal
-  const $auth = document.getElementById('authOverlay');
-  if ($auth) {
-    document.getElementById('authClose').addEventListener('click', closeAuth);
-    $auth.addEventListener('click', e => { if (e.target === $auth) closeAuth(); });
-    document.getElementById('authSubmit').addEventListener('click', submitAuth);
-    document.getElementById('authForgot').addEventListener('click', forgotPassword);
-    document.getElementById('authToggle').addEventListener('click', () => {
-      openAuth(authMode === 'signup' ? 'signin' : 'signup');
-    });
-    $auth.addEventListener('keydown', e => {
-      if (e.key === 'Enter') submitAuth();
-      if (e.key === 'Escape') closeAuth();
-    });
-  }
 
   // Export overlay
   document.getElementById('exportClose').addEventListener('click', () => { $exportOverlay.classList.add('hidden'); });
@@ -2588,96 +2573,32 @@ function setupEvents() {
   document.getElementById('exportCopyBtn').addEventListener('click', () => {
     const text = $exportCode.textContent;
     navigator.clipboard.writeText(text).then(() => {
-      document.getElementById('exportCopyBtn').textContent = 'Copied ✓';
+      document.getElementById('exportCopyBtn').textContent = 'Copied âœ“';
       setTimeout(() => { document.getElementById('exportCopyBtn').textContent = 'Copy HTML'; }, 2000);
     });
   });
 }
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Helpers
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function syncBodyClass() {
   let cls = 'body';
   if (S.panelCollapsed) cls += ' panel-collapsed';
   $body.className = cls;
 }
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Cloud sync
-// ═══════════════════════════════════════
-// Email + password auth. The modal doubles as sign-up and password reset so
-// there is only one place to maintain.
-let authMode = 'signin';
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// Signing in and creating an account are pages now â€” signin.html, signup.html
+// and reset.html, driven by auth.js. They used to be a modal here, which put
+// the only way into the product inside the product: the editor is locked to
+// account holders, so the panel floated over an application the visitor had
+// never been allowed to see.
+//
 
-function openAuth(mode) {
-  authMode = mode || 'signin';
-  const signup = authMode === 'signup';
-  document.getElementById('authTitle').textContent = signup ? 'Create an account' : 'Sign in';
-  document.getElementById('authSub').textContent = signup
-    ? 'Your signatures sync across devices, and uploaded logos get hosted so they survive being emailed.'
-    : 'Access your saved signatures.';
-  document.getElementById('authSubmit').textContent = signup ? 'Create account' : 'Sign in';
-  document.getElementById('authToggle').textContent = signup ? 'I already have an account' : 'Create an account';
-  document.getElementById('authPassword').setAttribute('autocomplete', signup ? 'new-password' : 'current-password');
-  authMessage('');
-  document.getElementById('authOverlay').classList.remove('hidden');
-  document.getElementById('authEmail').focus();
-}
-
-function closeAuth() {
-  // While the editor is locked there is nothing behind this panel to return
-  // to, so the close button, the backdrop and Escape all do nothing.
-  if (authRequired) return;
-  document.getElementById('authOverlay').classList.add('hidden');
-  document.getElementById('authPassword').value = '';
-}
-
-function authMessage(text, kind) {
-  const el = document.getElementById('authMsg');
-  el.textContent = text || '';
-  el.className = 'auth-msg' + (text ? '' : ' hidden') + (kind ? ' is-' + kind : '');
-}
-
-function submitAuth() {
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value;
-  if (!email) { authMessage('Enter your email address.', 'error'); return; }
-  if (!password) { authMessage('Enter your password.', 'error'); return; }
-  if (authMode === 'signup' && password.length < 8) {
-    authMessage('Use at least 8 characters.', 'error');
-    return;
-  }
-
-  const btn = document.getElementById('authSubmit');
-  btn.disabled = true;
-  authMessage('Working…');
-
-  const done = (r) => {
-    btn.disabled = false;
-    if (!r.ok) { authMessage(r.error, 'error'); return; }
-    if (r.needsConfirm) {
-      authMessage('Account created. Check your email to confirm the address, then sign in.', 'ok');
-      return;
-    }
-    closeAuth();
-    renderHeader();
-    showCopyFeedback('Signed in');
-  };
-
-  if (authMode === 'signup') Cloud.signUp(email, password).then(done);
-  else Cloud.signInPassword(email, password).then(done);
-}
-
-function forgotPassword() {
-  const email = document.getElementById('authEmail').value.trim();
-  if (!email) { authMessage('Enter your email address first.', 'error'); return; }
-  authMessage('Sending…');
-  Cloud.resetPassword(email).then(r => {
-    authMessage(r.ok ? 'Reset link sent — check your email.' : r.error, r.ok ? 'ok' : 'error');
-  });
-}
-
+// What remains on this side is the lock itself.
 // Push the local state up. Debounced separately from the localStorage save so
 // typing does not fire a request per keystroke.
 let cloudTimer = null;
@@ -2701,27 +2622,39 @@ function adoptCloudState(row) {
   return true;
 }
 
-// ── The editor is for account holders ──────────────────────
+// â”€â”€ The editor is for account holders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Locked until a session is confirmed. The lock is applied synchronously in
 // init(), before anything renders, so the editor never flashes on screen for
 // someone who is not signed in.
 //
-// Where no cloud is configured there is no account to hold, so nothing locks —
+// Where no cloud is configured there is no account to hold, so nothing locks â€”
 // a local checkout and a self-hosted copy both stay usable.
 let authRequired = false;
+
+// Leaving rather than overlaying. ?next= brings them back here once there is
+// a session, so a bookmark straight to the editor still ends up at the editor.
+// replace() rather than assign() keeps the locked editor out of the back
+// stack: pressing Back from the sign-in page should reach wherever they came
+// from, not bounce off this redirect again.
+// init() sets authRequired before the session resolves, to keep the editor
+// off screen while the answer is still in flight. So the guard against
+// redirecting twice needs a flag of its own — reusing authRequired here
+// would make this a no-op every time, and nobody would ever leave.
+let leavingForSignIn = false;
 
 function lockEditor() {
   authRequired = true;
   document.body.classList.add('app-locked');
-  document.getElementById('authOverlay').classList.add('is-required');
-  openAuth('signin');
+  if (leavingForSignIn) return;
+  leavingForSignIn = true;
+  // A seam for tools/gate-check.html, which has to see where this goes without
+  // the harness navigating away in the middle of its own assertions.
+  (window.__navigate || function (u) { location.replace(u); })('signin.html?next=editor.html');
 }
 
 function unlockEditor() {
   authRequired = false;
   document.body.classList.remove('app-locked');
-  document.getElementById('authOverlay').classList.remove('is-required');
-  closeAuth();
 }
 
 function startCloud() {
@@ -2761,11 +2694,11 @@ function startCloud() {
   });
 }
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Persistence
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const STORAGE_KEY = 'signature-studio-v1';
-// Transient UI state — recomputed each session, never written to storage.
+// Transient UI state â€” recomputed each session, never written to storage.
 const TRANSIENT_KEYS = ['uploadError', 'storageError', 'adminStats', 'adminError',
   'adminLoading', 'adminUsers', 'adminUsersLoading', 'adminBusy'];
 
@@ -2777,7 +2710,7 @@ function saveState() {
     if (S.storageError) { S.storageError = ''; renderPanel(); }
   } catch (e) {
     // Quota is the likely cause: a 1MB upload becomes ~1.4MB of base64.
-    const msg = 'Could not save your settings — the uploaded image is too large for browser storage. Use an image URL instead to keep it between visits.';
+    const msg = 'Could not save your settings â€” the uploaded image is too large for browser storage. Use an image URL instead to keep it between visits.';
     if (S.storageError !== msg) { S.storageError = msg; renderPanel(); }
   }
 }
@@ -2803,7 +2736,7 @@ function loadState() {
     if (!raw) return;
     saved = JSON.parse(raw);
   } catch (e) {
-    return; // unavailable or corrupt — fall back to defaults
+    return; // unavailable or corrupt â€” fall back to defaults
   }
   if (!saved || typeof saved !== 'object') return;
   // Copy only keys the current build knows about, so a newer app version keeps
@@ -2814,7 +2747,7 @@ function loadState() {
 
   // One-time migration. Earlier builds shipped with three sections pre-locked
   // and nothing enforcing it, so a saved copy of that value was never a real
-  // choice by the user — clear it rather than suddenly blocking their panel.
+  // choice by the user â€” clear it rather than suddenly blocking their panel.
   const L = S.rolloutLocks;
   if (L && L.typography === 'locked' && L.disclaimer === 'locked' && L.banner === 'locked') {
     S.rolloutLocks = {
@@ -2825,7 +2758,7 @@ function loadState() {
 
   // Three early layouts were replaced by the designs that superseded them.
   // Without this, a saved state naming one of them falls through the template
-  // chain and silently lands on Minimal — which looks like the editor lost
+  // chain and silently lands on Minimal â€” which looks like the editor lost
   // their signature. Point each at its closest replacement instead, and load
   // that layout's design so it arrives looking finished.
   const retired = {'side-by-side':'connect', stacked:'brandmark', card:'labelled'};
@@ -2845,9 +2778,9 @@ function resetState() {
   location.reload();
 }
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Helpers
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function esc(s) {
   if (!s) return '';
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -2863,7 +2796,7 @@ function acceptUpload(action, file) {
   S.uploadError = '';
 
   if (!file.type || !file.type.startsWith('image/')) {
-    S.uploadError = `“${file.name}” is not an image file.`;
+    S.uploadError = `â€œ${file.name}â€ is not an image file.`;
     renderPanel();
     return;
   }
@@ -2873,7 +2806,7 @@ function acceptUpload(action, file) {
   const hosted = !!(window.Cloud && Cloud.isReady && Cloud.state().signedIn);
   const cap = hosted ? MAX_HOSTED_BYTES : MAX_UPLOAD_BYTES;
   if (file.size > cap) {
-    S.uploadError = `“${file.name}” is ${(file.size / 1048576).toFixed(1)} MB — the limit is ${cap / 1048576} MB${hosted ? '.' : ' while signed out. Sign in to host larger images.'}`;
+    S.uploadError = `â€œ${file.name}â€ is ${(file.size / 1048576).toFixed(1)} MB â€” the limit is ${cap / 1048576} MB${hosted ? '.' : ' while signed out. Sign in to host larger images.'}`;
     renderPanel();
     return;
   }
@@ -2882,7 +2815,7 @@ function acceptUpload(action, file) {
   // fails, so the editor never sits there with nothing to preview.
   const useLocalCopy = (after) => readFile(file, (url) => {
     if (url) { S[kind + 'Url'] = url; S[kind + 'Name'] = file.name; }
-    else { S.uploadError = `Could not read “${file.name}”. Try another file.`; }
+    else { S.uploadError = `Could not read â€œ${file.name}â€. Try another file.`; }
     if (after) after();
     renderPanel();
     renderStage();
@@ -2890,18 +2823,18 @@ function acceptUpload(action, file) {
 
   if (!hosted) { useLocalCopy(); return; }
 
-  S[kind + 'Name'] = 'Uploading…';
+  S[kind + 'Name'] = 'Uploadingâ€¦';
   renderPanel();
   Cloud.uploadAsset(file, kind).then((r) => {
     if (r.ok) {
-      S[kind + 'Url'] = r.url;      // a real https URL — survives being emailed
+      S[kind + 'Url'] = r.url;      // a real https URL â€” survives being emailed
       S[kind + 'Name'] = file.name;
       S.uploadError = '';
       renderPanel();
       renderStage();
     } else {
       useLocalCopy(() => {
-        S.uploadError = `Upload failed (${r.error}). Using a local copy — it will preview fine but break when sent.`;
+        S.uploadError = `Upload failed (${r.error}). Using a local copy â€” it will preview fine but break when sent.`;
       });
     }
   });
@@ -2914,13 +2847,13 @@ function readFile(file, cb) {
   r.readAsDataURL(file);
 }
 
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Init
-// ═══════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function init() {
   loadState();
   if (!(S.openSection >= 0 && S.openSection < sections.length)) S.openSection = 0;
-  // Locked before the first render, not after the session resolves — otherwise
+  // Locked before the first render, not after the session resolves â€” otherwise
   // the editor is briefly on screen for someone who is not signed in. The
   // session check below either confirms it or lifts it.
   if (window.Cloud && Cloud.isReady) {
@@ -2934,27 +2867,6 @@ function init() {
   renderStage();
   setupEvents();
   startCloud();
-  openAuthFromHash();
-}
-
-// The marketing pages link here for "Sign in" and "Get started". Without this
-// those links just drop someone into the editor with the panel they were
-// after nowhere in sight — they have to find the button in the top bar and
-// press it themselves, which is not what they clicked.
-//
-// Cloud may still be starting up, so this waits for it rather than opening a
-// sign-in panel over an editor that turns out to be signed in already.
-function openAuthFromHash() {
-  const want = (location.hash || '').replace('#', '');
-  if (want !== 'signin' && want !== 'signup') return;
-  // Clear it straight away, so a refresh does not reopen the panel and the
-  // fragment does not linger in the address bar.
-  history.replaceState(null, '', location.pathname + location.search);
-  if (!window.Cloud || !Cloud.isReady) return;
-
-  const show = () => { if (!Cloud.state().signedIn) openAuth(want); };
-  // init() runs before Cloud.init() has resolved, so ask once it has.
-  Cloud.init().then(show);
 }
 
 init();

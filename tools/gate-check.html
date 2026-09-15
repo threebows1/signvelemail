@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><title>gate</title><link rel="stylesheet" href="../styles.css"></head>
 <body>
@@ -11,13 +11,6 @@
     <div class="export-panel-header"><h2>E</h2><button class="export-close" id="exportClose">x</button></div>
     <pre class="export-code"><code id="exportCode"></code></pre>
     <div class="export-actions"><button class="btn btn-accent" id="exportCopyBtn">C</button></div></div></div>
-  <div class="auth-overlay hidden" id="authOverlay"><div class="auth-panel">
-    <button class="auth-close" id="authClose">x</button><h2 class="auth-title" id="authTitle">S</h2><p class="auth-sub" id="authSub">.</p>
-    <label class="auth-label" for="authEmail">E</label><input class="input" type="email" id="authEmail">
-    <label class="auth-label" for="authPassword">P</label><input class="input" type="password" id="authPassword">
-    <div class="auth-msg hidden" id="authMsg"></div><button class="btn btn-accent auth-submit" id="authSubmit">G</button>
-    <div class="auth-alt"><button class="auth-link" id="authToggle">a</button><button class="auth-link" id="authForgot">b</button></div>
-    <p class="auth-back"><a href="index.html">Back</a></p></div></div>
   <pre id="report" style="position:fixed;left:0;bottom:0;background:#fff;z-index:99;font:12px monospace"></pre>
   <script>
     window.__errs = [];
@@ -27,6 +20,11 @@
     // #out = a configured cloud with nobody signed in
     // #off = no cloud at all, the local-checkout case
     window.__mode = (location.hash || '#out').replace('#', '');
+    // Where the lock sends people. app.js calls this instead of navigating so
+    // the harness can read the destination without leaving the page.
+    window.__wentTo = null;
+    window.__navigate = function (url) { window.__wentTo = url; };
+
     if (window.__mode !== 'off') {
       const signedIn = window.__mode === 'in';
       window.Cloud = {
@@ -46,7 +44,7 @@
   </script>
   <script>
     // The lock is applied and, for a live session, lifted again before any
-    // later script tag can look — microtasks drain between the two. Watching
+    // later script tag can look â€” microtasks drain between the two. Watching
     // for the class is the only way to see that it was ever set.
     window.__sawLock = document.body.classList.contains('app-locked');
     new MutationObserver(() => {
@@ -59,8 +57,6 @@
   (function () {
     const E = window.__errs;
     const mode = window.__mode;
-    const overlay = document.getElementById('authOverlay');
-    const click = el => el && el.dispatchEvent(new MouseEvent('click', {bubbles: true}));
 
     // The lock must go on before any render, not after the session resolves.
     if (mode !== 'off' && !window.__sawLock) {
@@ -72,37 +68,31 @@
 
     setTimeout(() => {
       const locked = document.body.classList.contains('app-locked');
-      const panelOpen = !overlay.classList.contains('hidden');
-      const required = overlay.classList.contains('is-required');
+      const went = window.__wentTo;
 
       if (mode === 'out') {
         if (!locked) E.push('signed out: editor is not locked');
-        if (!panelOpen) E.push('signed out: sign-in panel not shown');
-        if (!required) E.push('signed out: panel is dismissible');
-        // None of the three ways out may work.
-        click(document.getElementById('authClose'));
-        click(overlay);
-        overlay.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true}));
-        if (overlay.classList.contains('hidden')) E.push('signed out: panel could be dismissed');
-        if (!document.body.classList.contains('app-locked')) E.push('signed out: lock was lifted by dismissing');
-        // And there must be a way back to the site.
-        if (!document.querySelector('.auth-back a')) E.push('signed out: no way back to the site');
+        // Sign-in is a page now, so the assertion is about leaving rather than
+        // about a panel that cannot be dismissed.
+        if (!went) E.push('signed out: never sent to the sign-in page');
+        else if (!/^signin\.html/.test(went)) E.push('signed out: sent somewhere other than sign-in: ' + went);
+        else if (!/[?&]next=editor\.html/.test(went)) E.push('signed out: no next=, so the editor is not returned to: ' + went);
       }
 
       if (mode === 'in') {
         if (locked) E.push('signed in: editor stayed locked');
-        if (panelOpen) E.push('signed in: sign-in panel is covering the editor');
-        // Signing out must close it again.
-        Cloud._signedOut = true;
+        if (went) E.push('signed in: redirected away from the editor: ' + went);
+        // Signing out must throw you back out to the sign-in page.
         const orig = Cloud.state;
         Cloud.state = () => Object.assign({}, orig(), {signedIn:false, email:null, userId:null});
         Cloud._cbs.forEach(fn => fn(Cloud.state()));
         if (!document.body.classList.contains('app-locked')) E.push('signed in: signing out did not re-lock');
+        if (!window.__wentTo) E.push('signed in: signing out did not send anyone anywhere');
       }
 
       if (mode === 'off') {
         if (locked) E.push('no cloud: editor locked with no account system to sign into');
-        if (panelOpen) E.push('no cloud: sign-in panel shown with no cloud');
+        if (went) E.push('no cloud: redirected to sign-in with no cloud to sign into');
       }
 
       document.getElementById('report').textContent = E.length ? E.join('\n') : 'ok (' + mode + ')';

@@ -388,37 +388,60 @@ body{margin:0}
    means a slightly taller card, not a broken one. */
 .mast-card > .sig-frame{zoom:.95}
 
-/* ── Mail clients strip ── */
+/* ── Mail clients strip ──
+   Tightened: this row is a reassurance on the way past, not a section of its
+   own, so it takes the room a caption takes. Each tile is a link into the
+   matching guide, which is what the hover state is announcing. */
 .clients{
   max-width:80rem;margin:0 auto;
-  padding:calc(var(--card-drop, 120px) + 34px) 24px 48px;text-align:center;
+  padding:calc(var(--card-drop, 120px) + 20px) 24px 30px;text-align:center;
 }
 .clients-lead{
-  font-size:13.5px;font-weight:500;color:var(--muted-foreground);margin:0 0 16px;
+  font-size:13px;font-weight:500;color:var(--muted-foreground);margin:0 0 11px;
 }
 .clients-row{
   display:flex;flex-wrap:wrap;align-items:stretch;justify-content:center;
-  gap:8px;margin:0;padding:0;list-style:none;
+  gap:6px;margin:0;padding:0;list-style:none;
 }
+.clients-row li{display:flex}
+
 .client-tile{
-  display:inline-flex;align-items:center;gap:7px;
-  background:#fff;border:1px solid var(--border);border-radius:12px;
-  padding:8px 13px;font-size:12.5px;font-weight:600;color:var(--foreground);
+  display:inline-flex;align-items:center;gap:6px;
+  background:#fff;border:1px solid var(--border);border-radius:10px;
+  padding:6px 11px;font-size:12px;font-weight:600;color:var(--foreground);
+  text-decoration:none;
+  transition:border-color .15s,box-shadow .15s,transform .15s,color .15s;
+}
+.client-tile:hover{
+  border-color:var(--primary);color:var(--primary);
+  transform:translateY(-1px);box-shadow:0 6px 16px rgba(91,46,255,.12);
+}
+/* Keyboard users get the same affordance the mouse gets, drawn outside the
+   tile so it is not clipped by the border radius. */
+.client-tile:focus-visible{
+  outline:2px solid var(--primary);outline-offset:2px;
 }
 .client-tile .mail-logo{margin-right:0}
-.client-tile .mail-logo svg{width:18px;height:18px}
-.client-tile-more{padding:0}
-.client-tile-more a{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:8px 13px;font-size:12.5px;color:var(--primary);text-decoration:none;font-weight:600;
+.client-tile .mail-logo svg{
+  width:16px;height:16px;transition:transform .15s;
 }
-.client-tile-more a:hover{color:#4a22db}
+.client-tile:hover .mail-logo svg{transform:scale(1.12)}
+
+.client-tile-more{color:var(--primary);border-style:dashed}
+.client-tile-more:hover{border-style:solid}
+
+/* Below this the row wants to be two tidy lines rather than one scrolling
+   one, so the tiles give up their horizontal padding before they wrap. */
+@media (max-width:520px){
+  .client-tile{padding:6px 9px;font-size:11.5px;gap:5px}
+  .clients-row{gap:5px}
+}
 
 @media (max-width:900px){
   .mast{--card-drop:80px}
   .mast-card{padding:26px 22px;border-radius:16px;margin-top:40px}
   .mast-copy{padding-top:44px}
-  .clients{padding-top:calc(80px + 64px)}
+  .clients{padding-top:calc(80px + 40px)}
   .nav-brand .nav-links{display:none}
   .mast-mark{display:none}
 }

@@ -52,8 +52,8 @@
           <a href="#showcase">Showcase</a>
           <a href="pricing.html">Pricing</a>
         </div>
-        <a class="nav-signin" href="editor.html#signin">Sign in</a>
-        <a class="btn btn-xs btn-light" href="editor.html#signup">Get started</a>
+        <a class="nav-signin" href="signin.html">Sign in</a>
+        <a class="btn btn-xs btn-light" href="signup.html">Get started</a>
       </div>
     </nav>
 
@@ -62,14 +62,14 @@
       <h1 class="mast-title">The last email signature <br class="ttl-break">you&rsquo;ll set up.</h1>
       <p class="mast-sub">One easy way to keep every signature on-brand.</p>
       <div class="mast-cta">
-        <a class="btn btn-lg btn-dark" href="editor.html#signup">Sign up for free <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn-lg btn-dark" href="signup.html">Sign up for free <span aria-hidden="true">&rarr;</span></a>
         <!-- Points at the gallery further down this page rather than at
              /templates, which is behind sign-in. The hero keeps both buttons
              because its shape is settled; only the destination changes. -->
         <a class="btn btn-lg btn-light" href="#showcase">Browse layouts <span aria-hidden="true">&rarr;</span></a>
       </div>
       
-      <p class="mast-fine">30 days free &middot; no credit card &middot; one signature</p>
+      <p class="mast-fine">30 days free &middot; no credit card &middot; five signatures</p>
     </div>
 
     <div class="mast-card">
@@ -84,16 +84,53 @@
 
   <main>
 
-    <!-- ══ 01 MAIL CLIENTS ══ -->
+    <!-- ══ MAIL CLIENTS ══
+         Each tile is a link into the matching guide on install.html rather
+         than a decorative badge. The row was answering "will this work with
+         what we use?" and then leaving the visitor to find the answer
+         themselves; now the logo they recognised is the way through. -->
     <section class="clients">
       <p class="clients-lead">Installs into the mail apps your team already uses</p>
       <ul class="clients-row">
-        <li class="client-tile"><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(3 3) scale(.75)"><path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></g></svg></span><span class="client-name">Gmail</span></li>
-        <li class="client-tile"><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><path d="M13.4 7.1h8.1c.4 0 .7.3.7.7v8.4c0 .4-.3.7-.7.7h-8.1z" fill="#28A8EA"/><path d="M13.9 8.9l4.1 2.7 4.1-2.7" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="1.6" y="4.6" width="11.8" height="14.8" rx="1.8" fill="#0364B8"/><ellipse cx="7.5" cy="12" rx="3" ry="3.9" fill="none" stroke="#fff" stroke-width="2"/></svg></span><span class="client-name">Outlook</span></li>
-        <li class="client-tile"><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="2.4" y="6" width="19.2" height="12" rx="3" fill="#1F8DF5"/><path d="M5.2 9.1l6.8 5 6.8-5" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="client-name">Apple&nbsp;Mail</span></li>
-        <li class="client-tile"><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="2.4" y="6" width="19.2" height="12" rx="2.6" fill="#6001D2"/><path d="M5.4 9l6.6 4.6L18.6 9" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="client-name">Yahoo</span></li>
-        <li class="client-tile"><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#0A84FF" d="M9.948 4.444h-.005c-1.92.788-2.126 2.55-1.817 3.499v.02C9.236 7.18 10.658 6.76 12 6.76c3.26 0 5.902 2.156 5.902 4.815 0 2.66-2.643 4.816-5.902 4.816l-.083-.002c-.155-.006-.354-.013-.435.118-.096.156.116.397.238.536 1.274 1.441 3.123 1.622 3.608 1.67l.076.008c-4.281.414-9.304-2.32-9.306-7.076 0-1.12.414-2.073 1.075-2.83l-.005-.002h-.003C7.31 6.38 6.376 3.47 4.629 2.898c-.124-.04-.246.054-.262.183-.23 1.924-.727 2.59-1.264 3.31-.805 1.08-1.39 2.328-1.365 3.698a10.99 10.99 0 0 1-.705-1.91c-.024-.09-.17-.365-.333-.272-.13.072-.227.274-.296.485A12.137 12.137 0 0 0 0 11.489c0 6.536 5.475 12 12 12 6.627 0 12-5.372 12-12 0-2.526-.781-4.87-2.115-6.805l.167-.002c.518 0 1.024.045 1.51.129-.734-.816-1.724-1.475-2.877-1.904a8.54 8.54 0 0 1 2.494-.495c-1.426-1.166-3.508-1.9-5.827-1.9-3.355 0-6.648 1.29-7.404 3.93z"/></g></svg></span><span class="client-name">Thunderbird</span></li>
-        <li class="client-tile client-tile-more"><a href="install.html">All setup guides <span aria-hidden="true">&rarr;</span></a></li>
+        <li>
+          <a class="client-tile" href="install.html#gmail">
+            <span class="mail-logo"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4caf50" d="M45 16.2l-5 2.75-5 4.75V40h7c1.657 0 3-1.343 3-3V16.2z"/><path fill="#1e88e5" d="M3 16.2l3.614 1.71L13 23.7V40H6c-1.657 0-3-1.343-3-3V16.2z"/><polygon fill="#e53935" points="35,11.2 24,19.45 13,11.2 12,17 13,23.7 24,31.95 35,23.7 36,17"/><path fill="#c62828" d="M3 12.298V16.2l10 7.5V11.2L9.876 8.859C9.132 8.301 8.228 8 7.298 8 4.924 8 3 9.924 3 12.298z"/><path fill="#fbc02d" d="M45 12.298V16.2l-10 7.5V11.2l3.124-2.341C38.868 8.301 39.772 8 40.702 8 43.076 8 45 9.924 45 12.298z"/></svg></span>
+            <span class="client-name">Gmail</span>
+          </a>
+        </li>
+        <li>
+          <a class="client-tile" href="install.html#outlook">
+            <span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.4 6.9h7.9c.4 0 .7.3.7.7v8.8c0 .4-.3.7-.7.7h-7.9z" fill="#28A8EA"/><path d="M13.9 8.7l4 2.7 4-2.7" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="1.4" y="4.3" width="12" height="15.4" rx="1.6" fill="#0364B8"/><ellipse cx="7.4" cy="12" rx="2.9" ry="3.8" fill="none" stroke="#fff" stroke-width="2"/></svg></span>
+            <span class="client-name">Outlook</span>
+          </a>
+        </li>
+        <li>
+          <a class="client-tile" href="install.html#apple-mail">
+            <span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="am-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4FC3F7"/><stop offset="1" stop-color="#1A73E8"/></linearGradient></defs><rect width="24" height="24" rx="5.4" fill="url(#am-g)"/><path d="M4.6 8.2h14.8v7.6H4.6z" fill="none" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="M4.6 8.6l7.4 5.1 7.4-5.1" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="client-name">Apple&nbsp;Mail</span>
+          </a>
+        </li>
+        <li>
+          <a class="client-tile" href="install.html#yahoo">
+            <span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5.4" fill="#5F01D1"/><path d="M5.2 7.3h3.1l2.4 4.2 2.4-4.2h3l-5 8.4v3h-2.8v-3z" fill="#fff"/><circle cx="17.6" cy="15.1" r="1.5" fill="#fff"/></svg></span>
+            <span class="client-name">Yahoo</span>
+          </a>
+        </li>
+        <li>
+          <a class="client-tile" href="install.html#thunderbird">
+            <span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5.4" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#0A84FF" d="M9.948 4.444h-.005c-1.92.788-2.126 2.55-1.817 3.499v.02C9.236 7.18 10.658 6.76 12 6.76c3.26 0 5.902 2.156 5.902 4.815 0 2.66-2.643 4.816-5.902 4.816l-.083-.002c-.155-.006-.354-.013-.435.118-.096.156.116.397.238.536 1.274 1.441 3.123 1.622 3.608 1.67l.076.008c-4.281.414-9.304-2.32-9.306-7.076 0-1.12.414-2.073 1.075-2.83l-.005-.002h-.003C7.31 6.38 6.376 3.47 4.629 2.898c-.124-.04-.246.054-.262.183-.23 1.924-.727 2.59-1.264 3.31-.805 1.08-1.39 2.328-1.365 3.698a10.99 10.99 0 0 1-.705-1.91c-.024-.09-.17-.365-.333-.272-.13.072-.227.274-.296.485A12.137 12.137 0 0 0 0 11.489c0 6.536 5.475 12 12 12 6.627 0 12-5.372 12-12 0-2.526-.781-4.87-2.115-6.805l.167-.002c.518 0 1.024.045 1.51.129-.734-.816-1.724-1.475-2.877-1.904a8.54 8.54 0 0 1 2.494-.495c-1.426-1.166-3.508-1.9-5.827-1.9-3.355 0-6.648 1.29-7.404 3.93z"/></g></svg></span>
+            <span class="client-name">Thunderbird</span>
+          </a>
+        </li>
+        <li>
+          <a class="client-tile" href="install.html#proton">
+            <span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5.4" fill="#fff"/><path d="M3.4 6.6v11.2c0 .6.5 1.1 1.1 1.1h1.9V9.9l5.6 4.2 5.6-4.2v9h1.9c.6 0 1.1-.5 1.1-1.1V6.6c0-1.2-1.4-1.9-2.4-1.2L12 9.5 5.8 5.4c-1-.7-2.4 0-2.4 1.2z" fill="#6D4AFF"/><path d="M6.4 18.9V9.9l5.6 4.2v4.8z" fill="#8A6EFF"/></svg></span>
+            <span class="client-name">Proton</span>
+          </a>
+        </li>
+        <li>
+          <a class="client-tile client-tile-more" href="install.html">All setup guides <span aria-hidden="true">&rarr;</span></a>
+        </li>
       </ul>
     </section>
 
@@ -104,14 +141,14 @@
     <section id="showcase" class="section-dark">
       <div class="showcase-head">
         <div>
-          <span class="eyebrow eyebrow-light">(01) The layouts</span>
+          <span class="eyebrow eyebrow-light">The layouts</span>
           <h2 class="h2">Seventeen designs.<br>Every one of them real.</h2>
           <p class="lead lead-light">These are the actual table-based signatures the editor produces — the same markup you paste into Gmail, rendered here as it renders there.</p>
         </div>
         <!-- The gallery below shows six of the seventeen. With /templates
              behind sign-in the rest are in the editor, so the button says so
              rather than promising a page a signed-out visitor cannot open. -->
-        <a class="btn btn-md btn-mint" href="editor.html#signup">Start free to see all 17</a>
+        <a class="btn btn-md btn-mint" href="signup.html">Start free to see all 17</a>
       </div>
 
       <!-- Tabbed gallery. Every signature is in the markup; the script below
@@ -174,7 +211,7 @@
          panel is in the markup, so with the script absent the section degrades
          to all three shown in order. -->
     <section class="section">
-      <span class="eyebrow">(02) How it works</span>
+      <span class="eyebrow">How it works</span>
       <h2 class="h2 h2-tight">Three steps, about five minutes.</h2>
 
       <div class="steps">
@@ -317,7 +354,7 @@
     <section class="section band">
       <div class="band-inner">
         <div class="band-copy">
-          <span class="eyebrow">(03) The difficult part</span>
+          <span class="eyebrow">The difficult part</span>
           <h2 class="h2 h2-tight">Most signatures break in Outlook.</h2>
           <p class="lead">Outlook renders mail through Word. It ignores rounded corners, drops inline SVG, and undoes half of what a browser would accept. Gmail strips background images and cuts a long message off entirely. A signature that looks right in the builder and arrives broken is worse than no signature at all.</p>
 
@@ -409,7 +446,7 @@
 
     <!-- ══ 05 WHAT YOU GET ══ -->
     <section class="section" style="padding-top:0;">
-      <span class="eyebrow">(04) What you get</span>
+      <span class="eyebrow">What you get</span>
       <h2 class="h2 h2-tight">Everything the editor does.</h2>
 
       <div class="feature-grid">
@@ -488,9 +525,9 @@
       <div class="cta">
         <span class="eyebrow eyebrow-light">Get started</span>
         <h2 class="h2">Build your signature<br>in minutes.</h2>
-        <p class="lead lead-light">Thirty days free with every feature switched on. One signature, no card.</p>
+        <p class="lead lead-light">Thirty days free with every feature switched on. Five signatures, no card.</p>
         <div class="btn-row">
-          <a class="btn btn-lg btn-light" href="editor.html#signup">Start free for 30 days</a>
+          <a class="btn btn-lg btn-light" href="signup.html">Start free for 30 days</a>
           <a class="btn btn-lg btn-ghost" href="pricing.html">See pricing</a>
         </div>
       </div>
@@ -526,14 +563,13 @@
         </div>
         <div class="footer-col">
           <p class="footer-head">Account</p>
-          <a href="editor.html#signin">Sign in</a>
-          <a href="editor.html#signup">Start free</a>
+          <a href="signin.html">Sign in</a>
+          <a href="signup.html">Start free</a>
         </div>
       </nav>
     </div>
     <div class="footer-base">
-      <p class="footer-copy">© 2026 Signvel</p>
-      <p class="footer-copy">Built in Dubai</p>
+      <p class="footer-copy">© <span class="footer-year">2026</span> Signvel. All rights reserved.</p>
     </div>
   </footer>
 
@@ -675,5 +711,8 @@
   })();
   </script>
 
+
+  <!-- The copyright year, so the footer does not go stale every January. -->
+  <script>document.querySelectorAll(".footer-year").forEach(function (e) { e.textContent = new Date().getFullYear(); });</script>
 </body>
 </html>

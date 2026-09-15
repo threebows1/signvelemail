@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>auth</title></head>
+<body>
+<!--
+  Signvel — the auth pages
+
+  Two halves, checked separately for the reason templates-gate-check.html
+  splits them: the source is read with fetch(), because a page driven far
+  enough to be worth asserting about has usually navigated somewhere else.
+
+   * The source of signin.html, signup.html and reset.html — the ids auth.js
+     reaches for, the scripts it depends on, and the order they load in. A
+     missing id fails silently at runtime, which is the failure this catches.
+
+   * The behaviour of auth.js against a stubbed Cloud. Validation, the
+     confirm-email branch, and where each flow ends up. window.__navigate
+     catches the destination instead of letting it leave.
+
+  Sign-in must not become an open redirect. ?next= is how the editor sends
+  somebody here and gets them back, and a query string is attacker-supplied —
+  so the last block below is the one worth keeping honest.
+-->
+
+  <div id="stage"></div>
+  <pre id="report" style="font:12px monospace;white-space:pre-wrap"></pre>
+
+<script>
+const E = [];
+window.onerror = (m, s, l, c) => { E.push('JS: ' + m + ' @' + l + ':' + c); };
+
+// ── 1. The source ────────────────────────────────────────
+const PAGES = {
+  'signin.html': {mode:'signin', ids:['authForm','authEmail','authPassword','authSubmit','authMsg','authForgot'], noindex:true},
+  'signup.html': {mode:'signup', ids:['authForm','authEmail','authPassword','authConfirm','authSubmit','authMsg'], noindex:false},
+  'reset.html':  {mode:'reset',  ids:['authForm','authPassword','authConfirm','authSubmit','authMsg','resetExpired'], noindex:true},
+};
+
+function checkSource(file, spec, src) {
+  if (src.indexOf('data-auth-page="' + spec.mode + '"') === -1) {
+    E.push(file + ': body is not marked data-auth-page="' + spec.mode + '"');
+  }
+  spec.ids.forEach(function (id) {
+    if (src.indexOf('id="' + id + '"') === -1) {
+      E.push(file + ': missing #' + id + ', which auth.js reaches for');
+    }
+  });
+  // Order matters: auth.js needs Cloud, Cloud needs the library and the config.
+  // Matched on the src attribute rather than the bare filename — reset.html
+  // names auth.js in a comment above the markup it drives, and an indexOf for
+  // the filename finds that comment instead of the script tag.
+  const iLib = src.indexOf('supabase-js@2'), iCfg = src.indexOf('src="config.js"'),
+        iCld = src.indexOf('src="cloud.js"'), iAut = src.indexOf('src="auth.js"');
+  if (iLib < 0 || iCfg < 0 || iCld < 0 || iAut < 0) E.push(file + ': a required script tag is missing');
+  else if (!(iLib < iCfg && iCfg < iCld && iCld < iAut)) E.push(file + ': scripts load out of order');
+  if (spec.noindex && !/name="robots" content="noindex"/.test(src)) E.push(file + ': should carry noindex');
+  if (src.indexOf('site.css') === -1) E.push(file + ': does not load site.css');
+}
+
+// ── 2. The behaviour ─────────────────────────────────────
+let signedIn = false, nextResult = {ok:true};
+window.Cloud = {
+  isReady: true,
+  state: function () { return {ready:true, signedIn:signedIn}; },
+  init: function () { return Promise.resolve(this.state()); },
+  signInPassword: function () { return Promise.resolve(nextResult); },
+  signUp: function () { return Promise.resolve(nextResult); },
+  resetPassword: function () { return Promise.resolve(nextResult); },
+  updatePassword: function () { return Promise.resolve(nextResult); },
+};
+
+window.__navigate = function (url) { window.__wentTo = url; };
+
+function mount(mode, withConfirm) {
+  document.body.dataset.authPage = mode;
+  document.getElementById('stage').innerHTML =
+    '<form id="authForm">' +
+    '<input id="authEmail"><input id="authPassword">' +
+    (withConfirm ? '<input id="authConfirm">' : '') +
+    '<button id="authSubmit" type="submit">Go</button></form>' +
+    '<div id="authMsg" class="auth-msg hidden"></div>' +
+    (mode === 'reset' ? '<div id="resetExpired" hidden></div>' : '') +
+    (mode === 'signin' ? '<button id="authForgot"></button>' : '');
+  window.__wentTo = null;
+}
+
+function val(id, v) { document.getElementById(id).value = v; }
+function msgText() { return document.getElementById('authMsg').textContent; }
+function submit() {
+  document.getElementById('authForm')
+    .dispatchEvent(new Event('submit', {cancelable:true, bubbles:true}));
+}
+function settle() { return new Promise(function (r) { setTimeout(r, 30); }); }
+
+// A fresh evaluation per case: auth.js binds to whatever is in the DOM when it
+// runs, so each scenario needs its own copy rather than a re-run of the first.
+function loadAuth() {
+  return new Promise(function (res) {
+    const s = document.createElement('script');
+    s.src = '../auth.js?' + Math.random();
+    s.onload = function () { setTimeout(res, 0); };
+    document.body.appendChild(s);
+  });
+}
+
+function setQuery(q) { history.replaceState(null, '', location.pathname + q); }
+
+async function run() {
+  for (const file of Object.keys(PAGES)) {
+    try {
+      const r = await fetch('../' + file);
+      checkSource(file, PAGES[file], await r.text());
+    } catch (e) { E.push('could not read ' + file + ': ' + e.message); }
+  }
+
+  // Empty fields are refused rather than sent
+  mount('signin'); await loadAuth();
+  submit();
+  if (!/email address/i.test(msgText())) E.push('signin: empty email was not refused');
+  if (window.__wentTo) E.push('signin: submitted with no email at all');
+
+  // A short password is refused on signup
+  mount('signup', true); await loadAuth();
+  val('authEmail', 'a@b.com'); val('authPassword', 'short'); val('authConfirm', 'short');
+  submit();
+  if (!/8 characters/i.test(msgText())) E.push('signup: a 5-character password was accepted');
+
+  // Mismatched confirmation is refused
+  val('authPassword', 'longenough1'); val('authConfirm', 'longenough2');
+  submit();
+  if (!/do not match/i.test(msgText())) E.push('signup: mismatched passwords were accepted');
+
+  // Confirm-email branch replaces the form rather than inviting a resend
+  nextResult = {ok:true, needsConfirm:true};
+  val('authConfirm', 'longenough1');
+  submit();
+  await settle();
+  if (!document.getElementById('authForm').hidden) E.push('signup: form still showing after "check your email"');
+  if (window.__wentTo) E.push('signup: redirected even though there is no session yet');
+
+  // A real sign-in lands in the editor
+  nextResult = {ok:true};
+  mount('signin'); await loadAuth();
+  val('authEmail', 'a@b.com'); val('authPassword', 'longenough1');
+  submit();
+  await settle();
+  if (window.__wentTo !== 'editor.html') E.push('signin: did not land in the editor, got: ' + window.__wentTo);
+
+  // An error from Cloud is shown, not swallowed
+  nextResult = {ok:false, error:'Invalid login credentials'};
+  mount('signin'); await loadAuth();
+  val('authEmail', 'a@b.com'); val('authPassword', 'wrongpass1');
+  submit();
+  await settle();
+  if (!/Invalid login/.test(msgText())) E.push('signin: the error from Cloud never reached the page');
+  if (window.__wentTo) E.push('signin: redirected despite failing');
+
+  // Reset with no recovery session says so instead of offering a dead form
+  nextResult = {ok:true};
+  mount('reset', true); await loadAuth();
+  await settle();
+  if (!document.getElementById('authForm').hidden) E.push('reset: form offered with no recovery session');
+  if (document.getElementById('resetExpired').hidden) E.push('reset: expired-link notice never shown');
+
+  // ?next= is an allowlist, not a redirector
+  const BAD = ['https://evil.example/x', '//evil.example', '/etc/passwd', '../admin.html', 'javascript:alert(1)'];
+  for (const bad of BAD) {
+    setQuery('?next=' + encodeURIComponent(bad));
+    mount('signin'); await loadAuth();
+    val('authEmail', 'a@b.com'); val('authPassword', 'longenough1');
+    submit();
+    await settle();
+    if (window.__wentTo !== 'editor.html') {
+      E.push('open redirect: ?next=' + bad + ' sent someone to ' + window.__wentTo);
+    }
+  }
+
+  // A legitimate next= is honoured
+  setQuery('?next=editor.html');
+  mount('signin'); await loadAuth();
+  val('authEmail', 'a@b.com'); val('authPassword', 'longenough1');
+  submit();
+  await settle();
+  if (window.__wentTo !== 'editor.html') E.push('next=editor.html was not honoured, got: ' + window.__wentTo);
+
+  document.getElementById('report').textContent = E.length ? E.join('\n') : 'ok';
+  document.title = E.length ? 'FAIL ' + E.length : 'PASS';
+}
+
+run();
+</script>
+</body>
+</html>
