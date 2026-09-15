@@ -116,3 +116,14 @@ redirect can be asserted without the harness leaving the page mid-run.
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/run-check.ps1 "gate-check.html#out"
 ```
+
+### `nav-visibility-check.html` — the signed-in-only showcase links
+`templates.html` is behind sign-in, so its links ship `hidden` and `nav.js`
+reveals them when a Supabase session key is in localStorage. This checks every
+one of those links carries `data-auth-only` and `hidden`, that each page
+marking them actually loads `nav.js`, and that `site.css` still carries the
+`[hidden]` override — without it `.btn-secondary` out-specifies the attribute
+and the button shows while reporting itself hidden.
+
+It also drives `nav.js` both ways, and past an unrelated `sb-`-prefixed key
+that must not be mistaken for a session.

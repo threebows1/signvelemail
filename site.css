@@ -530,3 +530,8 @@ body{margin:0}
   .grid-4{grid-template-columns:minmax(0,1fr)}
   .billing-toggle{width:100%;justify-content:center}
 }
+
+/* [hidden] is a user-agent rule, so any class that sets display beats it —
+   .btn-secondary is display:inline-flex and would have stayed on screen while
+   claiming to be hidden. nav.js toggles this attribute, so it has to win. */
+[hidden]{display:none !important}

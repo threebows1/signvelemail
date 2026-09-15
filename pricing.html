@@ -26,7 +26,7 @@
     <div class="nav-inner">
       <a class="brand" href="index.html" aria-label="Sign Vel home"><svg width="38" height="15.96" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="grad-prc-1" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#grad-prc-1)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg><span class="brand-word">Sign<em>Vel</em></span></a>
       <div class="nav-links">
-        <a href="templates.html">Showcase</a>
+        <a href="templates.html" data-auth-only hidden>Showcase</a>
         <a href="install.html">Install</a>
         <a href="pricing.html" class="current">Pricing</a>
         <a href="help.html">Help</a>
@@ -185,7 +185,7 @@
         <p class="lede">Sign up and every feature is switched on for 30 days — five signatures, no card.</p>
         <div class="btn-row">
           <a class="btn-primary" href="signup.html">Open the editor</a>
-          <a class="btn-secondary" href="templates.html">Browse templates</a>
+          <a class="btn-secondary" href="templates.html" data-auth-only hidden>Browse templates</a>
         </div>
       </div>
     </div>
@@ -198,7 +198,7 @@
         <div class="nav-spacer"></div>
         <div class="footer-links">
           <a href="signup.html">Editor</a>
-          <a href="templates.html">Showcase</a>
+          <a href="templates.html" data-auth-only hidden>Showcase</a>
           <a href="install.html">Install</a>
           <a href="pricing.html">Pricing</a>
           <a href="help.html">Help</a>
@@ -231,6 +231,8 @@
     });
   })();
   </script>
+
+  <script src="nav.js"></script>
 
   <!-- The copyright year, so the footer does not go stale every January. -->
   <script>document.querySelectorAll(".footer-year").forEach(function (e) { e.textContent = new Date().getFullYear(); });</script>
