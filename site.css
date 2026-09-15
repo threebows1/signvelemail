@@ -531,7 +531,9 @@ body{margin:0}
   .billing-toggle{width:100%;justify-content:center}
 }
 
-/* [hidden] is a user-agent rule, so any class that sets display beats it —
-   .btn-secondary is display:inline-flex and would have stayed on screen while
-   claiming to be hidden. nav.js toggles this attribute, so it has to win. */
+/* [hidden] is a user-agent rule, so any class that sets its own display beats
+   it — a .btn-* is display:inline-flex and would stay on screen while
+   reporting itself hidden. auth.js toggles this attribute to swap the reset
+   form for the expired-link notice and to retire the sign-up form once the
+   confirmation mail is away, so it has to win. */
 [hidden]{display:none !important}

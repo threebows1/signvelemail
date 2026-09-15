@@ -21,9 +21,9 @@ the hard way:
 * **`--allow-file-access-from-files`.** Without it a harness cannot read into
   the page it frames, so every assertion about the framed document throws.
 
-A harness that loads a page which may redirect has to read the source with
-`fetch()` rather than off the frame — see `templates-gate-check.html`, where by
-the time the frame is worth inspecting it is already showing the editor.
+A harness that drives a page far enough to be worth asserting about often finds
+it has navigated somewhere else by then, so the source is read with `fetch()`
+rather than off the frame — see `auth-pages-check.html`.
 
 ### `editor-checks.html` — functional suite
 Boots the real editor, clicks through every rail section and template card, and
@@ -35,12 +35,11 @@ Renders all seventeen layouts one above another for side-by-side comparison.
 `#a` and `#b` in the URL split it in half, which is what makes a full-height
 screenshot possible — Edge caps how tall a `--screenshot` can be.
 
-### `regenerate-showcase.html` — showcase generator
-Prints the markup for the gallery on `templates.html`. Run it after changing any
-template, copy the contents of the `<pre>`, and replace the cards between
-`<div class="tmpl-gallery">` and its closing `</div>`. The page holds static
-copies so it has no dependency on `app.js` at runtime; regenerating from here is
-what keeps those copies honest rather than hand-edited.
+### `regenerate-showcase.html` — the seventeen layouts
+Prints every layout's real output as a set of gallery cards. It fed the gallery
+on `templates.html`, and that page has been removed, so nothing consumes this
+now — it is kept because it is the quickest way to see what all seventeen
+actually produce without clicking through the editor one template at a time.
 
 ### `regenerate-home-showcase.html` — home page signatures
 Prints the three signatures shown on the home page's dark band (Spotlight,
@@ -70,13 +69,6 @@ trial, and measures `scrollWidth` against `clientWidth` in exact-width frames at
 360, 768 and 1280. Overflow is measured, never screenshotted: headless Edge
 clamps its viewport to 504px, so a narrow window renders a cropped 504px layout
 and reports a width that was never used.
-
-### `templates-gate-check.html` — the templates gate
-`templates.html` carries a `noindex` and is held behind sign-in. This checks the
-source for the meta tag, the cloud scripts, the redirect target and the reveal
-fallback, then watches what the framed page actually does. A redirect and a
-reveal are both correct outcomes — the failure it is looking for is neither,
-which leaves a permanently blank page.
 
 ### `make-email-logo.html` — auth email logo
 Draws the mark from `index.html` onto a canvas and hands back a PNG. The auth
@@ -124,14 +116,3 @@ redirect can be asserted without the harness leaving the page mid-run.
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/run-check.ps1 "gate-check.html#out"
 ```
-
-### `nav-visibility-check.html` — the signed-in-only showcase links
-`templates.html` is behind sign-in, so its links ship `hidden` and `nav.js`
-reveals them when a Supabase session key is in localStorage. This checks every
-one of those links carries `data-auth-only` and `hidden`, that each page
-marking them actually loads `nav.js`, and that `site.css` still carries the
-`[hidden]` override — without it `.btn-secondary` out-specifies the attribute
-and the button shows while reporting itself hidden.
-
-It also drives `nav.js` both ways, and past an unrelated `sb-`-prefixed key
-that must not be mistaken for a session.
