@@ -19,6 +19,14 @@ html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{margin:0}
 
 :root{
+  /* How far the masthead card hangs past the purple onto the section below.
+     Half the card, so it sits across the join rather than on either side of
+     it. Defined here rather than on .mast because .clients needs the same
+     number for its top padding and is a sibling — a custom property inherits
+     down the tree, not across it, so .clients was quietly using a fallback
+     and the two had drifted apart. */
+  --card-drop:142px;
+
   --radius:.9rem;
   --background:#f5f4fb;
   --foreground:#14121f;
@@ -285,10 +293,16 @@ body{margin:0}
    below is never covered — see --card-drop.
    ═══════════════════════════════════════════════════════════ */
 .mast{
-  --card-drop:76px;
+  /* --card-drop lives on :root so .clients gets the same number. */
   /* clip, not hidden: hidden on an ancestor would turn the card's overhang
      into a scroll container and kill the overlap. */
   position:relative;isolation:isolate;overflow-x:clip;
+  /* Without a block formatting context the card's negative bottom margin
+     collapses straight through this element: the purple would simply end
+     early and drag the next section up, which is what it did — the card sat
+     flush on the boundary rather than across it. flow-root rather than
+     overflow:hidden, which would clip the overhang it is meant to allow. */
+  display:flow-root;
   background:linear-gradient(165deg,#6B3BFF 0%,#5B2EFF 46%,#4A1FE0 100%);
   color:#fff;
   padding:0 24px;
@@ -394,7 +408,7 @@ body{margin:0}
    matching guide, which is what the hover state is announcing. */
 .clients{
   max-width:80rem;margin:0 auto;
-  padding:calc(var(--card-drop, 120px) + 20px) 24px 30px;text-align:center;
+  padding:calc(var(--card-drop) + 56px) 24px 30px;text-align:center;
 }
 .clients-lead{
   font-size:13px;font-weight:500;color:var(--muted-foreground);margin:0 0 11px;
@@ -438,12 +452,19 @@ body{margin:0}
 }
 
 @media (max-width:900px){
-  .mast{--card-drop:80px}
+  /* The card stacks taller here, so half of it is a bigger number. */
+  :root{--card-drop:146px}
   .mast-card{padding:26px 22px;border-radius:16px;margin-top:40px}
   .mast-copy{padding-top:44px}
-  .clients{padding-top:calc(80px + 40px)}
   .nav-brand .nav-links{display:none}
   .mast-mark{display:none}
+}
+
+/* Narrower again and the contact rows wrap, so the card gains about 70px and
+   half of it moves with it. After the 900px rule, not before: both match at
+   this width and the later one wins. */
+@media (max-width:480px){
+  :root{--card-drop:178px}
 }
 @media (max-width:520px){
   .mast-cta{flex-direction:column;align-items:stretch}
