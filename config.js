@@ -20,7 +20,7 @@ window.SIGNVEL_CONFIG = {
   // cdn/, once it is deployed and cdn.signvel.com points at it. Leave it empty
   // and uploads keep going to the public bucket and its supabase.co URL, which
   // works but cannot be switched off when a plan lapses.
-  assetHost: '',
+  assetHost: 'https://cdn.signvel.com',
 
   // Stripe publishable key and price ids go here once the products exist.
   stripeKey: '',
