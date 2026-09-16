@@ -98,11 +98,33 @@ export default {
     // that looks exactly like a lapsed plan. Names only — no values, no
     // lengths, nothing that narrows a guess.
     if (url.pathname === '/__health') {
-      return Response.json({
+      const out = {
         worker: 'signvel-cdn',
         supabaseUrl: !!env.SUPABASE_URL,
         serviceKey: !!env.SUPABASE_SERVICE_KEY,
-      }, { headers: { 'cache-control': 'no-store' } });
+      };
+      // ?probe=<uuid> asks the entitlement question out loud. Without it a
+      // failed lookup and a genuine "no plan" are the same pixel, which is
+      // right for a recipient and useless when something is actually broken.
+      const probe = url.searchParams.get('probe');
+      if (probe && out.supabaseUrl && out.serviceKey) {
+        try {
+          const r = await fetch(env.SUPABASE_URL + '/rest/v1/rpc/has_paid_access', {
+            method: 'POST',
+            headers: {
+              'apikey': env.SUPABASE_SERVICE_KEY,
+              'authorization': 'Bearer ' + env.SUPABASE_SERVICE_KEY,
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({ uid: probe }),
+          });
+          out.rpcStatus = r.status;
+          out.rpcBody = (await r.text()).slice(0, 200);
+        } catch (e) {
+          out.rpcError = String(e && e.message).slice(0, 200);
+        }
+      }
+      return Response.json(out, { headers: { 'cache-control': 'no-store' } });
     }
 
     // <user-id>/<file>, and nothing else. The uuid is matched rather than
