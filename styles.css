@@ -502,7 +502,6 @@ select.input{cursor:pointer;appearance:auto}
   padding:7px 9px;margin-top:8px;
 }
 .asset-state svg{flex-shrink:0;margin-top:1px}
-.asset-state.is-hosted{background:#E7F6EE;color:#0F6B44}
 .asset-state.is-local{background:#FFF1E0;color:#8A4B08}
 
 /* ── Template gallery, sample images, hint text ──

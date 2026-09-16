@@ -908,13 +908,11 @@ function renderUploader(kind, hint) {
       <span class="uploader-hint">${hint}</span>
     </label>`;
   }
-  // The single most important thing to know about an image here: will it
-  // survive being emailed? A data: URI will not.
-  if (url) {
-    const isHosted = /^https?:\/\//i.test(url);
-    h += isHosted
-      ? `<div class="asset-state is-hosted">${icons.check} Hosted — this URL works in sent mail.</div>`
-      : `<div class="asset-state is-local">Local copy only. Gmail and Outlook strip embedded images, so recipients will see it broken. ${window.Cloud && Cloud.isReady && !Cloud.state().signedIn ? 'Sign in to host it.' : 'Paste a hosted URL below.'}</div>`;
+  // Only the bad news. A hosted image is the expected case and does not need
+  // announcing — every upload is hosted now. A local copy is the one that
+  // arrives broken, so that is the only state that says anything.
+  if (url && !/^https?:\/\//i.test(url)) {
+    h += `<div class="asset-state is-local">Local copy only. Gmail and Outlook strip embedded images, so recipients will see it broken. ${window.Cloud && Cloud.isReady && !Cloud.state().signedIn ? 'Sign in to host it.' : 'Paste a hosted URL below.'}</div>`;
   }
   if (S.uploadError) h += `<div class="uploader-error">${esc(S.uploadError)}</div>`;
   if (S.storageError) h += `<div class="uploader-error">${esc(S.storageError)}</div>`;
