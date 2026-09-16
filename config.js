@@ -16,6 +16,12 @@ window.SIGNVEL_CONFIG = {
   supabaseUrl: 'https://pllnhgbbtbosgwhgqkdg.supabase.co',
   supabaseKey: 'sb_publishable_fJvc6IXi6MeftioqZgQpRQ_ewPe3KcU',
 
+  // Where hosted logos and portraits are served from — the cdn worker in
+  // cdn/, once it is deployed and cdn.signvel.com points at it. Leave it empty
+  // and uploads keep going to the public bucket and its supabase.co URL, which
+  // works but cannot be switched off when a plan lapses.
+  assetHost: '',
+
   // Stripe publishable key and price ids go here once the products exist.
   stripeKey: '',
   prices: { team_monthly: '', team_yearly: '', org: '' },

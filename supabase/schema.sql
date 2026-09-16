@@ -250,3 +250,59 @@ create policy "brand owner delete" on storage.objects
   for delete using (
     bucket_id = 'brand' and auth.uid()::text = (storage.foldername(name))[1]
   );
+
+-- ── Gated assets ──────────────────────────────────────────
+-- The `brand` bucket above is public, and a public bucket does not consult
+-- these policies at all: /storage/v1/object/public/… serves the bytes to
+-- anyone holding the URL, plan or no plan. That is why the select policy on it
+-- reads as unconditional — it is not being enforced either way.
+--
+-- This bucket is private, so nothing is served from it directly. The only
+-- reader is the cdn worker, which holds the service key, asks
+-- has_paid_access() about the owner, and streams the object back or returns a
+-- transparent pixel. That is where access actually stops when a plan lapses.
+--
+-- `brand` is left in place on purpose. URLs already issued from it are sitting
+-- in mail that has been sent, and breaking those would take images out of
+-- correspondence that is already in other people's inboxes. Everything from
+-- here goes to `assets`; nothing new is written to `brand`.
+insert into storage.buckets (id, name, public)
+values ('assets', 'assets', false)
+on conflict (id) do nothing;
+
+drop policy if exists "assets owner read"   on storage.objects;
+drop policy if exists "assets owner write"  on storage.objects;
+drop policy if exists "assets owner update" on storage.objects;
+drop policy if exists "assets owner delete" on storage.objects;
+
+-- Only for the account's own use through the API — the worker reads with the
+-- service key and bypasses this entirely. Recipients never authenticate, which
+-- is the whole point: they reach the image through the worker or not at all.
+create policy "assets owner read" on storage.objects
+  for select using (
+    bucket_id = 'assets'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+create policy "assets owner write" on storage.objects
+  for insert with check (
+    bucket_id = 'assets'
+    and auth.uid()::text = (storage.foldername(name))[1]
+    and public.has_paid_access(auth.uid())
+  );
+
+create policy "assets owner update" on storage.objects
+  for update using (
+    bucket_id = 'assets'
+    and auth.uid()::text = (storage.foldername(name))[1]
+    and public.has_paid_access(auth.uid())
+  );
+
+create policy "assets owner delete" on storage.objects
+  for delete using (
+    bucket_id = 'assets' and auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+-- The worker asks this over PostgREST rather than reading profiles itself, so
+-- entitlement has one definition and it is the one the policies already use.
+grant execute on function public.has_paid_access(uuid) to service_role;

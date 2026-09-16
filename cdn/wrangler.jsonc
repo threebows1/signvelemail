@@ -1,0 +1,17 @@
+{
+  // The asset CDN. Separate from the site's worker at the repository root,
+  // which serves static files and has no script at all — this one exists to
+  // decide, per request, whether an image should still be served.
+  //
+  // Deploy from this directory:  wrangler deploy
+  // Secrets, once each:          wrangler secret put SUPABASE_URL
+  //                              wrangler secret put SUPABASE_SERVICE_KEY
+  //
+  // Then add cdn.signvel.com to this worker under Settings → Domains & Routes.
+  // A custom domain there writes its own DNS record; a plain CNAME to Supabase
+  // would not work, because Supabase routes by hostname and overriding the
+  // Host header is an Enterprise-only feature.
+  "name": "signvel-cdn",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-01"
+}

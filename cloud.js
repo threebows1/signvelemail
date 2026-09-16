@@ -185,11 +185,25 @@ window.Cloud = (function () {
   // This is the fix for logos breaking in sent mail. An upload here becomes
   // a real https URL; the data: URIs the browser produces are stripped by
   // Gmail and Outlook before the recipient ever sees them.
+  // Hosted images. Which bucket depends on whether the cdn worker is in front:
+  //
+  //   assetHost set    → the private `assets` bucket, reachable only through
+  //                      the worker, which checks the owner still has a plan
+  //                      before it serves anything.
+  //   assetHost empty  → the public `brand` bucket and its supabase.co URL.
+  //                      Serves the same bytes and cannot be switched off — a
+  //                      public bucket does not consult its own RLS policies,
+  //                      so a lapsed plan goes unnoticed there.
+  //
+  // Empty is the fallback rather than an error so this file works before the
+  // worker exists, and keeps working if it is ever taken away.
   async function uploadAsset(file, kind) {
     if (!ready || !session) return { ok: false, error: 'Sign in to host images.' };
+    const host = (cfg.assetHost || '').replace(/\/+$/, '');
+    const bucket = host ? 'assets' : 'brand';
     const ext = (file.name.split('.').pop() || 'png').toLowerCase();
     const path = `${session.user.id}/${kind}-${Date.now()}.${ext}`;
-    const { error } = await db.storage.from('brand').upload(path, file, {
+    const { error } = await db.storage.from(bucket).upload(path, file, {
       cacheControl: '31536000',
       upsert: true,
       contentType: file.type || undefined,
@@ -206,6 +220,7 @@ window.Cloud = (function () {
           : error.message,
       };
     }
+    if (host) return { ok: true, url: `${host}/${path}`, path };
     const { data } = db.storage.from('brand').getPublicUrl(path);
     return { ok: true, url: data.publicUrl, path };
   }
