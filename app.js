@@ -918,13 +918,10 @@ function renderUploader(kind, hint) {
   }
   if (S.uploadError) h += `<div class="uploader-error">${esc(S.uploadError)}</div>`;
   if (S.storageError) h += `<div class="uploader-error">${esc(S.storageError)}</div>`;
-  // A hosted URL is both tiny to store and the only form that survives being
-  // sent — email clients strip the data: URIs that uploads produce.
-  const link = url && /^https?:\/\//i.test(url) ? url : '';
-  h += `<div class="uploader-url">
-    <span class="uploader-url-label">or paste an image URL</span>
-    <input class="input" type="url" placeholder="https://example.com/logo.png" value="${esc(link)}" data-action="${kind}Url">
-  </div>`;
+  // No paste-a-URL field. Upload is the only way in, which is the point: an
+  // uploaded file goes to the gated bucket and comes back as a cdn.signvel.com
+  // address that stops being served when a plan lapses. A pasted URL is
+  // somebody else's server, outside all of that, and breaks when they move it.
   return h;
 }
 
@@ -2509,25 +2506,6 @@ function setupEvents() {
     const upAction = e.target.dataset.action;
     if ((upAction === 'logoUpload' || upAction === 'headshotUpload') && e.target.files[0]) {
       acceptUpload(upAction, e.target.files[0]);
-      return;
-    }
-    // Image URL fields commit on blur/Enter, not per keystroke — a half-typed
-    // URL would just render as a broken image.
-    if (upAction === 'logoUrl' || upAction === 'headshotUrl') {
-      const kind = upAction === 'logoUrl' ? 'logo' : 'headshot';
-      const v = e.target.value.trim();
-      S.uploadError = '';
-      if (!v) {
-        S[kind + 'Url'] = null;
-        S[kind + 'Name'] = '';
-      } else if (!/^https?:\/\//i.test(v)) {
-        S.uploadError = 'Enter a full URL starting with http:// or https://';
-      } else {
-        S[kind + 'Url'] = v;
-        S[kind + 'Name'] = v.split('/').pop().split('?')[0] || v;
-      }
-      renderPanel();
-      renderStage();
       return;
     }
 

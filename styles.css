@@ -377,8 +377,6 @@ select.input{cursor:pointer;appearance:auto}
   margin-top:6px;font-size:10px;line-height:1.4;color:#B3261E;
   background:#FCEEEC;border:1px solid #F3D3CF;border-radius:var(--radius);padding:6px 8px;
 }
-.uploader-url{display:flex;flex-direction:column;gap:4px;margin-top:8px}
-.uploader-url-label{font-size:10px;color:var(--muted)}
 
 /* ═══════════════════════════════════════════════════════════
    Signature isolation
