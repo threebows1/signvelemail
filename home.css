@@ -255,7 +255,9 @@ body{margin:0}
 .footer-col a:hover{color:var(--primary)}
 .footer-base{
   max-width:80rem;margin:40px auto 0;padding-top:20px;border-top:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  /* Centred, not space-between: that was for when a second line sat opposite
+     the copyright, and with one child space-between just pins it left. */
+  display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;
 }
 .footer-copy{
   font-family:var(--mono);font-size:11px;letter-spacing:.1em;
