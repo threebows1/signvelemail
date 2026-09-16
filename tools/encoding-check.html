@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>encoding</title></head>
+<body>
+<!--
+  Signvel — source file encoding
+
+  Every file here is UTF-8, and the em-dashes, box-drawing rules and symbols in
+  them are load-bearing: app.js puts several straight into the interface.
+
+  A tool that reads a UTF-8 file as ANSI and writes it back as UTF-8 doubles
+  every non-ASCII byte — "—" becomes "â€”" — and nothing complains. The file
+  still parses, the tests still pass, and the damage only shows up as garbage
+  on screen. It reached production once: app.js shipped with 1,664 doubled
+  sequences and was live until someone noticed the editor's own warning strip
+  had turned to mojibake.
+
+  The signatures are the reason this matters more here than in most projects.
+  They are copied into somebody's mail client and sent to their customers, so a
+  mangled character does not stay in our interface — it goes out under their
+  name.
+
+  This reads each file as bytes and fails on the signatures of that damage, and
+  on a byte-order mark, which is its usual travelling companion and which broke
+  app.js outright when a repair turned it into a stray "?" at position zero.
+-->
+  <pre id="report" style="font:12px monospace;white-space:pre-wrap"></pre>
+<script>
+const FILES = [
+  'app.js', 'cloud.js', 'auth.js', 'config.js',
+  'index.html', 'editor.html', 'help.html', 'install.html', 'pricing.html',
+  'signin.html', 'signup.html', 'reset.html',
+  'site.css', 'home.css', 'styles.css',
+  'supabase/email-templates/confirm-signup.html',
+  'supabase/email-templates/magic-link.html',
+  'supabase/email-templates/reset-password.html',
+];
+
+// What a UTF-8 sequence looks like after being read as CP1252 and re-encoded.
+// Ã, Â, â followed by another high character is the giveaway; on its own each
+// is a legitimate letter, so the pair is what is matched.
+const MOJIBAKE = /[ÃÂâ][-¿–—“”‘’€œž™…]/;
+
+const E = [], rows = [];
+
+async function run() {
+  for (const f of FILES) {
+    let buf;
+    try {
+      const r = await fetch('../' + f);
+      if (!r.ok) { E.push(f + ': could not be read (' + r.status + ')'); continue; }
+      buf = new Uint8Array(await r.arrayBuffer());
+    } catch (e) { E.push(f + ': could not be read — ' + e.message); continue; }
+
+    const notes = [];
+
+    // A byte-order mark. Harmless in HTML, fatal at the top of a script, and a
+    // reliable sign the file has been through a tool that rewrote its encoding.
+    if (buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF) {
+      E.push(f + ': starts with a UTF-8 BOM');
+      notes.push('BOM');
+    }
+
+    // Decoded strictly: invalid UTF-8 throws rather than becoming U+FFFD, so a
+    // file that is no longer UTF-8 at all fails here instead of passing quietly.
+    let text;
+    try {
+      text = new TextDecoder('utf-8', {fatal: true}).decode(buf);
+    } catch (e) {
+      E.push(f + ': is not valid UTF-8');
+      rows.push(pad(f) + ' NOT UTF-8');
+      continue;
+    }
+
+    let hits = 0;
+    text.split('\n').forEach(function (line, i) {
+      if (MOJIBAKE.test(line)) {
+        hits++;
+        if (hits === 1) E.push(f + ':' + (i + 1) + ': looks double-encoded — ' + line.trim().slice(0, 60));
+      }
+    });
+    if (hits > 1) E.push(f + ': ' + hits + ' lines look double-encoded in total');
+    if (hits) notes.push(hits + ' mojibake');
+
+    rows.push(pad(f) + (notes.length ? ' ' + notes.join(', ') : ' ok'));
+  }
+
+  document.getElementById('report').textContent =
+    (E.length ? E.join('\n') + '\n\n' : 'ok — every file is clean UTF-8\n\n') + rows.join('\n');
+  document.title = E.length ? 'FAIL ' + E.length : 'PASS';
+}
+
+function pad(s) { return (s + '                                        ').slice(0, 42); }
+
+run();
+</script>
+</body></html>

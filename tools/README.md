@@ -137,3 +137,24 @@ The obvious check — the frame's `scrollWidth` against the card's `clientWidth`
 — is wrong twice: `clientWidth` includes the card's padding, and `scrollWidth`
 is in the frame's own pre-zoom coordinate space, so it cannot see the scaling
 at all. That version passed while the card was visibly scrolling.
+
+### `encoding-check.html` — source files are UTF-8
+Reads every source file as raw bytes and fails on three things: the byte
+patterns left behind when a UTF-8 file is read as ANSI and written back as
+UTF-8, a byte-order mark, and anything that is not strictly valid UTF-8. The
+decode uses `fatal: true`, so a broken file errors rather than quietly turning
+into replacement characters.
+
+This exists because it happened. `app.js` was edited with a tool that rewrote
+its encoding, shipped with 1,664 doubled sequences, and stayed live until the
+editor's own warning strip was noticed rendering as mojibake — every other
+check passed the whole time, because doubled characters still parse.
+
+The repair then went wrong in the opposite direction: reversing the damage also
+converted lines added *after* it, which were already correct, leaving one
+CP1252 byte that made the file invalid UTF-8. `editor-checks.html` passed —
+a stray byte in a comment does not stop JavaScript parsing — and this caught it.
+
+The signatures are why it matters more here than in most projects. They are
+copied into someone's mail client and sent to their customers, so a mangled
+character does not stay in our interface; it goes out under their name.
