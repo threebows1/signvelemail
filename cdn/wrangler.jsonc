@@ -13,5 +13,18 @@
   // Host header is an Enterprise-only feature.
   "name": "signvel-cdn",
   "main": "worker.js",
-  "compatibility_date": "2026-09-01"
+  "compatibility_date": "2026-09-01",
+
+  // Declared here rather than left in the dashboard, because wrangler treats
+  // this file as the truth for plain vars and wipes any it does not find on
+  // every deploy. A dashboard variable survives until the next push and then
+  // silently disappears — which is what happened: the lookup started calling
+  // undefined/rest/v1/… , threw, and every image fell through to the pixel.
+  //
+  // Safe to commit. This URL is in config.js already and ships to every
+  // browser. SUPABASE_SERVICE_KEY is not here and must never be: secrets are
+  // held by the worker itself and are left alone by a deploy.
+  "vars": {
+    "SUPABASE_URL": "https://pllnhgbbtbosgwhgqkdg.supabase.co"
+  }
 }
