@@ -167,6 +167,87 @@ The marketing pages are unaffected — they hold static markup generated with
 `window.SIGNVEL_SHOW_IMAGES = true`, because they advertise what a paid
 signature looks like.
 
+## Serving images from cdn.signvel.com
+
+The section above stops a free account *obtaining* a hosted URL. It does not
+stop one that already exists from working, and for a while the pricing page
+claimed otherwise. A public Supabase bucket never consults its own RLS:
+`/storage/v1/object/public/…` hands the bytes to anyone holding the address,
+plan or no plan. The `select` policy on `brand` has never been enforced.
+
+So an image hosted during a trial kept being served forever after it lapsed.
+Closing that needs the bucket to be private, and a private bucket serves
+nothing without a key — which is what `cdn/worker.js` is. It holds the service
+key, asks `has_paid_access()` about the owner on each request, and either
+streams the object or returns a transparent pixel.
+
+A signed URL is the usual answer for a private bucket and the wrong one here:
+these addresses sit in sent mail for years, and one that expires in an hour
+expires in somebody's inbox.
+
+### Wiring it
+
+Nothing changes until the last step, so the order matters — the worker can be
+proved before anything depends on it.
+
+**1. Create the worker.** Cloudflare → **Workers & Pages → Create**, name it
+`signvel-cdn`, **Edit code**, paste all of `cdn/worker.js`, Deploy. (Or
+`wrangler deploy` from `cdn/` if you have the CLI; the dashboard needs no
+tooling at all.)
+
+**2. Give it the two secrets.** That worker → **Settings → Variables and
+Secrets**, type **Secret**, not Text:
+
+| Name | Value |
+|---|---|
+| `SUPABASE_URL` | `https://<ref>.supabase.co` |
+| `SUPABASE_SERVICE_KEY` | Supabase → Settings → API → `service_role` |
+
+The service key bypasses every policy in this file. It belongs here and in no
+other place — never `config.js`, which ships to the browser.
+
+**3. Attach the hostname.** **Settings → Domains & Routes → Add → Custom
+domain → `cdn.signvel.com`**. The DNS record is written for you. If the free
+plan will not take a custom domain, a **Route** of `cdn.signvel.com/*` does the
+same job with a proxied DNS record for `cdn` added by hand.
+
+A plain CNAME at Supabase does not work: Supabase routes by hostname, and
+overriding the `Host` header is Enterprise-only on Cloudflare.
+
+**4. Re-run `supabase/schema.sql`.** Safe to re-run; this adds the private
+`assets` bucket beside the public `brand` one.
+
+**5. Check the worker answers before switching anything on:**
+
+```bash
+curl -i https://cdn.signvel.com/not-a-uuid
+# 404 from the worker = alive. Connection refused = not wired.
+```
+
+**6. Set `assetHost`** in `config.js` to `https://cdn.signvel.com`. That is the
+switch. Until it is set, uploads go to the public bucket exactly as before.
+
+### What it does not do
+
+**Gmail proxies images through its own servers and caches them.** Mail already
+sitting in a Gmail inbox can keep showing a logo after the plan behind it
+lapses, for as long as Google keeps its copy. This stops new impressions
+quickly and reliably; it does not reach into mail already delivered. Worth
+knowing before describing the behaviour to a customer.
+
+**`brand` stays public and stays in place.** Addresses issued from it are in
+mail that has been sent, and making it private would pull images out of
+correspondence already in other people's inboxes. Nothing new is written there;
+everything from here goes to `assets`.
+
+**Every image view is one worker request** — 100,000/day on Workers Free. The
+caching in the worker cuts Supabase egress but not worker invocations, because
+a route runs the worker ahead of the cache.
+
+**A paused Supabase project serves nothing.** Free projects pause after a week
+without activity, and hosted images stop with everything else. That is an
+argument for Pro before real customers depend on this.
+
 ## Notes on the schema
 
 - **`signatures.state` is one jsonb column.** The editor's settings object goes
