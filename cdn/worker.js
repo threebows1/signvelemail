@@ -92,6 +92,19 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    // A deployment probe. Without it, a missing secret is invisible: the
+    // entitlement lookup fails, every request falls through to the pixel, and
+    // that looks exactly like a lapsed plan. Names only — no values, no
+    // lengths, nothing that narrows a guess.
+    if (url.pathname === '/__health') {
+      return Response.json({
+        worker: 'signvel-cdn',
+        supabaseUrl: !!env.SUPABASE_URL,
+        serviceKey: !!env.SUPABASE_SERVICE_KEY,
+      }, { headers: { 'cache-control': 'no-store' } });
+    }
+
     // <user-id>/<file>, and nothing else. The uuid is matched rather than
     // trusted so a path cannot be walked into another bucket or another
     // account's folder.

@@ -220,8 +220,12 @@ overriding the `Host` header is Enterprise-only on Cloudflare.
 **5. Check the worker answers before switching anything on:**
 
 ```bash
-curl -i https://cdn.signvel.com/not-a-uuid
-# 404 from the worker = alive. Connection refused = not wired.
+curl -s https://cdn.signvel.com/__health
+# {"worker":"signvel-cdn","supabaseUrl":true,"serviceKey":true}
+#
+# Both true means the worker is answering and its secrets are bound. A missing
+# secret is otherwise invisible: the lookup fails, everything falls through to
+# the pixel, and that is indistinguishable from a lapsed plan.
 ```
 
 **6. Set `assetHost`** in `config.js` to `https://cdn.signvel.com`. That is the
