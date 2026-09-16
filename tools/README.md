@@ -57,7 +57,10 @@ contents jumped on every press and moved the rest of the section with it. The
 card is measured as rendered rather than read off the stylesheet, so a change
 to its padding or to any one signature's width is caught as well — and a second
 assertion catches the opposite mistake, a card too small for the widest layout
-quietly clipping it.
+scrolling sideways instead.
+
+Both are asked at whatever width this happens to run at.
+`gallery-fit-check.html` is the one that walks the viewport.
 
 ### `home-check.html` — home page, everything below the hero
 Drives the three tablists (gallery, how-it-works stepper, before/after toggle)
@@ -116,3 +119,21 @@ redirect can be asserted without the harness leaving the page mid-run.
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/run-check.ps1 "gate-check.html#out"
 ```
+
+### `gallery-fit-check.html` — the gallery card at every width
+`gallery-check.html` asserts the card holds one size and does not scroll, but
+only at the width it happens to run at. The signatures are 440–668px of
+fixed-width table, so whether they fit is entirely a question of viewport —
+which is the part that broke: fine on a desktop, scrolling sideways with the
+photo cut off on a narrower window.
+
+`home.css` scales the signature down in steps below 820px. This walks both
+sides of every step and fails if any layout makes the card scroll. Changing a
+zoom value without re-running this is how the steps drift out of agreement with
+the widths they were cut for.
+
+Note that the overflow is asked of the card, the element that actually scrolls.
+The obvious check — the frame's `scrollWidth` against the card's `clientWidth`
+— is wrong twice: `clientWidth` includes the card's padding, and `scrollWidth`
+is in the frame's own pre-zoom coordinate space, so it cannot see the scaling
+at all. That version passed while the card was visibly scrolling.

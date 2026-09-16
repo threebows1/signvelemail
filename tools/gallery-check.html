@@ -64,19 +64,23 @@ document.getElementById('f').addEventListener('load', function () {
     }
   });
 
-  // And nothing may be clipped inside it — a fixed box that is too small for
-  // the widest layout trades a moving card for a cut-off signature.
+  // And nothing may be cut off inside it — a card too small for the widest
+  // layout trades a moving card for a signature with its right edge missing.
+  //
+  // Asked of .sig-frame, because that is the element carrying overflow-x and
+  // therefore the one that actually scrolls. Two wrong ways to write this,
+  // both of which pass while the thing is visibly scrolling: comparing against
+  // the card's clientWidth, which includes the card's padding and so overstates
+  // the room available; and measuring the frame's getBoundingClientRect, which
+  // returns the shrunk flex box rather than the table overflowing it.
+  //
+  // Only at this harness's own width — gallery-fit-check.html walks the rest.
   panels.forEach(function (p) {
     const was = p.hidden;
     p.hidden = false;
-    const c = p.querySelector('.gallery-canvas');
-    const f = p.querySelector('.sig-frame');
-    if (f.scrollWidth > c.clientWidth + 1) {
-      E.push(p.id + ': signature is ' + f.scrollWidth + 'px wide in a ' + c.clientWidth + 'px card');
-    }
-    if (f.scrollHeight > c.clientHeight + 1) {
-      E.push(p.id + ': signature is ' + f.scrollHeight + 'px tall in a ' + c.clientHeight + 'px card');
-    }
+    const fr = p.querySelector(".sig-frame");
+    const x = fr.scrollWidth - fr.clientWidth;
+    if (x > 1) E.push(p.id + ": signature scrolls sideways by " + x + "px");
     p.hidden = was;
   });
   tabs[0].click();

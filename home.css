@@ -502,11 +502,29 @@ body{margin:0}
   margin:18px auto 0;max-width:62ch;text-align:center;
 }
 
-/* Narrow screens scroll the signature sideways rather than shrinking it, so
-   the height is still needed — the padding is not. */
-@media (max-width:760px){
+/* Below the width that fits the largest layout, the signature is scaled down
+   rather than left to scroll sideways. A horizontal scrollbar under a
+   signature reads as a broken preview — the thing is cut off, and nothing says
+   the rest is one drag away.
+
+   zoom rather than transform, because this has to change the height the card
+   needs, not just paint smaller. The same choice the hero card makes above.
+   The steps are cut from measured widths: the widest layout is 668px, and the
+   room a card has is min(732, vw - 63) - 36. Each step is the largest zoom
+   that still fits at the narrowest viewport it covers, so re-measure with
+   tools/gallery-check.html rather than nudging these by eye. */
+@media (max-width:820px){
   .gallery-canvas{padding:22px 18px;min-height:404px}
 }
+@media (max-width:800px){ .gallery-canvas .sig-frame{zoom:.94} }
+@media (max-width:740px){ .gallery-canvas .sig-frame{zoom:.86} }
+@media (max-width:680px){ .gallery-canvas .sig-frame{zoom:.76} }
+@media (max-width:620px){ .gallery-canvas .sig-frame{zoom:.68} }
+@media (max-width:560px){ .gallery-canvas .sig-frame{zoom:.58} }
+@media (max-width:500px){ .gallery-canvas .sig-frame{zoom:.50} }
+@media (max-width:440px){ .gallery-canvas .sig-frame{zoom:.42} }
+@media (max-width:390px){ .gallery-canvas .sig-frame{zoom:.37} }
+@media (max-width:360px){ .gallery-canvas .sig-frame{zoom:.32} }
 /* Only the switch is animated, and only for people who want motion. */
 @media (prefers-reduced-motion:no-preference){
   .gallery-panel:not([hidden]){animation:galleryIn .22s ease-out both}

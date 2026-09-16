@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>fit</title>
+<style>body{margin:0;font:12px monospace}iframe{border:0;display:block}</style></head>
+<body>
+<!--
+  Signvel — the gallery card at every width
+
+  gallery-check.html asserts the card holds one size and does not scroll, but
+  only at the width it happens to run at. The signatures are 440-668px of
+  fixed-width table, so whether they fit depends entirely on the viewport —
+  which is the part that broke: fine on a desktop, scrolling sideways with the
+  photo cut off on a narrower window.
+
+  home.css scales the signature down in steps below 820px. This walks both
+  sides of every one of those steps and fails if any layout makes the card
+  scroll. Nudging a zoom value without re-running this is how the steps drift
+  out of agreement with the widths they were cut for.
+
+  The overflow is asked of the card, the element that scrolls. scrollWidth on
+  the frame is in its own pre-zoom coordinate space and cannot see the scaling.
+-->
+<iframe id="f" src="../index.html"></iframe>
+<pre id="out"></pre>
+<script>
+// Both sides of each breakpoint in home.css, plus the narrowest phones.
+const WIDTHS = [1440, 1280, 1008, 900, 830, 821, 820, 801, 800, 741, 740, 681,
+                680, 621, 620, 561, 560, 501, 500, 441, 440, 391, 390, 361,
+                360, 340, 320];
+const E = [], rows = [];
+const f = document.getElementById('f');
+
+function measureAt(i) {
+  if (i >= WIDTHS.length) return done();
+  const w = WIDTHS[i];
+  f.style.width = w + 'px';
+  f.style.height = '1000px';
+  setTimeout(function () {
+    const d = f.contentDocument;
+    const panels = [].slice.call(d.querySelectorAll('.gallery-panel'));
+    if (!panels.length) { E.push('vw ' + w + ': no gallery panels found'); return done(); }
+    const over = [];
+    panels.forEach(function (p) {
+      const was = p.hidden;
+      p.hidden = false;
+      // .sig-frame is the element carrying overflow-x, so it is the one that
+      // scrolls — and because zoom is applied to it, its own metrics are in
+      // the scaled coordinate space and do reflect the scaling.
+      const fr = p.querySelector(".sig-frame");
+      const x = fr.scrollWidth - fr.clientWidth;
+      if (x > 1) over.push(p.id.replace("panel-", "") + " by " + x + "px");
+      p.hidden = was;
+    });
+    if (over.length) E.push('vw ' + w + ': card scrolls — ' + over.join(', '));
+    rows.push('vw ' + String(w).padEnd(5) + (over.length ? ' SCROLLS' : ' ok'));
+    measureAt(i + 1);
+  }, 220);
+}
+
+function done() {
+  document.getElementById('out').textContent =
+    (E.length ? E.join('\n') + '\n\n' : 'ok — no card scrolls at any width\n\n') + rows.join('\n');
+  document.title = E.length ? 'FAIL ' + E.length : 'PASS';
+}
+
+f.addEventListener('load', function () { measureAt(0); });
+</script>
+</body></html>
