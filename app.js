@@ -1061,14 +1061,10 @@ function renderMedia() {
   h += `<div class="opt-group">Headshot</div>`;
   if (!usesHeadshot) h += notUsed('headshot');
   h += `<div class="field-row">${renderUploader('headshot', 'A square image crops best. Max 1&nbsp;MB.')}</div>`;
-  // Hosted sample portraits. Picking one is the quickest way to see a photo
-  // layout as it was designed, and because they are real URLs they survive
-  // being emailed — unlike anything uploaded before signing in.
-  h += `<div class="field-row"><label class="field-label">Sample portraits<span class="field-hint">Hosted images, safe to send. Swap in your own any time.</span></label><div class="sample-row">`;
-  sampleHeadshots.forEach(s => {
-    h += `<button class="sample-thumb${S.headshotUrl===s.url?' active':''}" data-action="sampleHeadshot" data-url="${esc(s.url)}" data-label="${esc(s.label)}" title="${esc(s.label)}"><img src="${esc(s.url)}" alt="${esc(s.label)}" loading="lazy"></button>`;
-  });
-  h += `</div></div>`;
+  // The sample portraits are no longer offered as a picker. They stay in the
+  // code, and sampleHeadshots[0] is still what a new account starts with, so
+  // a photo layout still previews as designed — there is just no row of stock
+  // faces inviting someone to ship one in their own signature.
   h += `<div class="field-row"><label class="field-label">Shape</label><div class="toggle-group" data-action="headshotShape"><button class="${S.headshotShape==='circle'?'active':''}" data-val="circle">Circle</button><button class="${S.headshotShape==='rounded'?'active':''}" data-val="rounded">Rounded</button><button class="${S.headshotShape==='square'?'active':''}" data-val="square">Square</button></div></div>`;
   h += `<div class="field-row"><label class="field-label">Photo size<span class="field-hint">Auto follows the template.</span></label><div class="slider-row"><input type="range" min="0" max="140" step="4" value="${S.headshotSize}" data-bind="headshotSize"><span class="slider-val">${S.headshotSize ? S.headshotSize + 'px' : 'Auto'}</span></div></div>`;
   h += `<div class="field-row"><label class="field-label">Ring width</label><div class="slider-row"><input type="range" min="0" max="10" value="${S.photoRing}" data-bind="photoRing"><span class="slider-val">${S.photoRing}px</span></div></div>`;

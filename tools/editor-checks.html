@@ -107,12 +107,16 @@
     const one = (generateSignaturePreview().match(/<tr>/g) || []).length;
     if (!(two < one)) E.push('contactColumns inert (2col ' + two + ' rows, 1col ' + one + ')');
 
-    // Media section: sample portraits must be offered and must apply.
-    click(document.querySelector('#rail [data-goto="2"]'));
-    const thumbs = document.querySelectorAll('#panel [data-action="sampleHeadshot"]');
-    if (thumbs.length !== 8) E.push('expected 8 sample portraits, got ' + thumbs.length);
-    click(thumbs[3]);
-    if (S.headshotUrl !== thumbs[3].dataset.url) E.push('sample portrait did not apply');
+    // Media section. The sample portraits used to be offered here as a row of
+    // stock faces and are not any more — they stay in the code as the default
+    // a new account starts with, which is what this checks instead. A picker
+    // reappearing would be a regression in the other direction.
+    click(document.querySelector("#rail [data-goto=\"2\"]"));
+    if (document.querySelectorAll("#panel [data-action=\"sampleHeadshot\"]").length) {
+      E.push("the sample portraits picker is back in the media panel");
+    }
+    if (!$("#panel [data-action=\"headshotUpload\"]")) E.push("headshot upload is missing");
+    if (!$("#panel [data-action=\"headshotShape\"]")) E.push("headshot shape control is missing");
 
     // Banner section: sample banners must be offered once the banner is on.
     click(document.querySelector('#rail [data-goto="5"]'));
