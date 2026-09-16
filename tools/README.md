@@ -158,3 +158,29 @@ a stray byte in a comment does not stop JavaScript parsing — and this caught i
 The signatures are why it matters more here than in most projects. They are
 copied into someone's mail client and sent to their customers, so a mangled
 character does not stay in our interface; it goes out under their name.
+
+### `editor-fit-check.html` — the editor at narrow widths
+`styles.css` carried no media query at all, and the shell is two fixed columns
+— an 84px rail and a 392px panel — with the stage taking what is left. Below
+about 1000px the top bar's buttons ran past the right edge, and since `.body`
+is `overflow:hidden` they were not cramped but gone: **Export HTML could not be
+reached**.
+
+This is the editor's own shell with the cloud stubbed as a signed-in account,
+so the rail and the account control render at their widest. It measures its own
+viewport rather than an iframe's, so pass the width through Edge:
+
+```powershell
+powershell -File tools/run-check.ps1 editor-fit-check.html    # add --window-size
+```
+
+It fails on anything that overflows, on the page scrolling sideways, and on any
+top-bar button whose right edge sits past the bar's — a button half off-screen
+is still unreachable.
+
+Two things to know. A portrait monitor is the obvious way to reach these
+widths; **display scaling is the quiet one** — Windows at 125% turns a 1080px
+screen into 864 CSS pixels, which is inside the range that broke, and is how
+this was found. And headless Edge clamps its viewport at 504px, so asking for
+less than that measures 504 and reports it: the narrow end is covered down to
+roughly there, not to a phone.

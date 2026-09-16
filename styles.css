@@ -614,3 +614,62 @@ select.input{cursor:pointer;appearance:auto}
   padding:4px 9px;border-radius:9999px;
   background:var(--border);color:var(--muted);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Narrow and portrait screens
+
+   This file had no media query at all. The shell is two fixed columns — an
+   84px rail and a 392px panel — with the stage taking whatever is left, and
+   the top bar never shrank. Below about 1000px its buttons ran past the right
+   edge, and because .body is overflow:hidden they were not cramped but gone:
+   Export HTML could not be reached at all.
+
+   A portrait monitor is the obvious way to land there, and display scaling is
+   the quiet one. Windows at 125% turns a 1080px screen into 864 CSS pixels,
+   which is well inside the range that broke.
+
+   The order things give way in: the title first, since it only names a page
+   you are already looking at; then the bar wraps rather than clipping; then
+   the panel narrows; then the rail. Nothing is hidden that you would need to
+   press — losing a button off-screen is what this is fixing.
+
+   tools/editor-fit-check.html measures it at each width.
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width:1000px){
+  .topbar{
+    height:auto;min-height:var(--header-h);
+    flex-wrap:wrap;row-gap:8px;padding:8px 14px;
+  }
+  /* Names the page you are looking at, so it is the cheapest thing to drop. */
+  .topbar-title{display:none}
+  /* Held a fixed 80px open next to a button it only sometimes speaks for. */
+  .copy-feedback{min-width:0}
+}
+
+@media (max-width:860px){
+  :root{--panel-w:340px}
+  .scope-select{max-width:124px}
+  /* The address is the long part and the least useful: the dot and the plan
+     already say the account is live and which one it is. */
+  .account-email{display:none}
+}
+
+@media (max-width:720px){
+  :root{--panel-w:300px;--rail-w:68px}
+  .topbar{gap:8px}
+  .btn{padding:6px 12px}
+}
+
+/* Below this the panel and the preview cannot both have room, so the panel
+   stops taking a column and slides over the stage instead. The collapse
+   button in the top bar is what closes it again. */
+@media (max-width:620px){
+  .body{position:relative}
+  .panel{
+    position:absolute;top:0;bottom:0;left:0;z-index:15;
+    box-shadow:0 0 0 100vmax rgba(20,18,31,.28);
+  }
+  .body.panel-collapsed .panel{box-shadow:none}
+  .stage{width:100%}
+}

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>editor-fit</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<!--
+  Signvel — the editor at narrow widths
+
+  styles.css carried no media query at all, and the shell is built from two
+  fixed columns: an 84px rail and a 392px panel, leaving the stage whatever is
+  left. That is fine on a wide desktop and not fine on a portrait monitor,
+  where the top bar's buttons run past the right edge — and because the body is
+  overflow:hidden, they are not scrolled to, they are simply gone. "Export
+  HTML" was unreachable.
+
+  This is the editor's own shell, with the cloud stubbed as a signed-in account
+  so the rail and the account control render at full width. It measures its own
+  viewport rather than an iframe's, so run it once per width:
+
+    powershell -File tools/run-check.ps1 editor-fit-check.html
+
+  and pass the width through Edge's --window-size. The report block lists what
+  overflows and by how much.
+
+  Anything that overflows here is unreachable rather than merely ugly, which is
+  why the assertion is scrollWidth against clientWidth on the elements that
+  clip, not a screenshot.
+-->
+  <div class="app" id="app">
+    <aside class="rail" id="rail"></aside>
+    <div class="workspace">
+      <header class="topbar" id="header"></header>
+      <div class="body" id="appBody">
+        <aside class="panel" id="panel"></aside>
+        <main class="stage" id="stage"></main>
+      </div>
+    </div>
+  </div>
+  <div class="export-overlay hidden" id="exportOverlay">
+    <div class="export-panel">
+      <div class="export-panel-header"><h2>Export HTML</h2><button class="export-close" id="exportClose">x</button></div>
+      <pre class="export-code"><code id="exportCode"></code></pre>
+      <div class="export-actions"><button class="btn btn-accent" id="exportCopyBtn">Copy HTML</button></div>
+    </div>
+  </div>
+
+  <pre id="out" style="position:fixed;left:0;bottom:0;z-index:99;background:#fff;font:11px monospace;padding:4px"></pre>
+
+<script>
+  window.__errs = [];
+  window.onerror = (m, s, l, c) => { window.__errs.push('JS: ' + m + ' @' + l + ':' + c); };
+  try { localStorage.clear(); } catch (e) {}
+  // Signed in, so the rail shows every section and the top bar carries the
+  // account control, Sign out and the rest — the widest it ever gets.
+  window.__navigate = function () {};
+  window.Cloud = {
+    isReady: true,
+    _cbs: [],
+    state: () => ({ready:true, signedIn:true, email:'someone@example.com', userId:'u1',
+                   plan:'team', isAdmin:true, entitled:true, trialActive:false, trialDaysLeft:0}),
+    onChange(fn) { this._cbs.push(fn); },
+    init() { return Promise.resolve(this.state()); },
+    loadSignature() { return Promise.resolve(null); },
+    saveSignature() { return Promise.resolve({ok:true}); },
+    uploadAsset() { return Promise.resolve({ok:false, error:'stub'}); },
+    signOut() { return Promise.resolve({ok:true}); },
+    adminStats() { return Promise.resolve({ok:false, error:'stub'}); },
+  };
+</script>
+<script src="../config.js"></script>
+<script src="../app.js"></script>
+<script>
+(function () {
+  const E = window.__errs;
+
+  setTimeout(function () {
+    const vw = window.innerWidth;
+    const notes = [];
+
+    // Anything clipped here cannot be scrolled to — the body is overflow:hidden.
+    [['top bar', document.getElementById('header')],
+     ['rail', document.getElementById('rail')],
+     ['panel', document.getElementById('panel')],
+     ['stage toolbar', document.querySelector('.stage-toolbar')]].forEach(function (pair) {
+      const el = pair[1];
+      if (!el) { E.push(pair[0] + ' is missing'); return; }
+      const over = el.scrollWidth - el.clientWidth;
+      if (over > 1) { E.push(pair[0] + ' overflows by ' + over + 'px at ' + vw + 'px'); notes.push(pair[0] + ' +' + over); }
+    });
+
+    // The whole page must not scroll sideways either.
+    const docOver = document.documentElement.scrollWidth - document.documentElement.clientWidth;
+    if (docOver > 1) { E.push('the page scrolls sideways by ' + docOver + 'px at ' + vw + 'px'); }
+
+    // Every action in the top bar has to be inside it, not past its edge.
+    const bar = document.getElementById('header');
+    if (bar) {
+      const right = bar.getBoundingClientRect().right;
+      bar.querySelectorAll('button, select').forEach(function (b) {
+        const r = b.getBoundingClientRect();
+        if (r.right > right + 1) {
+          E.push('"' + (b.textContent || b.id).trim().slice(0, 24) + '" sits past the right edge at ' + vw + 'px');
+        }
+        if (r.width === 0 || r.height === 0) {
+          E.push('"' + (b.id || b.textContent).trim().slice(0, 24) + '" has collapsed to nothing at ' + vw + 'px');
+        }
+      });
+    }
+
+    document.getElementById('out').textContent =
+      (E.length ? E.join('\n') : 'ok at ' + vw + 'px') + (notes.length ? '\n' + notes.join(', ') : '');
+    document.title = E.length ? 'FAIL ' + E.length : 'PASS ' + vw;
+  }, 260);
+})();
+</script>
+</body>
+</html>
