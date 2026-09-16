@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   Signvel — runtime configuration
+   Sign Vel — runtime configuration
 
    The only file you edit by hand. Both values below are meant to be
    public: the publishable key identifies the project, it does not grant

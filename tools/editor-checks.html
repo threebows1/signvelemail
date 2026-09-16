@@ -311,7 +311,7 @@
       S.template = 'split';
       const freeSplit = generateSignaturePreview();
       if (freeSplit.includes('real-logo.png')) E.push('free: logo still rendered');
-      if (!freeSplit.includes('Signvel')) E.push('free: generated mark missing');
+      if (!freeSplit.includes('Sign Vel')) E.push('free: generated mark missing');
       S.template = 'accentbar';
       if (generateSignaturePreview().includes(sampleBanners[0].url)) E.push('free: banner image still rendered');
       // Nothing may leak an <img> on a free plan.

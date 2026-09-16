@@ -184,3 +184,17 @@ screen into 864 CSS pixels, which is inside the range that broke, and is how
 this was found. And headless Edge clamps its viewport at 504px, so asking for
 less than that measures 504 and reports it: the narrow end is covered down to
 roughly there, not to a phone.
+
+### `make-favicon.html` — the site icon
+Rasterises the mark for the sizes that still want a bitmap: 180px for iOS home
+screens, and as the fallback for browsers that ignore an SVG icon. `favicon.svg`
+is the primary and is hand-written; this produces `favicon.png` beside it.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/make-favicon.ps1
+```
+
+The three previews are the reason it is a page rather than a one-liner. A
+favicon is judged at 16px, and the gradient the site uses on white turns to mud
+at that size — so the icon uses the masthead's treatment instead, solid white
+on purple, which is the one version of the mark drawn for a saturated ground.

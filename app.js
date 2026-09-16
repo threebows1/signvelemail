@@ -5,7 +5,7 @@
 
 // ───────────── SVG Icons ─────────────
 const icons = {
-  // Signvel brand mark — editor chrome only, never used inside a signature.
+  // Sign Vel brand mark — editor chrome only, never used inside a signature.
   logo: `<svg width="34" height="14.3" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="sv-editor-grad" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#sv-editor-grad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg>`,
   chevron: `<svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
   email: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4l-10 8L2 4"/></svg>`,
@@ -135,10 +135,10 @@ const DEFAULT_HEADSHOT_URL = sampleHeadshots[0].url;
 // logo. That substitution lasts exactly as long as the shipped sample is
 // untouched: type your own name and it is used on every layout, Corporate
 // included.
-// Signvel's own brand. The layouts double as the product's showcase, so the
-// mark, company and links they preview with are Signvel's — the generated
+// Sign Vel's own brand. The layouts double as the product's showcase, so the
+// mark, company and links they preview with are Sign Vel's — the generated
 // monogram picks the company name up from here, which is what puts "SV ·
-// Signvel" in each layout's theme colour rather than a placeholder.
+// Sign Vel" in each layout's theme colour rather than a placeholder.
 //
 // The person is a stand-in, deliberately. These details sit on sixteen demo
 // layouts and on the public showcase page, and a real name, mobile and street
@@ -146,7 +146,7 @@ const DEFAULT_HEADSHOT_URL = sampleHeadshots[0].url;
 const SAMPLE_IDENTITY = {
   name: 'Daniel Reyes',
   title: 'Head of Partnerships',
-  company: 'Signvel',
+  company: 'Sign Vel',
   contacts: {
     email:   'daniel@signvel.com',
     mobile:  '+971 50 123 4567',
@@ -160,16 +160,16 @@ const SAMPLE_IDENTITY = {
   },
 };
 
-// The sample identity that shipped before the layouts carried Signvel branding.
+// The sample identity that shipped before the layouts carried Sign Vel branding.
 // Saved state holding it is still a copy of the demo, so it has to keep
 // counting as stock — otherwise anyone who opened the editor while that set
 // was live gets Northwind Studio frozen onto every layout.
-// The Signvel-branded sample that preceded the current one, retired when the
+// The Sign Vel-branded sample that preceded the current one, retired when the
 // demo portrait changed and the name had to follow it.
 const LEGACY_SIGNVEL_IDENTITY = {
   name: 'Elena Marsh',
   title: 'Head of Partnerships',
-  company: 'Signvel',
+  company: 'Sign Vel',
   contacts: {
     email:   'elena@signvel.com',
     mobile:  '+971 50 123 4567',
@@ -1094,8 +1094,8 @@ function renderContacts() {
     // state is the one that looks wrong without a word, because the fields say
     // one thing and sixteen of the seventeen previews say another.
     h += matchesIdentity(CORPORATE_IDENTITY)
-      ? `<div class="inline-note" id="stockNote">These are the Al&nbsp;Riyady details, and the <strong>Corporate</strong> template shows them. Every other layout previews on Signvel branding instead, so the gallery reads as a set of designs rather than the same signature seventeen times. Type over any field above and yours are used on all of them.</div>`
-      : `<div class="inline-note" id="stockNote">Every layout except <strong>Corporate</strong> previews on Signvel branding, with a stand-in name — so the gallery reads as a set of designs rather than as one person's signature. Corporate reproduces the Al&nbsp;Riyady signature. Type over any field above and your own details are used on all seventeen.</div>`;
+      ? `<div class="inline-note" id="stockNote">These are the Al&nbsp;Riyady details, and the <strong>Corporate</strong> template shows them. Every other layout previews on Sign Vel branding instead, so the gallery reads as a set of designs rather than the same signature seventeen times. Type over any field above and yours are used on all of them.</div>`
+      : `<div class="inline-note" id="stockNote">Every layout except <strong>Corporate</strong> previews on Sign Vel branding, with a stand-in name — so the gallery reads as a set of designs rather than as one person's signature. Corporate reproduces the Al&nbsp;Riyady signature. Type over any field above and your own details are used on all seventeen.</div>`;
   }
 
   h += `<div class="opt-group">Contact details</div>`;

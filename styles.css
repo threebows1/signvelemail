@@ -1,6 +1,6 @@
 /* ───────────── Reset & Variables ───────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-/* Signvel brand tokens (signvel.com). These style the EDITOR CHROME only.
+/* Sign Vel brand tokens (signvel.com). These style the EDITOR CHROME only.
    Signature colours come from S.accentColor and are written inline by
    generateSignaturePreview() — nothing here reaches them. */
 :root{
@@ -124,7 +124,7 @@ a{color:var(--accent);text-decoration:none}
 .toggle-group button:last-child{border-right:none}
 .toggle-group button.active{background:var(--ink);color:var(--white)}
 
-/* Pill buttons, matching the Signvel site. */
+/* Pill buttons, matching the Sign Vel site. */
 .btn{
   font-size:12px;font-weight:600;padding:6px 15px;border-radius:9999px;
   border:1px solid var(--border);background:var(--white);transition:all .15s;
@@ -383,7 +383,7 @@ select.input{cursor:pointer;appearance:auto}
 /* ═══════════════════════════════════════════════════════════
    Signature isolation
 
-   The editor chrome is Signvel-branded (Manrope, purple, mint). None of
+   The editor chrome is Sign Vel-branded (Manrope, purple, mint). None of
    that may reach the signature preview: what renders inside
    .signature-container must look exactly like what gets pasted into a
    mail client, where none of those fonts exist.

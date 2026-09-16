@@ -1,8 +1,9 @@
-# Renders tools/make-email-logo.html in headless Edge and writes the PNG it
-# produces to the repository root as email-logo.png — the path the auth email
-# templates point at, and the path Cloudflare serves from.
+# Renders tools/make-favicon.html in headless Edge and writes the 180px PNG to
+# the repository root as favicon.png, which every page links as its icon and
+# as the iOS home-screen image. favicon.svg is the primary; this is what the
+# browsers that ignore an SVG icon fall back to.
 #
-#   powershell -ExecutionPolicy Bypass -File tools\make-email-logo.ps1
+#   powershell -ExecutionPolicy Bypass -File tools\make-favicon.ps1
 #
 # Same Edge invocation as run-check.ps1, and for the same reasons: stdout does
 # not reach the pipeline, so the DOM is redirected to a file and read back.
@@ -12,10 +13,10 @@ $edge = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 if (-not (Test-Path $edge)) { $edge = "C:\Program Files\Microsoft\Edge\Application\msedge.exe" }
 
 $root = Split-Path -Parent $PSScriptRoot
-$url  = "file:///" + $root.Replace([char]92, [char]47) + "/tools/make-email-logo.html"
+$url  = "file:///" + $root.Replace([char]92, [char]47) + "/tools/make-favicon.html"
 $ud   = Join-Path $env:TEMP ("edgelogo" + (Get-Random))
 $dom  = Join-Path $env:TEMP ("dom" + (Get-Random) + ".html")
-$out  = Join-Path $root "email-logo.png"
+$out  = Join-Path $root "favicon.png"
 
 Start-Process -FilePath $edge -NoNewWindow -Wait -RedirectStandardOutput $dom -ArgumentList @(
   "--headless=new","--disable-gpu","--no-sandbox","--allow-file-access-from-files",

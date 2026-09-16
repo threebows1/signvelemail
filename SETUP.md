@@ -1,4 +1,4 @@
-# Signvel — backend setup
+# Sign Vel — backend setup
 
 What you need to do before I can wire the editor to accounts, saved data and
 payments. None of this needs code from me first; it produces the four values

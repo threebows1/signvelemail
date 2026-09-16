@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════
--- Signvel — database schema
+-- Sign Vel — database schema
 --
 -- Run once in the Supabase dashboard: SQL Editor → New query → paste → Run.
 -- Safe to re-run: every statement is guarded.

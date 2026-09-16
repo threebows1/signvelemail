@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   Signvel — marketing site styles
+   Sign Vel — marketing site styles
 
    Deliberately separate from styles.css, which belongs to the editor.
    index.html does not load this file, and this file is never loaded
@@ -64,7 +64,7 @@ body{margin:0}
   max-width:var(--maxw);margin:0 auto;padding:0 24px;
   height:68px;display:flex;align-items:center;gap:32px;
 }
-/* Signvel brand mark: gradient squiggle + "Sign" with "Vel" in mint,
+/* Sign Vel brand mark: gradient squiggle + "Sign" with "Vel" in mint,
    matching signvel.com. */
 .brand{
   display:inline-flex;align-items:center;gap:8px;

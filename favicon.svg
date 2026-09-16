@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Sign Vel mark on the brand ground. A favicon is read at 16px, where the
+       gradient the site uses on white would turn to mud, so this is the
+       masthead's treatment instead: solid white on purple, which is the one
+       version of the mark drawn to survive a saturated background. -->
+  <rect width="64" height="64" rx="14" fill="#5B2EFF"/>
+  <g transform="translate(5 22) scale(0.63)">
+    <path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9"
+          fill="none" stroke="#FFFFFF" stroke-width="8"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="76" cy="27" r="6" fill="#00E5A0"/>
+  </g>
+</svg>

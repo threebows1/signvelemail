@@ -19,13 +19,13 @@ than a couple of sign-ups an hour, people simply stop receiving mail.
 
 Authentication → Emails → pick the tab → paste the file into **Message body** →
 Save. All three tabs need doing; a tab left untouched keeps Supabase's stock
-design, which carries no Signvel branding at all.
+design, which carries no Sign Vel branding at all.
 
 | File | Tab | Subject to use | Sent by |
 |---|---|---|---|
-| `confirm-signup.html` | Confirm signup | Confirm your email for Signvel | `Cloud.signUp` |
-| `magic-link.html` | Magic Link | Your Signvel sign-in link | `Cloud.signIn` |
-| `reset-password.html` | Reset Password | Reset your Signvel password | `Cloud.resetPassword` |
+| `confirm-signup.html` | Confirm signup | Confirm your email for Sign Vel | `Cloud.signUp` |
+| `magic-link.html` | Magic Link | Your Sign Vel sign-in link | `Cloud.signIn` |
+| `reset-password.html` | Reset Password | Reset your Sign Vel password | `Cloud.resetPassword` |
 
 `{{ .ConfirmationURL }}` is substituted by Supabase at send time. Leave it
 exactly as written — everything else is ordinary text and safe to edit.
@@ -91,7 +91,7 @@ Authentication → **SMTP Settings** (`/project/_/auth/smtp`), enable custom SMT
 | Username | `resend` — the literal string, not an address |
 | Password | the API key from step 3 |
 | Sender email | `no-reply@send.signvel.com` |
-| Sender name | `Signvel` |
+| Sender name | `Sign Vel` |
 
 ### 5 — Raise the rate limit
 
@@ -105,7 +105,7 @@ email limit, but keep it under Resend's 100-a-day ceiling.
 ### 6 — Test
 
 Trigger a password reset against a real address and check three things: it
-arrives, the `From` line reads `Signvel <no-reply@send.signvel.com>`, and the
+arrives, the `From` line reads `Sign Vel <no-reply@send.signvel.com>`, and the
 design is the one in this folder rather than Supabase's stock layout. Gmail's
 **Show original** will confirm SPF, DKIM and DMARC all pass.
 
@@ -133,7 +133,7 @@ beside it is live text. That split is deliberate. Outlook and most corporate
 clients block remote images by default, and an all-image header in those
 clients is an empty box — this way the name always renders and only the mark
 goes missing. The `<img>` carries `alt=""` for the same reason: the text next
-to it already says Signvel, so a second reading would be noise.
+to it already says Sign Vel, so a second reading would be noise.
 
 The site draws that mark as an inline `<svg>`. Mail cannot: Gmail, Outlook and
 Yahoo all strip SVG out. So it has to be a raster, served over HTTPS from a

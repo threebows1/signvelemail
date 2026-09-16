@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   Signvel — cloud layer (Supabase)
+   Sign Vel — cloud layer (Supabase)
 
    Everything that talks to the network lives here, so app.js stays a pure
    local editor. If this file, its config, or the network is missing, the

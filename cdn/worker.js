@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   Signvel — cdn.signvel.com
+   Sign Vel — cdn.signvel.com
 
    Serves hosted logos and portraits, and stops serving them when the account
    behind them no longer has a plan.

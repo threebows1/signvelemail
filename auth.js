@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   Signvel — auth pages (signin, signup, reset)
+   Sign Vel — auth pages (signin, signup, reset)
 
    One controller for all three. Each page carries data-auth-page on <body>
    and supplies the fields the flow needs; everything else here is shared, so
@@ -53,7 +53,7 @@
 
   // ── Guards ───────────────────────────────────────────────
   if (!window.Cloud || !Cloud.isReady) {
-    say('Accounts are not configured on this copy of Signvel.', 'error');
+    say('Accounts are not configured on this copy of Sign Vel.', 'error');
     submit.disabled = true;
     return;
   }
