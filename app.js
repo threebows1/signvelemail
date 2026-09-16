@@ -78,7 +78,7 @@ const templateThemes = {
   inline:     {accent:'#2D7FF9', accent2:'#123B7A', panel:null, social:'glyph',  icons:'icons',   cols:1, role:'plain', caps:false, track:0},
   labelled:   {accent:'#E8553A', accent2:'#7A2415', panel:null, social:'filled', icons:'labels',  cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
   band:       {accent:'#2563EB', accent2:'#1B49B8', panel:null, social:'filled', icons:'icons',   cols:1, role:'plain', caps:true,  track:2,  shape:'rounded'},
-  editorial:  {accent:'#C8B99C', accent2:'#F5F1E6', panel:'#1E2B4D', social:'circle', icons:'icons', cols:2, role:'plain', caps:true, track:10, shape:'square', heading:'Georgia'},
+  editorial:  {accent:'#FFFFFF', accent2:'#F5F1E6', panel:'#1E2B4D', social:'circle', icons:'icons', cols:2, role:'plain', caps:true, track:10, shape:'square', heading:'Georgia'},
   grid:       {accent:'#3FCF8E', accent2:'#111614', panel:'#0D0F0E', social:'filled', icons:'labels', cols:2, role:'caps', caps:false, track:-1, shape:'circle'},
   feature:    {accent:'#8FCBFF', accent2:'#0E4FA8', panel:'#1668D8', social:'filled', icons:'icons', cols:2, role:'pill', caps:false, track:0, shape:'circle', ring:4},
   minimal:    {accent:'#475569', accent2:'#1F2937', panel:null, social:'plain',  icons:'icons',   cols:1, role:'plain', caps:false, track:0},
@@ -2112,7 +2112,7 @@ function buildSignatureBody() {
     return outer(`
       <tr>
         <td width="100%" style="width:100%;vertical-align:middle;padding-right:30px;">
-          <p style="font-family:${hf};font-size:${nameAt(bs + 16)}px;font-weight:400;color:${onDark ? '#F3EEE2' : nameColor};line-height:1.1;${track}margin:0 0 10px;">${eName}</p>
+          <p style="font-family:${hf};font-size:${nameAt(bs + 16)}px;font-weight:400;color:${onDark ? '#FFFFFF' : nameColor};line-height:1.1;${track}margin:0 0 10px;">${eName}</p>
           ${hairline(onDark ? 'rgba(255,255,255,.35)' : ruleColor)}
           <p style="font-family:${hf};font-size:${bs + 5}px;font-weight:400;color:${soft};line-height:1.3;margin:10px 0 0;">${esc(pCompany)}</p>
           ${roleHTML({size: bs - 1, color: soft, mb: 0})}
