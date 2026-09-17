@@ -118,6 +118,52 @@
     if (!$("#panel [data-action=\"headshotUpload\"]")) E.push("headshot upload is missing");
     if (!$("#panel [data-action=\"headshotShape\"]")) E.push("headshot shape control is missing");
 
+    // Social section: every platform in the catalogue is offered, each one can
+    // be switched on, and each builds a real profile URL rather than a '#'.
+    click(document.querySelector('#rail [data-goto="4"]'));
+    DEFAULT_SOCIAL_LINKS.forEach(def => {
+      const row = [].slice.call(document.querySelectorAll('#panel .list-label'))
+        .filter(el => el.textContent.trim() === def.label)[0];
+      if (!row) { E.push('social panel does not offer ' + def.label); return; }
+      if (!socialIcons[def.type]) E.push(def.label + ' has no icon, so it renders blank in a signature');
+    });
+
+    (function () {
+      // A handle typed into a platform has to reach the signature as a link to
+      // that platform. Asserted on the markup, because the URL is built at
+      // render time and a missing base silently produces '#'.
+      const keep = S.socialLinks.map(sl => Object.assign({}, sl));
+      S.socialLinks = S.socialLinks.map(sl =>
+        Object.assign({}, sl, {enabled: true, handle: sl.handle || 'signvel'}));
+      const h = generateSignaturePreview();
+      DEFAULT_SOCIAL_LINKS.forEach(def => {
+        const host = {facebook:'facebook.com', linkedin:'linkedin.com', instagram:'instagram.com',
+                      youtube:'youtube.com', tiktok:'tiktok.com', x:'x.com', pinterest:'pinterest.com'}[def.type];
+        if (!host) { E.push('no expected host listed for ' + def.type); return; }
+        if (h.indexOf(host) === -1) E.push(def.label + ' did not reach the signature as a ' + host + ' link');
+      });
+      S.socialLinks = keep;
+    })();
+
+    (function () {
+      // The migration that matters: a signature saved before a platform
+      // existed carries a list that predates it, and both loadState and
+      // adoptCloudState have to top it up. Without this, a new platform only
+      // ever reaches people who have never used the editor.
+      const keep = S.socialLinks.map(sl => Object.assign({}, sl));
+      S.socialLinks = [{type:'linkedin', label:'LinkedIn', handle:'someone', enabled:true}];
+      adoptCloudState({state: {socialLinks: S.socialLinks.map(sl => Object.assign({}, sl))}});
+      const types = S.socialLinks.map(sl => sl.type);
+      DEFAULT_SOCIAL_LINKS.forEach(def => {
+        if (types.indexOf(def.type) === -1) E.push('an old saved list was not topped up with ' + def.label);
+      });
+      const li = S.socialLinks.filter(sl => sl.type === 'linkedin')[0];
+      if (!li || li.handle !== 'someone') E.push('topping up the list lost a handle the user had typed');
+      const added = S.socialLinks.filter(sl => sl.type === 'pinterest')[0];
+      if (added && added.enabled) E.push('a newly added platform arrived switched on, uninvited');
+      S.socialLinks = keep;
+    })();
+
     // Banner section: sample banners must be offered once the banner is on.
     click(document.querySelector('#rail [data-goto="5"]'));
     const bt = $('#panel [data-action="toggleBanner"]');
