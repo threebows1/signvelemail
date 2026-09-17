@@ -254,14 +254,21 @@
     if (!/only available to an administrator/.test(renderSectionContent(adminIndex))) {
       E.push('admin panel rendered figures for a non-admin');
     }
-    // Nothing the admin panel fetches may be written to storage.
-    ['adminStats','adminError','adminLoading','adminUsers','adminUsersLoading','adminBusy']
-      .forEach(k => { if (!TRANSIENT_KEYS.includes(k)) E.push(k + ' is not transient'); });
-    // The account list and the plan controls are admin-only too.
+    // The panel itself lives at /admin now, so the only thing this section
+    // may carry for an admin is the way in — and nothing at all for anyone
+    // else. Both halves are asserted: the link must exist when isAdmin() is
+    // true, or the rail item becomes a dead end.
     const adminPanel = renderSectionContent(adminIndex);
-    if (/setUserPlan|loadAdminUsers/.test(adminPanel)) {
-      E.push('admin panel exposed account controls to a non-admin');
+    if (/admin\.html/.test(adminPanel)) {
+      E.push('admin panel offered the way in to a non-admin');
     }
+    (function () {
+      const keep = window.Cloud;
+      window.Cloud = {isReady: true, state: () => ({isAdmin: true})};
+      const asAdmin = renderSectionContent(adminIndex);
+      if (!/href="admin\.html"/.test(asAdmin)) E.push('admin section has no link to the admin panel');
+      window.Cloud = keep;
+    })();
     S.openSection = 0;
     renderPanel();
 

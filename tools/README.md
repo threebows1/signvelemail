@@ -106,6 +106,27 @@ Flips the toggle in a frame and checks the figures, not the classes. The yearly
 column is asserted as arithmetic — monthly × 12 × 0.75 — so editing a monthly
 price without editing its yearly twin fails here rather than on the page.
 
+### `admin-check.html` — the admin panel
+Two halves, like `auth-pages-check.html`: the source of `admin.html` (script
+chain, `noindex`, and the deliberate absence of analytics on a page carrying
+customer addresses), then the behaviour of `admin.js` against a stubbed Cloud.
+
+The markup is not copied into the harness — it is fetched from `admin.html`
+and mounted, so a renamed id fails here instead of quietly breaking the panel.
+`admin.js` is loaded once and then driven through `ADMIN.start()`, because it
+binds its listeners to the document and a second evaluation would double every
+click; the three cases are the three answers `Cloud.init()` can give.
+
+The assertions worth keeping honest are the ones about authority: a visitor
+with no session is sent to sign in rather than shown a panel that asks for
+customer data, a signed-in non-admin triggers no admin calls at all, and no
+plan button anywhere targets the signed-in admin's own account. The export is
+checked for formula injection too — an address is attacker-supplied text, and
+`=cmd|...` in a CSV cell is a real attack on whoever opens it.
+
+Both halves were confirmed to fail before being trusted: removing the self-row
+guard produced four failures, and removing the formula guard produced a fifth.
+
 ### `gate-check.html` — the editor lock
 The editor is for account holders, so it locks before the first render and
 sends anyone without a session to `signin.html?next=editor.html`. Run it with

@@ -259,18 +259,30 @@ window.Cloud = (function () {
   const adminStats = () =>
     adminCall('stats').then(r => r.ok ? { ok: true, stats: r.data } : r);
 
-  const adminUsers = () =>
-    adminCall('users').then(r => r.ok ? { ok: true, users: r.data.users || [] } : r);
+  // `q` is matched against the address server-side, so searching still works
+  // once there are more accounts than the function will return in one page.
+  const adminUsers = (q) =>
+    adminCall('users', q ? { q } : null).then(r => r.ok ? { ok: true, list: r.data } : r);
+
+  // One account in full — profile, auth record, saved signatures, whatever
+  // billing has recorded.
+  const adminUser = (userId) =>
+    adminCall('user', { userId }).then(r => r.ok ? { ok: true, detail: r.data } : r);
 
   // Grants or removes paid access for someone else. The function refuses a
   // plan outside the allowed set, and refuses the caller's own account.
   const adminSetPlan = (userId, plan) =>
     adminCall('setPlan', { userId, plan }).then(r => r.ok ? { ok: true, user: r.data.user } : r);
 
+  // Complimentary access: moves trial_ends_at rather than the plan, because
+  // nobody paid and the plan column should not say otherwise. days: 0 ends it.
+  const adminSetTrial = (userId, days) =>
+    adminCall('setTrial', { userId, days }).then(r => r.ok ? { ok: true, user: r.data.user } : r);
+
   return {
     init, signIn, signInPassword, signUp, resetPassword, updatePassword, signOut,
     loadSignature, saveSignature, uploadAsset,
-    adminStats, adminUsers, adminSetPlan,
+    adminStats, adminUsers, adminUser, adminSetPlan, adminSetTrial,
     state,
     onChange(fn) { listeners.push(fn); },
     get isReady() { return ready; },

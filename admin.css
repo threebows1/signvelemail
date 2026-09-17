@@ -1,0 +1,285 @@
+/* ═══════════════════════════════════════════════════════════
+   Sign Vel — admin panel styles
+
+   Loaded after site.css, which supplies the variables, the brand mark, the
+   buttons and the type scale. Nothing here is a bare element selector, for
+   the same reason as site.css: the panel embeds nothing table-based today,
+   but the moment it previews a signature it would.
+
+   Everything is prefixed .adm- so this file cannot collide with the
+   marketing pages it sits alongside or with the editor's styles.css, which
+   is never loaded on the same page.
+
+   The panel is a table first and a dashboard second. Numbers are set in the
+   mono face at a size you can read across a desk; the account table is the
+   part that gets used every day, so it gets the room.
+   ═══════════════════════════════════════════════════════════ */
+
+.adm{
+  font-family:var(--sans);
+  color:var(--ink);
+  background:var(--bg-alt);
+  min-height:100vh;
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+.adm-wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+
+/* ── The bar ── */
+.adm-top{
+  position:sticky;top:0;z-index:40;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:saturate(180%) blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.adm-top-inner{
+  max-width:1280px;margin:0 auto;padding:0 24px;
+  height:64px;display:flex;align-items:center;gap:16px;
+}
+.adm-tag{
+  font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);background:var(--accent-soft);
+  padding:6px 9px;border-radius:6px;
+}
+.adm-spacer{flex:1}
+.adm-who{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.adm-linkbtn{
+  background:none;border:0;padding:0;cursor:pointer;
+  font:600 13.5px var(--sans);color:var(--muted);
+}
+.adm-linkbtn:hover{color:var(--accent)}
+
+/* ── Tabs ── */
+.adm-tabs{
+  display:flex;gap:4px;overflow-x:auto;
+  border-bottom:1px solid var(--line);background:#fff;
+}
+.adm-tabs-inner{max-width:1280px;margin:0 auto;padding:0 24px;display:flex;gap:4px}
+.adm-tab{
+  background:none;border:0;cursor:pointer;
+  font:600 14px var(--sans);color:var(--muted);
+  padding:15px 14px 13px;border-bottom:2px solid transparent;
+  white-space:nowrap;
+}
+.adm-tab:hover{color:var(--ink)}
+.adm-tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.adm-tab:focus-visible{outline:2px solid var(--accent);outline-offset:-4px;border-radius:4px}
+
+.adm-main{padding:30px 0 80px}
+.adm-head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:0 0 20px}
+.adm-h{font-size:22px;font-weight:800;letter-spacing:-.025em;margin:0}
+.adm-sub{font-size:14px;color:var(--muted);margin:4px 0 0}
+
+/* ── Cards ── */
+.adm-card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);
+  padding:24px 26px;margin:0 0 22px;
+}
+.adm-card-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 18px}
+.adm-card-h{font-size:15px;font-weight:700;letter-spacing:-.01em;margin:0}
+.adm-card-note{font-size:13px;color:var(--muted);margin:0}
+
+/* ── Stat tiles ── */
+.adm-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:0 0 22px}
+.adm-stat{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 20px;
+}
+.adm-stat-num{
+  font:700 30px/1 var(--mono);letter-spacing:-.03em;color:var(--ink);
+  display:block;
+}
+.adm-stat-label{display:block;font-size:13px;font-weight:600;color:var(--ink-soft);margin-top:9px}
+.adm-stat-hint{display:block;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
+.adm-stat.is-accent{border-color:#D8CCFF;background:linear-gradient(180deg,#FBF9FF,#fff)}
+.adm-stat.is-accent .adm-stat-num{color:var(--accent)}
+.adm-stat.is-warn{border-color:#F0DCC0;background:linear-gradient(180deg,#FFFBF4,#fff)}
+
+/* ── Thirty-day signup chart ──
+   Bars, not a line: at one or two signups a day a line chart implies a
+   trend that is not there, and a bar is honestly a count. */
+.adm-chart{display:flex;align-items:flex-end;gap:3px;height:132px;margin:0 0 10px}
+.adm-bar{
+  flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;
+  height:100%;border-radius:4px 4px 0 0;
+}
+.adm-bar i{
+  display:block;width:100%;border-radius:4px 4px 0 0;
+  background:linear-gradient(180deg,#7C55FF,var(--accent));
+  min-height:2px;
+}
+.adm-bar.is-zero i{background:var(--line);min-height:2px}
+.adm-chart-axis{display:flex;justify-content:space-between;font:11px var(--mono);color:var(--muted)}
+
+/* ── Plan mix ── */
+.adm-mix{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--line-soft);margin:0 0 14px}
+.adm-mix-seg{height:100%}
+.adm-mix-free{background:#C9C4DD}
+.adm-mix-team{background:var(--accent)}
+.adm-mix-org{background:#00B37E}
+.adm-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:13px;color:var(--muted)}
+.adm-legend span{display:inline-flex;align-items:center;gap:7px}
+.adm-dot{width:9px;height:9px;border-radius:50%;flex:none}
+
+/* ── Toolbar above the table ── */
+.adm-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px}
+.adm-search{
+  flex:1;min-width:200px;
+  font:15px var(--sans);color:var(--ink);
+  padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;
+}
+.adm-search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.adm-chip{
+  background:#fff;border:1px solid var(--line);border-radius:999px;cursor:pointer;
+  font:600 13px var(--sans);color:var(--muted);padding:8px 14px;
+}
+.adm-chip:hover{border-color:#D9D4EC;color:var(--ink)}
+.adm-chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.adm-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.adm-count{font:12px var(--mono);color:var(--muted);white-space:nowrap}
+
+/* ── The account table ── */
+.adm-table-wrap{border:1px solid var(--line);border-radius:var(--radius-lg);background:#fff;overflow-x:auto}
+.adm-table{width:100%;border-collapse:collapse;font-size:14px;min-width:820px}
+.adm-table thead th{
+  text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);padding:13px 16px;border-bottom:1px solid var(--line);
+  background:#FCFBFE;white-space:nowrap;
+}
+.adm-table td{padding:13px 16px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+.adm-table tbody tr:last-child td{border-bottom:0}
+.adm-table tbody tr:hover{background:#FCFBFE}
+.adm-table tbody tr.is-self{background:#FBF9FF}
+.adm-email{font-weight:600;color:var(--ink);display:block;word-break:break-all}
+.adm-meta{font:11.5px var(--mono);color:var(--muted);display:block;margin-top:3px}
+.adm-num{font:13px var(--mono);color:var(--ink-soft);text-align:right}
+.adm-when{font:12px var(--mono);color:var(--muted);white-space:nowrap}
+
+/* ── Badges ── */
+.adm-badge{
+  display:inline-block;font:600 11.5px var(--sans);letter-spacing:.01em;
+  padding:4px 9px;border-radius:999px;white-space:nowrap;
+}
+.adm-badge.is-paid{background:#E7F6EE;color:#0C6B45}
+.adm-badge.is-trial{background:var(--accent-soft);color:var(--accent-dark)}
+.adm-badge.is-grant{background:#FFF1E0;color:#8A5206}
+.adm-badge.is-expired{background:#F4F3F8;color:#6E6B85}
+.adm-badge.is-admin{background:#111021;color:#fff}
+.adm-badge.is-flag{background:#FDEEEE;color:#9B1C1C}
+.adm-badges{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ── Row actions ── */
+.adm-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.adm-mini{
+  background:#fff;border:1px solid var(--line);border-radius:7px;cursor:pointer;
+  font:600 12px var(--sans);color:var(--ink-soft);padding:6px 10px;white-space:nowrap;
+}
+.adm-mini:hover:not([disabled]){border-color:var(--accent);color:var(--accent)}
+.adm-mini[disabled]{opacity:.45;cursor:default}
+.adm-mini.is-on{background:var(--accent);border-color:var(--accent);color:#fff}
+.adm-mini.is-danger:hover:not([disabled]){border-color:#D46A6A;color:#9B1C1C}
+.adm-mini:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.adm-plans{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.adm-plans .adm-mini{border:0;border-radius:0;border-left:1px solid var(--line)}
+.adm-plans .adm-mini:first-child{border-left:0}
+
+/* ── Notes, errors, empties ── */
+.adm-note{
+  font-size:13.5px;line-height:1.55;color:var(--ink-soft);
+  background:var(--bg-alt);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:8px;padding:13px 16px;margin:0 0 16px;
+}
+.adm-note.is-warn{border-left-color:#E0A33A;background:#FFFBF4}
+.adm-note.is-error{border-left-color:#C64B4B;background:#FDEEEE;color:#7F1D1D}
+.adm-note.is-ok{border-left-color:#00B37E;background:#F0FBF6}
+.adm-note strong{color:var(--ink)}
+.adm-note code,.adm-code{
+  font:12.5px var(--mono);background:#F1EFF9;color:var(--accent-dark);
+  padding:2px 6px;border-radius:5px;word-break:break-all;
+}
+.adm-empty{text-align:center;padding:46px 20px;color:var(--muted);font-size:14px}
+.adm-empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:6px}
+
+/* ── Checklist, used by Billing and System ── */
+.adm-check{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.adm-check li{display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.5}
+.adm-check .adm-state{
+  flex:none;width:20px;height:20px;border-radius:50%;margin-top:1px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font:700 12px var(--sans);
+}
+.adm-state.is-yes{background:#E7F6EE;color:#0C6B45}
+.adm-state.is-no{background:#F4F3F8;color:#8A8799}
+.adm-check strong{display:block;color:var(--ink);font-weight:650}
+.adm-check span{color:var(--muted)}
+
+/* ── Key/value list, used in the drawer ── */
+.adm-kv{display:grid;grid-template-columns:150px minmax(0,1fr);gap:9px 16px;font-size:13.5px;margin:0}
+.adm-kv dt{color:var(--muted);font-weight:600}
+.adm-kv dd{margin:0;color:var(--ink);word-break:break-all}
+.adm-kv dd.adm-mono{font:12.5px var(--mono)}
+
+/* ── The detail drawer ──
+   A drawer rather than a second page: the question being answered is always
+   "who is this row", and losing the table to answer it means finding the row
+   again afterwards. */
+.adm-scrim{
+  position:fixed;inset:0;z-index:50;
+  background:rgba(16,14,27,.34);
+  opacity:0;pointer-events:none;transition:opacity .18s;
+}
+.adm-scrim.is-open{opacity:1;pointer-events:auto}
+.adm-drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:51;width:min(520px,100%);
+  background:#fff;border-left:1px solid var(--line);
+  box-shadow:-24px 0 60px rgba(16,14,27,.14);
+  transform:translateX(100%);transition:transform .2s ease;
+  display:flex;flex-direction:column;
+}
+.adm-drawer.is-open{transform:translateX(0)}
+.adm-drawer-head{
+  display:flex;align-items:center;gap:12px;
+  padding:20px 24px;border-bottom:1px solid var(--line);
+}
+.adm-drawer-title{font-size:16px;font-weight:700;margin:0;word-break:break-all}
+.adm-drawer-body{padding:22px 24px 40px;overflow-y:auto;flex:1}
+.adm-close{
+  background:none;border:0;cursor:pointer;font:400 22px/1 var(--sans);color:var(--muted);
+  padding:4px 6px;border-radius:6px;
+}
+.adm-close:hover{color:var(--ink);background:var(--bg-alt)}
+.adm-sec{margin:26px 0 0}
+.adm-sec-h{
+  font:600 11.5px var(--sans);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 12px;
+}
+.adm-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.adm-list li{
+  border:1px solid var(--line);border-radius:9px;padding:11px 13px;font-size:13.5px;
+  display:flex;justify-content:space-between;gap:12px;align-items:center;
+}
+.adm-list .adm-when{flex:none}
+.adm-grantrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+/* ── Responsive ── */
+@media (max-width:1040px){
+  .adm-stats{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:760px){
+  .adm-wrap,.adm-top-inner,.adm-tabs-inner{padding:0 16px}
+  .adm-who{display:none}
+  .adm-card{padding:20px 18px}
+  .adm-kv{grid-template-columns:minmax(0,1fr);gap:2px 0}
+  .adm-kv dd{margin-bottom:10px}
+}
+@media (max-width:520px){
+  .adm-stats{grid-template-columns:minmax(0,1fr)}
+  .adm-drawer{width:100%}
+  .adm-stat-num{font-size:26px}
+}
+
+/* [hidden] is a user-agent rule, and any class here that sets display beats
+   it. Restated so a hidden panel stays hidden. */
+[hidden]{display:none !important}

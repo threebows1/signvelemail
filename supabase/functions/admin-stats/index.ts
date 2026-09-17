@@ -1,11 +1,10 @@
 // ═══════════════════════════════════════════════════════════
-// admin-stats — the editor's Admin panel: counts, the user list, and
-// granting paid access
+// admin-stats — everything the admin panel at /admin reads and writes
 //
 // Counting users means reading auth.users, and nothing holding a browser key
 // can do that: Row Level Security hides other people's rows, and the admin
 // endpoints reject the publishable key outright. That is the correct
-// behaviour, so the count has to come from somewhere the service-role key can
+// behaviour, so the work has to happen somewhere the service-role key can
 // live without being shipped to anyone. That is this function.
 //
 // Supabase injects SUPABASE_SERVICE_ROLE_KEY into the function's environment,
@@ -18,11 +17,24 @@
 //      id sent in the body — a caller can put anything there.
 //   3. Look up is_admin for that user with the service-role client. The column
 //      is trigger-protected, so nobody can grant it to themselves.
-//   4. Only then do the work — counts, the user list, or a plan change.
+//   4. Only then do the work.
 //
-// The plan change is the only write. It addresses the account by id rather
-// than email, refuses anything outside the allowed plans, and refuses to
-// change the caller's own plan. is_admin is not settable here at all.
+// Actions
+//   stats     counts, a thirty-day signup series, plan mix, subscription state
+//   users     one page of profiles, with signature counts and last sign-in
+//   user      one account in full: profile, auth record, signatures, subs
+//   setPlan   move somebody between plans
+//   setTrial  extend or end paid access without a payment — complimentary
+//             access, and the way a grant is taken back
+//
+// The two writes address the account by id rather than email, and both refuse
+// the caller's own account: this is a tool for granting access to other people
+// rather than to oneself, and that keeps "I upgraded myself" off the trail.
+//
+// is_admin is deliberately not settable here, and there is no delete. Both
+// stay SQL statements someone has to write on purpose: one hands over the
+// whole panel, and the other destroys a customer's work with a single click
+// sitting next to the buttons used for routine support.
 //
 // Deploy:  supabase functions deploy admin-stats
 // ═══════════════════════════════════════════════════════════
@@ -33,7 +45,7 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// The editor is served from these origins. A wildcard would let any page a
+// The site is served from these origins. A wildcard would let any page a
 // signed-in admin happens to visit call this with their token.
 const ALLOWED_ORIGINS = [
   'https://signvel.com',
@@ -73,51 +85,310 @@ function json(body: unknown, status: number, origin: string | null) {
 // database error surfacing through the interface.
 const PLANS = ['free', 'team', 'org'];
 
-// Who exists, and what they are on. Reads profiles rather than auth.users:
-// everything the panel shows lives there, and it keeps the row a plan change
-// has to target the same row that was listed.
-async function listUsers(admin: any, origin: string | null) {
-  const { data, error } = await admin
-    .from('profiles')
-    .select('id, email, plan, is_admin, created_at, trial_ends_at')
-    .order('created_at', { ascending: true })
-    .limit(500);
-  if (error) return json({ error: error.message }, 500, origin);
-  return json({ users: data ?? [] }, 200, origin);
+// What the panel is shown about an account. Listed once, so a row that comes
+// back from a write has the same shape as a row that came from the list.
+const USER_COLUMNS =
+  'id, email, full_name, plan, is_admin, created_at, updated_at, trial_ends_at, stripe_customer_id';
+
+const MAX_USERS = 500;        // one page of the account table
+const MAX_SIGNATURES = 20000; // the user_id column, tallied in one pass
+const AUTH_PER_PAGE = 1000;   // auth.users is paged; this is the page size
+const AUTH_PAGES = 5;         // and this stops one call becoming fifty
+const MAX_TRIAL_DAYS = 3650;  // ten years, which is "forever" for a grant
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function since(days: number) {
+  return new Date(Date.now() - days * 864e5).toISOString();
 }
 
-// Grants or removes paid access.
-//
-// This is the one write in the function, so it is the one that has to be
-// careful. The plan is checked against the allowed list; the target is
-// addressed by id rather than by email, so two accounts sharing an address
-// cannot be confused for each other; and an admin cannot change their own
-// plan, which keeps "I upgraded myself" out of the audit trail and makes the
-// panel a tool for granting access to other people rather than to oneself.
-//
-// is_admin is deliberately not settable here. Granting administrator rights
-// stays a SQL statement someone has to write on purpose.
-async function setPlan(admin: any, body: any, callerId: string, origin: string | null) {
-  const userId = String(body?.userId || '');
-  const plan = String(body?.plan || '');
+// ── Shared reads ─────────────────────────────────────────
 
-  if (!userId) return json({ error: 'Which account?' }, 400, origin);
+// How many signatures each account has saved, tallied in one pass rather than
+// one count query per row: at this size the whole column is smaller than the
+// round trips would be.
+async function signatureCounts(admin: any) {
+  const counts: Record<string, number> = {};
+  const { data } = await admin.from('signatures').select('user_id').limit(MAX_SIGNATURES);
+  (data ?? []).forEach((r: { user_id: string }) => {
+    counts[r.user_id] = (counts[r.user_id] ?? 0) + 1;
+  });
+  return counts;
+}
+
+type AuthFacts = { confirmed: boolean; lastSignIn: string | null; provider: string };
+
+// Everything auth.users knows that profiles does not: whether the address was
+// ever confirmed, and when the account was last actually used. Without this
+// the panel can only report who signed up, not who is still here.
+async function authIndex(admin: any) {
+  const idx: Record<string, AuthFacts> = {};
+  for (let page = 1; page <= AUTH_PAGES; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: AUTH_PER_PAGE });
+    const rows = data?.users ?? [];
+    rows.forEach((u: any) => {
+      idx[u.id] = {
+        confirmed: !!u.email_confirmed_at,
+        lastSignIn: u.last_sign_in_at ?? null,
+        provider: (u.app_metadata && u.app_metadata.provider) || 'email',
+      };
+    });
+    if (error || rows.length < AUTH_PER_PAGE) return { idx, truncated: false };
+  }
+  return { idx, truncated: true };
+}
+
+// ── Actions ──────────────────────────────────────────────
+
+// Who exists, and what each of them is on. Reads profiles rather than
+// auth.users: everything the panel shows lives there, and it keeps the row a
+// plan change targets the same row that was listed.
+async function listUsers(admin: any, body: any, origin: string | null) {
+  // Narrowed to characters that appear in an address before it reaches a
+  // PostgREST filter expression. The pattern is interpolated into that
+  // expression, so nothing that could end it early is allowed through.
+  const q = String(body?.q ?? '').replace(/[^A-Za-z0-9._@+ -]/g, '').trim().slice(0, 120);
+
+  let sel = admin
+    .from('profiles')
+    .select(USER_COLUMNS)
+    .order('created_at', { ascending: false })
+    .limit(MAX_USERS);
+  if (q) sel = sel.ilike('email', `%${q}%`);
+
+  const [listed, counts, auth] = await Promise.all([sel, signatureCounts(admin), authIndex(admin)]);
+  if (listed.error) return json({ error: listed.error.message }, 500, origin);
+
+  const users = (listed.data ?? []).map((u: any) => {
+    const a = auth.idx[u.id];
+    return {
+      ...u,
+      signatures: counts[u.id] ?? 0,
+      confirmed: a ? a.confirmed : null,
+      last_sign_in_at: a ? a.lastSignIn : null,
+      provider: a ? a.provider : null,
+    };
+  });
+
+  return json({
+    users,
+    // Said out loud rather than quietly showing a partial list.
+    capped: users.length >= MAX_USERS,
+    limit: MAX_USERS,
+    query: q,
+  }, 200, origin);
+}
+
+// One account, in as much detail as exists. This is the "track user data"
+// view: the profile row, the auth record behind it, what they have built, and
+// whatever billing has recorded against them.
+async function userDetail(admin: any, body: any, origin: string | null) {
+  const userId = String(body?.userId ?? '');
+  if (!UUID.test(userId)) return json({ error: 'Which account?' }, 400, origin);
+
+  const [prof, sigs, subs, authRes] = await Promise.all([
+    admin.from('profiles').select(USER_COLUMNS).eq('id', userId).single(),
+    admin.from('signatures').select('id, name, is_default, created_at, updated_at')
+      .eq('user_id', userId).order('updated_at', { ascending: false }).limit(50),
+    admin.from('subscriptions').select('*')
+      .eq('user_id', userId).order('created_at', { ascending: false }).limit(20),
+    admin.auth.admin.getUserById(userId),
+  ]);
+
+  if (prof.error || !prof.data) return json({ error: 'No such account.' }, 404, origin);
+  const au = authRes?.data?.user;
+
+  return json({
+    user: prof.data,
+    signatures: sigs.data ?? [],
+    subscriptions: subs.data ?? [],
+    auth: au ? {
+      confirmed: !!au.email_confirmed_at,
+      lastSignIn: au.last_sign_in_at ?? null,
+      createdAt: au.created_at ?? null,
+      provider: (au.app_metadata && au.app_metadata.provider) || 'email',
+    } : null,
+  }, 200, origin);
+}
+
+// Grants or removes paid access by moving the plan.
+//
+// The plan is checked against the allowed list; the target is addressed by id
+// rather than by email, so two accounts sharing an address cannot be confused
+// for each other; and an admin cannot change their own plan.
+async function setPlan(admin: any, body: any, callerId: string, origin: string | null) {
+  const userId = String(body?.userId ?? '');
+  const plan = String(body?.plan ?? '');
+
+  if (!UUID.test(userId)) return json({ error: 'Which account?' }, 400, origin);
   if (!PLANS.includes(plan)) return json({ error: 'Unknown plan.' }, 400, origin);
   if (userId === callerId) {
     return json({ error: 'Change your own plan from the SQL editor, not here.' }, 400, origin);
   }
 
   const { data, error } = await admin
-    .from('profiles')
-    .update({ plan })
-    .eq('id', userId)
-    .select('id, email, plan, is_admin, created_at, trial_ends_at')
-    .single();
+    .from('profiles').update({ plan }).eq('id', userId).select(USER_COLUMNS).single();
 
   if (error) return json({ error: error.message }, 500, origin);
   if (!data) return json({ error: 'No such account.' }, 404, origin);
   return json({ user: data }, 200, origin);
 }
+
+// Complimentary access, without a payment and without pretending there was
+// one: trial_ends_at is a date, and entitlement is the OR of it and the plan
+// (see has_paid_access in schema.sql). Moving that date forward is how a
+// reviewer, a friend of the company or an apology gets full access; days: 0
+// sets it to now, which is how the same grant is taken back.
+//
+// Deliberately separate from setPlan. Writing 'team' onto an account that
+// never paid makes the plan column lie, and every figure derived from it lies
+// with it. A date says what actually happened.
+//
+// The column is trigger-protected against the browser — protect_billing_
+// columns strips it for the authenticated role — and the service-role
+// connection here is not that role, which is why this has to live in a
+// function rather than in a PATCH from the panel.
+async function setTrial(admin: any, body: any, callerId: string, origin: string | null) {
+  const userId = String(body?.userId ?? '');
+  const days = Number(body?.days);
+
+  if (!UUID.test(userId)) return json({ error: 'Which account?' }, 400, origin);
+  if (!Number.isFinite(days) || days < 0 || days > MAX_TRIAL_DAYS) {
+    return json({ error: `Give a number of days between 0 and ${MAX_TRIAL_DAYS}.` }, 400, origin);
+  }
+  if (userId === callerId) {
+    return json({ error: 'Grant access to someone else; change your own from the SQL editor.' }, 400, origin);
+  }
+
+  const until = new Date(Date.now() + days * 864e5).toISOString();
+  const { data, error } = await admin
+    .from('profiles').update({ trial_ends_at: until }).eq('id', userId).select(USER_COLUMNS).single();
+
+  if (error) return json({ error: error.message }, 500, origin);
+  if (!data) return json({ error: 'No such account.' }, 404, origin);
+  return json({ user: data }, 200, origin);
+}
+
+// The overview. Everything here is counted server-side and the panel only
+// draws it, so two people looking at the same moment see the same figures.
+async function stats(admin: any, origin: string | null) {
+  // listUsers is paged; the total comes back regardless of perPage, so ask for
+  // the smallest page that still returns it rather than pulling every row.
+  const { data: page, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1 });
+  if (listErr) return json({ error: listErr.message }, 500, origin);
+
+  const [sigCount, confirmed, week, month, plans, recent, subs, counts, auth] = await Promise.all([
+    admin.from('signatures').select('id', { count: 'exact', head: true }),
+    admin.from('profiles').select('id', { count: 'exact', head: true }),
+    admin.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', since(7)),
+    admin.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', since(30)),
+    admin.from('profiles').select('plan, trial_ends_at, created_at'),
+    admin.from('profiles').select('created_at').gte('created_at', since(29)).limit(5000),
+    admin.from('subscriptions').select('status, quantity, current_period_end, cancel_at_period_end').limit(1000),
+    signatureCounts(admin),
+    authIndex(admin),
+  ]);
+
+  // Counted together so the parts add up to the profile count rather than
+  // overlapping: a paid account is reported by its plan, and only a free one
+  // is reported as trialling or expired.
+  const byPlan: Record<string, number> = {};
+  let onTrial = 0;
+  let expired = 0;
+  // Complimentary access, detected rather than stored: every account is
+  // created with trial_ends_at at signup + 30 days, so an end date more than
+  // a month past the day the account was made can only have been put there
+  // deliberately. Counting "paid plan with a live trial date" instead would
+  // report every new paying customer as a freebie for their first month.
+  let granted = 0;
+  const now = Date.now();
+  (plans.data ?? []).forEach((r: { plan: string; trial_ends_at: string; created_at: string }) => {
+    byPlan[r.plan] = (byPlan[r.plan] ?? 0) + 1;
+    const ends = r.trial_ends_at ? new Date(r.trial_ends_at).getTime() : 0;
+    const live = ends > now;
+    const made = r.created_at ? new Date(r.created_at).getTime() : 0;
+    if (live && made && ends - made > 31 * 864e5) granted++;
+    if (r.plan === 'free') {
+      if (live) onTrial++; else expired++;
+    }
+  });
+
+  // Thirty daily buckets, oldest first, keyed by date so the panel can label
+  // them without recomputing the calendar.
+  const series: { date: string; count: number }[] = [];
+  const bucket: Record<string, number> = {};
+  for (let i = 29; i >= 0; i--) {
+    const key = new Date(now - i * 864e5).toISOString().slice(0, 10);
+    bucket[key] = series.length;
+    series.push({ date: key, count: 0 });
+  }
+  (recent.data ?? []).forEach((r: { created_at: string }) => {
+    const key = String(r.created_at).slice(0, 10);
+    if (bucket[key] !== undefined) series[bucket[key]].count++;
+  });
+
+  // Who is still here, as opposed to who signed up once. This is the figure
+  // that says whether the product is being used.
+  let activeLast7 = 0;
+  let activeLast30 = 0;
+  let unconfirmed = 0;
+  Object.keys(auth.idx).forEach((id) => {
+    const a = auth.idx[id];
+    if (!a.confirmed) unconfirmed++;
+    if (!a.lastSignIn) return;
+    const t = new Date(a.lastSignIn).getTime();
+    if (t > now - 7 * 864e5) activeLast7++;
+    if (t > now - 30 * 864e5) activeLast30++;
+  });
+
+  // How signature use is distributed, which is what the per-plan caps are
+  // actually sold against.
+  const withSignatures = Object.keys(counts).length;
+  let mostSignatures = 0;
+  Object.keys(counts).forEach((id) => { if (counts[id] > mostSignatures) mostSignatures = counts[id]; });
+
+  // Billing, reported from what the subscriptions table holds rather than
+  // inferred from the plan column. Nothing writes that table yet, so an empty
+  // result here is the honest answer to "how much is being billed" — not a
+  // reason to compute revenue out of plan names.
+  const byStatus: Record<string, number> = {};
+  let activeSubs = 0;
+  let cancelling = 0;
+  (subs.data ?? []).forEach((r: any) => {
+    const st = String(r.status ?? 'unknown');
+    byStatus[st] = (byStatus[st] ?? 0) + 1;
+    if (st === 'active' || st === 'trialing') activeSubs++;
+    if (r.cancel_at_period_end) cancelling++;
+  });
+
+  return json({
+    users: page?.total ?? 0,
+    profiles: confirmed.count ?? 0,
+    signatures: sigCount.count ?? 0,
+    newLast7: week.count ?? 0,
+    newLast30: month.count ?? 0,
+    byPlan,
+    onTrial,
+    expired,
+    granted,
+    activeLast7,
+    activeLast30,
+    unconfirmed,
+    withSignatures,
+    mostSignatures,
+    series,
+    subscriptions: {
+      total: (subs.data ?? []).length,
+      active: activeSubs,
+      cancelling,
+      byStatus,
+    },
+    authTruncated: auth.truncated,
+    generatedAt: new Date().toISOString(),
+  }, 200, origin);
+}
+
+// ── Entry ────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
   const origin = req.headers.get('Origin');
@@ -155,55 +426,15 @@ Deno.serve(async (req) => {
   if (!profile?.is_admin) return json({ error: 'Not permitted.' }, 403, origin);
 
   // ── 4. Which job? ──
-  // One function rather than three, so there is one place where the checks
+  // One function rather than five, so there is one place where the checks
   // above live and one thing to deploy.
   const body = await req.json().catch(() => ({}));
   const action = body?.action || 'stats';
 
-  if (action === 'users') return listUsers(admin, origin);
+  if (action === 'users') return listUsers(admin, body, origin);
+  if (action === 'user') return userDetail(admin, body, origin);
   if (action === 'setPlan') return setPlan(admin, body, uid, origin);
-  if (action !== 'stats') return json({ error: 'Unknown action.' }, 400, origin);
-
-  // ── 5. Counts (the default action) ──
-  // listUsers is paged; the total comes back regardless of perPage, so ask for
-  // the smallest page that still returns it rather than pulling every row.
-  const { data: page, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1 });
-  if (listErr) return json({ error: listErr.message }, 500, origin);
-
-  const since = (days: number) => new Date(Date.now() - days * 864e5).toISOString();
-
-  const [signatures, confirmed, week, month, plans] = await Promise.all([
-    admin.from('signatures').select('id', { count: 'exact', head: true }),
-    admin.from('profiles').select('id', { count: 'exact', head: true }),
-    admin.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', since(7)),
-    admin.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', since(30)),
-    admin.from('profiles').select('plan, trial_ends_at'),
-  ]);
-
-  // Counted together so the two add up to the profile count rather than
-  // overlapping: a paid account is reported by its plan, and only a free one
-  // is reported as trialling or expired.
-  const byPlan: Record<string, number> = {};
-  let onTrial = 0;
-  let expired = 0;
-  const now = Date.now();
-  (plans.data ?? []).forEach((r: { plan: string; trial_ends_at: string }) => {
-    byPlan[r.plan] = (byPlan[r.plan] ?? 0) + 1;
-    if (r.plan === 'free') {
-      if (r.trial_ends_at && new Date(r.trial_ends_at).getTime() > now) onTrial++;
-      else expired++;
-    }
-  });
-
-  return json({
-    users: page?.total ?? 0,
-    profiles: confirmed.count ?? 0,
-    signatures: signatures.count ?? 0,
-    newLast7: week.count ?? 0,
-    newLast30: month.count ?? 0,
-    byPlan,
-    onTrial,
-    expired,
-    generatedAt: new Date().toISOString(),
-  }, 200, origin);
+  if (action === 'setTrial') return setTrial(admin, body, uid, origin);
+  if (action === 'stats') return stats(admin, origin);
+  return json({ error: 'Unknown action.' }, 400, origin);
 });

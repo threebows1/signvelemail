@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Sign Vel</title>
+
+  <!-- Never indexed. Nothing here is secret on its own — the function behind
+       it re-checks is_admin for every call — but a page that lists customer
+       addresses has no business in search results. -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" sizes="180x180">
+  <link rel="apple-touch-icon" href="/favicon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="admin.css">
+
+  <!-- No analytics on this page on purpose: it would send customer addresses
+       and account ids to Google in the page path and the drawer title. -->
+</head>
+<body class="adm">
+
+  <header class="adm-top">
+    <div class="adm-top-inner">
+      <a class="brand" href="index.html" aria-label="Sign Vel home"><svg width="34" height="14.3" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="grad-adm" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#grad-adm)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg><span class="brand-word">Sign <em>Vel</em></span></a>
+      <span class="adm-tag">Admin</span>
+      <span class="adm-spacer"></span>
+      <span class="adm-who" id="admWho"></span>
+      <a class="adm-linkbtn" href="editor.html" style="text-decoration:none">Editor</a>
+      <button class="adm-linkbtn" id="admSignOut" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Hidden until the account is known to be an admin: showing the tabs
+       first and emptying them afterwards reads as a panel that broke. -->
+  <nav class="adm-tabs" id="admTabs" role="tablist" aria-label="Admin sections" hidden>
+    <div class="adm-tabs-inner">
+      <button class="adm-tab" role="tab" id="tab-overview" data-tab="overview" aria-selected="true"  aria-controls="panel-overview">Overview</button>
+      <button class="adm-tab" role="tab" id="tab-accounts" data-tab="accounts" aria-selected="false" aria-controls="panel-accounts">Accounts</button>
+      <button class="adm-tab" role="tab" id="tab-billing"  data-tab="billing"  aria-selected="false" aria-controls="panel-billing">Billing</button>
+      <button class="adm-tab" role="tab" id="tab-system"   data-tab="system"   aria-selected="false" aria-controls="panel-system">System</button>
+    </div>
+  </nav>
+
+  <main class="adm-main">
+    <div class="adm-wrap">
+
+      <!-- Where "checking…", "not an administrator" and a failed load are
+           said. The panels below stay empty until this is cleared. -->
+      <div id="admGate"></div>
+
+      <section id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" hidden></section>
+      <section id="panel-accounts" role="tabpanel" aria-labelledby="tab-accounts" hidden></section>
+      <section id="panel-billing"  role="tabpanel" aria-labelledby="tab-billing"  hidden></section>
+      <section id="panel-system"   role="tabpanel" aria-labelledby="tab-system"   hidden></section>
+
+    </div>
+  </main>
+
+  <div class="adm-scrim" id="admScrim"></div>
+  <aside class="adm-drawer" id="admDrawer" role="dialog" aria-modal="true" aria-labelledby="admDrawerTitle" aria-hidden="true">
+    <div class="adm-drawer-head">
+      <h2 class="adm-drawer-title" id="admDrawerTitle">Account</h2>
+      <span class="adm-spacer"></span>
+      <button class="adm-close" id="admClose" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="adm-drawer-body" id="admDrawerBody"></div>
+  </aside>
+
+  <!-- Order matters: admin.js needs Cloud, Cloud needs the library and the
+       config. Same chain as the auth pages. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="cloud.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

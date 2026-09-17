@@ -379,15 +379,6 @@ const S = {
   uploadError: '',
   storageError: '',
 
-  // Admin figures. Transient — they come from the server on request and a
-  // saved copy would only ever be shown out of date.
-  adminStats: null,
-  adminError: '',
-  adminLoading: false,
-  adminUsers: null,
-  adminUsersLoading: false,
-  adminBusy: '',
-
   // Sample details, not anyone's real ones. Corporate substitutes the brand
   // identity for as long as these are untouched — see identityIsStock.
   name: SAMPLE_IDENTITY.name,
@@ -634,56 +625,6 @@ function imagesUnlocked() {
   // A live plan or an unexpired trial. Both, not one — a new account gets
   // thirty days of the paid features before anything has been bought.
   return !!(c.signedIn && c.entitled);
-}
-
-// Who has signed up, and what each of them is on.
-function loadAdminUsers() {
-  if (S.adminUsersLoading || !isAdmin()) return;
-  S.adminUsersLoading = true;
-  S.adminError = '';
-  renderPanel();
-  Cloud.adminUsers().then(r => {
-    S.adminUsersLoading = false;
-    if (r.ok) { S.adminUsers = r.users; S.adminError = ''; }
-    else { S.adminError = r.error; }
-    renderPanel();
-  });
-}
-
-// Grants or removes paid access. The row is updated from what the server
-// returns rather than from what was asked for — if the function refused, or
-// clamped the value, the list shows what is actually stored.
-function setUserPlan(userId, plan) {
-  if (!userId || !plan || S.adminBusy || !isAdmin()) return;
-  S.adminBusy = userId;
-  S.adminError = '';
-  renderPanel();
-  Cloud.adminSetPlan(userId, plan).then(r => {
-    S.adminBusy = '';
-    if (r.ok && r.user && S.adminUsers) {
-      S.adminUsers = S.adminUsers.map(u => u.id === r.user.id ? r.user : u);
-      // The plan mix in the figures above is now out of date.
-      S.adminStats = null;
-    } else if (!r.ok) {
-      S.adminError = r.error;
-    }
-    renderPanel();
-  });
-}
-
-// Fetches the account figures. Guarded against a second click while one is in
-// flight, since the button stays on screen during the request.
-function loadAdminStats() {
-  if (S.adminLoading || !isAdmin()) return;
-  S.adminLoading = true;
-  S.adminError = '';
-  renderPanel();
-  Cloud.adminStats().then(r => {
-    S.adminLoading = false;
-    if (r.ok) { S.adminStats = r.stats; S.adminError = ''; }
-    else { S.adminError = r.error; }
-    renderPanel();
-  });
 }
 
 function renderRail() {
@@ -1164,116 +1105,23 @@ function renderDisclaimer() {
   return h;
 }
 
-// ── Section 8: Rollout & install ──
 // ── Section 8: Admin ──
-// Figures about the account as a whole. Everything here arrives from the
-// admin-stats Edge Function; nothing is computed in the browser, because
-// nothing in the browser is allowed to see it.
+// The panel itself is a page of its own at /admin, not a section here. It
+// outgrew this column: a 392px strip beside the canvas cannot hold an account
+// table, and the figures and the grants it carries are not part of building a
+// signature. What is left is the door.
 function renderAdmin() {
   if (!isAdmin()) {
     return `<div class="inline-note">This section is only available to an administrator.</div>`;
   }
-
-  const s = S.adminStats;
-  let h = `<div class="opt-group">Accounts</div>`;
-
-  if (S.adminLoading && !s) {
-    h += `<div class="inline-note">Fetching…</div>`;
-  } else if (!s) {
-    h += `<div class="inline-note">Counting users means reading the auth table, which no browser key can do. These figures come from the <strong>admin-stats</strong> function instead.</div>`;
-  } else {
-    const stat = (label, value, hint) => `<div class="opt-row">
-      <span class="opt-label">${label}${hint ? `<span class="opt-hint">${hint}</span>` : ''}</span>
-      <span class="opt-control"><span class="admin-num">${esc(String(value))}</span></span>
-    </div>`;
-
-    h += `<div class="opt-list">
-      ${stat('Signed-up users', s.users, 'Rows in the auth table')}
-      ${stat('Profiles', s.profiles, 'One per user, created on sign-up')}
-      ${stat('New this week', s.newLast7, 'Last 7 days')}
-      ${stat('New this month', s.newLast30, 'Last 30 days')}
-      ${stat('Saved signatures', s.signatures)}
-    </div>`;
-
-    // Only shown once the function has been redeployed with the trial counts;
-    // an older deployment simply omits them rather than showing zeros.
-    if (typeof s.onTrial === 'number') {
-      h += `<div class="opt-group">Trials</div><div class="opt-list">
-        ${stat('On trial now', s.onTrial, 'Free accounts inside their 30 days')}
-        ${stat('Trial ended', s.expired, 'Past it, and not yet on a plan')}
-      </div>`;
-    }
-
-    const plans = Object.keys(s.byPlan || {});
-    if (plans.length) {
-      h += `<div class="opt-group">By plan</div><div class="opt-list">`;
-      plans.sort().forEach(p => { h += stat(p.charAt(0).toUpperCase() + p.slice(1), s.byPlan[p]); });
-      h += `</div>`;
-    }
-
-    // A stale number presented without its timestamp is worse than no number.
-    if (s.generatedAt) {
-      const t = new Date(s.generatedAt);
-      h += `<div class="inline-note">Measured ${esc(t.toLocaleString())}.</div>`;
-    }
-    // profiles should track users exactly; a gap means the sign-up trigger
-    // missed someone, which is worth knowing about rather than averaging over.
-    if (typeof s.users === 'number' && typeof s.profiles === 'number' && s.users !== s.profiles) {
-      h += `<div class="inline-note"><strong>${Math.abs(s.users - s.profiles)}</strong> user${Math.abs(s.users - s.profiles) === 1 ? '' : 's'} without a matching profile row — the sign-up trigger may not have fired for them.</div>`;
-    }
-  }
-
-  if (S.adminError) h += `<div class="uploader-error">${esc(S.adminError)}</div>`;
-
-  h += `<div class="add-chips"><button class="chip accent" data-action="refreshAdminStats">${S.adminLoading ? 'Fetching…' : (s ? 'Refresh' : 'Load figures')}</button></div>`;
-
-  // ── Granting paid access ──
-  h += `<div class="opt-group">Accounts &amp; access</div>`;
-  const me = (window.Cloud && Cloud.isReady) ? Cloud.state().userId : null;
-
-  if (!S.adminUsers) {
-    h += `<div class="inline-note">Everyone who has signed up, and what each of them is on. Changing a plan takes effect the next time they load the editor.</div>`;
-  } else if (!S.adminUsers.length) {
-    h += `<div class="inline-note">No accounts yet.</div>`;
-  } else {
-    h += `<div class="user-list">`;
-    S.adminUsers.forEach(u => {
-      const self = u.id === me;
-      const joined = u.created_at ? new Date(u.created_at).toLocaleDateString() : '';
-      // Where the account stands, said once: a paid plan speaks for itself, so
-      // the trial is only worth mentioning on a free one.
-      let standing = '';
-      if (u.plan === 'free' && u.trial_ends_at) {
-        const left = Math.ceil((new Date(u.trial_ends_at).getTime() - Date.now()) / 864e5);
-        standing = left > 0 ? ` · trial, ${left} day${left === 1 ? '' : 's'} left` : ' · trial ended';
-      }
-      h += `<div class="user-row${self ? ' is-self' : ''}">
-        <span class="user-id">
-          <span class="user-email">${esc(u.email || '(no email)')}</span>
-          <span class="user-meta">${self ? 'you' : 'joined ' + esc(joined)}${u.is_admin ? ' · admin' : ''}${standing}</span>
-        </span>
-        <span class="user-plan">`;
-      if (self) {
-        // Changing your own plan here would make the panel a way to upgrade
-        // yourself. The function refuses it too; this just says so.
-        h += `<span class="plan-tag">${esc(u.plan)}</span>`;
-      } else {
-        ['free', 'team', 'org'].forEach(p => {
-          h += `<button class="plan-btn${u.plan === p ? ' active' : ''}"
-            data-action="setUserPlan" data-user="${esc(u.id)}" data-plan="${p}"
-            ${S.adminBusy === u.id ? 'disabled' : ''}>${p}</button>`;
-        });
-      }
-      h += `</span></div>`;
-    });
-    h += `</div>`;
-  }
-
-  h += `<div class="add-chips"><button class="chip accent" data-action="loadAdminUsers">${S.adminUsersLoading ? 'Fetching…' : (S.adminUsers ? 'Refresh list' : 'Load accounts')}</button></div>`;
-  h += `<div class="inline-note">Administrator rights are not granted here — that stays a SQL statement someone has to write deliberately.</div>`;
-  return h;
+  return `<div class="inline-note">Accounts, figures, complimentary access and the state of billing
+    live in the admin panel, which has room for them.</div>
+    <div class="add-chips"><a class="chip accent" href="admin.html">Open the admin panel</a></div>
+    <div class="inline-note">Everything there is read and written by the <strong>admin-stats</strong>
+    function, which checks <strong>is_admin</strong> again server-side on every request.</div>`;
 }
 
+// ── Section 7: Rollout & install ──
 function renderRollout() {
   const items = [{key:'typography',label:'Design'},{key:'disclaimer',label:'Disclaimer'},{key:'banner',label:'Banner'},{key:'contactFields',label:'Contact fields'}];
   let h = `<div class="field-row"><label class="field-label">Section permissions</label>`;
@@ -2376,9 +2224,6 @@ function setupEvents() {
         case 'toggleMatchTheme': S.matchTemplateTheme = !S.matchTemplateTheme; break;
         case 'toggleNameCaps': S.nameUppercase = !S.nameUppercase; break;
         case 'applyTheme': applyTemplateTheme(S.template); break;
-        case 'refreshAdminStats': loadAdminStats(); break;
-        case 'loadAdminUsers': loadAdminUsers(); break;
-        case 'setUserPlan': setUserPlan(togAction.dataset.user, togAction.dataset.plan); break;
         case 'sampleHeadshot':
           S.headshotUrl = togAction.dataset.url;
           S.headshotName = togAction.dataset.label + ' (sample)';
@@ -2647,9 +2492,6 @@ function startCloud() {
     else if (authRequired) { unlockEditor(); }
     if (!isAdmin() && sections[S.openSection] && sections[S.openSection].adminOnly) {
       S.openSection = 0;
-      S.adminStats = null;
-      S.adminUsers = null;
-      S.adminError = '';
       renderPanel();
     }
     renderHeader();
@@ -2678,8 +2520,7 @@ function startCloud() {
 // ═══════════════════════════════════════
 const STORAGE_KEY = 'signature-studio-v1';
 // Transient UI state — recomputed each session, never written to storage.
-const TRANSIENT_KEYS = ['uploadError', 'storageError', 'adminStats', 'adminError',
-  'adminLoading', 'adminUsers', 'adminUsersLoading', 'adminBusy'];
+const TRANSIENT_KEYS = ['uploadError', 'storageError'];
 
 function saveState() {
   try {

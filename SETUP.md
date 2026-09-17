@@ -93,11 +93,29 @@ In order, each testable before the next:
 
 ---
 
-## Admin figures
+## Admin panel
 
-The editor has an **Admin** section showing how many people have signed up. It
-only appears for a profile marked `is_admin`, and the numbers come from an Edge
-Function rather than from the browser.
+The panel lives at **signvel.com/admin** — its own page, because an account
+table does not fit in the editor's 392px column. The editor's **Admin** rail
+entry is now just the door to it.
+
+Four tabs:
+
+- **Overview** — accounts, new this week and month, signatures saved, how many
+  are on trial, how many have lapsed, how many signed in this week, and how
+  many have complimentary access. Plus a thirty-day sign-up chart and the plan
+  mix. Everything is counted in the function, so two people looking at the same
+  moment see the same figures.
+- **Accounts** — every account, searchable, filterable by standing, with plan
+  changes inline and a detail drawer per row (auth record, last sign-in,
+  saved signatures, billing rows). Exports what is on screen as CSV.
+- **Billing** — what is wired and what is not. Nothing is connected yet, so
+  this tab says so and fills in on its own once something is.
+- **System** — which services the panel talks to, how admin rights are granted,
+  and the limits the function works within.
+
+It only appears for a profile marked `is_admin`, and every figure and every
+write goes through an Edge Function rather than the browser.
 
 That indirection is the point. Counting users means reading `auth.users`, and
 nothing holding the publishable key can do that — Row Level Security hides
@@ -128,12 +146,38 @@ account first, then run it again.
 No keys to set: Supabase injects `SUPABASE_URL`, `SUPABASE_ANON_KEY` and
 `SUPABASE_SERVICE_ROLE_KEY` into every function's environment automatically.
 
-**4. Sign in to the editor.** An **Admin** entry appears at the bottom of the
-left rail. Open it and press *Load figures*.
+**4. Open signvel.com/admin.** It loads the figures and the account list by
+itself. If the deployed function is older than the page, the panel says so and
+names the command above rather than showing blanks.
 
-If you host the editor anywhere besides signvel.com or the workers.dev URL, add
+If you host the site anywhere besides signvel.com or the workers.dev URL, add
 that origin to `ALLOWED_ORIGINS` at the top of the function — it does not use a
 wildcard, so an unlisted origin is refused.
+
+### Giving somebody complimentary access
+
+Open their row's **Details** and use the grant buttons: +30 days, +90 days,
++1 year, +10 years, or *End now* to take it back. Counted from now, not added
+to whatever is left.
+
+It moves `trial_ends_at`, not `plan`, and that is deliberate. Entitlement is
+the OR of the two — see `has_paid_access` in `supabase/schema.sql` — so a date
+in the future grants everything a paid plan grants, including hosted images
+through the CDN worker. Writing `team` onto an account that never paid would
+make the plan column lie, and every figure derived from it would lie too.
+
+The column is trigger-protected against the browser, which is why the grant
+goes through the function: `protect_billing_columns` strips `trial_ends_at`,
+`plan` and `is_admin` from any update made with the authenticated role.
+
+### What the panel deliberately cannot do
+
+- **Grant administrator rights.** That stays the SQL statement above. A button
+  for it would let one compromised admin session hand over the whole panel.
+- **Delete an account.** Irreversible, and it would sit next to the buttons
+  used for routine support. Do it in the dashboard, on purpose.
+- **Change your own plan or your own access date.** The function refuses it and
+  the interface does not offer it, so "I upgraded myself" cannot happen here.
 
 ## Images as a paid feature
 

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>admin</title>
+  <link rel="stylesheet" href="../site.css">
+  <link rel="stylesheet" href="../admin.css">
+  <!-- The report block carries no style attribute on purpose: run-check.ps1
+       matches <pre id="out"> exactly, and an attribute makes it print the
+       title and nothing else. -->
+  <style>#out{font:12px monospace;white-space:pre-wrap;padding:10px;background:#fff}</style>
+</head>
+<body>
+<!--
+  Sign Vel — the admin panel
+
+  Run it:  powershell -File tools\run-check.ps1 admin-check.html
+
+  Two halves, the same split as auth-pages-check.html.
+
+   * The source of admin.html — the script chain, noindex, and the absence of
+     analytics. That last one is a real assertion, not tidiness: this page has
+     customer addresses in its markup and account ids in its drawer title, and
+     a tag manager would forward them.
+
+   * The behaviour of admin.js against a stubbed Cloud. The markup is not
+     hand-copied here — it is fetched from admin.html and mounted, so a
+     renamed id fails this harness instead of quietly breaking the panel.
+
+  admin.js is loaded once and then driven through ADMIN.start(), because it
+  binds its listeners to the document: a second evaluation would double every
+  click. The three cases below are the three answers Cloud.init() can give.
+
+  What matters most, and why each is here:
+
+    * A visitor who is not signed in is sent to sign in — not shown an empty
+      panel that asks the server for customer data and gets 403s.
+    * A signed-in non-admin sees no tabs and triggers no admin calls at all.
+    * An admin cannot change their own plan from the table. The function
+      refuses it, and the interface must not offer it either.
+    * The CSV must not hand a spreadsheet a formula. An address is attacker-
+      supplied text, and =HYPERLINK(...) in a cell is a real thing.
+-->
+  <div id="stage"></div>
+  <pre id="out"></pre>
+
+<script>
+const E = [];
+window.onerror = (m, s, l, c) => { E.push('JS: ' + m + ' @' + l + ':' + c); };
+
+const DAY = 864e5;
+const iso = (offsetDays) => new Date(Date.now() + offsetDays * DAY).toISOString();
+
+// ── Fixtures ─────────────────────────────────────────────
+// One account per state the panel has to tell apart, plus one whose address
+// starts with "=" so the CSV guard is exercised on a real row.
+const USERS = [
+  {id:'00000000-0000-4000-8000-000000000001', email:'admin@signvel.com', full_name:'Admin',
+   plan:'team', is_admin:true,  created_at:iso(-300), updated_at:iso(-1), trial_ends_at:iso(-270),
+   stripe_customer_id:null, signatures:3, confirmed:true,  last_sign_in_at:iso(-0.02), provider:'email'},
+  {id:'00000000-0000-4000-8000-000000000002', email:'paid@example.com', full_name:'Paid Person',
+   plan:'org',  is_admin:false, created_at:iso(-200), updated_at:iso(-3), trial_ends_at:iso(-170),
+   stripe_customer_id:'cus_123', signatures:7, confirmed:true, last_sign_in_at:iso(-2), provider:'email'},
+  {id:'00000000-0000-4000-8000-000000000003', email:'trialling@example.com', full_name:null,
+   plan:'free', is_admin:false, created_at:iso(-5), updated_at:iso(-5), trial_ends_at:iso(25),
+   stripe_customer_id:null, signatures:1, confirmed:true, last_sign_in_at:iso(-1), provider:'email'},
+  {id:'00000000-0000-4000-8000-000000000004', email:'expired@example.com', full_name:null,
+   plan:'free', is_admin:false, created_at:iso(-90), updated_at:iso(-60), trial_ends_at:iso(-60),
+   stripe_customer_id:null, signatures:0, confirmed:false, last_sign_in_at:null, provider:'email'},
+  // Created 100 days ago with access running 200 days into the future: only a
+  // deliberate grant looks like that, which is what "comped" detects.
+  {id:'00000000-0000-4000-8000-000000000005', email:'=cmd|calc!A1@example.com', full_name:'Comped',
+   plan:'free', is_admin:false, created_at:iso(-100), updated_at:iso(-2), trial_ends_at:iso(200),
+   stripe_customer_id:null, signatures:2, confirmed:true, last_sign_in_at:iso(-9), provider:'email'},
+];
+
+const STATS = {
+  users: 6, profiles: 5, signatures: 13, newLast7: 1, newLast30: 2,
+  byPlan: {free: 3, team: 1, org: 1}, onTrial: 1, expired: 2, granted: 1,
+  activeLast7: 3, activeLast30: 4, unconfirmed: 1, withSignatures: 4, mostSignatures: 7,
+  series: (function () {
+    const s = [];
+    for (let i = 29; i >= 0; i--) {
+      s.push({date: new Date(Date.now() - i * DAY).toISOString().slice(0, 10), count: i === 3 ? 2 : (i === 10 ? 1 : 0)});
+    }
+    return s;
+  })(),
+  subscriptions: {total: 0, active: 0, cancelling: 0, byStatus: {}},
+  authTruncated: false,
+  generatedAt: new Date().toISOString(),
+};
+
+const byId = (id) => USERS.filter((u) => u.id === id)[0] || null;
+
+// ── The stub ─────────────────────────────────────────────
+let ST = {ready: true, signedIn: false, isAdmin: false, userId: null, email: null};
+let CALLS = [];
+let failNext = null;     // an error to answer the next admin call with
+
+function answer(name, payload) {
+  CALLS.push(name);
+  if (failNext) { const e = failNext; failNext = null; return Promise.resolve({ok: false, error: e}); }
+  return Promise.resolve(Object.assign({ok: true}, payload));
+}
+
+window.__navigate = function (url) { window.__wentTo = url; };
+
+window.Cloud = {
+  isReady: true,
+  state: () => ST,
+  init: () => Promise.resolve(ST),
+  onChange() {},
+  signOut: () => { CALLS.push('signOut'); return Promise.resolve({ok: true}); },
+  adminStats: () => answer('stats', {stats: STATS}),
+  adminUsers: (q) => { window.__lastQuery = q; return answer('users', {list: {users: USERS, capped: false, limit: 500, query: q}}); },
+  adminUser: (id) => answer('user:' + id, {detail: {
+    user: byId(id),
+    signatures: [{id: 's1', name: 'Work', is_default: true, created_at: iso(-10), updated_at: iso(-1)}],
+    subscriptions: [],
+    auth: {confirmed: true, lastSignIn: iso(-1), createdAt: iso(-100), provider: 'email'},
+  }}),
+  adminSetPlan: (id, plan) => { window.__setPlan = [id, plan]; return answer('setPlan', {user: Object.assign({}, byId(id), {plan: plan})}); },
+  adminSetTrial: (id, days) => { window.__setTrial = [id, days]; return answer('setTrial', {user: Object.assign({}, byId(id), {trial_ends_at: iso(days)})}); },
+};
+
+// ── Helpers ──────────────────────────────────────────────
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => [].slice.call(document.querySelectorAll(s));
+const settle = (ms) => new Promise((r) => setTimeout(r, ms || 30));
+const click = (el) => el && el.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+const bodyRows = () => $$('#panel-accounts .adm-table tbody tr');
+const text = (sel) => { const el = $(sel); return el ? (el.innerText || el.textContent || '') : ''; };
+
+function loadAdminJs() {
+  return new Promise((res) => {
+    const s = document.createElement('script');
+    s.src = '../admin.js?' + Math.random();
+    s.onload = () => setTimeout(res, 0);
+    s.onerror = () => { E.push('admin.js would not load'); res(); };
+    document.body.appendChild(s);
+  });
+}
+
+// ── 1. The source ────────────────────────────────────────
+function checkSource(src) {
+  const iLib = src.indexOf('supabase-js@2'),
+        iCfg = src.indexOf('src="config.js"'),
+        iCld = src.indexOf('src="cloud.js"'),
+        iAdm = src.indexOf('src="admin.js"');
+  if (iLib < 0 || iCfg < 0 || iCld < 0 || iAdm < 0) E.push('admin.html: a required script tag is missing');
+  else if (!(iLib < iCfg && iCfg < iCld && iCld < iAdm)) E.push('admin.html: scripts load out of order');
+
+  if (!/name="robots" content="noindex/.test(src)) E.push('admin.html: must carry noindex');
+  if (src.indexOf('admin.css') === -1) E.push('admin.html: does not load admin.css');
+  if (src.indexOf('site.css') === -1) E.push('admin.html: does not load site.css');
+
+  // Customer addresses and account ids are on this page. Nothing may forward
+  // them, and nothing here may carry a secret either.
+  if (/googletagmanager|gtag\(|google-analytics/.test(src)) {
+    E.push('admin.html: analytics on a page full of customer addresses');
+  }
+  if (/service_role|sb_secret_/.test(src)) E.push('admin.html: a secret key is in the markup');
+
+  ['admGate', 'admTabs', 'admWho', 'admSignOut', 'admDrawer', 'admDrawerBody',
+   'admDrawerTitle', 'admScrim', 'admClose'].forEach((id) => {
+    if (src.indexOf('id="' + id + '"') === -1) E.push('admin.html: missing #' + id);
+  });
+  ['overview', 'accounts', 'billing', 'system'].forEach((t) => {
+    if (src.indexOf('data-tab="' + t + '"') === -1) E.push('admin.html: no ' + t + ' tab');
+    if (src.indexOf('id="panel-' + t + '"') === -1) E.push('admin.html: no #panel-' + t);
+  });
+}
+
+// ── 2. The behaviour ─────────────────────────────────────
+async function run() {
+  let src = '';
+  try {
+    src = await (await fetch('../admin.html')).text();
+  } catch (e) {
+    E.push('could not read admin.html: ' + e.message);
+    return done();
+  }
+  checkSource(src);
+
+  // Mount the real markup rather than a copy of it.
+  const doc = new DOMParser().parseFromString(src, 'text/html');
+  doc.querySelectorAll('script').forEach((s) => s.remove());
+  document.body.className = doc.body.className;
+  $('#stage').innerHTML = doc.body.innerHTML;
+  if (!$('#admTabs')) { E.push('the fetched markup has no tab bar'); return done(); }
+
+  // ── Case A: not signed in ──
+  await loadAdminJs();
+  await settle();
+  if (window.__wentTo !== 'signin.html?next=admin.html') {
+    E.push('a visitor who is not signed in was not sent to sign in, got: ' + window.__wentTo);
+  }
+  if (CALLS.length) E.push('asked the server for admin data with no session: ' + CALLS.join(', '));
+  if (!$('#admTabs').hidden) E.push('tabs shown before the account was checked');
+
+  // ── Case B: signed in, not an admin ──
+  CALLS = [];
+  window.__wentTo = null;
+  ST = {ready: true, signedIn: true, isAdmin: false, userId: 'u-nobody', email: 'nobody@example.com'};
+  window.ADMIN.start(ST);
+  await settle();
+  if (!$('#admTabs').hidden) E.push('a non-admin was shown the tabs');
+  if (!/Not an administrator/i.test(text('#admGate'))) E.push('a non-admin was not told why the panel is empty');
+  if (CALLS.length) E.push('a non-admin triggered admin calls: ' + CALLS.join(', '));
+  // innerHTML, not innerText: a hidden element reports no text whatever it
+  // contains, so innerText here would pass even with the table in place.
+  if ($('#panel-accounts').innerHTML.trim()) E.push('the account table rendered for a non-admin');
+
+  // ── Case C: an admin ──
+  CALLS = [];
+  ST = {ready: true, signedIn: true, isAdmin: true, userId: USERS[0].id, email: USERS[0].email};
+  window.ADMIN.start(ST);
+  await settle(60);
+
+  if ($('#admTabs').hidden) E.push('an admin was not shown the tabs');
+  if (CALLS.indexOf('stats') === -1) E.push('the figures were never fetched');
+  if (CALLS.indexOf('users') === -1) E.push('the accounts were never fetched');
+  if (text('#admWho').indexOf(USERS[0].email) === -1) E.push('the bar does not say who is signed in');
+
+  // Overview: the numbers are the ones the server sent, not recomputed.
+  const ov = text('#panel-overview');
+  if (ov.indexOf('Accounts') === -1) E.push('overview has no account tile');
+  [['profiles', STATS.profiles], ['newLast7', STATS.newLast7], ['signatures', STATS.signatures],
+   ['onTrial', STATS.onTrial], ['granted', STATS.granted]].forEach((pair) => {
+    if (ov.indexOf(String(pair[1])) === -1) E.push('overview does not show ' + pair[0] + ' (' + pair[1] + ')');
+  });
+  if ($$('#panel-overview .adm-bar').length !== 30) {
+    E.push('the signup chart has ' + $$('#panel-overview .adm-bar').length + ' bars, expected 30');
+  }
+  if ($$('#panel-overview .adm-mix-seg').length !== 3) E.push('the plan mix is not drawn from all three plans');
+  // The auth/profile gap is a real fault and must be said out loud.
+  if (ov.indexOf('without a matching profile row') === -1) {
+    E.push('a users/profiles mismatch was not reported');
+  }
+
+  // ── The account table ──
+  click($('.adm-tab[data-tab="accounts"]'));
+  await settle();
+  if (bodyRows().length !== USERS.length) {
+    E.push('table shows ' + bodyRows().length + ' rows, expected ' + USERS.length);
+  }
+
+  // Standing, which the table, the filters and the export all read.
+  const st = window.ADMIN.standing;
+  if (st(byId(USERS[1].id)).key !== 'paid') E.push('a paid account is not classed paid');
+  if (st(byId(USERS[2].id)).key !== 'trial') E.push('an account inside its trial is not classed trial');
+  if (st(byId(USERS[3].id)).key !== 'expired') E.push('a lapsed account is not classed expired');
+  if (!st(byId(USERS[4].id)).comped) E.push('a granted account is not detected as comped');
+  if (st(byId(USERS[2].id)).comped) E.push('an ordinary 30-day trial was mistaken for a grant');
+
+  // The admin's own row must not offer a plan change: the function refuses it,
+  // and an interface that offers it teaches the wrong thing.
+  const selfRow = bodyRows()[0];
+  if (!selfRow || selfRow.className.indexOf('is-self') === -1) E.push('the signed-in admin’s own row is not marked');
+  if (selfRow && selfRow.querySelector('[data-act="setPlan"]')) {
+    E.push('the panel offers the admin a way to change their own plan');
+  }
+  bodyRows().forEach((tr) => {
+    tr.querySelectorAll('[data-act="setPlan"]').forEach((b) => {
+      if (b.dataset.user === ST.userId) E.push('a plan button targets the signed-in admin');
+    });
+  });
+
+  // Filters
+  click($('.adm-chip[data-filter="expired"]'));
+  await settle();
+  if (bodyRows().length !== 1) E.push('the expired filter shows ' + bodyRows().length + ' rows, expected 1');
+  click($('.adm-chip[data-filter="comp"]'));
+  await settle();
+  if (bodyRows().length !== 1) E.push('the comped filter shows ' + bodyRows().length + ' rows, expected 1');
+  click($('.adm-chip[data-filter="paid"]'));
+  await settle();
+  if (bodyRows().length !== 2) E.push('the paid filter shows ' + bodyRows().length + ' rows, expected 2');
+  click($('.adm-chip[data-filter="all"]'));
+  await settle();
+
+  // Search filters what is loaded, and Enter re-asks the server.
+  const search = $('#admSearch');
+  if (!search) E.push('there is no search box');
+  else {
+    search.value = 'trialling';
+    search.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle();
+    if (bodyRows().length !== 1) E.push('searching an address shows ' + bodyRows().length + ' rows, expected 1');
+    window.__lastQuery = null;
+    $('#admSearch').value = 'trialling';
+    $('#admSearch').dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}));
+    await settle();
+    if (window.__lastQuery !== 'trialling') E.push('Enter in the search box did not ask the server, got: ' + window.__lastQuery);
+    $('#admSearch').value = '';
+    $('#admSearch').dispatchEvent(new Event('input', {bubbles: true}));
+    await settle();
+  }
+
+  // ── A plan change ──
+  const target = bodyRows().filter(function (tr) {
+    return tr.querySelector('[data-act="setPlan"][data-user="' + USERS[3].id + '"]');
+  })[0];
+  const orgBtn = target && target.querySelector('[data-act="setPlan"][data-plan="org"]');
+  if (!orgBtn) E.push('no plan control for the expired account');
+  else {
+    click(orgBtn);
+    await settle();
+    if (!window.__setPlan || window.__setPlan[0] !== USERS[3].id || window.__setPlan[1] !== 'org') {
+      E.push('the plan change sent ' + JSON.stringify(window.__setPlan));
+    }
+    if (window.ADMIN.state.users.filter((u) => u.id === USERS[3].id)[0].plan !== 'org') {
+      E.push('the row was not updated from what the server returned');
+    }
+    // The figures were counted from the old rows, so they must be refetched
+    // rather than silently left as they were.
+    if (window.ADMIN.state.stats !== null) E.push('the overview figures were kept after a write');
+  }
+
+  // ── The drawer, and a grant ──
+  click($('[data-act="detail"][data-user="' + USERS[4].id + '"]'));
+  await settle();
+  if (!$('#admDrawer').classList.contains('is-open')) E.push('the details drawer did not open');
+  if (CALLS.indexOf('user:' + USERS[4].id) === -1) E.push('the drawer did not ask for that account');
+  // Matched case-insensitively: innerText applies text-transform, and the
+  // drawer's section headings are uppercased in CSS.
+  const drawer = text('#admDrawerBody');
+  if (!/signatures/i.test(drawer)) E.push('the drawer does not list what the account has built');
+  if (!/no subscription rows/i.test(drawer)) E.push('the drawer does not say billing is empty');
+  if (!/complimentary/i.test(drawer)) E.push('the drawer does not offer complimentary access');
+  const grant = $('#admDrawerBody [data-act="grant"][data-days="90"]');
+  if (!grant) E.push('there is no way to grant complimentary access');
+  else {
+    click(grant);
+    await settle();
+    if (!window.__setTrial || window.__setTrial[0] !== USERS[4].id || window.__setTrial[1] !== 90) {
+      E.push('the grant sent ' + JSON.stringify(window.__setTrial));
+    }
+  }
+  // Escape closes it.
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', bubbles: true}));
+  await settle();
+  if ($('#admDrawer').classList.contains('is-open')) E.push('Escape did not close the drawer');
+
+  // Own account: no grant buttons there either.
+  click($('[data-act="detail"][data-user="' + ST.userId + '"]'));
+  await settle();
+  if ($('#admDrawerBody [data-act="grant"]')) E.push('the panel offers the admin a grant for their own account');
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', bubbles: true}));
+  await settle();
+
+  // ── The export ──
+  const lines = window.ADMIN.csvLines();
+  if (lines.length !== USERS.length + 1) E.push('the CSV has ' + lines.length + ' lines, expected ' + (USERS.length + 1));
+  if (lines[0].indexOf('email,plan,standing') !== 0) E.push('the CSV header is not what the columns say');
+  const inject = lines.filter((l) => l.indexOf('cmd|calc') !== -1)[0];
+  if (!inject) E.push('the comped account is missing from the export');
+  else if (!/^"?'=/.test(inject)) E.push('an address starting with = was exported as a spreadsheet formula: ' + inject.slice(0, 40));
+
+  // ── Billing and System are honest about being empty ──
+  click($('.adm-tab[data-tab="billing"]'));
+  await settle();
+  const bill = text('#panel-billing');
+  if (!/No payment gateway is connected/i.test(bill)) E.push('the billing tab does not say no gateway is connected');
+  if (!/subscriptions/i.test(bill)) E.push('the billing tab does not mention the subscriptions table');
+  // Nothing may present revenue: no gateway has ever charged anyone, so any
+  // figure would have been derived from plan names.
+  if (/MRR|monthly revenue|estimated revenue|revenue this/i.test(bill)) {
+    E.push('the billing tab shows a revenue figure, which cannot be known yet');
+  }
+
+  click($('.adm-tab[data-tab="system"]'));
+  await settle();
+  const sys = text('#panel-system');
+  if (sys.indexOf('admin-stats') === -1) E.push('the system tab does not name the function behind the panel');
+  if (!/is_admin/.test(sys)) E.push('the system tab does not say how admin rights are granted');
+  if (/sb_secret_|service_role key is/.test(sys)) E.push('the system tab printed something secret');
+
+  // ── An out-of-date function says so ──
+  click($('.adm-tab[data-tab="overview"]'));
+  await settle();
+  failNext = 'Unknown action.';
+  click($('[data-act="refreshStats"]'));
+  await settle(60);
+  if (!/older than this page/i.test(text('#panel-overview'))) {
+    E.push('an unknown-action error did not produce the redeploy warning');
+  }
+
+  // ── Sign out ──
+  click($('#admSignOut'));
+  await settle();
+  if (CALLS.indexOf('signOut') === -1) E.push('Sign out did not sign out');
+
+  done();
+}
+
+function done() {
+  $('#out').textContent = E.length ? E.join('\n') : 'ok';
+  document.title = E.length ? 'FAIL ' + E.length : 'PASS';
+}
+
+run();
+</script>
+</body>
+</html>
