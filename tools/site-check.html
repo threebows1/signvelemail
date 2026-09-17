@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>site</title>
+  <style>#out{font:12px monospace;white-space:pre-wrap;padding:10px}</style>
+</head>
+<body>
+<!--
+  Sign Vel — every page, loaded for real
+
+  Run it:  powershell -File tools\run-check.ps1 site-check.html 40000
+
+  The other harnesses each drive one thing deeply. This one is shallow and
+  wide: it loads every page in turn and asks the questions that go wrong
+  quietly between releases.
+
+    * Did every image arrive? A broken <img> is invisible in the source and
+      obvious to a visitor. naturalWidth is the only honest answer — a 404
+      still leaves the element in the DOM.
+
+    * Did every stylesheet load? A renamed or missing file leaves the page
+      readable but unstyled, and document.styleSheets is where that shows.
+
+    * Did the page's own script run? Each marketing page sets its copyright
+      year from script. If the year is still the literal in the markup,
+      something above it threw.
+
+    * Does every internal link point at a file that exists?
+
+  editor.html and admin.html are deliberately not here: both send a visitor
+  without a session to signin.html, so an iframe of either ends up somewhere
+  else mid-assertion. gate-check.html, editor-checks.html and admin-check.html
+  cover them against a stubbed Cloud instead.
+
+  Network images (the stock portraits and banners on the marketing pages) are
+  real requests, so the per-page wait is generous and polls rather than
+  guessing once.
+-->
+  <iframe id="f" style="width:1200px;height:900px;border:1px solid #ddd"></iframe>
+  <pre id="out"></pre>
+
+<script>
+const E = [];
+const NOTES = [];
+window.onerror = (m, s, l, c) => { E.push('harness JS: ' + m + ' @' + l + ':' + c); };
+
+const PAGES = ['index.html', 'pricing.html', 'install.html', 'help.html',
+               'signin.html', 'signup.html', 'reset.html'];
+
+const frame = document.getElementById('f');
+
+function load(page) {
+  return new Promise((res) => {
+    let settled = false;
+    const finish = () => { if (!settled) { settled = true; res(frame.contentDocument); } };
+    frame.onload = () => setTimeout(finish, 120);
+    frame.src = '../' + page;
+    setTimeout(finish, 8000);      // never hang the whole run on one page
+  });
+}
+
+// Images are network requests. Poll until they are all resolved one way or
+// the other rather than judging them after a fixed wait.
+function settleImages(doc, budget) {
+  const deadline = Date.now() + budget;
+  return new Promise(function tick(res) {
+    const check = () => {
+      const imgs = [].slice.call(doc.querySelectorAll('img'));
+      const pending = imgs.filter((im) => !im.complete);
+      if (!pending.length || Date.now() > deadline) return res(imgs);
+      setTimeout(check, 100);
+    };
+    check();
+  });
+}
+
+async function checkPage(page) {
+  const doc = await load(page);
+  if (!doc) { E.push(page + ': never loaded'); return; }
+  const win = frame.contentWindow;
+
+  // ── Images ──
+  const imgs = await settleImages(doc, 6000);
+  imgs.forEach((im) => {
+    const where = (im.getAttribute('alt') || im.getAttribute('src') || '').slice(0, 48);
+    if (!im.complete) E.push(page + ': image never finished loading — ' + where);
+    else if (!im.naturalWidth) E.push(page + ': broken image — ' + where);
+  });
+
+  // Background images set in CSS are invisible to the DOM, so they are
+  // fetched directly instead of being assumed.
+  const bgUrls = [];
+  [].slice.call(doc.querySelectorAll('.mast-face, .client-tile, .hero-face, [class*="face"]')).forEach((el) => {
+    const bg = win.getComputedStyle(el).backgroundImage || '';
+    const m = bg.match(/url\("?([^")]+)"?\)/);
+    if (m && /^https?:/.test(m[1]) && bgUrls.indexOf(m[1]) === -1) bgUrls.push(m[1]);
+  });
+  for (const u of bgUrls) {
+    const ok = await new Promise((res) => {
+      const probe = new Image();
+      probe.onload = () => res(true);
+      probe.onerror = () => res(false);
+      probe.src = u;
+      setTimeout(() => res(false), 5000);
+    });
+    if (!ok) E.push(page + ': background image did not load — ' + u.slice(0, 60));
+  }
+  if (bgUrls.length) NOTES.push(page + ': ' + bgUrls.length + ' CSS background image(s) checked');
+
+  // ── Stylesheets ──
+  const links = [].slice.call(doc.querySelectorAll('link[rel="stylesheet"]'));
+  const sheets = [].slice.call(doc.styleSheets).map((s) => s.href);
+  links.forEach((l) => {
+    // Google Fonts is a cross-origin sheet; it still appears in styleSheets
+    // when it loads, which is what is being asserted.
+    if (sheets.indexOf(l.href) === -1) E.push(page + ': stylesheet did not load — ' + l.getAttribute('href'));
+  });
+  if (!links.length) E.push(page + ': loads no stylesheet at all');
+
+  // ── The page's own script ──
+  const year = doc.querySelector('.footer-year');
+  if (year && year.textContent.trim() !== String(new Date().getFullYear())) {
+    E.push(page + ': the copyright year was not set by script (shows "' + year.textContent.trim() + '")');
+  }
+
+  // ── Structure ──
+  // index.html has its own stylesheet and its own names for things — .logo
+  // there, .brand on every page that loads site.css. Either counts.
+  if (!doc.querySelector('.brand, .logo')) E.push(page + ': no brand mark');
+  if (!doc.title || !/Sign Vel/.test(doc.title)) E.push(page + ': title does not name Sign Vel — "' + doc.title + '"');
+  if (!doc.querySelector('meta[name="viewport"]')) E.push(page + ': no viewport meta, so it will not work on a phone');
+
+  // Nothing may scroll sideways at desktop width.
+  const over = doc.documentElement.scrollWidth - doc.documentElement.clientWidth;
+  if (over > 1) E.push(page + ': scrolls sideways by ' + over + 'px at 1200px');
+
+  // ── Internal links ──
+  const hrefs = [];
+  [].slice.call(doc.querySelectorAll('a[href]')).forEach((a) => {
+    const raw = a.getAttribute('href');
+    if (!raw || /^(https?:|mailto:|tel:|#)/.test(raw)) return;
+    const file = raw.split('#')[0].split('?')[0].replace(/^\//, '');
+    if (file && hrefs.indexOf(file) === -1) hrefs.push(file);
+  });
+  for (const file of hrefs) {
+    try {
+      const r = await fetch('../' + file);
+      const body = await r.text();
+      if (!body.length) E.push(page + ': link to ' + file + ' leads to nothing');
+    } catch (e) {
+      E.push(page + ': broken link — ' + file);
+    }
+  }
+
+  // An anchor that only says "#" goes nowhere. Reported rather than failed:
+  // the signature previews on the home page contain one on purpose, as part
+  // of the sample signature being shown off.
+  const dead = [].slice.call(doc.querySelectorAll('a[href="#"]')).length;
+  if (dead) NOTES.push(page + ': ' + dead + ' placeholder link(s) (href="#")');
+
+  // Fragment links must have something to land on.
+  [].slice.call(doc.querySelectorAll('a[href^="#"]')).forEach((a) => {
+    const id = a.getAttribute('href').slice(1);
+    if (id && !doc.getElementById(id)) E.push(page + ': #' + id + ' is linked but no element has that id');
+  });
+
+  NOTES.push(page + ': ' + imgs.length + ' image(s), ' + links.length + ' stylesheet(s), ' + hrefs.length + ' internal link(s)');
+}
+
+async function run() {
+  for (const p of PAGES) {
+    try { await checkPage(p); } catch (e) { E.push(p + ': check threw — ' + e.message); }
+  }
+  document.getElementById('out').textContent =
+    (E.length ? E.join('\n') + '\n\n' : 'ok\n\n') + NOTES.join('\n');
+  document.title = E.length ? 'FAIL ' + E.length : 'PASS';
+}
+
+run();
+</script>
+</body>
+</html>

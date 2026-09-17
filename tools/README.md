@@ -106,6 +106,26 @@ Flips the toggle in a frame and checks the figures, not the classes. The yearly
 column is asserted as arithmetic — monthly × 12 × 0.75 — so editing a monthly
 price without editing its yearly twin fails here rather than on the page.
 
+### `site-check.html` — every page, shallow and wide
+The other harnesses drive one thing deeply. This one loads each page in turn
+and asks what goes wrong quietly between releases: did every image arrive
+(`naturalWidth`, because a 404 still leaves the element in the DOM), did every
+stylesheet load, did the page's own script run (the copyright year is the
+tell), does every internal link point at a file that exists, does every
+fragment link have something to land on, and does anything scroll sideways.
+
+CSS background images are fetched separately — they are invisible to the DOM,
+so an unreachable one would otherwise pass.
+
+`editor.html` and `admin.html` are deliberately excluded: both send a visitor
+without a session to `signin.html`, so an iframe of either ends up somewhere
+else mid-assertion. `gate-check`, `editor-checks` and `admin-check` cover them
+against a stubbed Cloud instead.
+
+```powershell
+powershell -File tools/run-check.ps1 site-check.html 90000
+```
+
 ### `admin-check.html` — the admin panel
 Two halves, like `auth-pages-check.html`: the source of `admin.html` (script
 chain, `noindex`, and the deliberate absence of analytics on a page carrying
