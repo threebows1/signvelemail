@@ -469,13 +469,65 @@ select.input{cursor:pointer;appearance:auto}
 .color-hex{
   font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--muted);
 }
-.color-input{
+/* ── Colour picker ──
+   The swatch is a button now, not <input type="color">: that opened the
+   operating system's own dialog — a different window on every platform, and
+   on Windows a modal that covers the signature being coloured. */
+.color-swatch{
   width:26px;height:26px;padding:0;border:1px solid var(--border);
-  border-radius:50%;background:none;cursor:pointer;overflow:hidden;flex-shrink:0;
+  border-radius:50%;cursor:pointer;flex-shrink:0;transition:box-shadow .15s;
 }
-.color-input::-webkit-color-swatch-wrapper{padding:0}
-.color-input::-webkit-color-swatch{border:none;border-radius:50%}
-.color-input::-moz-color-swatch{border:none;border-radius:50%}
+.color-swatch:hover{box-shadow:0 0 0 3px var(--accent-light)}
+.color-swatch.open{box-shadow:0 0 0 3px var(--accent-light);border-color:var(--accent)}
+.color-swatch:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.picker{
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px;margin:2px 0 10px;background:var(--white);
+  box-shadow:0 8px 24px rgba(20,18,31,.08);
+}
+.picker-top{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.picker-hex{
+  flex:1;min-width:0;font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:7px 9px;background:var(--white);
+}
+.picker-hex:focus{outline:none;border-color:var(--accent)}
+.picker-tag{
+  font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--muted);
+  border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 8px;
+}
+
+/* Two gradients over the pure hue: white across, black down. The same
+   construction every picker uses, and it needs no canvas to draw or read. */
+.picker-sv{
+  position:relative;height:108px;border-radius:var(--radius-sm);
+  overflow:hidden;cursor:crosshair;touch-action:none;
+}
+.picker-sv-white,.picker-sv-black{position:absolute;inset:0;display:block}
+.picker-sv-white{background:linear-gradient(to right,#fff,rgba(255,255,255,0))}
+.picker-sv-black{background:linear-gradient(to top,#000,rgba(0,0,0,0))}
+.picker-dot{
+  position:absolute;width:12px;height:12px;border-radius:50%;
+  border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35);
+  transform:translate(-50%,-50%);pointer-events:none;
+}
+
+.picker-hue{
+  -webkit-appearance:none;appearance:none;width:100%;height:12px;margin:12px 0 2px;
+  border-radius:6px;cursor:pointer;
+  background:linear-gradient(to right,#f00 0%,#ff0 17%,#0f0 33%,#0ff 50%,#00f 67%,#f0f 83%,#f00 100%);
+}
+.picker-hue::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:#fff;border:1px solid rgba(0,0,0,.25);box-shadow:0 1px 3px rgba(0,0,0,.3);cursor:pointer;
+}
+.picker-hue::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;background:#fff;
+  border:1px solid rgba(0,0,0,.25);box-shadow:0 1px 3px rgba(0,0,0,.3);cursor:pointer;
+}
+.picker-hue:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .opt-group{
   font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
   color:var(--muted);margin:18px 0 8px;padding-top:14px;border-top:1px solid var(--border);

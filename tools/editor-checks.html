@@ -74,8 +74,12 @@
 
     // Design section: the new controls must be present and must bind.
     click(document.querySelector('#rail [data-goto="1"]'));
-    ['headingFont','nameScale','nameTracking','accent2Color'].forEach(k => {
+    ['headingFont','nameScale','nameTracking'].forEach(k => {
       if (!$('#panel [data-bind="' + k + '"]')) E.push('missing control: ' + k);
+    });
+    // Colours are swatches that open the picker, not bound inputs.
+    ['accentColor','accent2Color'].forEach(k => {
+      if (!$('#panel .color-swatch[data-key="' + k + '"]')) E.push('missing colour swatch: ' + k);
     });
     ['roleStyle','contactColumns'].forEach(a => {
       if (!$('#panel [data-action="' + a + '"]')) E.push('missing toggle: ' + a);
@@ -163,6 +167,68 @@
       S.photoAlign = keepAlign;
       S.template = keepTemplate;
       window.SIGNVEL_SHOW_IMAGES = keepShow;
+      click(document.querySelector('#rail [data-goto="2"]'));
+    })();
+
+    (function () {
+      // The colour picker. It replaced <input type="color">, which handed the
+      // choice to the operating system's own dialog — a different window on
+      // every platform, and on Windows one that covers the signature being
+      // coloured. Everything below is about it behaving like a control rather
+      // than like a dialog.
+      const keepAccent = S.accentColor;
+      click(document.querySelector('#rail [data-goto="1"]'));
+
+      const swatch = $('#panel .color-swatch[data-key="accentColor"]');
+      if (!swatch) E.push('no colour swatch to open the picker with');
+      if ($('#panel input[type="color"]')) E.push('the operating system colour dialog is still wired up');
+      if ($('#panel .picker')) E.push('the picker is open before anything was clicked');
+
+      click(swatch);
+      const picker = $('#panel .picker[data-picker="accentColor"]');
+      if (!picker) { E.push('clicking the swatch did not open the picker'); }
+      else {
+        ['.picker-hex', '.picker-sv', '.picker-dot', '.picker-hue'].forEach(sel => {
+          if (!picker.querySelector(sel)) E.push('the picker has no ' + sel);
+        });
+
+        // Typing a hex has to reach the signature.
+        const field = picker.querySelector('.picker-hex');
+        field.value = '#C41E3A';
+        field.dispatchEvent(new Event('input', {bubbles: true}));
+        if (S.accentColor.toUpperCase() !== '#C41E3A') E.push('a typed hex did not apply, got ' + S.accentColor);
+        if (generateSignaturePreview().indexOf('#C41E3A') === -1) E.push('a typed hex never reached the signature');
+
+        // Half-typed input must not be applied — it would fight the typing.
+        field.value = '#C4';
+        field.dispatchEvent(new Event('input', {bubbles: true}));
+        if (S.accentColor.toUpperCase() !== '#C41E3A') E.push('an incomplete hex was applied while it was being typed');
+
+        // The hue bar moves the colour, and keeps it visible: a hue change on
+        // a black or grey value would otherwise do nothing at all.
+        const hue = picker.querySelector('.picker-hue');
+        S.accentColor = '#000000';
+        hue.value = '210';
+        hue.dispatchEvent(new Event('input', {bubbles: true}));
+        const after = hexToHsv(S.accentColor);
+        if (Math.abs(after.h - 210) > 2) E.push('the hue bar set ' + Math.round(after.h) + ' rather than 210');
+        if (after.v < 20 || after.s < 20) E.push('the hue bar left the colour invisible: ' + S.accentColor);
+
+        // Clicking away closes it, and the row goes back to being a row.
+        document.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
+        if ($('#panel .picker')) E.push('the picker stayed open after a click outside it');
+      }
+
+      // The colour maths has to round-trip, or dragging would drift the
+      // colour a little further every time it is read back and rewritten.
+      ['#5B2EFF', '#C9962B', '#FFFFFF', '#000000', '#1F5E4E'].forEach(hex => {
+        const hsv = hexToHsv(hex);
+        const back = hsvToHex(hsv.h, hsv.s, hsv.v);
+        if (back.toUpperCase() !== hex.toUpperCase()) E.push('colour round-trip lost ' + hex + ' — got ' + back);
+      });
+
+      setAccent(keepAccent);
+      // Back to Media, which is where the checks below expect to be.
       click(document.querySelector('#rail [data-goto="2"]'));
     })();
 

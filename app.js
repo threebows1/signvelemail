@@ -909,14 +909,119 @@ function sliderLabel(bind, v) {
 
 // A labelled row with a free colour picker on the right, matching the compact
 // "label left, control right" rows in the reference design.
+// ───────────── Colour picker ─────────────
+// The native <input type="color"> opened the operating system's colour dialog:
+// a different window on Windows, Mac and Linux, none of them shaped like this
+// product, and on Windows a modal that covers the signature you are choosing
+// the colour for. This is the picker drawn in the panel instead, so the
+// preview stays visible the whole time a colour is being chosen.
+//
+// Which row is open lives here rather than in S: it is a state of the
+// interface, not of the signature, and it must never be saved or synced.
+const PICKER = {key: null};
+
+function hexToRgb(hex) {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex || '').trim());
+  if (!m) return null;
+  let h = m[1];
+  if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+  const n = parseInt(h, 16);
+  return {r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255};
+}
+
+function rgbToHex(r, g, b) {
+  return '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+// Hue 0-360, saturation and value 0-100 — the axes the picker is drawn on.
+function hexToHsv(hex) {
+  const rgb = hexToRgb(hex) || {r: 0, g: 0, b: 0};
+  const r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+  let h = 0;
+  if (d) {
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  return {h, s: max ? (d / max) * 100 : 0, v: max * 100};
+}
+
+function hsvToHex(h, s, v) {
+  const S1 = s / 100, V = v / 100;
+  const c = V * S1, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = V - c;
+  const seg = Math.floor(((h % 360) + 360) % 360 / 60);
+  const rgb = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][seg];
+  return rgbToHex((rgb[0] + m) * 255, (rgb[1] + m) * 255, (rgb[2] + m) * 255);
+}
+
 function colorRow(label, key) {
-  return `<div class="opt-row">
+  const val = String(S[key] || '#000000').toUpperCase();
+  const open = PICKER.key === key;
+  let h = `<div class="opt-row">
     <span class="opt-label">${label}</span>
     <span class="opt-control">
-      <span class="color-hex">${esc(String(S[key]).toUpperCase())}</span>
-      <input type="color" class="color-input" value="${esc(S[key])}" data-bind="${key}" title="${label}">
+      <span class="color-hex">${esc(val)}</span>
+      <button type="button" class="color-swatch${open ? ' open' : ''}" style="background:${esc(val)}"
+        data-action="togglePicker" data-key="${esc(key)}" aria-expanded="${open}" title="${esc(label)}"></button>
     </span>
   </div>`;
+  if (open) h += pickerPanel(key, val);
+  return h;
+}
+
+// The saturation/value square is two gradients over the pure hue — white
+// across, black down — which is the same construction every picker uses and
+// needs no canvas to draw or read back.
+function pickerPanel(key, val) {
+  const hsv = hexToHsv(val);
+  return `<div class="picker" data-picker="${esc(key)}">
+    <div class="picker-top">
+      <input class="picker-hex" type="text" value="${esc(val)}" maxlength="7" spellcheck="false"
+        autocomplete="off" aria-label="Hex colour" data-action="pickerHex" data-key="${esc(key)}">
+      <span class="picker-tag">HEX</span>
+    </div>
+    <div class="picker-sv" data-action="pickerSV" data-key="${esc(key)}"
+      style="background-color:${hsvToHex(hsv.h, 100, 100)}">
+      <span class="picker-sv-white"></span>
+      <span class="picker-sv-black"></span>
+      <span class="picker-dot" style="left:${hsv.s}%;top:${100 - hsv.v}%;background:${esc(val)}"></span>
+    </div>
+    <input type="range" class="picker-hue" min="0" max="360" value="${Math.round(hsv.h)}"
+      aria-label="Hue" data-action="pickerHue" data-key="${esc(key)}">
+  </div>`;
+}
+
+// Applies a colour the same way the rest of the panel does, so the accent
+// keeps its side effects rather than being written past them.
+function applyColor(key, hex) {
+  if (key === 'accentColor') setAccent(hex);
+  else S[key] = hex;
+  renderStage();
+}
+
+// Live update without a re-render: rebuilding the panel on every pointermove
+// would drop the pointer out of the element being dragged, and re-rendering a
+// text field under a cursor loses the caret.
+function paintPicker(key, hex) {
+  const wrap = document.querySelector(`.picker[data-picker="${key}"]`);
+  const row = wrap && wrap.previousElementSibling;
+  if (row) {
+    const hexLabel = row.querySelector('.color-hex');
+    const swatch = row.querySelector('.color-swatch');
+    if (hexLabel) hexLabel.textContent = hex;
+    if (swatch) swatch.style.background = hex;
+  }
+  if (!wrap) return;
+  const hsv = hexToHsv(hex);
+  const sv = wrap.querySelector('.picker-sv');
+  const dot = wrap.querySelector('.picker-dot');
+  const field = wrap.querySelector('.picker-hex');
+  if (sv) sv.style.backgroundColor = hsvToHex(hsv.h, 100, 100);
+  if (dot) { dot.style.left = hsv.s + '%'; dot.style.top = (100 - hsv.v) + '%'; dot.style.background = hex; }
+  if (field && document.activeElement !== field) field.value = hex;
 }
 
 // ── Shared image uploader (drop zone + preview) ──
@@ -2530,6 +2635,9 @@ function setupEvents() {
           S.headshotName = togAction.dataset.label + ' (sample)';
           S.uploadError = ''; S.storageError = '';
           break;
+        case 'togglePicker':
+          PICKER.key = PICKER.key === togAction.dataset.key ? null : togAction.dataset.key;
+          break;
         case 'useSample': {
           const kind = togAction.dataset.kind;
           if (kind === 'logo') { S.logoUrl = DEFAULT_LOGO_URL; S.logoName = 'Sample logo'; }
@@ -2628,6 +2736,35 @@ function setupEvents() {
       dropStockNote();
     }
 
+    // ── Colour picker ──
+    // Both of these write the colour and repaint the picker by hand rather
+    // than re-rendering the panel: a full render would replace the slider
+    // mid-drag and the field mid-keystroke.
+    if (e.target.dataset.action === 'pickerHue') {
+      const key = e.target.dataset.key;
+      const cur = hexToHsv(S[key] || '#000000');
+      // A colour with no saturation has no hue to move, and one at zero value
+      // is black whatever the hue — so dragging the bar would do nothing at
+      // all. Lift both to something visible, which is what the bar implies.
+      const hex = hsvToHex(Number(e.target.value), cur.s || 85, cur.v || 90);
+      applyColor(key, hex);
+      paintPicker(key, hex);
+      dropStockNote();
+    }
+    if (e.target.dataset.action === 'pickerHex') {
+      const key = e.target.dataset.key;
+      const typed = e.target.value.trim();
+      // Only once it is a colour. Repainting on every keystroke would fight
+      // whoever is halfway through typing one.
+      if (/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.test(typed)) {
+        const rgb = hexToRgb(typed);
+        const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+        applyColor(key, hex);
+        paintPicker(key, hex);
+        dropStockNote();
+      }
+    }
+
     // Contact field editing
     if (e.target.dataset.action === 'editContact') {
       const i = parseInt(e.target.dataset.idx);
@@ -2666,6 +2803,53 @@ function setupEvents() {
       S[bind] = e.target.value;
       renderStage();
     }
+  });
+
+  // ── Dragging in the saturation square ──
+  // Pointer events rather than mouse: the panel is used on tablets, and
+  // setPointerCapture is what keeps a drag alive when the finger or cursor
+  // leaves the square, which is exactly what happens when you push into a
+  // corner to reach pure white or full saturation.
+  $panel.addEventListener('pointerdown', e => {
+    const sv = e.target.closest('.picker-sv');
+    if (!sv) return;
+    e.preventDefault();
+    const key = sv.dataset.key;
+    const move = (ev) => {
+      const r = sv.getBoundingClientRect();
+      const s = Math.max(0, Math.min(100, ((ev.clientX - r.left) / r.width) * 100));
+      const v = Math.max(0, Math.min(100, 100 - ((ev.clientY - r.top) / r.height) * 100));
+      const hue = hexToHsv(S[key] || '#000000').h;
+      const hex = hsvToHex(hue, s, v);
+      applyColor(key, hex);
+      paintPicker(key, hex);
+    };
+    const up = () => {
+      sv.removeEventListener('pointermove', move);
+      sv.removeEventListener('pointerup', up);
+      sv.removeEventListener('pointercancel', up);
+      dropStockNote();
+      // Re-rendered once at the end so everything the colour touches —
+      // presets, swatches elsewhere — catches up.
+      renderPanel();
+    };
+    sv.setPointerCapture(e.pointerId);
+    sv.addEventListener('pointermove', move);
+    sv.addEventListener('pointerup', up);
+    sv.addEventListener('pointercancel', up);
+    move(e);
+  });
+
+  // A click anywhere else closes the open picker. Inside it, and on the
+  // swatch that opens it, are the two exceptions.
+  document.addEventListener('pointerdown', e => {
+    if (!PICKER.key) return;
+    // A pointer event does not always land on an element — document itself has
+    // no closest() — and one that lands nowhere is still a click outside.
+    const t = e.target;
+    if (t && t.closest && (t.closest('.picker') || t.closest('.color-swatch'))) return;
+    PICKER.key = null;
+    renderPanel();
   });
 
   // Drag & drop onto either uploader
