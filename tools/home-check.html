@@ -184,6 +184,65 @@ document.getElementById('f').addEventListener('load', function () {
     document.body.appendChild(probe);
   });
 
+  // ── Selected text ──
+  // The highlight sits over four different grounds on this page: white, the
+  // purple hero, the near-black layout band and the tinted panels. A
+  // translucent highlight takes the colour of whatever is behind it, so a
+  // purple wash with purple text vanished on the hero it sat on. Read off the
+  // stylesheet, since getComputedStyle cannot be asked about ::selection.
+  (function () {
+    const lum = (r, g, b) => {
+      const f = [r, g, b].map(v => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * f[0] + 0.7152 * f[1] + 0.0722 * f[2];
+    };
+    // A rule may name a custom property rather than a colour, and
+    // rule.style.color hands back the var() literally. Resolved against the
+    // framed page's own :root, or the check reports that it cannot read the
+    // colours when the real answer is that they do not contrast.
+    const resolve = (v) => {
+      const m = /var\((--[a-z0-9-]+)\)/i.exec(String(v));
+      if (!m) return v;
+      return (d.defaultView.getComputedStyle(d.documentElement).getPropertyValue(m[1]) || '').trim() || v;
+    };
+    const parse = (raw) => {
+      const v = resolve(raw);
+      const hex = /^#([0-9a-f]{6})$/i.exec(String(v).trim());
+      if (hex) {
+        const n = parseInt(hex[1], 16);
+        return {r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, a: 1};
+      }
+      const m = /rgba?\(([^)]+)\)/i.exec(String(v));
+      if (!m) return null;
+      const p = m[1].split(',').map(s => parseFloat(s));
+      return {r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1};
+    };
+
+    // The framed page's stylesheets, not this harness's — home.css is loaded
+    // in there, and reading them from here finds nothing.
+    let found = 0;
+    [].slice.call(d.styleSheets).forEach(sheet => {
+      let rules;
+      try { rules = sheet.cssRules; } catch (e) { return; }   // cross-origin
+      [].slice.call(rules || []).forEach(rule => {
+        if (!rule.selectorText || !/::(-moz-)?selection/.test(rule.selectorText)) return;
+        found++;
+        const bg = parse(rule.style.backgroundColor || rule.style.background);
+        const fg = parse(rule.style.color);
+        if (!bg || !fg) { E.push('selection: could not read its colours'); return; }
+        // Opaque, or the ground shows through and the contrast below is a
+        // guess rather than a measurement.
+        if (bg.a < 1) E.push('selection: the highlight is translucent, so it changes with the ground behind it');
+        const ratio = (Math.max(lum(bg.r, bg.g, bg.b), lum(fg.r, fg.g, fg.b)) + 0.05) /
+                      (Math.min(lum(bg.r, bg.g, bg.b), lum(fg.r, fg.g, fg.b)) + 0.05);
+        if (ratio < 4.5) E.push('selection: text on the highlight is ' + ratio.toFixed(1) + ':1, which is not readable');
+      });
+    });
+    if (!found) E.push('selection: the home page sets no selection colour at all');
+  })();
+
   let done = 0;
   function finish() {
     // Both the copy-button timeout and the three width probes have to land.

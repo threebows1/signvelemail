@@ -54,7 +54,14 @@ body{margin:0}
   font-size:16px;line-height:1.6;
   -webkit-font-smoothing:antialiased;
 }
-.page ::selection{background:rgba(91,46,255,.2);color:var(--primary)}
+/* Selection has to read on every ground this page has: white, the purple
+   hero, the near-black layout band and the tinted panels. The old rule was a
+   20% purple wash with purple text — invisible on the hero it sat on, and
+   barely there anywhere else, because a translucent highlight takes the
+   colour of whatever is behind it. Opaque mint with near-black text is the
+   one pair that holds on all four. */
+.page ::selection{background:#00E5A0;color:#0D0B1A}
+.page ::-moz-selection{background:#00E5A0;color:#0D0B1A}
 .shell{max-width:80rem;margin:0 auto;padding-left:24px;padding-right:24px}
 
 /* ── Mono eyebrow: "(01) Email signatures, designed" ── */
