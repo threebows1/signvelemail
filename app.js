@@ -453,11 +453,11 @@ const S = {
   bgColor: '#14121F',
   bgPadding: 24,
   bgRadius: 12,
-  // Served from alriyady.ae, so it is already a public URL — the one form that
-  // survives being emailed. Kept in sync with DEFAULT_LOGO_URL, which is how the
-  // generator knows this is still the stock logo and not one the user chose.
+  // A public https URL, which is the one form that survives being emailed.
+  // Kept in sync with DEFAULT_LOGO_URL, which is how the renderer tells the
+  // sample apart from a logo somebody chose.
   logoUrl: DEFAULT_LOGO_URL,
-  logoName: 'Al Riyady Group',
+  logoName: 'Sample logo',
   logoHeight: 40,
 
   // A sample portrait ships by default so the photo layouts look like the
@@ -946,6 +946,17 @@ function renderUploader(kind, hint) {
   }
   if (S.uploadError) h += `<div class="uploader-error">${esc(S.uploadError)}</div>`;
   if (S.storageError) h += `<div class="uploader-error">${esc(S.storageError)}</div>`;
+
+  // A way back to the sample. Without this, removing an image leaves an empty
+  // slot with nothing to undo it: the sample is only a default, so it applies
+  // to an account that has never chosen, and never again after that. Anyone
+  // who cleared a logo in an earlier version was stuck with a blank space and
+  // no control that said otherwise.
+  const sample = kind === 'logo' ? DEFAULT_LOGO_URL : DEFAULT_HEADSHOT_URL;
+  if (url !== sample) {
+    h += `<div class="add-chips"><button class="chip accent" data-action="useSample" data-kind="${kind}">
+      Use the sample ${kind === 'logo' ? 'logo' : 'portrait'}</button></div>`;
+  }
   // No paste-a-URL field. Upload is the only way in, which is the point: an
   // uploaded file goes to the gated bucket and comes back as a cdn.signvel.com
   // address that stops being served when a plan lapses. A pasted URL is
@@ -2352,6 +2363,13 @@ function setupEvents() {
           S.headshotName = togAction.dataset.label + ' (sample)';
           S.uploadError = ''; S.storageError = '';
           break;
+        case 'useSample': {
+          const kind = togAction.dataset.kind;
+          if (kind === 'logo') { S.logoUrl = DEFAULT_LOGO_URL; S.logoName = 'Sample logo'; }
+          else { S.headshotUrl = DEFAULT_HEADSHOT_URL; S.headshotName = 'Sample portrait'; }
+          S.uploadError = ''; S.storageError = '';
+          break;
+        }
         case 'sampleBanner': S.bannerImage = togAction.dataset.url; break;
         case 'bgColorPreset': S.bgColor = togAction.dataset.color; break;
         case 'toggleBanner': S.bannerEnabled = !S.bannerEnabled; break;

@@ -118,6 +118,37 @@
     if (!$("#panel [data-action=\"headshotUpload\"]")) E.push("headshot upload is missing");
     if (!$("#panel [data-action=\"headshotShape\"]")) E.push("headshot shape control is missing");
 
+    (function () {
+      // Removing an image used to be one-way: the sample is a default, so it
+      // applies to an account that has never chosen and never again after
+      // that. Anyone who cleared a logo in an earlier version was left with a
+      // blank slot and no control that would bring it back.
+      const keepLogo = S.logoUrl, keepShot = S.headshotUrl;
+
+      S.logoUrl = null; S.headshotUrl = null;
+      click(document.querySelector('#rail [data-goto="2"]'));
+      const logoChip = $('#panel [data-action="useSample"][data-kind="logo"]');
+      const shotChip = $('#panel [data-action="useSample"][data-kind="headshot"]');
+      if (!logoChip) E.push('no way back to the sample logo once it is removed');
+      if (!shotChip) E.push('no way back to the sample portrait once it is removed');
+      if (logoChip) {
+        click(logoChip);
+        if (S.logoUrl !== DEFAULT_LOGO_URL) E.push('the sample logo control did not restore it');
+      }
+      if ($('#panel [data-action="useSample"][data-kind="headshot"]')) {
+        click($('#panel [data-action="useSample"][data-kind="headshot"]'));
+        if (S.headshotUrl !== DEFAULT_HEADSHOT_URL) E.push('the sample portrait control did not restore it');
+      }
+      // And it stops offering what is already in use.
+      click(document.querySelector('#rail [data-goto="2"]'));
+      if ($('#panel [data-action="useSample"][data-kind="logo"]')) {
+        E.push('the sample logo is offered while it is already in use');
+      }
+
+      S.logoUrl = keepLogo; S.headshotUrl = keepShot;
+      click(document.querySelector('#rail [data-goto="2"]'));
+    })();
+
     // The default portrait is served from this site, not from a stock host —
     // the sample signature every visitor first sees should not depend on
     // somebody else's CDN, and it has to be an absolute URL because an
