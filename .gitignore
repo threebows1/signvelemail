@@ -11,3 +11,10 @@ _selftest.html
 # Supabase dashboard as an Edge Function environment variable.
 .env
 .env.*
+
+# Photographic originals for tools/make-headshot.ps1. The 23KB crop it
+# produces is committed; the 19MB source is not. Git history is forever, and
+# these are licensed stock files that belong wherever the licence lives —
+# not in a public repository.
+tools/*.jpg
+tools/*.jpeg
