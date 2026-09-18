@@ -1303,6 +1303,23 @@ function renderStage() {
 // ═══════════════════════════════════════
 // Relative luminance, so a dark background can flip the text to light without
 // the user having to notice and fix it themselves.
+// A solid colour some way between two others. Used for quiet text on a
+// coloured panel: rgba() would say the same thing more directly, but Word
+// does not parse it, so classic Outlook would drop the colour and fall back
+// to something of its own choosing on a dark ground.
+function mixHex(from, to, amount) {
+  const parse = (h) => {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '').trim());
+    if (!m) return null;
+    const n = parseInt(m[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+  const a = parse(from), b = parse(to);
+  if (!a || !b) return to;
+  const mix = a.map((v, i) => Math.round(v + (b[i] - v) * amount));
+  return '#' + mix.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
 function isDarkColor(hex) {
   const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
   if (!m) return false;
@@ -1391,8 +1408,22 @@ function buildSignatureBody() {
   // stretch to, or the table shrink-wraps its content and the design collapses.
   // A width set in the panel always wins.
   const templateWidth = {band:600, connect:600, spotlight:560, editorial:620, grid:620, accentbar:560,
-                         feature:620, colorblock:600, darkcard:600, labelled:560, inline:560};
-  const layoutW = S.panelWidth || templateWidth[S.template] || 0;
+                         feature:620, colorblock:600, darkcard:600, labelled:560, inline:560,
+                         // Corporate draws its own table rather than going
+                         // through outer(), and used to carry its own copy of
+                         // this number. Listed here so one rule governs them all.
+                         corporate:560};
+  // The background panel wraps the whole signature and adds its padding
+  // outside it, so a 600px layout in a panel padded 24px is 648px wide — wider
+  // than the layout was drawn for, wider than the preview column, and wider
+  // than the roughly 600px most mail clients give a message before they start
+  // cutting. Take the padding out of the layout instead of adding it on, so
+  // turning the panel on changes the colour behind a signature and not its
+  // size. Floored, so a heavy padding cannot squeeze the content to nothing.
+  const baseW = S.panelWidth || templateWidth[S.template] || 0;
+  const layoutW = baseW
+    ? Math.max(320, baseW - (S.bgEnabled ? S.bgPadding * 2 : 0))
+    : 0;
   const widthAttr = layoutW ? ` width="${layoutW}"` : '';
   const widthCss = layoutW ? `width:${layoutW}px;max-width:100%;` : '';
 
@@ -1439,7 +1470,14 @@ function buildSignatureBody() {
   const nameStyle = nameStyleAt(bs + 2);
   const titleStyle = `font-family:${ff};font-size:${fs};font-weight:${fw};color:${onDark ? '#B9B6C9' : (S.titleColor || '#666')};line-height:1.3;margin:0;`;
   const fieldStyle = `font-family:${ff};font-size:${bs - 1}px;font-weight:${fw};color:${tc};line-height:1.6;margin:0;text-decoration:none;`;
-  const mutedStyle = `font-family:${ff};font-size:${bs - 2}px;color:${onDark ? '#8F8CA3' : '#999'};line-height:1.4;`;
+  // Quiet text — the disclaimer, mostly. On a light ground a grey is right. On
+  // a coloured one it cannot be a fixed grey: #8F8CA3 was picked against a
+  // near-black panel and turns to mud on a saturated blue, which is what a
+  // disclaimer set in it looked like. Mixed most of the way to white from
+  // whatever the panel actually is, it stays quiet without going unreadable,
+  // on any colour anybody picks.
+  const mutedColor = onDark ? mixHex(S.bgColor, '#FFFFFF', 0.82) : '#999';
+  const mutedStyle = `font-family:${ff};font-size:${bs - 2}px;color:${mutedColor};line-height:1.4;`;
 
   // ── Role treatment ──
   // Four ways to draw the job title. A chip or pill needs a table cell to hold
@@ -2198,7 +2236,11 @@ function buildSignatureBody() {
     // Full-width accent rule, reused above and below the logo/contact band.
     const rule = hairline(ac, S.dividerWidth);
     const discStyle = `font-family:${ff};font-size:${Math.max(9, bs - 4)}px;color:${ac};line-height:1.5;margin:0;`;
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${S.panelWidth || 560}" style="width:${S.panelWidth || 560}px;max-width:100%;text-align:${al};"><tbody>
+    // Uses the shared width rather than its own copy of it, so the background
+    // panel takes its padding out of this layout too instead of adding 48px
+    // to it — this was the one place that still grew.
+    const corpW = layoutW || 560;
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${corpW}" style="width:${corpW}px;max-width:100%;text-align:${al};"><tbody>
       <tr><td style="padding-bottom:${sp};">
         <p style="${nameStyle}">${eName}</p>
         <p style="${titleStyle}">${esc(pTitle)}</p>

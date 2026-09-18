@@ -167,6 +167,93 @@
     })();
 
     (function () {
+      // A signature in a background panel must not grow by the panel's
+      // padding: it was clipped in the preview and would be cut by a mail
+      // client too, both of which give it roughly 600px and no more.
+      //
+      // Measured against the width the preview actually offers — the email
+      // mock is 680px wide with 20px of padding and a 1px border each side.
+      const AVAILABLE = 680 - 40 - 2;
+      const keep = {t: S.template, bg: S.bgEnabled, c: S.bgColor, p: S.bgPadding, w: S.panelWidth};
+      // Measured as rendered, not read off a width attribute: several layouts
+      // have no fixed outer width and inner tables carry widths of their own,
+      // so parsing the markup measures the wrong table.
+      const widest = (html) => {
+        const box = document.createElement('div');
+        box.style.cssText = 'position:absolute;left:-10000px;top:0;width:' + AVAILABLE + 'px';
+        box.className = 'signature-container';
+        box.innerHTML = html;
+        document.body.appendChild(box);
+        const el = box.firstElementChild;
+        const w = el ? Math.max(el.scrollWidth, el.getBoundingClientRect().width) : 0;
+        box.remove();
+        return Math.round(w);
+      };
+
+      S.panelWidth = 0;
+      S.bgColor = '#1B5FE0';
+      S.bgPadding = 24;
+
+      // Whether a layout is drawn to a fixed width, read off the markup rather
+      // than guessed: those are the ones the panel used to widen past what
+      // they were drawn for. A content-sized layout has no such width to
+      // exceed, and grows by the padding legitimately.
+      const isFixed = (html) => {
+        const box = document.createElement('div');
+        box.innerHTML = html;
+        const el = box.firstElementChild;
+        return !!(el && el.getAttribute('width'));
+      };
+
+      Object.keys(templateThemes).forEach(id => {
+        S.template = id;
+        S.bgEnabled = false;
+        const plainHtml = generateSignaturePreview();
+        const plain = widest(plainHtml);
+        const fixed = isFixed(plainHtml);
+        S.bgEnabled = true;
+        const panelled = widest(generateSignaturePreview());
+        if (!fixed) {
+          if (panelled > AVAILABLE) E.push(id + ': ' + panelled + 'px overflows the ' + AVAILABLE + 'px preview column');
+          return;
+        }
+        // A few pixels of give: the panel's own border-radius and the way a
+        // table rounds its columns can land a pixel either side.
+        if (panelled > plain + 2) {
+          E.push(id + ': the background panel makes it ' + panelled + 'px against ' + plain + 'px without');
+        }
+        if (panelled > AVAILABLE) {
+          E.push(id + ': ' + panelled + 'px overflows the ' + AVAILABLE + 'px preview column');
+        }
+      });
+
+      // Quiet text has to stay readable on a coloured panel. A fixed grey was
+      // picked against near-black and turns to mud on a saturated blue.
+      S.template = 'darkcard';
+      S.bgEnabled = true;
+      S.disclaimerEnabled = true;
+      S.disclaimerText = 'Confidential.';
+      const onBlue = generateSignaturePreview();
+      const disc = /<p style="font-family:[^"]*?color:(#[0-9A-Fa-f]{6});[^"]*">Confidential\./.exec(onBlue);
+      if (!disc) E.push('could not find the disclaimer to check its colour');
+      else {
+        if (/^#8F8CA3$/i.test(disc[1])) E.push('the disclaimer is still the fixed grey on a coloured panel');
+        // Legible means clearly lighter than the panel it sits on.
+        const lum = (h) => {
+          const n = parseInt(h.slice(1), 16);
+          return (0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
+        };
+        if (lum(disc[1]) - lum(S.bgColor) < 0.35) {
+          E.push('the disclaimer is only ' + (lum(disc[1]) - lum(S.bgColor)).toFixed(2) + ' lighter than the panel');
+        }
+      }
+
+      S.template = keep.t; S.bgEnabled = keep.bg; S.bgColor = keep.c;
+      S.bgPadding = keep.p; S.panelWidth = keep.w;
+      S.disclaimerEnabled = false;
+    })();
+
+    (function () {
       // Classic Outlook draws through Word, which ignores border-radius — a
       // round portrait arrives square there unless the markup carries VML as
       // well. Both halves have to be right, and the wrong half showing is the
