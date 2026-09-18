@@ -150,7 +150,9 @@
           // Outlook renders with Word, which honours the attribute; dropping
           // it would leave the control working in every preview here and
           // doing nothing in the client most companies actually use.
-          const cell = /<td valign="([a-z]+)" style="vertical-align:([a-z]+);[^"]*"[^>]*>\s*<div style="width:\d+px;height:\d+px;border-radius/.exec(h);
+          // The portrait may be preceded by its Outlook-only VML twin, so the
+          // conditional block is allowed for but not required.
+          const cell = /<td valign="([a-z]+)" style="vertical-align:([a-z]+);[^"]*"[^>]*>\s*(?:<!--\[if mso\][\s\S]*?<!\[endif\]-->\s*<!--\[if !mso\]><!-->\s*)?<div style="width:\d+px;height:\d+px;border-radius/.exec(h);
           if (!cell) E.push(id + ': could not find the portrait cell with both valign and vertical-align');
           else if (cell[1] !== v || cell[2] !== v) {
             E.push(id + ': portrait cell is valign=' + cell[1] + ' / css ' + cell[2] + ' when position is ' + v);
@@ -162,6 +164,55 @@
       S.template = keepTemplate;
       window.SIGNVEL_SHOW_IMAGES = keepShow;
       click(document.querySelector('#rail [data-goto="2"]'));
+    })();
+
+    (function () {
+      // Classic Outlook draws through Word, which ignores border-radius — a
+      // round portrait arrives square there unless the markup carries VML as
+      // well. Both halves have to be right, and the wrong half showing is the
+      // failure that matters: Outlook rendering the photo twice, once as a
+      // circle and once as a square underneath it.
+      const keepShape = S.headshotShape, keepTemplate = S.template,
+            keepShow = window.SIGNVEL_SHOW_IMAGES, keepUrl = S.headshotUrl;
+      window.SIGNVEL_SHOW_IMAGES = true;
+      S.headshotUrl = DEFAULT_HEADSHOT_URL;
+      S.template = 'spotlight';
+
+      S.headshotShape = 'circle';
+      const round = generateSignaturePreview();
+      if (!/<!--\[if mso\]>.*<v:oval[^>]*>.*<v:fill type="frame" src="[^"]+"\/><\/v:oval>.*<!\[endif\]-->/.test(round)) {
+        E.push('circle: no VML oval for classic Outlook, so it renders square there');
+      }
+      if (round.indexOf('<!--[if !mso]><!-->') === -1 || round.indexOf('<!--<![endif]-->') === -1) {
+        E.push('circle: the ordinary markup is not hidden from Outlook, which will draw the photo twice');
+      }
+      // The VML has to point at the same photograph, not at a stale copy.
+      const src = /<v:fill type="frame" src="([^"]+)"/.exec(round);
+      if (src && src[1] !== DEFAULT_HEADSHOT_URL) E.push('circle: the VML shows a different image: ' + src[1]);
+
+      S.headshotShape = 'rounded';
+      if (!/<v:roundrect[^>]*arcsize="\d+%"/.test(generateSignaturePreview())) {
+        E.push('rounded: no VML roundrect for classic Outlook');
+      }
+
+      // A square frame needs nothing, and shipping VML for it would be markup
+      // Outlook has to parse for no reason.
+      S.headshotShape = 'square';
+      if (/<v:(oval|roundrect)/.test(generateSignaturePreview())) {
+        E.push('square: VML is emitted where there is no shape to draw');
+      }
+
+      // Neither does the initials fallback, which is already a plain box.
+      S.headshotShape = 'circle';
+      S.headshotUrl = null;
+      if (/<v:(oval|roundrect)/.test(generateSignaturePreview())) {
+        E.push('VML is emitted with no photograph to fill it');
+      }
+
+      S.headshotUrl = keepUrl;
+      S.headshotShape = keepShape;
+      S.template = keepTemplate;
+      window.SIGNVEL_SHOW_IMAGES = keepShow;
     })();
 
     (function () {

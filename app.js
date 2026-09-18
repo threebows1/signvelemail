@@ -1498,7 +1498,41 @@ function buildSignatureBody() {
       const initials = pName.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
       img = `<div style="width:${inner}px;height:${inner}px;background:${o.fallback || ac};color:#fff;text-align:center;font-family:${ff};font-size:${Math.round(inner * 0.34)}px;font-weight:700;line-height:${inner}px;">${esc(initials)}</div>`;
     }
-    return `<div style="width:${box}px;height:${box}px;border-radius:${radius};${ring}box-sizing:border-box;overflow:hidden;">${img}</div>`;
+    const framed = `<div style="width:${box}px;height:${box}px;border-radius:${radius};${ring}box-sizing:border-box;overflow:hidden;">${img}</div>`;
+
+    // ── Classic Outlook ──
+    // Outlook on Windows renders mail through Word, which ignores
+    // border-radius outright: a round portrait arrives square, which is what
+    // it has always done here. No amount of CSS changes that.
+    //
+    // VML does. It is Word's own vector language, it is what Outlook has drawn
+    // shapes with since 2007, and a v:oval filled with the photograph is a
+    // circle there. So the signature carries both: Outlook takes the VML and
+    // ignores the div, every other client takes the div and never sees the
+    // VML. One signature, not two — there is nothing to keep in step.
+    //
+    //   <!--[if mso]>      … only Outlook reads this
+    //   <!--[if !mso]><!-->… everyone else reads this, Outlook skips it
+    //
+    // Only for a real photograph in a shaped frame. A square frame needs
+    // nothing, and the initials fallback is already a plain box.
+    const shape = o.shape || S.headshotShape;
+    if (!(S.headshotUrl && showImages) || shape === 'square') return framed;
+
+    const stroke = ringW
+      ? ` strokecolor="${esc(ringC)}" strokeweight="${ringW}px"`
+      : ' stroked="f"';
+    // type="frame" scales the image to fill the shape, which is what the CSS
+    // side does with object-fit: cover.
+    const fill = `<v:fill type="frame" src="${esc(S.headshotUrl)}"/>`;
+    const vmlBox = `style="width:${box}px;height:${box}px;"`;
+    const vml = shape === 'circle'
+      ? `<v:oval xmlns:v="urn:schemas-microsoft-com:vml" ${vmlBox}${stroke}>${fill}</v:oval>`
+      // arcsize is a proportion of the shorter side, so 10px on a 78px box is
+      // about 13% — the same corner the CSS draws.
+      : `<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" ${vmlBox} arcsize="${Math.round((10 / box) * 100)}%"${stroke}>${fill}</v:roundrect>`;
+
+    return `<!--[if mso]>${vml}<![endif]--><!--[if !mso]><!-->${framed}<!--<![endif]-->`;
   }
   const headshotHTML = photoHTML();
 
