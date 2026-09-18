@@ -167,6 +167,40 @@
     })();
 
     (function () {
+      // Role style has to reach every layout. Two of them drew the job title
+      // with their own markup and never called the shared renderer, so the
+      // control did nothing there — and one of the two was Corporate, which is
+      // the template the editor opens on, so for most people it did nothing at
+      // all. Minimal is the exception and says so in the panel: it sets the
+      // role inline in a single line, where a chip has nowhere to go.
+      const keepStyle = S.roleStyle, keepTemplate = S.template;
+
+      Object.keys(templateThemes).forEach(id => {
+        if (id === 'minimal') return;
+        S.template = id;
+
+        S.roleStyle = 'plain';
+        const plain = generateSignaturePreview();
+        S.roleStyle = 'pill';
+        const pill = generateSignaturePreview();
+        S.roleStyle = 'caps';
+        const caps = generateSignaturePreview();
+
+        if (pill === plain) E.push(id + ': role style does nothing — pill renders the same as plain');
+        if (caps === plain) E.push(id + ': role style does nothing — tracked renders the same as plain');
+        if (pill.indexOf('border-radius:9999px') === -1) E.push(id + ': pill draws no pill');
+        if (caps.indexOf('letter-spacing:.16em') === -1) E.push(id + ': tracked is not tracked');
+
+        S.roleStyle = 'chip';
+        const chip = generateSignaturePreview();
+        if (chip.indexOf('border-radius:4px') === -1) E.push(id + ': chip draws no chip');
+      });
+
+      S.roleStyle = keepStyle;
+      S.template = keepTemplate;
+    })();
+
+    (function () {
       // Type. A signature is read in a mail client, and no mail client fetches
       // a webfont — Gmail strips @font-face and Outlook draws with whatever is
       // installed. So every font offered has to be one that is already there,

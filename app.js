@@ -1007,7 +1007,7 @@ function renderDesign() {
     <span class="opt-label">Name in capitals</span>
     <span class="opt-control"><div class="toggle-switch${S.nameUppercase?' on':''}" data-action="toggleNameCaps"></div></span>
   </div></div>`;
-  h += `<div class="field-row"><label class="field-label">Role style</label><div class="toggle-group" data-action="roleStyle">
+  h += `<div class="field-row"><label class="field-label">Role style<span class="field-hint">Minimal sets the role inline in one line, so it stays plain there.</span></label><div class="toggle-group" data-action="roleStyle">
     <button class="${S.roleStyle==='plain'?'active':''}" data-val="plain">Plain</button>
     <button class="${S.roleStyle==='caps'?'active':''}" data-val="caps">Tracked</button>
     <button class="${S.roleStyle==='chip'?'active':''}" data-val="chip">Chip</button>
@@ -1552,7 +1552,11 @@ function buildSignatureBody() {
     if (style === 'chip' || style === 'pill') {
       const bg = o.chipBg || a2;
       const radius = style === 'pill' ? '9999px' : '4px';
-      return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;margin:0 0 ${mb}px;"${al === 'center' ? ' align="center"' : ''}><tr>
+      // A chip is a table, and a table does not inherit the text-align of the
+      // cell it sits in — it needs telling. `align` is how a layout that sets
+      // its role against the right edge says so.
+      const chipAlign = o.align || (al === 'center' ? 'center' : '');
+      return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;margin:0 0 ${mb}px;"${chipAlign ? ` align="${chipAlign}"` : ''}><tr>
         <td bgcolor="${bg}" style="background-color:${bg};border-radius:${radius};padding:4px 12px;font-family:${ff};font-size:${Math.max(9, size - 3)}px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:${o.chipFg || '#FFFFFF'};line-height:1.3;white-space:nowrap;">${text}</td>
       </tr></table>`;
     }
@@ -2194,7 +2198,7 @@ function buildSignatureBody() {
           <td bgcolor="${ac}" style="background-color:${ac};border-radius:8px;padding:20px 26px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
               <td style="vertical-align:middle;font-family:${hf};font-size:${nameAt(bs + 12)}px;font-weight:800;color:#ffffff;line-height:1.1;${track}">${eName}</td>
-              <td style="vertical-align:middle;text-align:right;padding-left:20px;font-family:${ff};font-size:${bs}px;color:rgba(255,255,255,.9);white-space:nowrap;">${esc(pTitle)}</td>
+              <td style="vertical-align:middle;text-align:right;padding-left:20px;white-space:nowrap;">${roleHTML({align: 'right', color: '#EEF2FB', capsColor: '#FFFFFF', chipBg: 'rgba(255,255,255,.22)', chipFg: '#FFFFFF'})}</td>
             </tr></table>
           </td>
         </tr></table>
@@ -2299,7 +2303,7 @@ function buildSignatureBody() {
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${corpW}" style="width:${corpW}px;max-width:100%;text-align:${al};"><tbody>
       <tr><td style="padding-bottom:${sp};">
         <p style="${nameStyle}">${eName}</p>
-        <p style="${titleStyle}">${esc(pTitle)}</p>
+        ${roleHTML({mb: 2})}
         <p style="${titleStyle}">${esc(pCompany)}</p>
       </td></tr>
       ${S.dividerEnabled ? `<tr><td style="padding-bottom:${sp};">${rule}</td></tr>` : ''}
