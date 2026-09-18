@@ -267,3 +267,35 @@ Three previews, and the 78px one is the one that decides it — that is the size
 signature actually renders a headshot at, and a crop that reads well at 400 can
 put the chin on the edge at 78. The third shows the box drawn on the whole
 frame, so a bad number is obvious before a deploy rather than after.
+
+### `make-sample-logo.html` — the logo every signature starts with
+Draws the Sign Vel lockup and writes it to the repository root. Three files
+come out of the one page, because a logo has to survive three grounds and one
+file cannot:
+
+```powershell
+powershell -File tools/make-sample-logo.ps1
+powershell -File tools/make-sample-logo.ps1 -Ink '#FFFFFF' -Name sample-logo-white.png
+powershell -File tools/make-sample-logo.ps1 -Ink '#FFFFFF' -NoWord -Name sample-mark-white.png
+```
+
+`sample-logo.png` is the default in every layout; the white one is for a layout
+drawn on a dark panel; the mark alone is for a slot built around a mark rather
+than a lockup, like Colour block's 136px colour panel.
+
+Stacked — mark above, name below — because every logo slot in a signature is
+sized by height. Laid out in a row the lockup is nearly four times as wide as
+it is tall, so it either ran across half the signature or hit the width cap and
+shrank to nothing. `stack=0` still draws the row, since an uploaded logo can be
+any shape and the drawing code should not assume otherwise.
+
+PNG, not the site's inline SVG: Gmail, Outlook and Yahoo strip SVG out of mail.
+Transparent, unlike `email-logo.png`, which sits on one known flat colour.
+
+The wordmark is Manrope 800 pulled from Google Fonts, and the page waits for
+the face itself rather than for the stylesheet — but never forever. A run that
+cannot reach the font draws anyway and says so in the title, because producing
+nothing at all is worse than producing a wordmark in a system sans. The wait
+has one wrinkle worth knowing: headless Edge advances timers under a virtual
+clock, so that fallback usually fires before a real network answers. It asks
+whether the face is usable rather than assuming the wait failed.
