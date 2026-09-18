@@ -118,6 +118,46 @@
     if (!$("#panel [data-action=\"headshotUpload\"]")) E.push("headshot upload is missing");
     if (!$("#panel [data-action=\"headshotShape\"]")) E.push("headshot shape control is missing");
 
+    // The admin portrait is for one account, not for customers. Cloud is
+    // unconfigured here, so this is the signed-out case — and the action must
+    // refuse even when called straight, not merely be hidden.
+    if ($('#panel [data-action="adminPortrait"]')) E.push('the admin portrait row is shown to a non-admin');
+    (function () {
+      // A button of our own, carrying the same data-action the panel would —
+      // which is all anyone reading the page needs to forge one.
+      //
+      // It has to go inside #panel: the click handler is delegated from there,
+      // not from the document, so a forged button anywhere else is never
+      // dispatched and this assertion could never fail. It did exactly that
+      // the first time it was written.
+      const keep = S.headshotUrl;
+      const forged = document.createElement('button');
+      forged.setAttribute('data-action', 'adminPortrait');
+      document.getElementById('panel').appendChild(forged);
+      click(forged);
+      if (S.headshotUrl === ADMIN_PORTRAIT_URL) E.push('a non-admin was able to set the admin portrait');
+      forged.remove();
+      S.headshotUrl = keep;
+    })();
+    (function () {
+      // And it is offered, and works, for an admin.
+      const keep = window.Cloud, keepUrl = S.headshotUrl;
+      window.Cloud = {isReady: true, state: () => ({isAdmin: true})};
+      click(document.querySelector('#rail [data-goto="2"]'));
+      const btn = $('#panel [data-action="adminPortrait"]');
+      if (!btn) E.push('an admin is not offered the portrait');
+      else {
+        click(btn);
+        if (S.headshotUrl !== ADMIN_PORTRAIT_URL) E.push('the admin portrait did not apply');
+        const back = $('#panel [data-action="adminPortraitClear"]');
+        if (!back) E.push('there is no way back to the sample portrait');
+        else { click(back); if (S.headshotUrl !== DEFAULT_HEADSHOT_URL) E.push('going back to the sample did not restore it'); }
+      }
+      window.Cloud = keep;
+      S.headshotUrl = keepUrl;
+      click(document.querySelector('#rail [data-goto="2"]'));
+    })();
+
     // Social section: every platform in the catalogue is offered, each one can
     // be switched on, and each builds a real profile URL rather than a '#'.
     click(document.querySelector('#rail [data-goto="4"]'));

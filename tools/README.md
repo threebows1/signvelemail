@@ -239,3 +239,31 @@ The three previews are the reason it is a page rather than a one-liner. A
 favicon is judged at 16px, and the gradient the site uses on white turns to mud
 at that size — so the icon uses the masthead's treatment instead, solid white
 on purple, which is the one version of the mark drawn for a saturated ground.
+
+### `make-headshot.html` — a square crop of a wide portrait
+The editor cannot do this itself: its Crop/zoom slider scales from the centre
+and stops at 200%, so on a full-length office photograph it enlarges the chest
+rather than reaching the face. The stock portraits dodge the problem by having
+Unsplash crop them server-side (`fit=facearea`); this does the same locally for
+an image of your own.
+
+Put the original at `tools/source-portrait.jpg`, then:
+
+```powershell
+powershell -File tools/make-headshot.ps1
+powershell -File tools/make-headshot.ps1 -X 2295 -Y 480 -S 2200   # nudge the box
+```
+
+It writes `admin-portrait.jpg` to the repository root — the portrait the editor
+offers an administrator in the Media section. The crop box is in the source
+image's own pixels and is clamped to it, so a number past the edge is reported
+rather than drawn as transparent bands.
+
+JPEG rather than PNG because it is a photograph that ends up in email: the same
+400px square is about 50KB as JPEG against 400KB as PNG, and Gmail clips a
+message over roughly 102KB. The runner says so if the file creeps past 120KB.
+
+Three previews, and the 78px one is the one that decides it — that is the size a
+signature actually renders a headshot at, and a crop that reads well at 400 can
+put the chin on the edge at 78. The third shows the box drawn on the whole
+frame, so a bad number is obvious before a deploy rather than after.

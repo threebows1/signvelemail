@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>gen</title></head>
+<body style="font-family:system-ui;margin:28px;background:#fff">
+<!--
+  Sign Vel — headshot cropper
+
+  Takes a wide portrait and cuts a square head-and-shoulders crop out of it,
+  because the editor cannot. Its Crop/zoom slider scales from the centre and
+  stops at 200%, so on a full-length office photograph it enlarges the chest
+  rather than reaching the face. The stock portraits avoid the problem by
+  having Unsplash crop them server-side (fit=facearea), which is exactly what
+  this does locally for an image of your own.
+
+  Source:  tools/source-portrait.jpg   (put the original there)
+  Output:  admin-portrait.jpg          (written by tools/make-headshot.ps1)
+
+  The crop box is in the ORIGINAL image's pixels, and is overridable from the
+  query string so nudging it is a re-run rather than an edit:
+
+    tools/make-headshot.ps1 -X 2295 -Y 480 -S 2200
+
+  JPEG, not PNG: this is a photograph that ends up in email, and the same
+  400px square is ~50KB as JPEG against ~400KB as PNG. Gmail clips a message
+  over about 102KB, so the difference is not academic.
+
+  The 78px preview is the one that decides it — that is the size a signature
+  actually renders a headshot at, and a crop that looks fine at 400 can put
+  the chin on the edge at 78.
+-->
+<h1 style="font-size:18px;margin:0 0 6px">Headshot</h1>
+<p id="meta" style="font:12px monospace;color:#555;margin:0 0 18px"></p>
+
+<div style="display:flex;align-items:flex-end;gap:26px;margin-bottom:22px">
+  <div>
+    <canvas id="c400" width="400" height="400" style="border:1px solid #eee;border-radius:8px"></canvas>
+    <p style="font:12px monospace;color:#555">400 — what gets saved</p>
+  </div>
+  <div>
+    <div style="width:78px;height:78px;border-radius:50%;overflow:hidden;border:1px solid #eee">
+      <canvas id="c78" width="78" height="78" style="display:block"></canvas>
+    </div>
+    <p style="font:12px monospace;color:#555">78 — the size that decides it</p>
+  </div>
+  <div>
+    <canvas id="cFull" width="300" height="200" style="border:1px solid #eee"></canvas>
+    <p style="font:12px monospace;color:#555">the box, on the original</p>
+  </div>
+</div>
+
+<p><a id="dl" download="admin-portrait.jpg" style="background:#5B2EFF;color:#fff;font:600 14px system-ui;padding:10px 20px;border-radius:8px;text-decoration:none">Download admin-portrait.jpg</a></p>
+<pre id="out" style="display:none"></pre>
+
+<script>
+(function () {
+  const q = new URLSearchParams(location.search);
+  const SRC = q.get('src') || 'source-portrait.jpg';
+
+  // Defaults framed for the portrait this was written for: an 8192x5464
+  // office shot, subject centred slightly left of middle. Eyes land about a
+  // third of the way down the crop, which is where a headshot wants them.
+  const BOX = {
+    x: Number(q.get('x') || 2295),
+    y: Number(q.get('y') || 480),
+    s: Number(q.get('s') || 2200),
+  };
+  const QUALITY = Number(q.get('q') || 0.86);
+
+  const meta = document.getElementById('meta');
+  const img = new Image();
+
+  img.onload = function () {
+    // A box that runs off the edge silently produces transparent bands, so it
+    // is clamped and reported rather than drawn as asked.
+    let {x, y, s} = BOX;
+    s = Math.min(s, img.naturalWidth, img.naturalHeight);
+    x = Math.max(0, Math.min(x, img.naturalWidth - s));
+    y = Math.max(0, Math.min(y, img.naturalHeight - s));
+    const clamped = (x !== BOX.x || y !== BOX.y || s !== BOX.s);
+
+    meta.textContent = 'source ' + img.naturalWidth + 'x' + img.naturalHeight +
+      '  crop ' + s + 'x' + s + ' at ' + x + ',' + y + (clamped ? '  (clamped to fit)' : '');
+
+    // The square, at the size that gets saved.
+    const big = document.getElementById('c400');
+    const bx = big.getContext('2d');
+    bx.imageSmoothingQuality = 'high';
+    bx.drawImage(img, x, y, s, s, 0, 0, 400, 400);
+
+    // The same pixels at 78, drawn from the 400 so it matches what ships.
+    const small = document.getElementById('c78').getContext('2d');
+    small.imageSmoothingQuality = 'high';
+    small.drawImage(big, 0, 0, 78, 78);
+
+    // The whole frame with the box marked, so a bad number is obvious at a
+    // glance instead of after a deploy.
+    const full = document.getElementById('cFull');
+    const fx = full.getContext('2d');
+    const scale = Math.min(300 / img.naturalWidth, 200 / img.naturalHeight);
+    const w = img.naturalWidth * scale, h = img.naturalHeight * scale;
+    fx.clearRect(0, 0, 300, 200);
+    fx.drawImage(img, (300 - w) / 2, (200 - h) / 2, w, h);
+    fx.strokeStyle = '#5B2EFF';
+    fx.lineWidth = 2;
+    fx.strokeRect((300 - w) / 2 + x * scale, (200 - h) / 2 + y * scale, s * scale, s * scale);
+
+    const url = big.toDataURL('image/jpeg', QUALITY);
+    document.getElementById('dl').href = url;
+    document.getElementById('out').textContent = url.slice(url.indexOf(',') + 1);
+    document.title = 'PASS — cropped ' + s + 'px at ' + x + ',' + y;
+  };
+
+  img.onerror = function () {
+    meta.textContent = 'could not load ' + SRC;
+    document.title = 'FAIL — no source image at tools/' + SRC;
+  };
+
+  img.src = SRC;
+})();
+</script>
+</body>
+</html>
