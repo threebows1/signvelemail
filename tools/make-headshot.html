@@ -20,12 +20,33 @@
 
     tools/make-headshot.ps1 -X 2295 -Y 480 -S 2200
 
-  JPEG, not PNG: this is a photograph that ends up in email, and the same
-  400px square is ~50KB as JPEG against ~400KB as PNG. Gmail clips a message
-  over about 102KB, so the difference is not academic.
+  ── Why the output looks the way it does ──
+
+  Three things decide whether this reads as sharp, and the first version of
+  this file got two of them wrong.
+
+  1. SIZE. 600px, not 400. A headshot is displayed at up to 140 CSS pixels, so
+     a 3x phone screen asks for 420 and 400 was below even that. 600 clears
+     every case with room to spare; 800 was tried and is indistinguishable at
+     any size this product uses while costing twice the bytes.
+
+  2. DOWNSCALE IN STEPS. Cropping 2260px straight down to the target in one
+     drawImage throws away most of the detail: the browser samples a handful
+     of source pixels per output pixel and the result is soft no matter what
+     imageSmoothingQuality claims. Halving repeatedly until the last step is
+     under 2:1 keeps the detail that survives averaging.
+
+  3. SHARPEN, MILDLY. Any downscale costs acuity. A small unsharp pass puts
+     the edge contrast back. Too much of it looks like a phone filter, so the
+     default is deliberately light and -Sharpen 0 turns it off.
+
+  JPEG rather than PNG: this is a photograph, and the same square is a tenth
+  the size as JPEG with no visible difference. That is about load time, not
+  about Gmail's ~102KB clipping threshold, which counts the message HTML and
+  not an image the HTML merely links to.
 
   The 78px preview is the one that decides it — that is the size a signature
-  actually renders a headshot at, and a crop that looks fine at 400 can put
+  actually renders a headshot at, and a crop that looks fine at 600 can put
   the chin on the edge at 78.
 -->
 <h1 style="font-size:18px;margin:0 0 6px">Headshot</h1>
@@ -33,8 +54,8 @@
 
 <div style="display:flex;align-items:flex-end;gap:26px;margin-bottom:22px">
   <div>
-    <canvas id="c400" width="400" height="400" style="border:1px solid #eee;border-radius:8px"></canvas>
-    <p style="font:12px monospace;color:#555">400 — what gets saved</p>
+    <canvas id="cOut" style="border:1px solid #eee;border-radius:8px;width:400px;height:400px"></canvas>
+    <p style="font:12px monospace;color:#555">what gets saved (shown at 400)</p>
   </div>
   <div>
     <div style="width:78px;height:78px;border-radius:50%;overflow:hidden;border:1px solid #eee">
@@ -60,14 +81,79 @@
   // office shot, subject centred slightly left of middle. Eyes land about a
   // third of the way down the crop, which is where a headshot wants them.
   const BOX = {
-    x: Number(q.get('x') || 2295),
-    y: Number(q.get('y') || 480),
-    s: Number(q.get('s') || 2200),
+    x: Number(q.get('x') || 2210),
+    y: Number(q.get('y') || 430),
+    s: Number(q.get('s') || 2260),
   };
-  const QUALITY = Number(q.get('q') || 0.86);
+  const SIZE = Number(q.get('size') || 600);
+  const QUALITY = Number(q.get('q') || 0.88);
+  const SHARPEN = q.get('sharpen') === null ? 0.32 : Number(q.get('sharpen'));
 
   const meta = document.getElementById('meta');
   const img = new Image();
+
+  function canvasOf(w, h) {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    return c;
+  }
+
+  // Halve until the last step is under 2:1. One big drawImage samples too few
+  // source pixels per output pixel and the detail never arrives.
+  function stepDown(source, size, target) {
+    let cur = source, cursize = size;
+    while (cursize > target * 2) {
+      const next = Math.max(target, Math.round(cursize / 2));
+      const c = canvasOf(next, next);
+      const x = c.getContext('2d');
+      x.imageSmoothingEnabled = true;
+      x.imageSmoothingQuality = 'high';
+      x.drawImage(cur, 0, 0, cursize, cursize, 0, 0, next, next);
+      cur = c; cursize = next;
+    }
+    if (cursize !== target) {
+      const c = canvasOf(target, target);
+      const x = c.getContext('2d');
+      x.imageSmoothingEnabled = true;
+      x.imageSmoothingQuality = 'high';
+      x.drawImage(cur, 0, 0, cursize, cursize, 0, 0, target, target);
+      cur = c;
+    }
+    return cur;
+  }
+
+  // Unsharp by way of a 3x3 kernel: centre weighted up, neighbours down, the
+  // whole thing summing to 1 so the exposure does not shift. Alpha is left
+  // alone — sharpening it produces a halo at the edge of the square.
+  function sharpen(canvas, amount) {
+    if (!amount) return canvas;
+    const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext('2d');
+    const src = ctx.getImageData(0, 0, w, h);
+    const out = ctx.createImageData(w, h);
+    const a = amount, centre = 1 + 4 * a;
+    const s = src.data, d = out.data;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        // The border keeps its own pixels: a kernel that reads past the edge
+        // darkens it, which on a square crop is a visible frame.
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1) {
+          d[i] = s[i]; d[i+1] = s[i+1]; d[i+2] = s[i+2]; d[i+3] = s[i+3];
+          continue;
+        }
+        for (let c = 0; c < 3; c++) {
+          const v = centre * s[i + c]
+            - a * s[i - 4 + c] - a * s[i + 4 + c]
+            - a * s[i - w * 4 + c] - a * s[i + w * 4 + c];
+          d[i + c] = v < 0 ? 0 : v > 255 ? 255 : v;
+        }
+        d[i + 3] = s[i + 3];
+      }
+    }
+    ctx.putImageData(out, 0, 0);
+    return canvas;
+  }
 
   img.onload = function () {
     // A box that runs off the edge silently produces transparent bands, so it
@@ -78,19 +164,25 @@
     y = Math.max(0, Math.min(y, img.naturalHeight - s));
     const clamped = (x !== BOX.x || y !== BOX.y || s !== BOX.s);
 
+    // Crop at full resolution first, then come down in steps.
+    const cut = canvasOf(s, s);
+    cut.getContext('2d').drawImage(img, x, y, s, s, 0, 0, s, s);
+    const scaled = stepDown(cut, s, SIZE);
+    sharpen(scaled, SHARPEN);
+
     meta.textContent = 'source ' + img.naturalWidth + 'x' + img.naturalHeight +
-      '  crop ' + s + 'x' + s + ' at ' + x + ',' + y + (clamped ? '  (clamped to fit)' : '');
+      '  crop ' + s + 'x' + s + ' at ' + x + ',' + y +
+      '  out ' + SIZE + 'px q' + QUALITY + ' sharpen ' + SHARPEN +
+      (clamped ? '  (clamped to fit)' : '');
 
-    // The square, at the size that gets saved.
-    const big = document.getElementById('c400');
-    const bx = big.getContext('2d');
-    bx.imageSmoothingQuality = 'high';
-    bx.drawImage(img, x, y, s, s, 0, 0, 400, 400);
+    const out = document.getElementById('cOut');
+    out.width = SIZE; out.height = SIZE;
+    out.getContext('2d').drawImage(scaled, 0, 0);
 
-    // The same pixels at 78, drawn from the 400 so it matches what ships.
+    // The same pixels at 78, stepped down as well — judging sharpness on a
+    // preview the browser scaled in one jump would judge the wrong thing.
     const small = document.getElementById('c78').getContext('2d');
-    small.imageSmoothingQuality = 'high';
-    small.drawImage(big, 0, 0, 78, 78);
+    small.drawImage(stepDown(scaled, SIZE, 78), 0, 0);
 
     // The whole frame with the box marked, so a bad number is obvious at a
     // glance instead of after a deploy.
@@ -104,10 +196,10 @@
     fx.lineWidth = 2;
     fx.strokeRect((300 - w) / 2 + x * scale, (200 - h) / 2 + y * scale, s * scale, s * scale);
 
-    const url = big.toDataURL('image/jpeg', QUALITY);
+    const url = out.toDataURL('image/jpeg', QUALITY);
     document.getElementById('dl').href = url;
     document.getElementById('out').textContent = url.slice(url.indexOf(',') + 1);
-    document.title = 'PASS — cropped ' + s + 'px at ' + x + ',' + y;
+    document.title = 'PASS — ' + SIZE + 'px from ' + s + 'px at ' + x + ',' + y;
   };
 
   img.onerror = function () {

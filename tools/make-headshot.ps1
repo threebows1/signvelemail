@@ -17,6 +17,8 @@ param(
   [int]$Y = 0,
   [int]$S = 0,
   [double]$Q = 0,
+  [int]$Size = 0,
+  [double]$Sharpen = -1,
   [string]$Name = 'admin-portrait.jpg'
 )
 
@@ -37,6 +39,9 @@ if ($X -gt 0) { $query += "x=$X" }
 if ($Y -gt 0) { $query += "y=$Y" }
 if ($S -gt 0) { $query += "s=$S" }
 if ($Q -gt 0) { $query += "q=$Q" }
+if ($Size -gt 0) { $query += "size=$Size" }
+# -1 means "not given". 0 is a real value: sharpening off.
+if ($Sharpen -ge 0) { $query += "sharpen=$Sharpen" }
 $qs = ''
 if ($query.Count) { $qs = '?' + ($query -join '&') }
 
@@ -62,8 +67,9 @@ if ($html -match '(?s)<pre id="out"[^>]*>(.*?)</pre>') {
   [IO.File]::WriteAllBytes($out, [Convert]::FromBase64String($b64))
   $kb = [math]::Round((Get-Item $out).Length / 1KB, 1)
   Write-Output "OK - wrote $out ($kb KB)"
-  # Email weight is the reason this is a JPEG at all; say so when it creeps up.
-  if ($kb -gt 120) { Write-Output "NOTE - over 120 KB. Lower the quality: -Q 0.78" }
+  # Load time, not Gmail's clipping threshold: that counts the message HTML,
+  # and this is an image the HTML links to rather than carries.
+  if ($kb -gt 250) { Write-Output "NOTE - over 250 KB, which is slow on a phone. Try -Q 0.82 or -Size 600" }
 } else {
   Write-Output "FAIL - no #out block in the rendered page"; exit 1
 }
