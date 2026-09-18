@@ -32,9 +32,9 @@
     const $ = s => document.querySelector(s);
     const click = el => el && el.dispatchEvent(new MouseEvent('click', {bubbles: true}));
 
-    // Asserted before anything else: later checks click a sample thumbnail,
-    // which changes the live headshot out from under this.
-    if (S.headshotUrl !== sampleHeadshots[0].url) E.push('default headshot is not the first sample');
+    // Asserted before anything else: later checks assign a headshot, which
+    // changes the live value out from under this.
+    if (S.headshotUrl !== DEFAULT_HEADSHOT_URL) E.push('a fresh editor does not start on the default portrait');
 
     // Every rail section must open and render something.
     document.querySelectorAll('#rail [data-goto]').forEach(btn => {
@@ -118,44 +118,32 @@
     if (!$("#panel [data-action=\"headshotUpload\"]")) E.push("headshot upload is missing");
     if (!$("#panel [data-action=\"headshotShape\"]")) E.push("headshot shape control is missing");
 
-    // The admin portrait is for one account, not for customers. Cloud is
-    // unconfigured here, so this is the signed-out case — and the action must
-    // refuse even when called straight, not merely be hidden.
-    if ($('#panel [data-action="adminPortrait"]')) E.push('the admin portrait row is shown to a non-admin');
+    // The default portrait is served from this site, not from a stock host —
+    // the sample signature every visitor first sees should not depend on
+    // somebody else's CDN, and it has to be an absolute URL because an
+    // exported signature is read in a mail client where a relative path
+    // resolves against nothing.
+    if (!/^https:\/\/signvel\.com\//.test(DEFAULT_HEADSHOT_URL)) {
+      E.push('the default headshot is not an absolute signvel.com URL: ' + DEFAULT_HEADSHOT_URL);
+    }
+
     (function () {
-      // A button of our own, carrying the same data-action the panel would —
-      // which is all anyone reading the page needs to forge one.
-      //
-      // It has to go inside #panel: the click handler is delegated from there,
-      // not from the document, so a forged button anywhere else is never
-      // dispatched and this assertion could never fail. It did exactly that
-      // the first time it was written.
+      // A saved signature still carrying a retired default was never a choice
+      // anybody made, so it follows the default forward. One that was uploaded
+      // or picked is left alone — that distinction is the whole point.
       const keep = S.headshotUrl;
-      const forged = document.createElement('button');
-      forged.setAttribute('data-action', 'adminPortrait');
-      document.getElementById('panel').appendChild(forged);
-      click(forged);
-      if (S.headshotUrl === ADMIN_PORTRAIT_URL) E.push('a non-admin was able to set the admin portrait');
-      forged.remove();
-      S.headshotUrl = keep;
-    })();
-    (function () {
-      // And it is offered, and works, for an admin.
-      const keep = window.Cloud, keepUrl = S.headshotUrl;
-      window.Cloud = {isReady: true, state: () => ({isAdmin: true})};
-      click(document.querySelector('#rail [data-goto="2"]'));
-      const btn = $('#panel [data-action="adminPortrait"]');
-      if (!btn) E.push('an admin is not offered the portrait');
-      else {
-        click(btn);
-        if (S.headshotUrl !== ADMIN_PORTRAIT_URL) E.push('the admin portrait did not apply');
-        const back = $('#panel [data-action="adminPortraitClear"]');
-        if (!back) E.push('there is no way back to the sample portrait');
-        else { click(back); if (S.headshotUrl !== DEFAULT_HEADSHOT_URL) E.push('going back to the sample did not restore it'); }
+
+      S.headshotUrl = RETIRED_DEFAULT_HEADSHOTS[0];
+      adoptCloudState({state: {headshotUrl: RETIRED_DEFAULT_HEADSHOTS[0]}});
+      if (S.headshotUrl !== DEFAULT_HEADSHOT_URL) {
+        E.push('an old saved signature kept the retired default portrait');
       }
-      window.Cloud = keep;
-      S.headshotUrl = keepUrl;
-      click(document.querySelector('#rail [data-goto="2"]'));
+
+      const mine = 'https://cdn.signvel.com/u/mine.png';
+      adoptCloudState({state: {headshotUrl: mine}});
+      if (S.headshotUrl !== mine) E.push('a headshot somebody uploaded was overwritten by the default');
+
+      S.headshotUrl = keep;
     })();
 
     // Social section: every platform in the catalogue is offered, each one can

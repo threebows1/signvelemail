@@ -85,28 +85,41 @@
 
         // is_admin arrives one request after boot, so the first panel is
         // always drawn as a non-admin. When the flag turns up, the open
-        // section has to be redrawn — not just the rail. This shipped wrong:
-        // the rail gained its Admin entry and the admin portrait row in Media
-        // did not appear until you clicked away and back.
+        // section has to be redrawn — not just the rail. This shipped wrong
+        // once: the rail gained its Admin entry and the panel kept whatever it
+        // had, so an admin-only control in the open section stayed invisible
+        // until you clicked away and back.
+        //
+        // Asserted on renderPanel being called rather than on any particular
+        // control, so it keeps testing the fix as sections change. app.js is a
+        // plain script, so its function declarations are writable globals —
+        // which is what makes counting the calls possible at all.
         (function () {
-          const orig = Cloud.state;
-          // Land on Media, drawn while the profile says non-admin.
-          const media = sections.findIndex(s => s.id === 'media');
-          S.openSection = media;
-          renderPanel();
-          if (document.querySelector('#panel [data-action="adminPortrait"]')) {
-            E.push('signed in: the admin portrait showed before the profile said admin');
-          }
-          // Now the profile arrives.
-          Cloud.state = () => Object.assign({}, orig(), {isAdmin:true});
+          const origState = Cloud.state;
+          const origRender = renderPanel;
+          let redraws = 0;
+
+          S.openSection = sections.findIndex(s => s.id === 'media');
+          origRender();
+          renderPanel = function () { redraws++; return origRender.apply(null, arguments); };
+
+          // The profile arrives, carrying the flag.
+          Cloud.state = () => Object.assign({}, origState(), {isAdmin:true});
           Cloud._cbs.forEach(fn => fn(Cloud.state()));
+
           if (!document.querySelector('#rail [data-goto="' + sections.findIndex(s => s.id === 'admin') + '"]')) {
             E.push('signed in: the rail did not gain its Admin entry when the flag arrived');
           }
-          if (!document.querySelector('#panel [data-action="adminPortrait"]')) {
-            E.push('signed in: the open panel did not redraw when the admin flag arrived');
-          }
-          Cloud.state = orig;
+          if (!redraws) E.push('signed in: the open panel was not redrawn when the admin flag arrived');
+
+          // A second emit carrying nothing new must not rebuild the panel
+          // under somebody's cursor — a save and a token refresh both land here.
+          redraws = 0;
+          Cloud._cbs.forEach(fn => fn(Cloud.state()));
+          if (redraws) E.push('signed in: the panel redrew on an emit that changed nothing');
+
+          renderPanel = origRender;
+          Cloud.state = origState;
           Cloud._cbs.forEach(fn => fn(Cloud.state()));
           S.openSection = 0;
           renderPanel();
