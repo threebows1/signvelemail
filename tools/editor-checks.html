@@ -158,6 +158,46 @@
     })();
 
     (function () {
+      // The same for the logo, in the layouts that give it a cell of its own.
+      // Where a layout stacks the logo with text in one cell there is nothing
+      // to align against, so those are not asserted — but at least one layout
+      // has to respond, or the control is decorative.
+      const keepAlign = S.logoAlign, keepTemplate = S.template, keepShow = window.SIGNVEL_SHOW_IMAGES;
+      window.SIGNVEL_SHOW_IMAGES = true;
+
+      if (S.logoAlign !== 'middle') E.push('the logo does not start in the middle');
+      const group = $('#panel [data-action="logoAlign"]');
+      if (!group) E.push('there is no logo position control');
+      else {
+        ['top', 'middle', 'bottom'].forEach(v => {
+          if (!group.querySelector('[data-val="' + v + '"]')) E.push('logo position has no ' + v + ' option');
+        });
+        click(group.querySelector('[data-val="top"]'));
+        if (S.logoAlign !== 'top') E.push('the logo position control did not bind');
+      }
+
+      ['top', 'middle', 'bottom'].forEach(v => {
+        S.logoAlign = v;
+        let moved = 0;
+        LOGO_TEMPLATES.forEach(id => {
+          S.template = id;
+          const h = generateSignaturePreview();
+          // The logo's own cell: a td whose content starts with the logo img.
+          const cell = /<td [^>]*vertical-align:([a-z]+);[^"]*"[^>]*>\s*<img src="https:\/\/signvel\.com\/sample-/.exec(h);
+          if (!cell) return;                        // stacked with text, nothing to align
+          moved++;
+          if (cell[1] !== v) E.push(id + ': logo cell is ' + cell[1] + ' when position is ' + v);
+        });
+        if (!moved) E.push('no layout responded to logo position ' + v);
+      });
+
+      S.logoAlign = keepAlign;
+      S.template = keepTemplate;
+      window.SIGNVEL_SHOW_IMAGES = keepShow;
+      click(document.querySelector('#rail [data-goto="2"]'));
+    })();
+
+    (function () {
       // Removing an image used to be one-way: the sample is a default, so it
       // applies to an account that has never chosen and never again after
       // that. Anyone who cleared a logo in an earlier version was left with a

@@ -459,6 +459,9 @@ const S = {
   logoUrl: DEFAULT_LOGO_URL,
   logoName: 'Sample logo',
   logoHeight: 40,
+  // Where the logo sits against the text beside it, for the layouts that give
+  // it a cell of its own. Middle for the same reason the portrait is.
+  logoAlign: 'middle',
 
   // A sample portrait ships by default so the photo layouts look like the
   // designs they were drawn from before anyone uploads anything.
@@ -1102,6 +1105,10 @@ function renderMedia() {
   h += `<div class="opt-group">Logo</div>`;
   if (!usesLogo) h += notUsed('logo');
   h += `<div class="field-row">${renderUploader('logo', 'PNG or SVG with a transparent background works best. Max 1&nbsp;MB.')}</div>`;
+  // Named for what it does rather than for the mechanism: in the layouts that
+  // stack the logo with text in one cell there is nothing to align it against,
+  // and the hint is what stops that reading as a broken control.
+  h += `<div class="field-row"><label class="field-label">Logo position<span class="field-hint">Where a layout sets the logo beside the text.</span></label><div class="toggle-group" data-action="logoAlign"><button class="${S.logoAlign==='top'?'active':''}" data-val="top">Top</button><button class="${S.logoAlign==='middle'?'active':''}" data-val="middle">Middle</button><button class="${S.logoAlign==='bottom'?'active':''}" data-val="bottom">Bottom</button></div></div>`;
   h += `<div class="field-row"><label class="field-label">Logo height</label><div class="slider-row"><input type="range" min="20" max="72" value="${S.logoHeight}" data-bind="logoHeight"><span class="slider-val">${S.logoHeight}px</span></div></div>`;
 
   h += `<div class="opt-group">Headshot</div>`;
@@ -1501,6 +1508,15 @@ function buildSignatureBody() {
   // way to do this that Outlook honours — flexbox and margin:auto do not
   // survive the Word rendering engine.
   const pv = ['top', 'middle', 'bottom'].indexOf(S.photoAlign) === -1 ? 'middle' : S.photoAlign;
+  // The same question for the logo, and the same answer. A logo beside a block
+  // of five contact rows, a social row and a disclaimer sits alone at the top
+  // of a tall signature unless something says otherwise.
+  //
+  // It only reaches the layouts where the logo has a cell to itself. Where a
+  // layout stacks the logo with text in one cell — Directory, Ribbon, Colour
+  // block — there is nothing for vertical-align to move it against, and the
+  // control says so rather than pretending.
+  const lv = ['top', 'middle', 'bottom'].indexOf(S.logoAlign) === -1 ? 'middle' : S.logoAlign;
 
   // ── Logo ──
   // Every layout with a logo slot shows one: the sample lockup until somebody
@@ -1767,7 +1783,7 @@ function buildSignatureBody() {
       : `<div style="font-family:${ff};font-size:${bs + 10}px;font-weight:800;letter-spacing:.04em;color:#ffffff;line-height:1.2;">${esc((pCompany || 'Logo').split(' ')[0].toUpperCase())}</div>`;
     return outer(`
       <tr>
-        <td width="${blockW}" bgcolor="${ac}" style="width:${blockW}px;background-color:${ac};text-align:center;vertical-align:middle;padding:30px 18px;">${mark}</td>
+        <td width="${blockW}" bgcolor="${ac}" style="width:${blockW}px;background-color:${ac};text-align:center;vertical-align:${lv};padding:30px 18px;">${mark}</td>
         <td style="vertical-align:middle;padding:26px 30px;">
           <p style="${nameStyleAt(bs + 4)}">${eName}</p>
           ${roleHTML({size: bs - 1, mb: 12})}
@@ -1814,7 +1830,7 @@ function buildSignatureBody() {
     const site = activeContacts.find(f => f.type === 'website');
     return outer(`
       <tr>
-        ${logoHTML ? `<td style="vertical-align:middle;padding-right:26px;">${logoAs({stack: true, size: Math.max(40, S.logoHeight)})}</td>` : ''}
+        ${logoHTML ? `<td style="vertical-align:${lv};padding-right:26px;">${logoAs({stack: true, size: Math.max(40, S.logoHeight)})}</td>` : ''}
         <td style="vertical-align:middle;padding-right:28px;">
           <p style="${nameStyle}">${eName}</p>
           ${roleHTML({mb: 4})}
@@ -1867,7 +1883,7 @@ function buildSignatureBody() {
           ${contactTable({lowercase: true})}
           ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 6}px;">${socialHTML}</div>` : ''}
         </td>
-        ${logoHTML ? `<td style="vertical-align:top;padding:2px 0 0 28px;">${logoAs({stack: true, size: Math.max(44, S.logoHeight)})}</td>` : ''}
+        ${logoHTML ? `<td style="vertical-align:${lv};padding:2px 0 0 28px;">${logoAs({stack: true, size: Math.max(44, S.logoHeight)})}</td>` : ''}
       </tr>
       ${(S.bannerEnabled && (S.bannerMessage || S.ctaLabel)) ? `<tr><td colspan="3" style="padding-top:${parseInt(sp) + 8}px;">
         <p style="font-family:${ff};font-size:${fs};color:${tc};line-height:1.5;margin:0;">${esc(S.bannerMessage)}${S.ctaLabel ? ` <a href="${esc(S.ctaUrl)}" style="color:${ac};text-decoration:underline;font-weight:600;">${esc(S.ctaLabel)}</a>` : ''}</p>
@@ -1979,7 +1995,7 @@ function buildSignatureBody() {
   if (S.template === 'brandmark') {
     return outer(`
       <tr>
-        ${logoHTML ? `<td style="vertical-align:top;padding:2px 26px 0 0;">${logoAs({stack: true, size: Math.max(40, S.logoHeight)})}</td>` : ''}
+        ${logoHTML ? `<td style="vertical-align:${lv};padding:2px 26px 0 0;">${logoAs({stack: true, size: Math.max(40, S.logoHeight)})}</td>` : ''}
         <td style="vertical-align:top;">
           <p style="${nameStyleAt(bs + 3)}">${eName}</p>
           ${roleHTML({size: bs - 1, mb: 12})}
@@ -1999,7 +2015,7 @@ function buildSignatureBody() {
     const addr = activeContacts.filter(f => f.type === 'address');
     return outer(`
       <tr>
-        ${logoHTML ? `<td style="vertical-align:middle;padding-right:22px;">${logoAs({mono: !showRealLogo, size: Math.max(38, S.logoHeight)})}</td>` : ''}
+        ${logoHTML ? `<td style="vertical-align:${lv};padding-right:22px;">${logoAs({mono: !showRealLogo, size: Math.max(38, S.logoHeight)})}</td>` : ''}
         <td width="100%" style="width:100%;vertical-align:middle;">
           <p style="${nameStyleAt(bs + 3)}">${eName}</p>
           ${roleHTML({size: bs - 1})}
@@ -2042,7 +2058,7 @@ function buildSignatureBody() {
     const site = activeContacts.find(f => f.type === 'website');
     return outer(`
       <tr>
-        <td width="100%" style="width:100%;vertical-align:middle;">${logoHTML ? logoAs({size: Math.max(30, S.logoHeight - 8)}) : ''}</td>
+        <td width="100%" style="width:100%;vertical-align:${lv};">${logoHTML ? logoAs({size: Math.max(30, S.logoHeight - 8)}) : ''}</td>
         <td style="vertical-align:middle;text-align:right;">${socialHTML}</td>
       </tr>
       <tr><td colspan="2" style="padding-top:${parseInt(sp) + 8}px;">
@@ -2138,7 +2154,7 @@ function buildSignatureBody() {
           ${contactTable({color: soft, icon: onDark ? '#FFFFFF' : ic, linkColor: ac, gap: 28})}
           ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialBlock({color: onDark ? '#FFFFFF' : sc, glyphColor: S.bgColor})}</div>` : ''}
         </td>
-        ${logoHTML ? `<td style="vertical-align:top;padding-left:26px;text-align:right;">${logoAs({size: Math.max(30, S.logoHeight - 8), colour: onDark ? '#FFFFFF' : undefined, hollow: onDark && !showRealLogo})}</td>` : ''}
+        ${logoHTML ? `<td style="vertical-align:${lv};padding-left:26px;text-align:right;">${logoAs({size: Math.max(30, S.logoHeight - 8), colour: onDark ? '#FFFFFF' : undefined, hollow: onDark && !showRealLogo})}</td>` : ''}
       </tr>
       ${bannerImgHTML ? `<tr><td colspan="3" style="padding-top:${parseInt(sp) + 8}px;">${bannerImgHTML}</td></tr>` : ''}
       ${discRow(3)}`);
@@ -2157,7 +2173,7 @@ function buildSignatureBody() {
       ${S.dividerEnabled ? `<tr><td style="padding-bottom:${sp};">${rule}</td></tr>` : ''}
       <tr><td>
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tbody><tr>
-          <td style="vertical-align:middle;padding-right:28px;">${logoHTML}</td>
+          <td style="vertical-align:${lv};padding-right:28px;">${logoHTML}</td>
           <td style="vertical-align:middle;width:100%;">${contactHTML}</td>
         </tr></tbody></table>
       </td></tr>
@@ -2350,6 +2366,7 @@ function setupEvents() {
         case 'fontWeight':      S.fontWeight = val; break;
         case 'headshotShape':   S.headshotShape = val; break;
         case 'photoAlign':      S.photoAlign = val; break;
+        case 'logoAlign':       S.logoAlign = val; break;
         case 'ctaStyle':        S.ctaStyle = val; break;
         case 'contactIconMode': S.contactIconMode = val; break;
         case 'roleStyle':       S.roleStyle = val; break;
