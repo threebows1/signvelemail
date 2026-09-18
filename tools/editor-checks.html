@@ -127,6 +127,90 @@
       E.push('the default headshot is not an absolute signvel.com URL: ' + DEFAULT_HEADSHOT_URL);
     }
 
+    // The sample logo is this product's own lockup, served from this site —
+    // not a real company's mark pulled off their WordPress install, which is
+    // what it used to be.
+    if (!/^https:\/\/signvel\.com\//.test(DEFAULT_LOGO_URL)) {
+      E.push('the sample logo is not an absolute signvel.com URL: ' + DEFAULT_LOGO_URL);
+    }
+
+    // LOGO_TEMPLATES and PHOTO_TEMPLATES are what the Media panel reads to say
+    // "this template has no slot for that". A list that disagrees with the
+    // layouts tells people the opposite of what they can see, so both are
+    // checked against the layouts rather than trusted. This found two: a
+    // retired template still listed, and one that draws a logo but was not.
+    (function () {
+      const keepTemplate = S.template, keepShow = window.SIGNVEL_SHOW_IMAGES;
+      window.SIGNVEL_SHOW_IMAGES = true;
+      const keepLogo = S.logoUrl, keepShot = S.headshotUrl;
+      S.logoUrl = 'https://example.com/probe-logo.png';
+      S.headshotUrl = 'https://example.com/probe-shot.png';
+
+      Object.keys(templateThemes).forEach(id => {
+        S.template = id;
+        const h = generateSignaturePreview();
+        const drawsLogo = h.includes('probe-logo.png');
+        const drawsShot = h.includes('probe-shot.png');
+        if (drawsLogo !== LOGO_TEMPLATES.includes(id)) {
+          E.push(id + (drawsLogo ? ' draws a logo but is not in LOGO_TEMPLATES'
+                                 : ' is in LOGO_TEMPLATES but draws no logo'));
+        }
+        if (drawsShot !== PHOTO_TEMPLATES.includes(id)) {
+          E.push(id + (drawsShot ? ' draws a headshot but is not in PHOTO_TEMPLATES'
+                                 : ' is in PHOTO_TEMPLATES but draws no headshot'));
+        }
+      });
+
+      S.logoUrl = keepLogo; S.headshotUrl = keepShot;
+      S.template = keepTemplate;
+      window.SIGNVEL_SHOW_IMAGES = keepShow;
+    })();
+
+    (function () {
+      // Every layout with a logo slot shows the sample logo, and an uploaded
+      // one replaces it everywhere. Corporate is the single exception while
+      // the sample is untouched: it reproduces a real company's signature, so
+      // it shows that company's mark.
+      const keepLogo = S.logoUrl, keepTemplate = S.template, keepShow = window.SIGNVEL_SHOW_IMAGES;
+      window.SIGNVEL_SHOW_IMAGES = true;
+      S.logoUrl = DEFAULT_LOGO_URL;
+
+      LOGO_TEMPLATES.forEach(id => {
+        S.template = id;
+        const h = generateSignaturePreview();
+        const want = id === 'corporate' ? CORPORATE_LOGO_URL : DEFAULT_LOGO_URL;
+        if (!h.includes(want)) E.push(id + ': does not show the expected sample logo');
+        if (id !== 'corporate' && h.includes(CORPORATE_LOGO_URL)) {
+          E.push(id + ": shows the other company's logo");
+        }
+      });
+
+      // An upload wins in every layout, Corporate included.
+      S.logoUrl = 'https://cdn.signvel.com/u/mine.png';
+      LOGO_TEMPLATES.forEach(id => {
+        S.template = id;
+        const h = generateSignaturePreview();
+        if (!h.includes('mine.png')) E.push(id + ': an uploaded logo did not replace the sample');
+        if (h.includes(CORPORATE_LOGO_URL)) E.push(id + ': kept the sample logo over an uploaded one');
+      });
+
+      window.SIGNVEL_SHOW_IMAGES = keepShow;
+      S.logoUrl = keepLogo;
+      S.template = keepTemplate;
+    })();
+
+    (function () {
+      // The retired logo default follows the new one forward; an uploaded logo
+      // is left alone. Same rule as the portrait below.
+      const keep = S.logoUrl;
+      adoptCloudState({state: {logoUrl: RETIRED_DEFAULT_LOGOS[0]}});
+      if (S.logoUrl !== DEFAULT_LOGO_URL) E.push('an old saved signature kept the retired default logo');
+      const mine = 'https://cdn.signvel.com/u/mine.png';
+      adoptCloudState({state: {logoUrl: mine}});
+      if (S.logoUrl !== mine) E.push('an uploaded logo was overwritten by the default');
+      S.logoUrl = keep;
+    })();
+
     (function () {
       // A saved signature still carrying a retired default was never a choice
       // anybody made, so it follows the default forward. One that was uploaded

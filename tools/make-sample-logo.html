@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>gen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@800&display=swap" rel="stylesheet">
+</head>
+<body style="font-family:system-ui;margin:28px;background:#fff">
+<!--
+  Sign Vel — the sample logo in every signature
+
+  The logo slot has to hold something before anybody uploads their own, and
+  what it holds should be this product's own mark rather than a real
+  customer's. This draws the lockup — gradient squiggle, then "Sign Vel" —
+  and writes it to the repository root as sample-logo.png.
+
+    powershell -ExecutionPolicy Bypass -File tools\make-sample-logo.ps1
+
+  PNG, not the inline SVG the site uses: Gmail, Outlook and Yahoo all strip
+  SVG out of mail, so anything that has to survive being sent is a raster.
+
+  Transparent, unlike email-logo.png. That one sits on one known flat colour
+  in an email header; this one lands in seventeen layouts, on white, on dark
+  panels and on colour blocks, and a baked-in ground would show as a pale box
+  on every one of them. It is the same constraint every customer's uploaded
+  logo lives under — which is the point: the sample should behave exactly
+  like the thing it stands in for.
+
+  Drawn at 3x the size it is displayed. Layouts ask for 30-50px of height and
+  a phone screen renders that at 3x, so 150px tall covers the largest case
+  without the file being pointlessly big.
+
+  The wordmark is Manrope 800, the face the site sets it in, loaded from
+  Google Fonts and waited for — document.fonts.ready resolves before a
+  webfont has actually arrived, so the wait is on the face itself. Without
+  that the canvas silently falls back to a system sans and the sample logo
+  stops matching the brand it is standing in for.
+-->
+<h1 style="font-size:18px;margin:0 0 6px">Sample logo</h1>
+<p id="meta" style="font:12px monospace;color:#555;margin:0 0 18px"></p>
+
+<div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap;margin-bottom:22px">
+  <div style="background:#fff;border:1px solid #eee;padding:18px;border-radius:10px">
+    <canvas id="c"></canvas>
+    <p style="font:12px monospace;color:#555;margin:8px 0 0">on white</p>
+  </div>
+  <div style="background:#14121F;padding:18px;border-radius:10px">
+    <img id="onDark" alt="" style="display:block;height:44px">
+    <p style="font:12px monospace;color:#8B879F;margin:8px 0 0">on a dark panel — 44px, as a layout shows it</p>
+  </div>
+  <div style="background:#5B2EFF;padding:18px;border-radius:10px">
+    <img id="onColour" alt="" style="display:block;height:44px">
+    <p style="font:12px monospace;color:#DCD3FF;margin:8px 0 0">on a colour block</p>
+  </div>
+</div>
+
+<p><a id="dl" download="sample-logo.png" style="background:#5B2EFF;color:#fff;font:600 14px system-ui;padding:10px 20px;border-radius:8px;text-decoration:none">Download sample-logo.png</a></p>
+<pre id="out" style="display:none"></pre>
+
+<script>
+(function () {
+  const q = new URLSearchParams(location.search);
+  const H = Number(q.get('h') || 150);        // canvas height: 3x of a 50px slot
+  const INK = q.get('ink') || '#14121F';
+
+  const MARK_VB_W = 88, MARK_VB_H = 37;       // the mark's own viewBox
+  const markH = Math.round(H * 0.62);         // the squiggle, inside the height
+  const scale = markH / MARK_VB_H;
+  const markW = MARK_VB_W * scale;
+  const gap = Math.round(H * 0.08);
+  const fontSize = Math.round(H * 0.56);
+  const font = '800 ' + fontSize + 'px Manrope, system-ui, sans-serif';
+
+  function draw() {
+    // Measured on a throwaway context first: setting canvas.width resets
+    // everything on the real one, including the font just set to measure with.
+    const probe = document.createElement('canvas').getContext('2d');
+    probe.font = font;
+    const textW = probe.measureText('Sign Vel').width;
+
+    const c = document.getElementById('c');
+    c.width = Math.ceil(markW + gap + textW + fontSize * 0.08);
+    c.height = H;
+    c.style.width = (c.width / 3) + 'px';
+    c.style.height = (H / 3) + 'px';
+
+    const ctx = c.getContext('2d');
+
+    // ── The mark ──
+    ctx.save();
+    ctx.scale(scale, scale);
+    ctx.translate(0, (H / scale - MARK_VB_H) / 2);
+    const grad = ctx.createLinearGradient(0, 0, MARK_VB_W, 0);
+    grad.addColorStop(0, '#5B2EFF');
+    grad.addColorStop(1, '#00E5A0');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke(new Path2D('M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9'));
+    ctx.beginPath();
+    ctx.arc(76, 27, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#9D4EDD';
+    ctx.fill();
+    ctx.restore();
+
+    // ── The wordmark ──
+    // "Sign" in ink, "Vel" in the mint the site uses — darkened from #00E5A0,
+    // which is a highlight colour and unreadable as text on white.
+    ctx.font = font;
+    ctx.textBaseline = 'middle';
+    const y = H / 2 + fontSize * 0.02;
+    let x = markW + gap;
+    ctx.fillStyle = INK;
+    ctx.fillText('Sign ', x, y);
+    x += ctx.measureText('Sign ').width;
+    ctx.fillStyle = '#00B37E';
+    ctx.fillText('Vel', x, y);
+
+    const url = c.toDataURL('image/png');
+    document.getElementById('dl').href = url;
+    document.getElementById('onDark').src = url;
+    document.getElementById('onColour').src = url;
+    document.getElementById('out').textContent = url.slice(url.indexOf(',') + 1);
+    document.getElementById('meta').textContent =
+      c.width + 'x' + c.height + '  displayed at ' + Math.round(c.width / 3) + 'x' + Math.round(H / 3);
+    document.title = 'PASS — ' + c.width + 'x' + c.height;
+  }
+
+  // Wait for the actual face, not just for the stylesheet.
+  if (document.fonts && document.fonts.load) {
+    document.fonts.load(font, 'Sign Vel').then(function () {
+      // Loaded, but not necessarily swapped in yet on the first frame.
+      requestAnimationFrame(draw);
+    }).catch(function () {
+      document.title = 'FAIL — Manrope did not load';
+      draw();
+    });
+  } else {
+    draw();
+  }
+})();
+</script>
+</body>
+</html>

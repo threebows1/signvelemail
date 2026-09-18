@@ -46,9 +46,28 @@ const icons = {
 const contactLetters = {email:'E',mobile:'M',phone:'T',address:'A',website:'W',office:'O',pronouns:'P',booking:'B'};
 
 // ───────────── Demo logo ─────────────
-// The stock logo that ships as the default. Recognising it is what lets the
-// generator tell "the user picked this" apart from "nobody has chosen yet".
-const DEFAULT_LOGO_URL = 'https://alriyady.ae/wp-content/uploads/2023/10/Al-Riyady-Corporate-Services-Proerties-Logo-400x163.png';
+// The logo every layout shows until somebody uploads their own — this
+// product's own lockup, drawn by tools/make-sample-logo.ps1 and served from
+// this site. Recognising it is what lets the renderer tell "the user picked
+// this" apart from "nobody has chosen yet".
+//
+// It used to be a real company's logo pulled from that company's WordPress
+// install, which made the sample signature depend on somebody else's site
+// staying up and put their mark in front of every visitor.
+const DEFAULT_LOGO_URL = 'https://signvel.com/sample-logo.png';
+
+// Al Riyady's own mark. Used by the identity below and nowhere else: the
+// Corporate layout reproduces that signature, and reproducing it under
+// another company's logo would defeat the point of having it.
+const CORPORATE_LOGO_URL = 'https://alriyady.ae/wp-content/uploads/2023/10/Al-Riyady-Corporate-Services-Proerties-Logo-400x163.png';
+
+// What the default logo used to be. A saved signature still pointing at it
+// was never a choice anybody made, so it follows the default forward.
+const RETIRED_DEFAULT_LOGOS = [CORPORATE_LOGO_URL];
+
+function ensureDefaultLogo() {
+  if (RETIRED_DEFAULT_LOGOS.indexOf(S.logoUrl) !== -1) S.logoUrl = DEFAULT_LOGO_URL;
+}
 
 // ───────────── Template themes ─────────────
 // Each layout was drawn against a particular palette and a particular set of
@@ -246,6 +265,10 @@ const CORPORATE_IDENTITY = {
     facebook:'alriyady', linkedin:'alriyady', instagram:'alriyady.ae',
     youtube:'alriyady', tiktok:'alriyady', x:'alriyady',
   },
+  // Carried by the identity rather than read from the default, so this layout
+  // reproduces that signature whole while every other one previews on the
+  // sample logo. An uploaded logo still wins here, as it does everywhere.
+  logo: CORPORATE_LOGO_URL,
 };
 
 // True while the identity is still exactly what shipped. One edited character
@@ -1026,7 +1049,12 @@ function renderDesign() {
 // ── Section 2: Logo & headshot ──
 // Which layouts actually read each image. Kept beside the templates rather than
 // inside the panel, because the signature builder needs the same answer.
-const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','card'];
+// Which layouts have a slot for each image, so the Media panel can say when a
+// setting will not show anywhere. Both lists have to match the layouts
+// themselves: 'card' was in here long after that template was retired, and
+// 'feature' draws a logo but was missing, so the panel told anyone on it that
+// there was no logo slot while the layout was rendering one.
+const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','feature'];
 const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature'];
 
 function renderMedia() {
@@ -1437,19 +1465,23 @@ function buildSignatureBody() {
   const headshotHTML = photoHTML();
 
   // ── Logo ──
-  // The real company logo is reserved for Corporate. Every other layout shows a
-  // generated mark instead, so the gallery reads as a set of designs rather
-  // than the same logo seventeen times. A logo the user chose always wins.
+  // Every layout with a logo slot shows one: the sample lockup until somebody
+  // uploads their own, and theirs the moment they do. The generated mark is
+  // now only what stands in when there is no logo at all — or when images are
+  // switched off, since a logo is a file and a mark is table markup.
+  //
+  // The one exception is an identity that carries its own: Corporate
+  // reproduces a real company's signature, so while the logo is still the
+  // untouched sample it shows that company's mark instead.
   const usingStockLogo = S.logoUrl === DEFAULT_LOGO_URL;
-  // A real logo is an image, so it waits for a subscription too. The generated
-  // mark is table markup rather than a file, so it still draws.
-  const showRealLogo = showImages && S.logoUrl && (!usingStockLogo || S.template === 'corporate');
+  const logoSrc = (usingStockLogo && who && who.logo) ? who.logo : S.logoUrl;
+  const showRealLogo = showImages && !!logoSrc;
 
   function logoAs(opts) {
-    if (!S.logoUrl) return '';
+    if (!logoSrc) return '';
     if (showRealLogo) {
       const hh = (opts && opts.size) || S.logoHeight;
-      return `<img src="${esc(S.logoUrl)}" height="${hh}" style="display:block;height:${hh}px;width:auto;" alt="${esc(pCompany)} logo">`;
+      return `<img src="${esc(logoSrc)}" height="${hh}" style="display:block;height:${hh}px;width:auto;" alt="${esc(pCompany)} logo">`;
     }
     // The generated mark is built from the company name, so it has to read the
     // same resolved identity the rest of the layout does.
@@ -2508,6 +2540,7 @@ function adoptCloudState(row) {
   // was never chosen should follow the default rather than pin it.
   ensureSocialCatalogue();
   ensureDefaultPortrait();
+  ensureDefaultLogo();
   return true;
 }
 
@@ -2673,9 +2706,10 @@ function loadState() {
 
   // A saved social list is whatever the catalogue held the day it was written.
   ensureSocialCatalogue();
-  // And a saved headshot may be the default from a day when the default was
-  // something else.
+  // And a saved headshot or logo may be the default from a day when the
+  // default was something else.
   ensureDefaultPortrait();
+  ensureDefaultLogo();
 }
 
 function resetState() {
