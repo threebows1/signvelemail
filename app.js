@@ -466,6 +466,11 @@ const S = {
   headshotName: 'Sample portrait',
   headshotShape: 'circle',
   headshotZoom: 100,
+  // Where the portrait sits against the text beside it: top, middle or
+  // bottom. Middle by default, because a portrait pinned to the top of a
+  // block that grows with every contact row and a disclaimer ends up marooned
+  // at the top of a tall signature. Each layout used to hard-code its own.
+  photoAlign: 'middle',
   // Ring drawn around the portrait. 0 is no ring.
   photoRing: 0,
   photoRingColor: '#FFFFFF',
@@ -1107,6 +1112,7 @@ function renderMedia() {
   // uploader above is how anyone replaces it.
 
   h += `<div class="field-row"><label class="field-label">Shape</label><div class="toggle-group" data-action="headshotShape"><button class="${S.headshotShape==='circle'?'active':''}" data-val="circle">Circle</button><button class="${S.headshotShape==='rounded'?'active':''}" data-val="rounded">Rounded</button><button class="${S.headshotShape==='square'?'active':''}" data-val="square">Square</button></div></div>`;
+  h += `<div class="field-row"><label class="field-label">Photo position<span class="field-hint">Against the text beside it.</span></label><div class="toggle-group" data-action="photoAlign"><button class="${S.photoAlign==='top'?'active':''}" data-val="top">Top</button><button class="${S.photoAlign==='middle'?'active':''}" data-val="middle">Middle</button><button class="${S.photoAlign==='bottom'?'active':''}" data-val="bottom">Bottom</button></div></div>`;
   h += `<div class="field-row"><label class="field-label">Photo size<span class="field-hint">Auto follows the template.</span></label><div class="slider-row"><input type="range" min="0" max="140" step="4" value="${S.headshotSize}" data-bind="headshotSize"><span class="slider-val">${S.headshotSize ? S.headshotSize + 'px' : 'Auto'}</span></div></div>`;
   h += `<div class="field-row"><label class="field-label">Ring width</label><div class="slider-row"><input type="range" min="0" max="10" value="${S.photoRing}" data-bind="photoRing"><span class="slider-val">${S.photoRing}px</span></div></div>`;
   if (S.photoRing) h += `<div class="opt-list">${colorRow('Ring colour', 'photoRingColor')}</div>`;
@@ -1489,6 +1495,13 @@ function buildSignatureBody() {
   }
   const headshotHTML = photoHTML();
 
+  // Where the portrait's cell sits against the text beside it. One value, used
+  // by every layout that puts a photo next to something, so the control means
+  // the same thing wherever you are. vertical-align on a table cell is the one
+  // way to do this that Outlook honours — flexbox and margin:auto do not
+  // survive the Word rendering engine.
+  const pv = ['top', 'middle', 'bottom'].indexOf(S.photoAlign) === -1 ? 'middle' : S.photoAlign;
+
   // ── Logo ──
   // Every layout with a logo slot shows one: the sample lockup until somebody
   // uploads their own, and theirs the moment they do. The generated mark is
@@ -1775,7 +1788,7 @@ function buildSignatureBody() {
     const solid = card !== 'transparent';
     const light = '#E8EEF9';
     const inner = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;width:100%;"><tbody><tr>
-        ${S.headshotUrl ? `<td style="vertical-align:top;padding-right:26px;">${photoHTML({ring: S.photoRing || 5, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>` : ''}
+        ${S.headshotUrl ? `<td style="vertical-align:${pv};padding-right:26px;">${photoHTML({ring: S.photoRing || 5, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>` : ''}
         <td width="100%" style="width:100%;vertical-align:middle;">
           <p style="${nameStyleAt(bs + 11, '#FFFFFF')}"><span style="font-weight:400;color:${ac};">${esc(firstWord)}</span>${restWords ? ' ' + esc(restWords) : ''}</p>
           ${roleHTML({mb: 14, chipBg: solid ? '#33507F' : 'rgba(255,255,255,.16)', capsColor: ac, color: light})}
@@ -1892,7 +1905,7 @@ function buildSignatureBody() {
 
     return outer(`
       <tr>
-        <td style="vertical-align:top;padding:2px 22px 0 0;">${headshotHTML}</td>
+        <td style="vertical-align:${pv};padding:2px 22px 0 0;">${headshotHTML}</td>
         <td style="width:1px;background-color:${ruleColor};font-size:1px;line-height:1px;">&nbsp;</td>
         <td width="100%" style="width:100%;vertical-align:middle;padding-left:22px;">
           <p style="${nameStyleAt(bs + 5)}">${eName}</p>
@@ -1912,7 +1925,7 @@ function buildSignatureBody() {
     const barCta = S.ctaLabel || 'Schedule a meeting with me';
     return outer(`
       <tr>
-        <td style="vertical-align:top;padding:0 22px 0 0;">${headshotHTML}</td>
+        <td style="vertical-align:${pv};padding:0 22px 0 0;">${headshotHTML}</td>
         <td width="100%" style="width:100%;vertical-align:top;">
           <p style="${nameStyleAt(bs + 4)}">${eName}</p>
           ${roleHTML({mb: 12, capsColor: ac})}
@@ -1946,7 +1959,7 @@ function buildSignatureBody() {
       </tr></table>` : '';
     return outer(`
       <tr>
-        <td style="vertical-align:middle;padding-right:24px;">${photoHTML({ring: S.photoRing || 5, ringColor: S.photoRing ? S.photoRingColor : ac})}</td>
+        <td style="vertical-align:${pv};padding-right:24px;">${photoHTML({ring: S.photoRing || 5, ringColor: S.photoRing ? S.photoRingColor : ac})}</td>
         <td width="100%" style="width:100%;vertical-align:middle;">
           <p style="${nameStyleAt(bs + 6, ac)}">${eName}</p>
           ${roleHTML({mb: 12, chipFg: '#FFFFFF'})}
@@ -2011,7 +2024,7 @@ function buildSignatureBody() {
       </tr></table>` : '';
     return outer(`
       <tr>
-        <td style="vertical-align:top;padding:0 28px 0 0;">${photoHTML({fallback: ac})}</td>
+        <td style="vertical-align:${pv};padding:0 28px 0 0;">${photoHTML({fallback: ac})}</td>
         <td width="100%" style="width:100%;vertical-align:top;">
           <p style="${nameStyleAt(bs + 5, ac)}">${eName}</p>
           ${roleHTML({size: bs, mb: 14})}
@@ -2051,7 +2064,7 @@ function buildSignatureBody() {
               <td bgcolor="${ac}" style="background-color:${ac};border-radius:9999px;padding:7px 18px;"><a href="https://${esc(site.value.replace(/^https?:\/\//, ''))}" style="font-family:${ff};font-size:${bs - 2}px;font-weight:600;color:#ffffff;text-decoration:none;white-space:nowrap;">${esc(site.value)}</a></td>
             </tr></table>` : ''}
           </td>
-          <td style="vertical-align:top;padding-left:26px;text-align:right;">${headshotHTML}</td>
+          <td style="vertical-align:${pv};padding-left:26px;text-align:right;">${headshotHTML}</td>
         </tr></table>
       </td></tr>
       ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
@@ -2073,7 +2086,7 @@ function buildSignatureBody() {
           <div style="padding-top:${parseInt(sp) + 10}px;">${contactTable({color: soft, icon: ac, linkColor: ac, gap: 30})}</div>
           ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialHTML}</div>` : ''}
         </td>
-        <td style="vertical-align:top;width:1px;">${photoHTML({size: S.headshotSize || 130})}</td>
+        <td style="vertical-align:${pv};width:1px;">${photoHTML({size: S.headshotSize || 130})}</td>
       </tr>
       ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${parseInt(sp) + 8}px;">${bannerImgHTML}</td></tr>` : ''}
       ${discRow(2)}`);
@@ -2103,7 +2116,7 @@ function buildSignatureBody() {
           ${taglineHTML}
           <div style="padding-top:${parseInt(sp) + 8}px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tbody>${gridRows}</tbody></table></div>
         </td>
-        <td style="vertical-align:top;padding-left:30px;">${photoHTML({ring: S.photoRing || 3, ringColor: S.photoRing ? S.photoRingColor : ac})}</td>
+        <td style="vertical-align:${pv};padding-left:30px;">${photoHTML({ring: S.photoRing || 3, ringColor: S.photoRing ? S.photoRingColor : ac})}</td>
       </tr>
       ${socialHTML ? `<tr><td colspan="2" style="padding-top:${parseInt(sp) + 10}px;text-align:right;">${socialHTML}</td></tr>` : ''}
       ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
@@ -2117,7 +2130,7 @@ function buildSignatureBody() {
     const soft = onDark ? 'rgba(255,255,255,.86)' : tc;
     return outer(`
       <tr>
-        <td style="vertical-align:middle;padding-right:28px;">${photoHTML({ring: S.photoRing || 4, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>
+        <td style="vertical-align:${pv};padding-right:28px;">${photoHTML({ring: S.photoRing || 4, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>
         <td width="100%" style="width:100%;vertical-align:middle;">
           <p style="${nameStyleAt(bs + 14, light)}">${eName}</p>
           ${roleHTML({mb: 14, chipBg: onDark ? 'rgba(255,255,255,.18)' : a2, chipFg: '#FFFFFF', color: soft, capsColor: ac})}
@@ -2336,6 +2349,7 @@ function setupEvents() {
         case 'alignment':       S.alignment = val; break;
         case 'fontWeight':      S.fontWeight = val; break;
         case 'headshotShape':   S.headshotShape = val; break;
+        case 'photoAlign':      S.photoAlign = val; break;
         case 'ctaStyle':        S.ctaStyle = val; break;
         case 'contactIconMode': S.contactIconMode = val; break;
         case 'roleStyle':       S.roleStyle = val; break;
