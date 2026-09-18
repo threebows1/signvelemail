@@ -1570,6 +1570,13 @@ function buildSignatureBody() {
   // A width set in the panel always wins.
   const templateWidth = {band:600, connect:600, spotlight:560, editorial:620, grid:620, accentbar:560,
                          feature:620, colorblock:600, darkcard:600, labelled:560, inline:560,
+                         // These four had no width at all, which is only
+                         // invisible while the signature is short. Add a
+                         // disclaimer and the table stretches to whatever it
+                         // is pasted into, the browser hands the spare room to
+                         // the column with the longest text, and the identity
+                         // column is squeezed until the name wraps mid-name.
+                         split:600, directory:600, brandmark:560, ribbon:600,
                          // Corporate draws its own table rather than going
                          // through outer(), and used to carry its own copy of
                          // this number. Listed here so one rule governs them all.
@@ -2089,7 +2096,7 @@ function buildSignatureBody() {
     const site = activeContacts.find(f => f.type === 'website');
     return outer(`
       <tr>
-        <td style="vertical-align:middle;padding-right:30px;">
+        <td width="210" style="width:210px;vertical-align:middle;padding-right:30px;">
           <p style="${nameStyleAt(bs + 3, ac)}">${eName}</p>
           ${roleHTML({mb: 14})}
           ${logoHTML ? `<div style="padding-bottom:12px;">${logoAs({size: Math.max(38, S.logoHeight)})}</div>` : ''}

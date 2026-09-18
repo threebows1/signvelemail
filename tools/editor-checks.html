@@ -384,6 +384,52 @@
         }
       });
 
+      // A long disclaimer must not reshape the signature above it. Four
+      // layouts had no width at all, so the table stretched to whatever it was
+      // pasted into, the browser gave the spare room to the column with the
+      // longest run of text, and the identity column was squeezed until the
+      // name broke across two lines mid-name.
+      //
+      // Measured as rendered in a container far wider than any signature, so a
+      // layout that stretches shows up as a width that follows the container
+      // rather than its own design.
+      S.bgEnabled = false;
+      S.disclaimerEnabled = false;
+      Object.keys(templateThemes).forEach(id => {
+        if (id === 'minimal') return;              // one line by design
+        S.template = id;
+        const bare = widest(generateSignaturePreview());
+        S.disclaimerEnabled = true;
+        S.disclaimerText = 'The content of this email is confidential and intended for the recipient specified in message only. It is strictly forbidden to share any part of this message with any third party, without a written consent of the sender.';
+        const withDisc = widest(generateSignaturePreview());
+        S.disclaimerEnabled = false;
+        if (withDisc > bare + 2) {
+          E.push(id + ': a disclaimer stretches it from ' + bare + 'px to ' + withDisc + 'px');
+        }
+      });
+
+      // And the name must not break across lines at the width the layout is
+      // drawn to. Measured on the rendered name rather than guessed from the
+      // character count, since the face and size both matter.
+      S.disclaimerEnabled = true;
+      Object.keys(templateThemes).forEach(id => {
+        S.template = id;
+        const box = document.createElement('div');
+        box.style.cssText = 'position:absolute;left:-10000px;top:0;width:' + AVAILABLE + 'px';
+        box.className = 'signature-container';
+        box.innerHTML = generateSignaturePreview();
+        document.body.appendChild(box);
+        const name = [].slice.call(box.querySelectorAll('p,span'))
+          .filter(el => el.textContent.trim() === SAMPLE_IDENTITY.name)[0];
+        if (name) {
+          const lines = Math.round(name.getBoundingClientRect().height /
+            parseFloat(getComputedStyle(name).lineHeight || 20));
+          if (lines > 1) E.push(id + ': the name wraps onto ' + lines + ' lines');
+        }
+        box.remove();
+      });
+      S.disclaimerEnabled = false;
+
       // Quiet text has to stay readable on a coloured panel. A fixed grey was
       // picked against near-black and turns to mud on a saturated blue.
       S.template = 'darkcard';
