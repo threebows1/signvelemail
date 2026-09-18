@@ -145,9 +145,16 @@
           // The cell holding the portrait is the one that has to move. Matched
           // on the photo's own cell rather than anywhere in the markup, since
           // every layout is full of other cells with their own alignment.
-          const cell = /<td style="vertical-align:([a-z]+);[^"]*"[^>]*>\s*<div style="width:\d+px;height:\d+px;border-radius/.exec(h);
-          if (!cell) E.push(id + ': could not find the portrait cell');
-          else if (cell[1] !== v) E.push(id + ': portrait cell is ' + cell[1] + ' when position is ' + v);
+          //
+          // Both the valign attribute and the CSS are required. Classic
+          // Outlook renders with Word, which honours the attribute; dropping
+          // it would leave the control working in every preview here and
+          // doing nothing in the client most companies actually use.
+          const cell = /<td valign="([a-z]+)" style="vertical-align:([a-z]+);[^"]*"[^>]*>\s*<div style="width:\d+px;height:\d+px;border-radius/.exec(h);
+          if (!cell) E.push(id + ': could not find the portrait cell with both valign and vertical-align');
+          else if (cell[1] !== v || cell[2] !== v) {
+            E.push(id + ': portrait cell is valign=' + cell[1] + ' / css ' + cell[2] + ' when position is ' + v);
+          }
         });
       });
 
@@ -183,10 +190,12 @@
           S.template = id;
           const h = generateSignaturePreview();
           // The logo's own cell: a td whose content starts with the logo img.
-          const cell = /<td [^>]*vertical-align:([a-z]+);[^"]*"[^>]*>\s*<img src="https:\/\/signvel\.com\/sample-/.exec(h);
+          const cell = /<td valign="([a-z]+)"[^>]*vertical-align:([a-z]+);[^"]*"[^>]*>\s*<img src="https:\/\/signvel\.com\/sample-/.exec(h);
           if (!cell) return;                        // stacked with text, nothing to align
           moved++;
-          if (cell[1] !== v) E.push(id + ': logo cell is ' + cell[1] + ' when position is ' + v);
+          if (cell[1] !== v || cell[2] !== v) {
+            E.push(id + ': logo cell is valign=' + cell[1] + ' / css ' + cell[2] + ' when position is ' + v);
+          }
         });
         if (!moved) E.push('no layout responded to logo position ' + v);
       });

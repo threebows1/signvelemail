@@ -1783,7 +1783,7 @@ function buildSignatureBody() {
       : `<div style="font-family:${ff};font-size:${bs + 10}px;font-weight:800;letter-spacing:.04em;color:#ffffff;line-height:1.2;">${esc((pCompany || 'Logo').split(' ')[0].toUpperCase())}</div>`;
     return outer(`
       <tr>
-        <td width="${blockW}" bgcolor="${ac}" style="width:${blockW}px;background-color:${ac};text-align:center;vertical-align:${lv};padding:30px 18px;">${mark}</td>
+        <td valign="${lv}" width="${blockW}" bgcolor="${ac}" style="width:${blockW}px;background-color:${ac};text-align:center;vertical-align:${lv};padding:30px 18px;">${mark}</td>
         <td style="vertical-align:middle;padding:26px 30px;">
           <p style="${nameStyleAt(bs + 4)}">${eName}</p>
           ${roleHTML({size: bs - 1, mb: 12})}
@@ -1804,7 +1804,7 @@ function buildSignatureBody() {
     const solid = card !== 'transparent';
     const light = '#E8EEF9';
     const inner = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;width:100%;"><tbody><tr>
-        ${S.headshotUrl ? `<td style="vertical-align:${pv};padding-right:26px;">${photoHTML({ring: S.photoRing || 5, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>` : ''}
+        ${S.headshotUrl ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:26px;">${photoHTML({ring: S.photoRing || 5, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>` : ''}
         <td width="100%" style="width:100%;vertical-align:middle;">
           <p style="${nameStyleAt(bs + 11, '#FFFFFF')}"><span style="font-weight:400;color:${ac};">${esc(firstWord)}</span>${restWords ? ' ' + esc(restWords) : ''}</p>
           ${roleHTML({mb: 14, chipBg: solid ? '#33507F' : 'rgba(255,255,255,.16)', capsColor: ac, color: light})}
@@ -1830,7 +1830,7 @@ function buildSignatureBody() {
     const site = activeContacts.find(f => f.type === 'website');
     return outer(`
       <tr>
-        ${logoHTML ? `<td style="vertical-align:${lv};padding-right:26px;">${logoAs({stack: true, size: Math.max(40, S.logoHeight)})}</td>` : ''}
+        ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:26px;">${logoAs({stack: true, size: Math.max(40, S.logoHeight)})}</td>` : ''}
         <td style="vertical-align:middle;padding-right:28px;">
           <p style="${nameStyle}">${eName}</p>
           ${roleHTML({mb: 4})}
@@ -1883,7 +1883,7 @@ function buildSignatureBody() {
           ${contactTable({lowercase: true})}
           ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 6}px;">${socialHTML}</div>` : ''}
         </td>
-        ${logoHTML ? `<td style="vertical-align:${lv};padding:2px 0 0 28px;">${logoAs({stack: true, size: Math.max(44, S.logoHeight)})}</td>` : ''}
+        ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding:2px 0 0 28px;">${logoAs({stack: true, size: Math.max(44, S.logoHeight)})}</td>` : ''}
       </tr>
       ${(S.bannerEnabled && (S.bannerMessage || S.ctaLabel)) ? `<tr><td colspan="3" style="padding-top:${parseInt(sp) + 8}px;">
         <p style="font-family:${ff};font-size:${fs};color:${tc};line-height:1.5;margin:0;">${esc(S.bannerMessage)}${S.ctaLabel ? ` <a href="${esc(S.ctaUrl)}" style="color:${ac};text-decoration:underline;font-weight:600;">${esc(S.ctaLabel)}</a>` : ''}</p>
@@ -1921,7 +1921,7 @@ function buildSignatureBody() {
 
     return outer(`
       <tr>
-        <td style="vertical-align:${pv};padding:2px 22px 0 0;">${headshotHTML}</td>
+        <td valign="${pv}" style="vertical-align:${pv};padding:2px 22px 0 0;">${headshotHTML}</td>
         <td style="width:1px;background-color:${ruleColor};font-size:1px;line-height:1px;">&nbsp;</td>
         <td width="100%" style="width:100%;vertical-align:middle;padding-left:22px;">
           <p style="${nameStyleAt(bs + 5)}">${eName}</p>
@@ -1941,7 +1941,7 @@ function buildSignatureBody() {
     const barCta = S.ctaLabel || 'Schedule a meeting with me';
     return outer(`
       <tr>
-        <td style="vertical-align:${pv};padding:0 22px 0 0;">${headshotHTML}</td>
+        <td valign="${pv}" style="vertical-align:${pv};padding:0 22px 0 0;">${headshotHTML}</td>
         <td width="100%" style="width:100%;vertical-align:top;">
           <p style="${nameStyleAt(bs + 4)}">${eName}</p>
           ${roleHTML({mb: 12, capsColor: ac})}
@@ -1975,7 +1975,7 @@ function buildSignatureBody() {
       </tr></table>` : '';
     return outer(`
       <tr>
-        <td style="vertical-align:${pv};padding-right:24px;">${photoHTML({ring: S.photoRing || 5, ringColor: S.photoRing ? S.photoRingColor : ac})}</td>
+        <td valign="${pv}" style="vertical-align:${pv};padding-right:24px;">${photoHTML({ring: S.photoRing || 5, ringColor: S.photoRing ? S.photoRingColor : ac})}</td>
         <td width="100%" style="width:100%;vertical-align:middle;">
           <p style="${nameStyleAt(bs + 6, ac)}">${eName}</p>
           ${roleHTML({mb: 12, chipFg: '#FFFFFF'})}
@@ -1995,7 +1995,7 @@ function buildSignatureBody() {
   if (S.template === 'brandmark') {
     return outer(`
       <tr>
-        ${logoHTML ? `<td style="vertical-align:${lv};padding:2px 26px 0 0;">${logoAs({stack: true, size: Math.max(40, S.logoHeight)})}</td>` : ''}
+        ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding:2px 26px 0 0;">${logoAs({stack: true, size: Math.max(40, S.logoHeight)})}</td>` : ''}
         <td style="vertical-align:top;">
           <p style="${nameStyleAt(bs + 3)}">${eName}</p>
           ${roleHTML({size: bs - 1, mb: 12})}
@@ -2015,7 +2015,7 @@ function buildSignatureBody() {
     const addr = activeContacts.filter(f => f.type === 'address');
     return outer(`
       <tr>
-        ${logoHTML ? `<td style="vertical-align:${lv};padding-right:22px;">${logoAs({mono: !showRealLogo, size: Math.max(38, S.logoHeight)})}</td>` : ''}
+        ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:22px;">${logoAs({mono: !showRealLogo, size: Math.max(38, S.logoHeight)})}</td>` : ''}
         <td width="100%" style="width:100%;vertical-align:middle;">
           <p style="${nameStyleAt(bs + 3)}">${eName}</p>
           ${roleHTML({size: bs - 1})}
@@ -2040,7 +2040,7 @@ function buildSignatureBody() {
       </tr></table>` : '';
     return outer(`
       <tr>
-        <td style="vertical-align:${pv};padding:0 28px 0 0;">${photoHTML({fallback: ac})}</td>
+        <td valign="${pv}" style="vertical-align:${pv};padding:0 28px 0 0;">${photoHTML({fallback: ac})}</td>
         <td width="100%" style="width:100%;vertical-align:top;">
           <p style="${nameStyleAt(bs + 5, ac)}">${eName}</p>
           ${roleHTML({size: bs, mb: 14})}
@@ -2058,7 +2058,7 @@ function buildSignatureBody() {
     const site = activeContacts.find(f => f.type === 'website');
     return outer(`
       <tr>
-        <td width="100%" style="width:100%;vertical-align:${lv};">${logoHTML ? logoAs({size: Math.max(30, S.logoHeight - 8)}) : ''}</td>
+        <td valign="${lv}" width="100%" style="width:100%;vertical-align:${lv};">${logoHTML ? logoAs({size: Math.max(30, S.logoHeight - 8)}) : ''}</td>
         <td style="vertical-align:middle;text-align:right;">${socialHTML}</td>
       </tr>
       <tr><td colspan="2" style="padding-top:${parseInt(sp) + 8}px;">
@@ -2080,7 +2080,7 @@ function buildSignatureBody() {
               <td bgcolor="${ac}" style="background-color:${ac};border-radius:9999px;padding:7px 18px;"><a href="https://${esc(site.value.replace(/^https?:\/\//, ''))}" style="font-family:${ff};font-size:${bs - 2}px;font-weight:600;color:#ffffff;text-decoration:none;white-space:nowrap;">${esc(site.value)}</a></td>
             </tr></table>` : ''}
           </td>
-          <td style="vertical-align:${pv};padding-left:26px;text-align:right;">${headshotHTML}</td>
+          <td valign="${pv}" style="vertical-align:${pv};padding-left:26px;text-align:right;">${headshotHTML}</td>
         </tr></table>
       </td></tr>
       ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
@@ -2102,7 +2102,7 @@ function buildSignatureBody() {
           <div style="padding-top:${parseInt(sp) + 10}px;">${contactTable({color: soft, icon: ac, linkColor: ac, gap: 30})}</div>
           ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialHTML}</div>` : ''}
         </td>
-        <td style="vertical-align:${pv};width:1px;">${photoHTML({size: S.headshotSize || 130})}</td>
+        <td valign="${pv}" style="vertical-align:${pv};width:1px;">${photoHTML({size: S.headshotSize || 130})}</td>
       </tr>
       ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${parseInt(sp) + 8}px;">${bannerImgHTML}</td></tr>` : ''}
       ${discRow(2)}`);
@@ -2132,7 +2132,7 @@ function buildSignatureBody() {
           ${taglineHTML}
           <div style="padding-top:${parseInt(sp) + 8}px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tbody>${gridRows}</tbody></table></div>
         </td>
-        <td style="vertical-align:${pv};padding-left:30px;">${photoHTML({ring: S.photoRing || 3, ringColor: S.photoRing ? S.photoRingColor : ac})}</td>
+        <td valign="${pv}" style="vertical-align:${pv};padding-left:30px;">${photoHTML({ring: S.photoRing || 3, ringColor: S.photoRing ? S.photoRingColor : ac})}</td>
       </tr>
       ${socialHTML ? `<tr><td colspan="2" style="padding-top:${parseInt(sp) + 10}px;text-align:right;">${socialHTML}</td></tr>` : ''}
       ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
@@ -2146,7 +2146,7 @@ function buildSignatureBody() {
     const soft = onDark ? 'rgba(255,255,255,.86)' : tc;
     return outer(`
       <tr>
-        <td style="vertical-align:${pv};padding-right:28px;">${photoHTML({ring: S.photoRing || 4, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>
+        <td valign="${pv}" style="vertical-align:${pv};padding-right:28px;">${photoHTML({ring: S.photoRing || 4, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>
         <td width="100%" style="width:100%;vertical-align:middle;">
           <p style="${nameStyleAt(bs + 14, light)}">${eName}</p>
           ${roleHTML({mb: 14, chipBg: onDark ? 'rgba(255,255,255,.18)' : a2, chipFg: '#FFFFFF', color: soft, capsColor: ac})}
@@ -2154,7 +2154,7 @@ function buildSignatureBody() {
           ${contactTable({color: soft, icon: onDark ? '#FFFFFF' : ic, linkColor: ac, gap: 28})}
           ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialBlock({color: onDark ? '#FFFFFF' : sc, glyphColor: S.bgColor})}</div>` : ''}
         </td>
-        ${logoHTML ? `<td style="vertical-align:${lv};padding-left:26px;text-align:right;">${logoAs({size: Math.max(30, S.logoHeight - 8), colour: onDark ? '#FFFFFF' : undefined, hollow: onDark && !showRealLogo})}</td>` : ''}
+        ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-left:26px;text-align:right;">${logoAs({size: Math.max(30, S.logoHeight - 8), colour: onDark ? '#FFFFFF' : undefined, hollow: onDark && !showRealLogo})}</td>` : ''}
       </tr>
       ${bannerImgHTML ? `<tr><td colspan="3" style="padding-top:${parseInt(sp) + 8}px;">${bannerImgHTML}</td></tr>` : ''}
       ${discRow(3)}`);
@@ -2173,7 +2173,7 @@ function buildSignatureBody() {
       ${S.dividerEnabled ? `<tr><td style="padding-bottom:${sp};">${rule}</td></tr>` : ''}
       <tr><td>
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tbody><tr>
-          <td style="vertical-align:${lv};padding-right:28px;">${logoHTML}</td>
+          <td valign="${lv}" style="vertical-align:${lv};padding-right:28px;">${logoHTML}</td>
           <td style="vertical-align:middle;width:100%;">${contactHTML}</td>
         </tr></tbody></table>
       </td></tr>
