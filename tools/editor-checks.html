@@ -167,6 +167,63 @@
     })();
 
     (function () {
+      // Type. A signature is read in a mail client, and no mail client fetches
+      // a webfont — Gmail strips @font-face and Outlook draws with whatever is
+      // installed. So every font offered has to be one that is already there,
+      // and every one has to actually reach the signature.
+      const keepFont = S.font, keepHeading = S.headingFont, keepTemplate = S.template;
+      S.template = 'minimal';
+
+      const named = [];
+      FONT_CHOICES.forEach(g => g.items.forEach(f => named.push(f)));
+      if (named.length < 10) E.push('only ' + named.length + ' fonts offered');
+
+      named.forEach(f => {
+        // The stack has to start with the face it is named after, or the name
+        // in the panel is not what the reader gets.
+        const first = f.stack.split(',')[0].replace(/['"]/g, '').trim();
+        if (first !== f.name) E.push(f.name + ': its stack starts with ' + first);
+        // And it has to end somewhere generic, so a machine without the face
+        // lands on something close rather than on the client's own default.
+        if (!/(sans-serif|serif|monospace)$/.test(f.stack.trim())) {
+          E.push(f.name + ': stack does not end in a generic family');
+        }
+        if (fontStack(f.name) !== f.stack) E.push(f.name + ': fontStack() does not resolve it');
+
+        S.font = f.name;
+        S.headingFont = '';
+        const h = generateSignaturePreview();
+        if (h.indexOf(f.stack) === -1) E.push(f.name + ': chosen as the body font but never reaches the signature');
+      });
+
+      // Nothing here may be a webfont: a name the machine does not have is a
+      // silent substitution the sender never sees.
+      const WEBFONTS = /(Inter|Roboto|Lato|Montserrat|Poppins|Open Sans|Source Sans|Nunito|Raleway|Manrope|Work Sans)/i;
+      named.forEach(f => {
+        if (WEBFONTS.test(f.stack)) E.push(f.name + ': stack names a webfont that will not be there');
+      });
+
+      // The display font is a separate choice, and "same as body" has to mean it.
+      S.font = 'Georgia';
+      S.headingFont = 'Arial';
+      const mixed = generateSignaturePreview();
+      if (mixed.indexOf(FONT_STACKS['Arial']) === -1) E.push('the display font never reaches the name');
+      if (mixed.indexOf(FONT_STACKS['Georgia']) === -1) E.push('the body font was lost when a display font was set');
+      S.headingFont = '';
+      if (generateSignaturePreview().indexOf(FONT_STACKS['Arial']) !== -1) {
+        E.push('"same as body" still uses the old display font');
+      }
+
+      // A saved signature naming a font this build no longer offers must not
+      // fall through to whatever the client chooses.
+      if (fontStack('Comic Sans MS') !== FONT_STACKS['Helvetica Neue']) {
+        E.push('an unknown font name does not fall back to the default stack');
+      }
+
+      S.font = keepFont; S.headingFont = keepHeading; S.template = keepTemplate;
+    })();
+
+    (function () {
       // A signature in a background panel must not grow by the panel's
       // padding: it was clipped in the preview and would be cut by a mail
       // client too, both of which give it roughly 600px and no more.

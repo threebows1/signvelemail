@@ -976,18 +976,27 @@ function renderUploader(kind, hint) {
 // Every visual control in one place: type, colour, icon treatment, rules and
 // spacing. The content sections keep only the values that go in the signature.
 function renderDesign() {
-  const fonts = ['Helvetica Neue','Georgia','Verdana','Trebuchet MS','Courier New'];
   const accents = ['#C9962B','#1F5E4E','#2B4C7E','#8B4513','#6B4E71','#5B2EFF'];
   let h = '';
 
+  // Each option is set in its own face, so the list is a specimen sheet rather
+  // than fourteen names in the panel's font. Grouped by kind, because the
+  // choice being made is really how formal the signature should read.
+  const fontOptions = (selected, blank) => {
+    let o = blank ? `<option value=""${selected === '' ? ' selected' : ''}>${blank}</option>` : '';
+    FONT_CHOICES.forEach(g => {
+      o += `<optgroup label="${esc(g.group)}">`;
+      g.items.forEach(f => {
+        o += `<option value="${esc(f.name)}" style="font-family:${esc(f.stack)}"${selected === f.name ? ' selected' : ''}>${esc(f.name)}</option>`;
+      });
+      o += `</optgroup>`;
+    });
+    return o;
+  };
+
   h += `<div class="opt-group">Type</div>`;
-  h += `<div class="field-row"><label class="field-label">Font family</label><select class="input" data-bind="font">`;
-  fonts.forEach(f => { h += `<option value="${f}"${S.font===f?' selected':''}>${f}</option>`; });
-  h += `</select></div>`;
-  h += `<div class="field-row"><label class="field-label">Display font<span class="field-hint">Used for the name. Falls back to the body font.</span></label><select class="input" data-bind="headingFont">`;
-  h += `<option value=""${S.headingFont===''?' selected':''}>Same as body</option>`;
-  fonts.forEach(f => { h += `<option value="${f}"${S.headingFont===f?' selected':''}>${f}</option>`; });
-  h += `</select></div>`;
+  h += `<div class="field-row"><label class="field-label">Font family<span class="field-hint">All of these are already on the reader's machine — mail clients will not fetch a font.</span></label><select class="input" data-bind="font">${fontOptions(S.font)}</select></div>`;
+  h += `<div class="field-row"><label class="field-label">Display font<span class="field-hint">Used for the name. Falls back to the body font.</span></label><select class="input" data-bind="headingFont">${fontOptions(S.headingFont, 'Same as body')}</select></div>`;
   h += `<div class="field-row"><label class="field-label">Font size</label><div class="slider-row"><input type="range" min="11" max="18" value="${S.bodySize}" data-bind="bodySize"><span class="slider-val">${S.bodySize}px</span></div></div>`;
   h += `<div class="field-row"><label class="field-label">Weight</label><div class="toggle-group" data-action="fontWeight"><button class="${S.fontWeight==='regular'?'active':''}" data-val="regular">Regular</button><button class="${S.fontWeight==='semibold'?'active':''}" data-val="semibold">Semibold</button></div></div>`;
 
@@ -1378,13 +1387,60 @@ function generatedLogoHTML(ff, opts) {
   </tr></table>`;
 }
 
-// Resolves one of the five shipped font names to a full email-safe stack.
+// ───────────── Type ─────────────
+// The fonts on offer, and the only fonts worth offering: a signature is read
+// in a mail client, and no mail client will fetch a webfont for it. Gmail
+// strips @font-face outright and Outlook draws with Word, which uses what is
+// installed on the reader's machine and nothing else. So every name here is a
+// face that ships with Windows, macOS, or Microsoft Office — the three places
+// corporate mail is actually read — and each carries a stack that degrades to
+// something close rather than to Times.
+//
+// Grouped because the choice is really "how formal", and a list of fourteen
+// names in one column does not say that.
+const FONT_CHOICES = [
+  {group: 'Sans-serif', items: [
+    // The two safest things in email, and the defaults of Gmail and Outlook.
+    {name: 'Arial',          stack: "Arial, Helvetica, sans-serif"},
+    {name: 'Helvetica Neue', stack: "'Helvetica Neue', Helvetica, Arial, sans-serif"},
+    // Office's own faces. Calibri has been the Word and Outlook default since
+    // 2007, so a signature set in it matches the message it sits under.
+    {name: 'Calibri',        stack: "Calibri, 'Segoe UI', Candara, Optima, sans-serif"},
+    {name: 'Segoe UI',       stack: "'Segoe UI', Tahoma, 'Helvetica Neue', Arial, sans-serif"},
+    {name: 'Tahoma',         stack: "Tahoma, Verdana, Geneva, sans-serif"},
+    {name: 'Trebuchet MS',   stack: "'Trebuchet MS', 'Lucida Grande', Helvetica, sans-serif"},
+    // Drawn wide for screens, which is why it survives small sizes.
+    {name: 'Verdana',        stack: "Verdana, Geneva, sans-serif"},
+  ]},
+  {group: 'Serif', items: [
+    {name: 'Georgia',          stack: "Georgia, 'Times New Roman', serif"},
+    {name: 'Times New Roman',  stack: "'Times New Roman', Times, serif"},
+    {name: 'Cambria',          stack: "Cambria, Georgia, 'Times New Roman', serif"},
+    {name: 'Garamond',         stack: "Garamond, 'Palatino Linotype', Palatino, 'Times New Roman', serif"},
+    // Palatino on a Mac, Palatino Linotype on Windows, Book Antiqua where
+    // Office installed that instead — the same design under three names.
+    {name: 'Palatino',         stack: "Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif"},
+  ]},
+  {group: 'Monospace', items: [
+    {name: 'Courier New', stack: "'Courier New', Courier, monospace"},
+    {name: 'Consolas',    stack: "Consolas, 'Lucida Console', Monaco, monospace"},
+  ]},
+];
+
+// Flattened for lookup. Built once rather than searched each render.
+const FONT_STACKS = (function () {
+  const map = {};
+  FONT_CHOICES.forEach(g => g.items.forEach(f => { map[f.name] = f.stack; }));
+  return map;
+})();
+
+// Resolves a shipped font name to a full stack. See FONT_CHOICES for why the
+// list is what it is; anything unrecognised — a name from an older build, or
+// one that has since been dropped — lands on the default rather than on
+// whatever the mail client feels like.
 function fontStack(name) {
-  return name === 'Georgia' ? "Georgia, 'Times New Roman', serif" :
-         name === 'Verdana' ? "Verdana, Geneva, sans-serif" :
-         name === 'Trebuchet MS' ? "'Trebuchet MS', Helvetica, sans-serif" :
-         name === 'Courier New' ? "'Courier New', Courier, monospace" :
-         "'Helvetica Neue', Helvetica, Arial, sans-serif";
+  const found = FONT_STACKS[name];
+  return found || FONT_STACKS['Helvetica Neue'];
 }
 
 function buildSignatureBody() {
