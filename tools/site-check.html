@@ -88,6 +88,19 @@ async function checkPage(page) {
     else if (!im.naturalWidth) E.push(page + ': broken image — ' + where);
   });
 
+  // The portrait is this product's own now, in the editor and on the site
+  // alike. A stock face creeping back into one of them would mean the
+  // marketing pages and the product show different people.
+  imgs.forEach((im) => {
+    if (/images\.unsplash\.com/.test(im.src)) {
+      E.push(page + ': still shows a stock portrait — ' + im.src.slice(0, 64));
+    }
+  });
+  if (page === 'index.html') {
+    const own = imgs.filter((im) => /signvel\.com\/admin-portrait/.test(im.src));
+    if (!own.length) E.push('index.html: the home page signatures no longer show the portrait');
+  }
+
   // Background images set in CSS are invisible to the DOM, so they are
   // fetched directly instead of being assumed.
   const bgUrls = [];
@@ -95,6 +108,9 @@ async function checkPage(page) {
     const bg = win.getComputedStyle(el).backgroundImage || '';
     const m = bg.match(/url\("?([^")]+)"?\)/);
     if (m && /^https?:/.test(m[1]) && bgUrls.indexOf(m[1]) === -1) bgUrls.push(m[1]);
+  });
+  bgUrls.forEach((u) => {
+    if (/images\.unsplash\.com/.test(u)) E.push(page + ': a stock portrait is still set in CSS — ' + u.slice(0, 64));
   });
   for (const u of bgUrls) {
     const ok = await new Promise((res) => {

@@ -700,7 +700,7 @@ body{margin:0}
 .brand-mock[data-font="treb"] .mini-sig{font-family:"Trebuchet MS",Verdana,sans-serif}
 .mini-face{
   width:52px;height:52px;border-radius:50%;flex:none;
-  background:#e4e0f3 url("https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=160&h=160&fit=facearea&facepad=3") center/cover;
+  background:#e4e0f3 url("https://signvel.com/admin-portrait.jpg") center/cover;
   box-shadow:0 0 0 2px var(--mock-accent);
 }
 .mini-text{display:block;min-width:0}
@@ -812,7 +812,7 @@ body{margin:0}
 }
 .ba-face{
   width:48px;height:48px;border-radius:50%;flex:none;
-  background:#e4e0f3 url("https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=160&h=160&fit=facearea&facepad=3") center/cover;
+  background:#e4e0f3 url("https://signvel.com/admin-portrait.jpg") center/cover;
 }
 .ba-body{display:block;min-width:0}
 .ba-name{display:block;font-size:15px;font-weight:700;color:#14121f}
