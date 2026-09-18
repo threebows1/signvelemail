@@ -82,6 +82,36 @@
       if (mode === 'in') {
         if (locked) E.push('signed in: editor stayed locked');
         if (went) E.push('signed in: redirected away from the editor: ' + went);
+
+        // is_admin arrives one request after boot, so the first panel is
+        // always drawn as a non-admin. When the flag turns up, the open
+        // section has to be redrawn — not just the rail. This shipped wrong:
+        // the rail gained its Admin entry and the admin portrait row in Media
+        // did not appear until you clicked away and back.
+        (function () {
+          const orig = Cloud.state;
+          // Land on Media, drawn while the profile says non-admin.
+          const media = sections.findIndex(s => s.id === 'media');
+          S.openSection = media;
+          renderPanel();
+          if (document.querySelector('#panel [data-action="adminPortrait"]')) {
+            E.push('signed in: the admin portrait showed before the profile said admin');
+          }
+          // Now the profile arrives.
+          Cloud.state = () => Object.assign({}, orig(), {isAdmin:true});
+          Cloud._cbs.forEach(fn => fn(Cloud.state()));
+          if (!document.querySelector('#rail [data-goto="' + sections.findIndex(s => s.id === 'admin') + '"]')) {
+            E.push('signed in: the rail did not gain its Admin entry when the flag arrived');
+          }
+          if (!document.querySelector('#panel [data-action="adminPortrait"]')) {
+            E.push('signed in: the open panel did not redraw when the admin flag arrived');
+          }
+          Cloud.state = orig;
+          Cloud._cbs.forEach(fn => fn(Cloud.state()));
+          S.openSection = 0;
+          renderPanel();
+        })();
+
         // Signing out must throw you back out to the sign-in page.
         const orig = Cloud.state;
         Cloud.state = () => Object.assign({}, orig(), {signedIn:false, email:null, userId:null});

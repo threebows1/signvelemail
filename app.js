@@ -2563,13 +2563,27 @@ function startCloud() {
   if (!window.Cloud || !Cloud.isReady) return;
   // The rail has to redraw too: the Admin button appears and disappears with
   // the signed-in profile, and signing out must take its contents with it.
+  //
+  // So does the panel. is_admin is not known at boot — the profile arrives one
+  // request later — so the first panel is always drawn as a non-admin, and
+  // anything an admin gets is missing from it. The rail redrew and the panel
+  // did not, so the Admin entry appeared while the admin portrait in Media
+  // silently did not, and clicking away and back was the only cure.
+  let lastAdmin = isAdmin();
   Cloud.onChange(() => {
     const c = Cloud.state();
     // Signing out has to close the editor behind you, not leave it open.
     if (!c.signedIn) { lockEditor(); }
     else if (authRequired) { unlockEditor(); }
-    if (!isAdmin() && sections[S.openSection] && sections[S.openSection].adminOnly) {
+
+    const nowAdmin = isAdmin();
+    const adminChanged = nowAdmin !== lastAdmin;
+    lastAdmin = nowAdmin;
+
+    if (!nowAdmin && sections[S.openSection] && sections[S.openSection].adminOnly) {
       S.openSection = 0;
+      renderPanel();
+    } else if (adminChanged) {
       renderPanel();
     }
     renderHeader();
