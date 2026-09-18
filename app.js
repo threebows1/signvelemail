@@ -276,10 +276,6 @@ const CORPORATE_IDENTITY = {
     facebook:'alriyady', linkedin:'alriyady', instagram:'alriyady.ae',
     youtube:'alriyady', tiktok:'alriyady', x:'alriyady',
   },
-  // Carried by the identity rather than read from the default, so this layout
-  // reproduces that signature whole while every other one previews on the
-  // sample logo. An uploaded logo still wins here, as it does everywhere.
-  logo: CORPORATE_LOGO_URL,
 };
 
 // True while the identity is still exactly what shipped. One edited character
@@ -1120,12 +1116,11 @@ function renderContacts() {
   // is — otherwise picking Corporate and seeing different details on it looks
   // like a bug rather than the point.
   if (identityIsStock()) {
-    // Which set is stored changes what needs explaining: a saved Al Riyady
-    // state is the one that looks wrong without a word, because the fields say
-    // one thing and sixteen of the seventeen previews say another.
+    // A saved state carrying the old Al Riyady details is the one that needs
+    // a word: the fields say one thing and every preview says another.
     h += matchesIdentity(CORPORATE_IDENTITY)
-      ? `<div class="inline-note" id="stockNote">These are the Al&nbsp;Riyady details, and the <strong>Corporate</strong> template shows them. Every other layout previews on Sign Vel branding instead, so the gallery reads as a set of designs rather than the same signature seventeen times. Type over any field above and yours are used on all of them.</div>`
-      : `<div class="inline-note" id="stockNote">Every layout except <strong>Corporate</strong> previews on Sign Vel branding, with a stand-in name — so the gallery reads as a set of designs rather than as one person's signature. Corporate reproduces the Al&nbsp;Riyady signature. Type over any field above and your own details are used on all seventeen.</div>`;
+      ? `<div class="inline-note" id="stockNote">These are the Al&nbsp;Riyady details from an earlier version. Every layout previews on Sign Vel branding instead, so the gallery reads as a set of designs rather than the same signature seventeen times. Type over any field above and yours are used on all of them.</div>`
+      : `<div class="inline-note" id="stockNote">Every layout previews on Sign Vel branding with a stand-in name, so the gallery reads as a set of designs rather than as one person's signature. Type over any field above and your own details are used on all seventeen.</div>`;
   }
 
   h += `<div class="opt-group">Contact details</div>`;
@@ -1387,9 +1382,17 @@ function buildSignatureBody() {
   // Only the values are swapped. Which rows exist, their order and whether each
   // is switched on all still come from the panel, so no control is made inert
   // by the layout you happen to be on.
-  const who = identityIsStock()
-    ? (S.template === 'corporate' ? CORPORATE_IDENTITY : SAMPLE_IDENTITY)
-    : null;
+  // Every layout previews on the same sample identity now. Corporate used to
+  // reproduce a real company's signature — name, contacts and logo — from the
+  // days when this was that company's internal tool. With the sample logo
+  // being this product's own, that layout was the one place the old branding
+  // survived, and it is also the layout the editor opens on: the first thing
+  // anybody saw was somebody else's company.
+  //
+  // Nothing is lost by dropping it. The substitution only ever applied while
+  // the details were untouched, so anyone who types their own details sees
+  // theirs on all seventeen layouts exactly as before.
+  const who = identityIsStock() ? SAMPLE_IDENTITY : null;
   const pName = who ? who.name : S.name;
   const pTitle = who ? who.title : S.title;
   const pCompany = who ? who.company : S.company;
@@ -1484,8 +1487,7 @@ function buildSignatureBody() {
   // The one exception is an identity that carries its own: Corporate
   // reproduces a real company's signature, so while the logo is still the
   // untouched sample it shows that company's mark instead.
-  const usingStockLogo = S.logoUrl === DEFAULT_LOGO_URL;
-  const logoSrc = (usingStockLogo && who && who.logo) ? who.logo : S.logoUrl;
+  const logoSrc = S.logoUrl;
   const showRealLogo = showImages && !!logoSrc;
 
   function logoAs(opts) {

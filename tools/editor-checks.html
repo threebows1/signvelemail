@@ -181,14 +181,12 @@
         // Which of the three sample files is right depends on the slot: the
         // ink lockup on a light ground, the white one on a dark layout, and
         // the mark alone where the slot is a panel built around a mark.
-        const want = id === 'corporate' ? [CORPORATE_LOGO_URL]
-                   : id === 'colorblock' ? [SAMPLE_MARK_WHITE_URL]
+        const want = id === 'colorblock' ? [SAMPLE_MARK_WHITE_URL]
                    : [DEFAULT_LOGO_URL, SAMPLE_LOGO_WHITE_URL];
         const shown = want.filter(u => h.includes(u))[0];
         if (!shown) E.push(id + ': does not show the expected sample logo');
-        if (id !== 'corporate' && h.includes(CORPORATE_LOGO_URL)) {
-          E.push(id + ": shows the other company's logo");
-        }
+        // No layout shows the old brand logo any more, Corporate included.
+        if (h.includes(CORPORATE_LOGO_URL)) E.push(id + ": shows the other company's logo");
         if (!shown) return;
         // A logo nobody has seen yet can be any shape. Every slot has to cap
         // its width, or a wide one pushes its column out and squeezes the rest
@@ -319,15 +317,19 @@
     });
     try { localStorage.clear(); } catch (e) {}
 
-    // Identity: sample details everywhere, brand details on Corporate only, and
-    // anything typed wins on every layout including Corporate.
+    // Identity: the same sample details on every layout, Corporate included,
+    // and anything typed wins everywhere. Corporate used to reproduce a real
+    // company's signature — it was also the layout the editor opens on, so the
+    // first thing anybody saw was somebody else's company.
     S.bgEnabled = false;
     if (!identityIsStock()) E.push('shipped state is not the sample identity');
     S.template = 'corporate';
     const corp = generateSignaturePreview();
-    if (!corp.includes(CORPORATE_IDENTITY.name)) E.push('Corporate did not show the brand name');
-    if (!corp.includes(CORPORATE_IDENTITY.contacts.email)) E.push('Corporate did not show the brand email');
-    if (corp.includes(SAMPLE_IDENTITY.name)) E.push('Corporate leaked the sample name');
+    if (!corp.includes(SAMPLE_IDENTITY.name)) E.push('Corporate did not show the sample name');
+    if (corp.includes(CORPORATE_IDENTITY.name)) E.push('Corporate still shows the old brand name');
+    if (corp.includes(CORPORATE_IDENTITY.contacts.email)) E.push('Corporate still shows the old brand email');
+    if (corp.includes(CORPORATE_LOGO_URL)) E.push('Corporate still shows the old brand logo');
+    if (!corp.includes(DEFAULT_LOGO_URL)) E.push('Corporate does not show the sample logo');
     ['spotlight','split','grid','feature','minimal'].forEach(id => {
       S.template = id;
       const h = generateSignaturePreview();
@@ -349,8 +351,10 @@
         ? Object.assign({}, f, {value: CORPORATE_IDENTITY.contacts[f.type]}) : f);
       if (!identityIsStock()) E.push('saved Al Riyady state not recognised as stock');
       S.template = 'corporate';
-      if (!generateSignaturePreview().includes(CORPORATE_IDENTITY.name)) E.push('legacy state: Corporate lost the brand name');
-      ['spotlight','ribbon','band','minimal'].forEach(id => {
+      if (generateSignaturePreview().includes(CORPORATE_IDENTITY.name)) {
+        E.push('legacy state: Corporate still shows the old brand name');
+      }
+      ['spotlight','ribbon','band','minimal','corporate'].forEach(id => {
         S.template = id;
         const h = generateSignaturePreview();
         if (!h.includes(SAMPLE_IDENTITY.name)) E.push('legacy state: ' + id + ' did not show the sample name');
