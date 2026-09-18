@@ -74,13 +74,22 @@
   //                          is 136px wide; a wordmark in it is a smudge)
   const WHITE = INK.toUpperCase() === '#FFFFFF';
   const WORD = q.get('word') !== '0';
+  // Stacked, not side by side. Laid out in a row the lockup is nearly four
+  // times as wide as it is tall, and every logo slot in a signature is sized
+  // by height — so a row-shaped logo either runs across half the signature or
+  // gets capped and shrinks to nothing. Stacked it is about as wide as it is
+  // tall, which is the shape these slots are drawn for.
+  const STACK = q.get('stack') !== '0';
 
   const MARK_VB_W = 88, MARK_VB_H = 37;       // the mark's own viewBox
-  const markH = Math.round(H * 0.62);         // the squiggle, inside the height
+  // Stacked: the mark takes the top half and the name sits under it, so the
+  // name is as large as the shape allows. Side by side both sit on the same
+  // baseline and the mark can be taller.
+  const markH = Math.round(H * (STACK && WORD ? 0.46 : 0.62));
   const scale = markH / MARK_VB_H;
   const markW = MARK_VB_W * scale;
-  const gap = Math.round(H * 0.08);
-  const fontSize = Math.round(H * 0.56);
+  const gap = Math.round(H * (STACK && WORD ? 0.06 : 0.08));
+  const fontSize = Math.round(H * (STACK && WORD ? 0.34 : 0.56));
   const font = '800 ' + fontSize + 'px Manrope, system-ui, sans-serif';
 
   function draw() {
@@ -90,8 +99,12 @@
     probe.font = font;
     const textW = probe.measureText('Sign Vel').width;
 
+    const stacked = STACK && WORD;
+
     const c = document.getElementById('c');
-    c.width = WORD ? Math.ceil(markW + gap + textW + fontSize * 0.08) : Math.ceil(markW);
+    c.width = !WORD ? Math.ceil(markW)
+            : stacked ? Math.ceil(Math.max(markW, textW) + fontSize * 0.2)
+                      : Math.ceil(markW + gap + textW + fontSize * 0.08);
     c.height = H;
     c.style.width = (c.width / 3) + 'px';
     c.style.height = (H / 3) + 'px';
@@ -99,9 +112,16 @@
     const ctx = c.getContext('2d');
 
     // ── The mark ──
+    // Stacked, it sits centred across the top with the name under it; in a row
+    // it is left of the name and both are centred on the canvas.
+    // The stack is centred in the canvas rather than hung from the top, so
+    // the logo does not sit high in its slot with a band of nothing under it.
+    const stackTop = stacked ? Math.round((H - (markH + gap + fontSize)) / 2) : 0;
+
     ctx.save();
+    ctx.translate(stacked ? (c.width - markW) / 2 : 0, stackTop);
     ctx.scale(scale, scale);
-    ctx.translate(0, (H / scale - MARK_VB_H) / 2);
+    ctx.translate(0, stacked ? 0 : (H / scale - MARK_VB_H) / 2);
     // The gradient is the brand mark on white. On a colour panel it turns to
     // mud against whatever is behind it, so the white variant is flat white.
     if (WHITE) {
@@ -131,8 +151,10 @@
     if (WORD) {
       ctx.font = font;
       ctx.textBaseline = 'middle';
-      const y = H / 2 + fontSize * 0.02;
-      let x = markW + gap;
+      // Stacked, the name sits in the band under the mark; in a row it is
+      // centred on the same line as the mark.
+      const y = stacked ? stackTop + markH + gap + fontSize * 0.5 : H / 2 + fontSize * 0.02;
+      let x = stacked ? (c.width - textW) / 2 : markW + gap;
       ctx.fillStyle = INK;
       ctx.fillText('Sign ', x, y);
       x += ctx.measureText('Sign ').width;
