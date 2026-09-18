@@ -56,6 +56,17 @@ const contactLetters = {email:'E',mobile:'M',phone:'T',address:'A',website:'W',o
 // staying up and put their mark in front of every visitor.
 const DEFAULT_LOGO_URL = 'https://signvel.com/sample-logo.png';
 
+// The same lockup for the grounds it has to survive. A layout that asks for a
+// white treatment gets the white file, and one whose slot is built around a
+// square mark rather than a lockup gets the mark alone — Colour block's panel
+// is 136px wide, and a wordmark squeezed into it is a smudge.
+//
+// Only the sample swaps like this. An uploaded logo is used exactly as
+// uploaded: guessing at a white version of somebody's mark is not this
+// product's business.
+const SAMPLE_LOGO_WHITE_URL = 'https://signvel.com/sample-logo-white.png';
+const SAMPLE_MARK_WHITE_URL = 'https://signvel.com/sample-mark-white.png';
+
 // Al Riyady's own mark. Used by the identity below and nowhere else: the
 // Corporate layout reproduces that signature, and reproducing it under
 // another company's logo would defeat the point of having it.
@@ -1481,7 +1492,25 @@ function buildSignatureBody() {
     if (!logoSrc) return '';
     if (showRealLogo) {
       const hh = (opts && opts.size) || S.logoHeight;
-      return `<img src="${esc(logoSrc)}" height="${hh}" style="display:block;height:${hh}px;width:auto;" alt="${esc(pCompany)} logo">`;
+      // Logos are not all square. A wordmark at 58px tall is over 200px wide,
+      // and dropped into a slot designed around a monogram it pushes the
+      // column out and squeezes everything beside it — which is what happened
+      // to Colour block the moment the sample stopped being a square mark.
+      // The cap is per slot, and the fallback is wide enough that an ordinary
+      // lockup is never touched by it.
+      //
+      // height="" is for Outlook, which ignores max-width and scales from the
+      // attribute. Everything else takes the CSS, where height:auto lets the
+      // width cap bind without squashing the mark out of proportion.
+      const mw = (opts && opts.maxw) || 240;
+      // A slot that asks for white is drawn on a dark panel or a colour block,
+      // and the ink lockup vanishes into it. mono means that slot wants a mark
+      // rather than a lockup.
+      let src = logoSrc;
+      if (src === DEFAULT_LOGO_URL && opts && opts.colour === '#FFFFFF') {
+        src = opts.mono ? SAMPLE_MARK_WHITE_URL : SAMPLE_LOGO_WHITE_URL;
+      }
+      return `<img src="${esc(src)}" height="${hh}" style="display:block;height:auto;max-height:${hh}px;width:auto;max-width:${mw}px;" alt="${esc(pCompany)} logo">`;
     }
     // The generated mark is built from the company name, so it has to read the
     // same resolved identity the rest of the layout does.
@@ -1708,7 +1737,7 @@ function buildSignatureBody() {
   if (S.template === 'colorblock') {
     const blockW = 136;
     const mark = S.logoUrl
-      ? logoAs({size: 58, colour: '#FFFFFF', hollow: true, mono: true})
+      ? logoAs({size: 58, maxw: blockW - 40, colour: '#FFFFFF', hollow: true, mono: true})
       : `<div style="font-family:${ff};font-size:${bs + 10}px;font-weight:800;letter-spacing:.04em;color:#ffffff;line-height:1.2;">${esc((pCompany || 'Logo').split(' ')[0].toUpperCase())}</div>`;
     return outer(`
       <tr>

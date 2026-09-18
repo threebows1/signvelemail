@@ -12,8 +12,16 @@
 # The virtual time budget is deliberately generous: the wordmark is Manrope
 # pulled from Google Fonts, and a canvas drawn before the face arrives is
 # silently set in a system sans instead.
+#
+# Three files come out of it, and all three are wanted — run it three times:
+#
+#   .\tools\make-sample-logo.ps1
+#   .\tools\make-sample-logo.ps1 -Ink '#FFFFFF' -Name sample-logo-white.png
+#   .\tools\make-sample-logo.ps1 -Ink '#FFFFFF' -NoWord -Name sample-mark-white.png
 param(
   [int]$H = 0,
+  [string]$Ink = '',
+  [switch]$NoWord,
   [string]$Name = 'sample-logo.png'
 )
 
@@ -21,8 +29,13 @@ $edge = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 if (-not (Test-Path $edge)) { $edge = "C:\Program Files\Microsoft\Edge\Application\msedge.exe" }
 
 $root = Split-Path -Parent $PSScriptRoot
+$query = @()
+if ($H -gt 0) { $query += "h=$H" }
+# The # has to be encoded or the browser reads the rest as a fragment.
+if ($Ink) { $query += "ink=" + [uri]::EscapeDataString($Ink) }
+if ($NoWord) { $query += "word=0" }
 $qs = ''
-if ($H -gt 0) { $qs = "?h=$H" }
+if ($query.Count) { $qs = '?' + ($query -join '&') }
 
 $url = "file:///" + $root.Replace([char]92, [char]47) + "/tools/make-sample-logo.html" + $qs
 $ud  = Join-Path $env:TEMP ("edgelogo" + (Get-Random))

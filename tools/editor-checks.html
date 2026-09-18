@@ -178,10 +178,25 @@
       LOGO_TEMPLATES.forEach(id => {
         S.template = id;
         const h = generateSignaturePreview();
-        const want = id === 'corporate' ? CORPORATE_LOGO_URL : DEFAULT_LOGO_URL;
-        if (!h.includes(want)) E.push(id + ': does not show the expected sample logo');
+        // Which of the three sample files is right depends on the slot: the
+        // ink lockup on a light ground, the white one on a dark layout, and
+        // the mark alone where the slot is a panel built around a mark.
+        const want = id === 'corporate' ? [CORPORATE_LOGO_URL]
+                   : id === 'colorblock' ? [SAMPLE_MARK_WHITE_URL]
+                   : [DEFAULT_LOGO_URL, SAMPLE_LOGO_WHITE_URL];
+        const shown = want.filter(u => h.includes(u))[0];
+        if (!shown) E.push(id + ': does not show the expected sample logo');
         if (id !== 'corporate' && h.includes(CORPORATE_LOGO_URL)) {
           E.push(id + ": shows the other company's logo");
+        }
+        if (!shown) return;
+        // A logo nobody has seen yet can be any shape. Every slot has to cap
+        // its width, or a wide one pushes its column out and squeezes the rest
+        // of the layout — which a wordmark did to Colour block.
+        const cap = /max-width:(\d+)px/.exec(h.slice(h.indexOf(shown)));
+        if (!cap) E.push(id + ': the logo has no width cap, so a wide one can blow out the layout');
+        else if (id === 'colorblock' && Number(cap[1]) > 100) {
+          E.push('colorblock: the logo may be ' + cap[1] + 'px wide in a 136px panel');
         }
       });
 

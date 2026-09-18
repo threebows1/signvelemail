@@ -64,6 +64,16 @@
   const q = new URLSearchParams(location.search);
   const H = Number(q.get('h') || 150);        // canvas height: 3x of a 50px slot
   const INK = q.get('ink') || '#14121F';
+  // Three assets come out of this one page, because a logo has to survive
+  // three grounds and one file cannot:
+  //
+  //   sample-logo.png        ink on light — the default, most layouts
+  //   sample-logo-white.png  white, for a layout drawn on a dark panel
+  //   sample-mark-white.png  the mark alone, for a slot built around a square
+  //                          mark rather than a lockup (Colour block's panel
+  //                          is 136px wide; a wordmark in it is a smudge)
+  const WHITE = INK.toUpperCase() === '#FFFFFF';
+  const WORD = q.get('word') !== '0';
 
   const MARK_VB_W = 88, MARK_VB_H = 37;       // the mark's own viewBox
   const markH = Math.round(H * 0.62);         // the squiggle, inside the height
@@ -81,7 +91,7 @@
     const textW = probe.measureText('Sign Vel').width;
 
     const c = document.getElementById('c');
-    c.width = Math.ceil(markW + gap + textW + fontSize * 0.08);
+    c.width = WORD ? Math.ceil(markW + gap + textW + fontSize * 0.08) : Math.ceil(markW);
     c.height = H;
     c.style.width = (c.width / 3) + 'px';
     c.style.height = (H / 3) + 'px';
@@ -92,32 +102,43 @@
     ctx.save();
     ctx.scale(scale, scale);
     ctx.translate(0, (H / scale - MARK_VB_H) / 2);
-    const grad = ctx.createLinearGradient(0, 0, MARK_VB_W, 0);
-    grad.addColorStop(0, '#5B2EFF');
-    grad.addColorStop(1, '#00E5A0');
-    ctx.strokeStyle = grad;
+    // The gradient is the brand mark on white. On a colour panel it turns to
+    // mud against whatever is behind it, so the white variant is flat white.
+    if (WHITE) {
+      ctx.strokeStyle = '#FFFFFF';
+    } else {
+      const grad = ctx.createLinearGradient(0, 0, MARK_VB_W, 0);
+      grad.addColorStop(0, '#5B2EFF');
+      grad.addColorStop(1, '#00E5A0');
+      ctx.strokeStyle = grad;
+    }
     ctx.lineWidth = 6;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke(new Path2D('M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9'));
     ctx.beginPath();
     ctx.arc(76, 27, 5, 0, Math.PI * 2);
-    ctx.fillStyle = '#9D4EDD';
+    // The purple dot disappears into a purple or red panel; on those the whole
+    // mark is one colour and the dot is the mint instead.
+    ctx.fillStyle = WHITE ? '#00E5A0' : '#9D4EDD';
     ctx.fill();
     ctx.restore();
 
     // ── The wordmark ──
-    // "Sign" in ink, "Vel" in the mint the site uses — darkened from #00E5A0,
-    // which is a highlight colour and unreadable as text on white.
-    ctx.font = font;
-    ctx.textBaseline = 'middle';
-    const y = H / 2 + fontSize * 0.02;
-    let x = markW + gap;
-    ctx.fillStyle = INK;
-    ctx.fillText('Sign ', x, y);
-    x += ctx.measureText('Sign ').width;
-    ctx.fillStyle = '#00B37E';
-    ctx.fillText('Vel', x, y);
+    // "Sign" in ink, "Vel" in the mint the site uses — darkened from #00E5A0
+    // on light, which is a highlight colour and weak as text on white, and
+    // left bright on dark, where the darkened one goes muddy.
+    if (WORD) {
+      ctx.font = font;
+      ctx.textBaseline = 'middle';
+      const y = H / 2 + fontSize * 0.02;
+      let x = markW + gap;
+      ctx.fillStyle = INK;
+      ctx.fillText('Sign ', x, y);
+      x += ctx.measureText('Sign ').width;
+      ctx.fillStyle = WHITE ? '#00E5A0' : '#00B37E';
+      ctx.fillText('Vel', x, y);
+    }
 
     const url = c.toDataURL('image/png');
     document.getElementById('dl').href = url;
@@ -129,17 +150,37 @@
     document.title = 'PASS — ' + c.width + 'x' + c.height;
   }
 
-  // Wait for the actual face, not just for the stylesheet.
+  // Wait for the actual face, not just for the stylesheet — but never wait
+  // forever. document.fonts.load() can sit unsettled when the network is slow
+  // or absent, and a generator that produces nothing at all is worse than one
+  // that produces the wordmark in a system sans and says so.
+  let drawn = false;
+  function once(note) {
+    if (drawn) return;
+    drawn = true;
+    draw();
+    if (note) document.title = note;
+  }
+
+  // Headless Edge runs this under --virtual-time-budget, which advances
+  // timers far faster than the clock, so this fallback usually wins the race
+  // against the font promise even when the face is already there. That is why
+  // it asks whether the face is usable rather than assuming the wait failed —
+  // otherwise every run would report a problem it does not have.
+  setTimeout(function () {
+    const ok = document.fonts && document.fonts.check(font);
+    once(ok ? null : 'FAIL — Manrope never arrived, the wordmark is a system sans');
+  }, 5000);
+
   if (document.fonts && document.fonts.load) {
     document.fonts.load(font, 'Sign Vel').then(function () {
       // Loaded, but not necessarily swapped in yet on the first frame.
-      requestAnimationFrame(draw);
+      requestAnimationFrame(function () { once(); });
     }).catch(function () {
-      document.title = 'FAIL — Manrope did not load';
-      draw();
+      once('FAIL — Manrope did not load');
     });
   } else {
-    draw();
+    once();
   }
 })();
 </script>
