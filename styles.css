@@ -494,7 +494,7 @@ select.input{cursor:pointer;appearance:auto}
    tooltip, so the choice reads by eye without losing it for a screen reader. */
 .sw-ring{
   display:inline-flex;align-items:center;justify-content:center;
-  width:19px;height:19px;box-sizing:border-box;
+  width:21px;height:21px;box-sizing:border-box;
   border:1.5px solid currentColor;border-radius:50%;
 }
 .sw-box{
