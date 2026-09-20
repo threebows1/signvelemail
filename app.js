@@ -2031,18 +2031,51 @@ function buildSignatureBody() {
     if (!list.length) return '';
     const cols = o.cols || S.contactColumns || 1;
     const gap = o.gap != null ? o.gap : 26;
+    // Laid across the width, a value must never break inside itself: the table
+    // is held to the layout, so the browser squeezes each cell to its share and
+    // wraps whatever will not fit, which turned a phone number into
+    // "+971 / 50 / 123 / 4567", one fragment per line. Held on one line, the
+    // cell asks for the width it needs instead.
+    //
+    // Only while it can have it, though. A value longer than the whole layout
+    // has nowhere to go, and holding that on one line would push the signature
+    // off the edge — worse than the break it avoids.
+    const rowMax = layoutW || 560;
+    const fieldWidth = f => String(f.value || '').length * (bs - 1) * 0.55 + 46;
     const cell = (f, last) => {
       const p = contactParts(f, o);
       const rightPad = last ? 0 : gap;
-      if (!p.lead) return `<td colspan="2" style="padding:${p.valPad};padding-right:${rightPad}px;vertical-align:${p.align};">${p.val}</td>`;
+      const noWrap = o.row && fieldWidth(f) <= rowMax ? 'white-space:nowrap;' : '';
+      if (!p.lead) return `<td colspan="2" style="padding:${p.valPad};padding-right:${rightPad}px;vertical-align:${p.align};${noWrap}">${p.val}</td>`;
       return `<td style="padding:${p.leadPad};vertical-align:${p.align};${p.raw ? 'font-size:0;line-height:0;' : ''}">${p.lead}</td>
-              <td style="padding:${p.valPad};padding-right:${rightPad}px;vertical-align:${p.align};">${p.val}</td>`;
+              <td style="padding:${p.valPad};padding-right:${rightPad}px;vertical-align:${p.align};${noWrap}">${p.val}</td>`;
     };
     let rows = '';
-    // A single row with every field laid across it — the shallow inline layout
-    // is the whole point of this mode.
+    // Laid across the width, wrapping between fields rather than inside one.
+    // Forcing every field onto a single row is what broke: the table is held
+    // to the layout's width, so four of them were squeezed until the phone
+    // numbers came apart. Packed instead — as many to a line as the width
+    // takes, then a new line — so each value stays whole and the block still
+    // reads as two or three shallow rows rather than a column.
+    //
+    // Widths are estimated from the text rather than measured, because this
+    // markup is built once and has to hold up in a mail client where nothing
+    // can be measured. 0.55em per character is a deliberate over-estimate for
+    // the faces on offer; erring wide costs a line break, erring narrow costs
+    // an overflowing signature.
     if (o.row) {
-      rows = `<tr>` + list.map((f, i) => cell(f, i === list.length - 1)).join('') + `</tr>`;
+      const lines = [];
+      let line = [], used = 0;
+      list.forEach(f => {
+        const w = fieldWidth(f);
+        if (line.length && used + w > rowMax) { lines.push(line); line = []; used = 0; }
+        line.push(f);
+        used += w;
+      });
+      if (line.length) lines.push(line);
+      rows = lines.map(ln =>
+        `<tr>` + ln.map((f, i) => cell(f, i === ln.length - 1)).join('') + `</tr>`
+      ).join('');
     } else if (cols === 2) {
       for (let i = 0; i < list.length; i += 2) {
         const pair = list.slice(i, i + 2);
