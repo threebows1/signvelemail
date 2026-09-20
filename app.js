@@ -147,6 +147,14 @@ const templateThemes = {
   // narrow so it survives a phone; this one spends the width instead, and the
   // brand arrives before the details rather than after them.
   bulletin:   {accent:'#0E7490', accent2:'#083344', panel:null, social:'circle', icons:'icons',   cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
+  // A rule standing on its end. Accent bar has a coloured edge, but it marks
+  // the outside of the whole block; this one divides, with the portrait and
+  // the mark on one side of it and everything else on the other.
+  aside:      {accent:'#4338CA', accent2:'#1E1B4B', panel:null, social:'filled', icons:'icons',   cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
+  // Three panels across: the picture, who you are, how to reach you — ruled
+  // underneath. The set had two-column pairings and one three-column layout
+  // that ends in a call to action; this one gives the three equal standing.
+  triptych:   {accent:'#7C2D12', accent2:'#431407', panel:null, social:'circle', icons:'icons',   cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
 };
 
 // Falls back to the theme accent, so a layout added later still gets a mark.
@@ -887,6 +895,8 @@ function tmplPreviews() {
     letterhead: `<div style="width:44px">${dot(12,'var(--tmpl-ink)')}<div style="height:3px"></div>${bar(20,3,0,2)}${bar(13,2,0,3)}<div style="height:2px;background:${A('letterhead')};margin-bottom:3px"></div><div style="display:flex;gap:4px;align-items:center"><div style="width:11px;height:6px;background:var(--tmpl-ink);opacity:.45;border-radius:1px;flex-shrink:0"></div><div style="flex:1">${rows(3,26)}</div></div><div style="height:2px;background:${A('letterhead')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('letterhead'))}${dot(5,A('letterhead'))}${dot(5,A('letterhead'))}</div></div>`,
     masthead: `<div style="width:44px">${dot(12,'var(--tmpl-ink)')}<div style="height:2px"></div><div style="height:2px;background:${A('masthead')};margin-bottom:3px"></div><div style="display:flex;gap:5px"><div style="flex-shrink:0">${bar(15,3,0,2)}${bar(10,2)}</div><div style="flex:1">${rows(3,20)}</div></div><div style="height:2px;background:${A('masthead')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('masthead'))}${dot(5,A('masthead'))}${dot(5,A('masthead'))}</div></div>`,
     bulletin: `<div style="width:44px">${dot(12,'var(--tmpl-ink)')}<div style="height:3px"></div>${bar(19,3,0,2)}${bar(12,2,0,3)}<div style="width:14px;height:7px;background:var(--tmpl-ink);opacity:.45;border-radius:1px;margin-bottom:3px"></div><div style="height:2px;background:${A('bulletin')};margin-bottom:3px"></div>${rows(3,34)}<div style="height:2px;background:${A('bulletin')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('bulletin'))}${dot(5,A('bulletin'))}${dot(5,A('bulletin'))}</div></div>`,
+    aside: `<div style="display:flex;gap:5px;align-items:stretch"><div style="flex-shrink:0">${dot(12,'var(--tmpl-ink)')}<div style="height:3px"></div><div style="width:12px;height:7px;background:var(--tmpl-ink);opacity:.45;border-radius:1px"></div></div><div style="width:2px;background:${A('aside')};border-radius:1px;flex-shrink:0"></div><div style="flex:1">${bar(16,3,0,2)}${bar(11,2,0,3)}${rows(3,22)}<div style="display:flex;gap:2px;margin-top:3px">${dot(5,A('aside'))}${dot(5,A('aside'))}${dot(5,A('aside'))}</div></div></div>`,
+    triptych: `<div style="width:46px"><div style="display:flex;gap:4px"><div style="flex-shrink:0">${dot(11,'var(--tmpl-ink)')}<div style="height:2px"></div><div style="width:11px;height:6px;background:var(--tmpl-ink);opacity:.45;border-radius:1px"></div></div><div style="flex:1">${bar(13,3,0,2)}${bar(9,2)}</div><div style="flex:1">${rows(3,15)}</div></div><div style="height:2px;background:${A('triptych')};margin:3px 0"></div><div style="display:flex;gap:3px;align-items:center"><div style="width:12px;height:6px;background:var(--tmpl-ink);opacity:.45;border-radius:1px"></div><div style="display:flex;gap:2px;margin-left:auto">${dot(5,A('triptych'))}${dot(5,A('triptych'))}${dot(5,A('triptych'))}</div></div></div>`,
   };
 }
 
@@ -897,9 +907,9 @@ function renderTemplates() {
     accentbar:'Accent bar', colorblock:'Colour block', darkcard:'Dark card', connect:'Connect bar',
     ribbon:'Ribbon', brandmark:'Brandmark', inline:'Inline', labelled:'Labelled',
     band:'Banner band', editorial:'Editorial', grid:'Grid', feature:'Feature', minimal:'Minimal',
-    stacked:'Stacked', profile:'Profile', letterhead:'Letterhead', masthead:'Masthead', bulletin:'Bulletin',
+    stacked:'Stacked', profile:'Profile', letterhead:'Letterhead', masthead:'Masthead', bulletin:'Bulletin', aside:'Aside', triptych:'Triptych',
   };
-  const order = ['corporate','spotlight','stacked','profile','letterhead','masthead','bulletin','split','directory','accentbar','colorblock','darkcard',
+  const order = ['corporate','spotlight','stacked','profile','letterhead','masthead','bulletin','aside','triptych','split','directory','accentbar','colorblock','darkcard',
                  'connect','ribbon','brandmark','inline','labelled','band','editorial','grid','feature','minimal'];
 
   let h = `<div class="field-row"><label class="field-label">Template</label><div class="template-grid">`;
@@ -1375,8 +1385,8 @@ function renderDesign() {
 // themselves: 'card' was in here long after that template was retired, and
 // 'feature' draws a logo but was missing, so the panel told anyone on it that
 // there was no logo slot while the layout was rendering one.
-const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','feature','stacked','profile','letterhead','masthead','bulletin'];
-const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature','stacked','profile','letterhead','masthead','bulletin'];
+const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','feature','stacked','profile','letterhead','masthead','bulletin','aside','triptych'];
+const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature','stacked','profile','letterhead','masthead','bulletin','aside','triptych'];
 
 // The ones that give the portrait a row of its own, with nothing beside it.
 const PHOTO_ON_ITS_OWN_ROW = ['stacked', 'letterhead', 'masthead', 'bulletin'];
@@ -1781,7 +1791,8 @@ function buildSignatureBody() {
                          profile:560,
                          letterhead:560,
                          masthead:560,
-                         bulletin:560};
+                         bulletin:560,
+                         aside:560, triptych:620};
   // The background panel wraps the whole signature and adds its padding
   // outside it, so a 600px layout in a panel padded 24px is 648px wide — wider
   // than the layout was drawn for, wider than the preview column, and wider
@@ -2816,6 +2827,64 @@ function buildSignatureBody() {
       ${socialHTML ? `<tr><td>${socialHTML}</td></tr>` : ''}
       ${bannerImgHTML ? `<tr><td style="padding-top:${gap + 4}px;">${bannerImgHTML}</td></tr>` : ''}
       ${discRow(1, `${gap + 6}px 0 0`)}`);
+  }
+
+  // ── Aside ──
+  // A rule standing on its end, with the picture and the mark on one side of it
+  // and everything else on the other. Accent bar also carries a coloured bar,
+  // but that one marks the outer edge of the whole block; this one divides two
+  // halves, which is why it sits between the columns rather than before them.
+  if (S.template === 'aside') {
+    const gap = parseInt(sp);
+    const barW = Math.max(2, S.dividerWidth);
+    return outer(`
+      <tr>
+        ${S.headshotUrl && showImages ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:22px;">${photoHTML({shape: 'circle', size: S.headshotSize || 84, ring: S.photoRing, ringColor: S.photoRingColor})}${
+          logoHTML ? `<div style="padding-top:${gap + 4}px;">${logoAs({size: Math.min(S.logoHeight, 34)})}</div>` : ''}</td>`
+        : logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:22px;">${logoAs({size: Math.min(S.logoHeight, 34)})}</td>` : ''}
+        ${S.dividerEnabled ? `<td width="${barW}" bgcolor="${ac}" style="width:${barW}px;background-color:${ac};font-size:1px;line-height:1px;">&nbsp;</td>` : ''}
+        <td width="100%" style="width:100%;vertical-align:middle;padding-left:${S.dividerEnabled ? 22 : 0}px;">
+          <p style="${nameStyleAt(bs + 3)}">${eName}</p>
+          ${roleHTML({mb: 2})}
+          <p style="${titleStyle}">${esc(pCompany)}</p>
+          ${taglineHTML}
+          <div style="padding-top:${gap + 2}px;">${contactHTML}</div>
+          ${socialHTML ? `<div style="padding-top:${gap + 2}px;">${socialHTML}</div>` : ''}
+        </td>
+      </tr>
+      ${bannerImgHTML ? `<tr><td colspan="3" style="padding-top:${gap + 4}px;">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(3, `${gap + 6}px 0 0`)}`);
+  }
+
+  // ── Triptych ──
+  // Three panels across — the picture, who you are, how to reach you — ruled
+  // underneath, with the mark and the social icons sharing the line below. The
+  // set pairs two columns in several ways and runs three only where the third
+  // is a call to action; here the three carry equal weight.
+  if (S.template === 'triptych') {
+    const gap = parseInt(sp);
+    return outer(`
+      <tr>
+        ${S.headshotUrl && showImages ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:24px;">${photoHTML({shape: 'circle', size: S.headshotSize || 82, ring: S.photoRing, ringColor: S.photoRingColor})}</td>` : ''}
+        <td width="190" valign="top" style="width:190px;vertical-align:top;padding-right:24px;">
+          <p style="${nameStyleAt(bs + 2)}">${eName}</p>
+          ${roleHTML({mb: 2})}
+          <p style="${titleStyle}">${esc(pCompany)}</p>
+          ${taglineHTML}
+        </td>
+        <td style="vertical-align:top;">${contactHTML}</td>
+      </tr>
+      ${S.dividerEnabled ? `<tr><td colspan="3" style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</td></tr>` : `<tr><td colspan="3" style="height:${gap + 2}px;"></td></tr>`}
+      <tr>
+        <td colspan="3">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tbody><tr>
+            ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:24px;">${logoAs({size: Math.min(S.logoHeight, 34)})}</td>` : ''}
+            ${socialHTML ? `<td width="100%" style="width:100%;vertical-align:middle;">${socialHTML}</td>` : '<td></td>'}
+          </tr></tbody></table>
+        </td>
+      </tr>
+      ${bannerImgHTML ? `<tr><td colspan="3" style="padding-top:${gap + 4}px;">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(3, `${gap + 6}px 0 0`)}`);
   }
 
   // minimal
