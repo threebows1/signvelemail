@@ -132,6 +132,11 @@ const templateThemes = {
   // the name, and this stacks the two so the identity reads as one block with
   // the details ruled off beside it.
   profile:    {accent:'#15803D', accent2:'#052E16', panel:null, social:'filled', icons:'icons',   cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
+  // Corporate's shape — who you are on top, then the mark beside the details —
+  // but carrying a portrait above it, which Corporate has no slot for. The one
+  // layout in the set that shows a face and a mark without setting them
+  // opposite each other.
+  letterhead: {accent:'#9F1239', accent2:'#4C0519', panel:null, social:'circle', icons:'circle',  cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
 };
 
 // Falls back to the theme accent, so a layout added later still gets a mark.
@@ -869,6 +874,7 @@ function tmplPreviews() {
     minimal: `<div>${bar(34,3,0,3)}${bar(24,2)}</div>`,
     stacked: `<div style="width:26px">${dot(13,'var(--tmpl-ink)')}<div style="height:3px"></div>${bar(20,3,0,2)}${bar(13,2,0,3)}<div style="height:1px;background:var(--border);margin-bottom:3px"></div>${rows(3,22)}<div style="height:2px;background:${A('stacked')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('stacked'))}${dot(5,A('stacked'))}${dot(5,A('stacked'))}</div></div>`,
     profile: `<div style="display:flex;gap:5px"><div style="flex-shrink:0">${dot(13,'var(--tmpl-ink)')}<div style="height:3px"></div><div style="width:13px;height:7px;background:var(--tmpl-ink);opacity:.45;border-radius:1px"></div></div><div style="flex:1">${bar(18,3,0,2)}${bar(12,2,0,3)}<div style="height:2px;background:${A('profile')};margin-bottom:3px"></div>${rows(3,24)}<div style="height:2px;background:${A('profile')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('profile'))}${dot(5,A('profile'))}${dot(5,A('profile'))}</div></div></div>`,
+    letterhead: `<div style="width:44px">${dot(12,'var(--tmpl-ink)')}<div style="height:3px"></div>${bar(20,3,0,2)}${bar(13,2,0,3)}<div style="height:2px;background:${A('letterhead')};margin-bottom:3px"></div><div style="display:flex;gap:4px;align-items:center"><div style="width:11px;height:6px;background:var(--tmpl-ink);opacity:.45;border-radius:1px;flex-shrink:0"></div><div style="flex:1">${rows(3,26)}</div></div><div style="height:2px;background:${A('letterhead')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('letterhead'))}${dot(5,A('letterhead'))}${dot(5,A('letterhead'))}</div></div>`,
   };
 }
 
@@ -879,9 +885,9 @@ function renderTemplates() {
     accentbar:'Accent bar', colorblock:'Colour block', darkcard:'Dark card', connect:'Connect bar',
     ribbon:'Ribbon', brandmark:'Brandmark', inline:'Inline', labelled:'Labelled',
     band:'Banner band', editorial:'Editorial', grid:'Grid', feature:'Feature', minimal:'Minimal',
-    stacked:'Stacked', profile:'Profile',
+    stacked:'Stacked', profile:'Profile', letterhead:'Letterhead',
   };
-  const order = ['corporate','spotlight','stacked','profile','split','directory','accentbar','colorblock','darkcard',
+  const order = ['corporate','spotlight','stacked','profile','letterhead','split','directory','accentbar','colorblock','darkcard',
                  'connect','ribbon','brandmark','inline','labelled','band','editorial','grid','feature','minimal'];
 
   let h = `<div class="field-row"><label class="field-label">Template</label><div class="template-grid">`;
@@ -1357,14 +1363,16 @@ function renderDesign() {
 // themselves: 'card' was in here long after that template was retired, and
 // 'feature' draws a logo but was missing, so the panel told anyone on it that
 // there was no logo slot while the layout was rendering one.
-const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','feature','stacked','profile'];
-const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature','stacked','profile'];
+const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','feature','stacked','profile','letterhead'];
+const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature','stacked','profile','letterhead'];
 
-// Of those, the ones that set the portrait beside the text. "Photo position"
-// aligns the picture against the block next to it, so it only means anything
-// here: the stacked layout gives the portrait a row of its own with nothing
-// alongside, and there is nothing to align it against.
-const PHOTO_BESIDE_TEXT = PHOTO_TEMPLATES.filter(t => t !== 'stacked');
+// The ones that give the portrait a row of its own, with nothing beside it.
+const PHOTO_ON_ITS_OWN_ROW = ['stacked', 'letterhead'];
+
+// So these are the ones that set it beside the text. "Photo position" aligns
+// the picture against the block next to it, so it only means anything here —
+// on the layouts above there is nothing to align it against.
+const PHOTO_BESIDE_TEXT = PHOTO_TEMPLATES.filter(t => !PHOTO_ON_ITS_OWN_ROW.includes(t));
 
 function renderMedia() {
   // Not every layout has a slot for both images — say so rather than letting
@@ -1758,7 +1766,8 @@ function buildSignatureBody() {
                          // what makes it a column rather than a wide block with
                          // the parts stranded at the top.
                          stacked:340,
-                         profile:560};
+                         profile:560,
+                         letterhead:560};
   // The background panel wraps the whole signature and adds its padding
   // outside it, so a 600px layout in a panel padded 24px is 648px wide — wider
   // than the layout was drawn for, wider than the preview column, and wider
@@ -2706,6 +2715,35 @@ function buildSignatureBody() {
           ${socialHTML}
         </td>
       </tr>
+      ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${gap + 4}px;">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(2, `${gap + 6}px 0 0`)}`);
+  }
+
+  // ── Letterhead ──
+  // Who you are across the top under a portrait, then a rule, then the mark
+  // beside the details, then a rule and the social icons. Corporate's skeleton,
+  // which has no slot for a face; this is the one layout that carries both a
+  // portrait and a mark without setting them opposite one another.
+  if (S.template === 'letterhead') {
+    const gap = parseInt(sp);
+    const rule = S.dividerEnabled
+      ? `<tr><td colspan="2" style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</td></tr>`
+      : `<tr><td colspan="2" style="height:${gap + 2}px;"></td></tr>`;
+    return outer(`
+      ${S.headshotUrl && showImages ? `<tr><td colspan="2" style="padding-bottom:${gap + 2}px;">${photoHTML({shape: 'circle', size: S.headshotSize || 76, ring: S.photoRing, ringColor: S.photoRingColor})}</td></tr>` : ''}
+      <tr><td colspan="2">
+        <p style="${nameStyleAt(bs + 4)}">${eName}</p>
+        ${roleHTML({mb: 2})}
+        <p style="${titleStyle}">${esc(pCompany)}</p>
+        ${taglineHTML}
+      </td></tr>
+      ${rule}
+      <tr>
+        ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:26px;">${logoAs({size: Math.min(S.logoHeight, 40)})}</td>` : ''}
+        <td width="100%" style="width:100%;vertical-align:middle;">${contactHTML}</td>
+      </tr>
+      ${rule}
+      ${socialHTML ? `<tr><td colspan="2">${socialHTML}</td></tr>` : ''}
       ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${gap + 4}px;">${bannerImgHTML}</td></tr>` : ''}
       ${discRow(2, `${gap + 6}px 0 0`)}`);
   }
