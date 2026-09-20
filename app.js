@@ -513,7 +513,11 @@ const S = {
   bannerEnabled: false,
   bannerMessage: '',
   bannerSubtext: '',
-  bannerImage: '',
+  // The slot arrives filled, so switching the banner on shows the shape and
+  // proportion it gives an image straight away rather than an empty strip.
+  // Still off by default: a placeholder that shipped switched on would be
+  // pasted into a mail client and sent as a grey box by whoever did not look.
+  bannerImage: 'https://signvel.com/sample-banner.png',
   ctaLabel: '',
   ctaUrl: '',
   ctaStyle: 'solid',
