@@ -372,7 +372,24 @@ select.input{cursor:pointer;appearance:auto}
 .uploader-text{font-size:11px;color:var(--ink)}
 .uploader-text u{text-decoration:underline;color:var(--accent)}
 .uploader-hint{font-size:10px;color:var(--muted);line-height:1.4}
-.uploader.is-loaded{cursor:default;border-style:solid}
+/* Filled or empty, it reads the same way: somewhere to drop a file. Once an
+   image was in it this turned into a solid-bordered row, which stopped looking
+   like a drop target — though it never stopped being one, since the drag
+   handler is on the same element either way. The picture leads, its name and
+   the note sit under it, and Replace and Remove share the line below: the meta
+   block is given the full width, so it takes a line of its own and the two
+   buttons wrap together onto the next one. */
+.uploader.is-loaded{
+  cursor:default;border-style:dashed;
+  flex-wrap:wrap;justify-content:center;text-align:center;gap:8px;
+  padding:16px 14px;background:var(--canvas);
+}
+.uploader.is-loaded:hover{border-color:var(--accent);background:var(--accent-light)}
+.uploader.is-loaded .uploader-thumb{width:56px;height:56px}
+.uploader.is-loaded .uploader-meta{flex:0 0 100%;align-items:center}
+.uploader.is-loaded .uploader-hint{max-width:34ch;margin:0 auto}
+/* Empty, it gets the room to read as an invitation rather than a thin strip. */
+.uploader:not(.is-loaded){padding:20px 14px}
 .uploader-thumb{
   flex:0 0 auto;width:40px;height:40px;border-radius:var(--radius);
   border:1px solid var(--border);background:#fff;
