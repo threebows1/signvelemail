@@ -142,6 +142,11 @@ const templateThemes = {
   // same two columns but lead with the name; leading with the face instead
   // makes the rule a masthead rather than a divider.
   masthead:   {accent:'#B45309', accent2:'#451A03', panel:null, social:'glyph',  icons:'icons',   cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
+  // Stacked's sequence at full width, with the mark carried high — directly
+  // under the name rather than down beside the social icons. Stacked is drawn
+  // narrow so it survives a phone; this one spends the width instead, and the
+  // brand arrives before the details rather than after them.
+  bulletin:   {accent:'#0E7490', accent2:'#083344', panel:null, social:'circle', icons:'icons',   cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
 };
 
 // Falls back to the theme accent, so a layout added later still gets a mark.
@@ -881,6 +886,7 @@ function tmplPreviews() {
     profile: `<div style="display:flex;gap:5px"><div style="flex-shrink:0">${dot(13,'var(--tmpl-ink)')}<div style="height:3px"></div><div style="width:13px;height:7px;background:var(--tmpl-ink);opacity:.45;border-radius:1px"></div></div><div style="flex:1">${bar(18,3,0,2)}${bar(12,2,0,3)}<div style="height:2px;background:${A('profile')};margin-bottom:3px"></div>${rows(3,24)}<div style="height:2px;background:${A('profile')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('profile'))}${dot(5,A('profile'))}${dot(5,A('profile'))}</div></div></div>`,
     letterhead: `<div style="width:44px">${dot(12,'var(--tmpl-ink)')}<div style="height:3px"></div>${bar(20,3,0,2)}${bar(13,2,0,3)}<div style="height:2px;background:${A('letterhead')};margin-bottom:3px"></div><div style="display:flex;gap:4px;align-items:center"><div style="width:11px;height:6px;background:var(--tmpl-ink);opacity:.45;border-radius:1px;flex-shrink:0"></div><div style="flex:1">${rows(3,26)}</div></div><div style="height:2px;background:${A('letterhead')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('letterhead'))}${dot(5,A('letterhead'))}${dot(5,A('letterhead'))}</div></div>`,
     masthead: `<div style="width:44px">${dot(12,'var(--tmpl-ink)')}<div style="height:2px"></div><div style="height:2px;background:${A('masthead')};margin-bottom:3px"></div><div style="display:flex;gap:5px"><div style="flex-shrink:0">${bar(15,3,0,2)}${bar(10,2)}</div><div style="flex:1">${rows(3,20)}</div></div><div style="height:2px;background:${A('masthead')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('masthead'))}${dot(5,A('masthead'))}${dot(5,A('masthead'))}</div></div>`,
+    bulletin: `<div style="width:44px">${dot(12,'var(--tmpl-ink)')}<div style="height:3px"></div>${bar(19,3,0,2)}${bar(12,2,0,3)}<div style="width:14px;height:7px;background:var(--tmpl-ink);opacity:.45;border-radius:1px;margin-bottom:3px"></div><div style="height:2px;background:${A('bulletin')};margin-bottom:3px"></div>${rows(3,34)}<div style="height:2px;background:${A('bulletin')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('bulletin'))}${dot(5,A('bulletin'))}${dot(5,A('bulletin'))}</div></div>`,
   };
 }
 
@@ -891,9 +897,9 @@ function renderTemplates() {
     accentbar:'Accent bar', colorblock:'Colour block', darkcard:'Dark card', connect:'Connect bar',
     ribbon:'Ribbon', brandmark:'Brandmark', inline:'Inline', labelled:'Labelled',
     band:'Banner band', editorial:'Editorial', grid:'Grid', feature:'Feature', minimal:'Minimal',
-    stacked:'Stacked', profile:'Profile', letterhead:'Letterhead', masthead:'Masthead',
+    stacked:'Stacked', profile:'Profile', letterhead:'Letterhead', masthead:'Masthead', bulletin:'Bulletin',
   };
-  const order = ['corporate','spotlight','stacked','profile','letterhead','masthead','split','directory','accentbar','colorblock','darkcard',
+  const order = ['corporate','spotlight','stacked','profile','letterhead','masthead','bulletin','split','directory','accentbar','colorblock','darkcard',
                  'connect','ribbon','brandmark','inline','labelled','band','editorial','grid','feature','minimal'];
 
   let h = `<div class="field-row"><label class="field-label">Template</label><div class="template-grid">`;
@@ -1369,11 +1375,11 @@ function renderDesign() {
 // themselves: 'card' was in here long after that template was retired, and
 // 'feature' draws a logo but was missing, so the panel told anyone on it that
 // there was no logo slot while the layout was rendering one.
-const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','feature','stacked','profile','letterhead','masthead'];
-const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature','stacked','profile','letterhead','masthead'];
+const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','feature','stacked','profile','letterhead','masthead','bulletin'];
+const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature','stacked','profile','letterhead','masthead','bulletin'];
 
 // The ones that give the portrait a row of its own, with nothing beside it.
-const PHOTO_ON_ITS_OWN_ROW = ['stacked', 'letterhead', 'masthead'];
+const PHOTO_ON_ITS_OWN_ROW = ['stacked', 'letterhead', 'masthead', 'bulletin'];
 
 // So these are the ones that set it beside the text. "Photo position" aligns
 // the picture against the block next to it, so it only means anything here —
@@ -1774,7 +1780,8 @@ function buildSignatureBody() {
                          stacked:340,
                          profile:560,
                          letterhead:560,
-                         masthead:560};
+                         masthead:560,
+                         bulletin:560};
   // The background panel wraps the whole signature and adds its padding
   // outside it, so a 600px layout in a panel padded 24px is 648px wide — wider
   // than the layout was drawn for, wider than the preview column, and wider
@@ -2782,6 +2789,33 @@ function buildSignatureBody() {
       ${socialHTML ? `<tr><td colspan="2">${socialHTML}</td></tr>` : ''}
       ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${gap + 4}px;">${bannerImgHTML}</td></tr>` : ''}
       ${discRow(2, `${gap + 6}px 0 0`)}`);
+  }
+
+  // ── Bulletin ──
+  // Stacked's sequence spent across the full width, with the mark carried high:
+  // directly under the name, before the rule, so the brand arrives ahead of the
+  // details rather than after them. Stacked is drawn narrow to survive a phone;
+  // this one uses the room instead.
+  if (S.template === 'bulletin') {
+    const gap = parseInt(sp);
+    const rule = S.dividerEnabled
+      ? `<tr><td style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</td></tr>`
+      : `<tr><td style="height:${gap + 2}px;"></td></tr>`;
+    return outer(`
+      ${S.headshotUrl && showImages ? `<tr><td style="padding-bottom:${gap + 2}px;">${photoHTML({shape: 'circle', size: S.headshotSize || 80, ring: S.photoRing, ringColor: S.photoRingColor})}</td></tr>` : ''}
+      <tr><td>
+        <p style="${nameStyleAt(bs + 4)}">${eName}</p>
+        ${roleHTML({mb: 2})}
+        <p style="${titleStyle}">${esc(pCompany)}</p>
+        ${taglineHTML}
+      </td></tr>
+      ${logoHTML ? `<tr><td style="padding-top:${gap + 2}px;">${logoAs({size: Math.min(S.logoHeight, 38)})}</td></tr>` : ''}
+      ${rule}
+      <tr><td>${contactHTML}</td></tr>
+      ${rule}
+      ${socialHTML ? `<tr><td>${socialHTML}</td></tr>` : ''}
+      ${bannerImgHTML ? `<tr><td style="padding-top:${gap + 4}px;">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(1, `${gap + 6}px 0 0`)}`);
   }
 
   // minimal
