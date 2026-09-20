@@ -2666,7 +2666,7 @@ function buildSignatureBody() {
         <p style="${titleStyle}">${esc(pCompany)}</p>
         ${taglineHTML}
       </td></tr>
-      ${S.dividerEnabled ? `<tr><td style="padding:${gap + 2}px 0;">${hairline()}</td></tr>` : `<tr><td style="height:${gap + 2}px;"></td></tr>`}
+      ${S.dividerEnabled ? `<tr><td style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</td></tr>` : `<tr><td style="height:${gap + 2}px;"></td></tr>`}
       <tr><td>${contactHTML}</td></tr>
       ${S.dividerEnabled ? `<tr><td style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</td></tr>` : `<tr><td style="height:${gap + 2}px;"></td></tr>`}
       ${logoHTML ? `<tr><td style="padding-bottom:${gap}px;">${logoAs({size: Math.min(S.logoHeight, 34)})}</td></tr>` : ''}
