@@ -492,20 +492,24 @@ select.input{cursor:pointer;appearance:auto}
    An option drawn as what it produces rather than named. The button gives up
    its text padding to them and carries the name as its accessible name and
    tooltip, so the choice reads by eye without losing it for a screen reader. */
+/* 24px, which is smaller than the colour swatch two rows up and large enough
+   that a glyph inside it survives. Below about this the envelope's strokes
+   land under a pixel and the whole swatch reads as a coloured dot — measured
+   at 1:1 in the row rather than judged from a magnified copy of it. */
 .sw-ring{
   display:inline-flex;align-items:center;justify-content:center;
-  width:21px;height:21px;box-sizing:border-box;
+  width:24px;height:24px;box-sizing:border-box;
   border:1.5px solid currentColor;border-radius:50%;
 }
 .sw-box{
   display:inline-flex;align-items:center;justify-content:center;
-  min-width:19px;height:17px;padding:0 5px;box-sizing:border-box;
+  min-width:24px;height:20px;padding:0 6px;box-sizing:border-box;
   border:1px solid transparent;border-radius:4px;
-  font-size:9.5px;font-weight:600;letter-spacing:.01em;
+  font-size:10.5px;font-weight:600;letter-spacing:.01em;
 }
 .sw-bare{
   display:inline-flex;align-items:center;justify-content:center;
-  height:19px;font-size:10px;letter-spacing:.01em;
+  height:24px;font-size:11px;letter-spacing:.01em;
 }
 .sw-ring svg,.sw-bare svg{display:block}
 /* A miniature standing in for the value on a closed row sits on the text

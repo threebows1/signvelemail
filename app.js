@@ -1055,7 +1055,7 @@ function pickRow(key, label, action, options, current, hint) {
 function swatchSocial(style) {
   const c = S.socialIconColor || S.accentColor;
   const glyph = (socialIcons.linkedin || '')
-    .replace(/width="16"/, 'width="12"').replace(/height="16"/, 'height="12"');
+    .replace(/width="16"/, 'width="14"').replace(/height="16"/, 'height="14"');
   if (style === 'circle')  return `<span class="sw-ring" style="border-color:${c};color:${c}">${glyph}</span>`;
   if (style === 'filled')  return `<span class="sw-ring" style="background:${c};border-color:${c};color:#fff">${glyph}</span>`;
   if (style === 'chip')    return `<span class="sw-box" style="background:${c};border-color:${c};color:#fff">in</span>`;
@@ -1070,8 +1070,8 @@ function swatchContactIcon(mode) {
   // down — thin enough that the envelope closed up into a blob and the whole
   // swatch read as a grey dot, worst of all as white on a filled disc.
   const glyph = (contactIcons.email || '')
-    .replace(/width="14"/, 'width="12"').replace(/height="14"/, 'height="12"')
-    .replace(/stroke-width="2"/, 'stroke-width="2.6"');
+    .replace(/width="14"/, 'width="15"').replace(/height="14"/, 'height="15"')
+    .replace(/stroke-width="2"/, 'stroke-width="3.2"');
   if (mode === 'circle')  return `<span class="sw-ring" style="border-color:${c};color:${c}">${glyph}</span>`;
   if (mode === 'filled')  return `<span class="sw-ring" style="background:${c};border-color:${c};color:#fff">${glyph}</span>`;
   if (mode === 'icons')   return `<span class="sw-bare" style="color:${c}">${glyph}</span>`;
