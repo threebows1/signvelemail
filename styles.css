@@ -516,13 +516,29 @@ select.input{cursor:pointer;appearance:auto}
 }
 .toggle-group.is-swatches button{padding:4px 7px;line-height:0}
 .chip.is-swatch{padding:4px 8px;line-height:0}
-/* Selection is marked around the miniature, never by inverting the ground
-   under it. These are chosen by eye, and a treatment shown on near-black is
-   not the treatment — it is a different one. */
+/* Selection is a tick on the chosen swatch, and nothing else. The miniatures
+   are round in one row and boxed in the next, so any frame drawn around them
+   argues with the shape it is meant to be marking — a rounded rectangle around
+   a circle was the first thing anyone noticed. The swatch is also left on its
+   own ground: a treatment shown on a tinted or inverted fill is a different
+   treatment from the one that will be sent. */
+/* The group's own frame goes with them. Once the buttons inside are bare
+   swatches, a segmented box around one row and nothing around the next made
+   two rows doing the same job look like different controls. Its overflow
+   clipping goes too, so a tick sitting in a corner is never cut. */
+.toggle-group.is-swatches{border:none;border-radius:0;overflow:visible;gap:2px}
+.toggle-group.is-swatches button,
+.chip.is-swatch{position:relative;background:transparent;border-color:transparent}
+.toggle-group.is-swatches button:hover,
+.chip.is-swatch:hover{background:var(--canvas)}
 .toggle-group.is-swatches button.active,
-.chip.is-swatch.active{
-  background:var(--accent-light);border-color:var(--accent);
-  box-shadow:inset 0 0 0 1px var(--accent);
+.chip.is-swatch.active{background:transparent;border-color:transparent}
+.toggle-group.is-swatches button.active::after,
+.chip.is-swatch.active::after{
+  content:'';position:absolute;right:1px;top:1px;width:11px;height:11px;
+  border-radius:50%;background:var(--accent);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 6.2l2 2 4-4.4' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size:11px 11px;
 }
 
 .row-body{padding:2px 2px 12px;border-bottom:1px solid var(--hairline)}

@@ -1031,11 +1031,14 @@ function pickRow(key, label, action, options, current, hint) {
   // Where the options are drawn, the closed row shows the drawing too: the
   // name was only ever a stand-in for the thing it could not show.
   const value = chosen ? (chosen.swatch || chosen.label) : '';
-  const buttons = options.map(o =>
-    `<button class="${String(o.val) === String(current) ? 'active' : ''}" data-val="${esc(String(o.val))}"${
-      o.swatch ? ` title="${esc(o.label)}" aria-label="${esc(o.label)}"` : ''
-    }>${o.swatch || o.label}</button>`
-  ).join('');
+  const buttons = options.map(o => {
+    const on = String(o.val) === String(current);
+    // A drawn option is marked by a tick and nothing else, so the chosen one
+    // has to say so itself — there is no fill or frame left to infer it from.
+    return `<button class="${on ? 'active' : ''}" data-val="${esc(String(o.val))}"${
+      o.swatch ? ` title="${esc(o.label)}" aria-label="${esc(o.label)}" aria-pressed="${on}"` : ''
+    }>${o.swatch || o.label}</button>`;
+  }).join('');
   return optRow(key, label, value,
     `<div class="toggle-group${swatched ? ' is-swatches' : ''}" data-action="${action}">${buttons}</div>`, hint);
 }
@@ -1306,7 +1309,8 @@ function renderDesign() {
   let socialChips = '';
   ['circle','filled','chip','plain','outline'].forEach(s => {
     const name = s.charAt(0).toUpperCase() + s.slice(1);
-    socialChips += `<button class="chip is-swatch${S.socialStyle===s?' active':''}" data-action="socialStyle" data-val="${s}" title="${name}" aria-label="${name}">${swatchSocial(s)}</button>`;
+    const on = S.socialStyle === s;
+    socialChips += `<button class="chip is-swatch${on?' active':''}" data-action="socialStyle" data-val="${s}" title="${name}" aria-label="${name}" aria-pressed="${on}">${swatchSocial(s)}</button>`;
   });
   h += `<div class="opt-group">Social icons</div>`;
   h += `<div class="opt-list">
