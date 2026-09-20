@@ -127,6 +127,11 @@ const templateThemes = {
   // narrow column, so it holds its shape in a phone's mail app and in the
   // reading pane of a client that gives a message half a window.
   stacked:    {accent:'#7E22CE', accent2:'#3B0764', panel:null, social:'circle', icons:'icons',   cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
+  // The portrait and the mark share a column of their own, which no other
+  // layout does: everywhere else the logo sits opposite the portrait or beside
+  // the name, and this stacks the two so the identity reads as one block with
+  // the details ruled off beside it.
+  profile:    {accent:'#15803D', accent2:'#052E16', panel:null, social:'filled', icons:'icons',   cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
 };
 
 // Falls back to the theme accent, so a layout added later still gets a mark.
@@ -863,6 +868,7 @@ function tmplPreviews() {
     feature: `<div style="background:${themeOf('feature').panel};border-radius:3px;padding:5px;width:44px;display:flex;gap:4px;align-items:center"><div style="width:15px;height:15px;border-radius:50%;border:2px solid #fff;background:#5B9BEA;box-sizing:border-box;flex-shrink:0"></div><div>${bar(18,4,'#fff',2)}${bar(10,3,A('feature'),2)}<div style="display:flex;gap:3px">${bar(7,2,'#A9CCF4')}${bar(7,2,'#A9CCF4')}</div></div></div>`,
     minimal: `<div>${bar(34,3,0,3)}${bar(24,2)}</div>`,
     stacked: `<div style="width:26px">${dot(13,'var(--tmpl-ink)')}<div style="height:3px"></div>${bar(20,3,0,2)}${bar(13,2,0,3)}<div style="height:1px;background:var(--border);margin-bottom:3px"></div>${rows(3,22)}<div style="height:2px;background:${A('stacked')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('stacked'))}${dot(5,A('stacked'))}${dot(5,A('stacked'))}</div></div>`,
+    profile: `<div style="display:flex;gap:5px"><div style="flex-shrink:0">${dot(13,'var(--tmpl-ink)')}<div style="height:3px"></div><div style="width:13px;height:7px;background:var(--tmpl-ink);opacity:.45;border-radius:1px"></div></div><div style="flex:1">${bar(18,3,0,2)}${bar(12,2,0,3)}<div style="height:2px;background:${A('profile')};margin-bottom:3px"></div>${rows(3,24)}<div style="height:2px;background:${A('profile')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('profile'))}${dot(5,A('profile'))}${dot(5,A('profile'))}</div></div></div>`,
   };
 }
 
@@ -873,9 +879,9 @@ function renderTemplates() {
     accentbar:'Accent bar', colorblock:'Colour block', darkcard:'Dark card', connect:'Connect bar',
     ribbon:'Ribbon', brandmark:'Brandmark', inline:'Inline', labelled:'Labelled',
     band:'Banner band', editorial:'Editorial', grid:'Grid', feature:'Feature', minimal:'Minimal',
-    stacked:'Stacked',
+    stacked:'Stacked', profile:'Profile',
   };
-  const order = ['corporate','spotlight','stacked','split','directory','accentbar','colorblock','darkcard',
+  const order = ['corporate','spotlight','stacked','profile','split','directory','accentbar','colorblock','darkcard',
                  'connect','ribbon','brandmark','inline','labelled','band','editorial','grid','feature','minimal'];
 
   let h = `<div class="field-row"><label class="field-label">Template</label><div class="template-grid">`;
@@ -1351,8 +1357,8 @@ function renderDesign() {
 // themselves: 'card' was in here long after that template was retired, and
 // 'feature' draws a logo but was missing, so the panel told anyone on it that
 // there was no logo slot while the layout was rendering one.
-const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','feature','stacked'];
-const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature','stacked'];
+const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','feature','stacked','profile'];
+const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature','stacked','profile'];
 
 // Of those, the ones that set the portrait beside the text. "Photo position"
 // aligns the picture against the block next to it, so it only means anything
@@ -1751,7 +1757,8 @@ function buildSignatureBody() {
                          // Narrow on purpose: this one stacks, so the width is
                          // what makes it a column rather than a wide block with
                          // the parts stranded at the top.
-                         stacked:340};
+                         stacked:340,
+                         profile:560};
   // The background panel wraps the whole signature and adds its padding
   // outside it, so a 600px layout in a panel padded 24px is 648px wide — wider
   // than the layout was drawn for, wider than the preview column, and wider
@@ -2673,6 +2680,34 @@ function buildSignatureBody() {
       ${socialHTML ? `<tr><td>${socialHTML}</td></tr>` : ''}
       ${bannerImgHTML ? `<tr><td style="padding-top:${gap + 4}px;">${bannerImgHTML}</td></tr>` : ''}
       ${discRow(1, `${gap + 6}px 0 0`)}`);
+  }
+
+  // ── Profile ──
+  // The portrait and the mark share a column, one under the other, and the
+  // details sit beside them ruled top and bottom. Everywhere else the logo is
+  // opposite the portrait or tucked beside the name; keeping the two together
+  // makes the left edge read as one identity block rather than two things that
+  // happen to be on the same row.
+  if (S.template === 'profile') {
+    const gap = parseInt(sp);
+    const media = `${S.headshotUrl && showImages ? photoHTML({shape: 'circle', size: S.headshotSize || 78, ring: S.photoRing, ringColor: S.photoRingColor}) : ''}${
+      logoHTML ? `<div style="padding-top:${S.headshotUrl && showImages ? gap + 4 : 0}px;">${logoAs({size: Math.min(S.logoHeight, 34)})}</div>` : ''}`;
+    return outer(`
+      <tr>
+        ${media.trim() ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:26px;">${media}</td>` : ''}
+        <td width="100%" style="width:100%;vertical-align:top;">
+          <p style="${nameStyleAt(bs + 4)}">${eName}</p>
+          ${roleHTML({mb: 2})}
+          <p style="${titleStyle}">${esc(pCompany)}</p>
+          ${taglineHTML}
+          ${S.dividerEnabled ? `<div style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</div>` : `<div style="height:${gap + 2}px;"></div>`}
+          ${contactHTML}
+          ${S.dividerEnabled ? `<div style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</div>` : `<div style="height:${gap + 2}px;"></div>`}
+          ${socialHTML}
+        </td>
+      </tr>
+      ${bannerImgHTML ? `<tr><td colspan="2" style="padding-top:${gap + 4}px;">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(2, `${gap + 6}px 0 0`)}`);
   }
 
   // minimal
