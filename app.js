@@ -1859,7 +1859,14 @@ function buildSignatureBody() {
       const initials = pName.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
       img = `<div style="width:${inner}px;height:${inner}px;background:${o.fallback || ac};color:#fff;text-align:center;font-family:${ff};font-size:${Math.round(inner * 0.34)}px;font-weight:700;line-height:${inner}px;">${esc(initials)}</div>`;
     }
-    const framed = `<div style="width:${box}px;height:${box}px;border-radius:${radius};${ring}box-sizing:border-box;overflow:hidden;">${img}</div>`;
+    // Filled with the ring's own colour, not left transparent. A rounded frame
+    // antialiases the inner edge of its border, and every pixel that curve only
+    // half-covers shows whatever lies behind the frame — on the dark card that
+    // read as a black hairline inside the white ring, worst at three and nine
+    // o'clock where the curve runs closest to straight. Painting the ring's
+    // colour underneath means the half-covered pixels blend into the ring.
+    const seam = ringW ? `background-color:${ringC};` : '';
+    const framed = `<div style="width:${box}px;height:${box}px;border-radius:${radius};${ring}${seam}box-sizing:border-box;overflow:hidden;">${img}</div>`;
 
     // ── Classic Outlook ──
     // Outlook on Windows renders mail through Word, which ignores
