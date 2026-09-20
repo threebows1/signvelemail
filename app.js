@@ -154,29 +154,32 @@ const sampleHeadshots = [
   {id:'h8', label:'Oliver', url:unsplash('photo-1506794778202-cad84cf45f1d')},
 ];
 
+// The placeholder leads: the banner slot is there to be filled with the
+// company's own artwork, and it shows the shape and proportion that slot gives
+// an image without a stock scene reading as part of the design. The
+// photographs behind it stay, for anyone who wants one.
 const sampleBanners = [
+  {id:'b0', label:'Placeholder', url:'https://signvel.com/sample-banner.png'},
   {id:'b1', label:'Travel',  url:'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1040&h=260&fit=crop'},
   {id:'b2', label:'Desk',    url:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1040&h=260&fit=crop'},
   {id:'b3', label:'Team',    url:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1040&h=260&fit=crop'},
   {id:'b4', label:'Meeting', url:'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1040&h=260&fit=crop'},
 ];
 
-// The face every layout previews with until somebody uploads their own.
-// Cropped from the original by tools/make-headshot.ps1 and served from this
-// site rather than from a stock host, so the sample signature does not depend
-// on somebody else's CDN staying up. Absolute rather than relative on purpose:
-// the same URL has to work inside an exported signature sitting in a mail
-// client, where a relative path resolves against nothing.
-//
-// The file name predates the decision to ship it as the default — it was an
-// admin-only trial first. Renaming it would break the copy already deployed.
-const DEFAULT_HEADSHOT_URL = 'https://signvel.com/admin-portrait.jpg';
+// What every layout previews with until somebody uploads their own. A drawn
+// placeholder, not a photograph: it shows the shape and size the slot gives a
+// portrait without putting a stranger's face in a signature that is about to
+// carry somebody else's name. Served from this site rather than a stock host,
+// and absolute rather than relative on purpose — the same URL has to work
+// inside an exported signature sitting in a mail client, where a relative path
+// resolves against nothing.
+const DEFAULT_HEADSHOT_URL = 'https://signvel.com/sample-portrait.png';
 
 // What the default used to be. A saved signature still pointing at one of
 // these was never a choice anybody made — it is whatever the editor happened
 // to ship that day — so it follows the default forward. Anything uploaded or
 // picked deliberately is left exactly as it is.
-const RETIRED_DEFAULT_HEADSHOTS = [sampleHeadshots[0].url];
+const RETIRED_DEFAULT_HEADSHOTS = [sampleHeadshots[0].url, 'https://signvel.com/admin-portrait.jpg'];
 
 function ensureDefaultPortrait() {
   if (RETIRED_DEFAULT_HEADSHOTS.indexOf(S.headshotUrl) !== -1) {
