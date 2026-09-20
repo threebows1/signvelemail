@@ -1406,12 +1406,6 @@ const PHOTO_ON_ITS_OWN_ROW = ['stacked', 'letterhead', 'masthead', 'bulletin'];
 const PHOTO_BESIDE_TEXT = PHOTO_TEMPLATES.filter(t => !PHOTO_ON_ITS_OWN_ROW.includes(t));
 
 function renderMedia() {
-  // Not every layout has a slot for both images — say so rather than letting
-  // someone upload a photo and wonder why nothing changed.
-  const usesLogo = LOGO_TEMPLATES.includes(S.template);
-  const usesHeadshot = PHOTO_TEMPLATES.includes(S.template);
-  const notUsed = (what) => `<div class="inline-note">The <strong>${esc(S.template)}</strong> template has no ${what} slot. These settings are saved, and apply as soon as you pick a layout that uses one.</div>`;
-
   let h = '';
 
   // Without this the preview looks broken rather than gated: you pick a photo,
@@ -1425,7 +1419,6 @@ function renderMedia() {
   }
 
   h += `<div class="opt-group">Logo</div>`;
-  if (!usesLogo) h += notUsed('logo');
   h += `<div class="field-row">${renderUploader('logo', 'PNG or SVG with a transparent background works best. Max 1&nbsp;MB.')}</div>`;
   // Named for what it does rather than for the mechanism: in the layouts that
   // stack the logo with text in one cell there is nothing to align it against,
@@ -1434,7 +1427,6 @@ function renderMedia() {
   h += `<div class="field-row"><label class="field-label">Logo height</label><div class="slider-row"><input type="range" min="20" max="72" value="${S.logoHeight}" data-bind="logoHeight"><span class="slider-val">${S.logoHeight}px</span></div></div>`;
 
   h += `<div class="opt-group">Headshot</div>`;
-  if (!usesHeadshot) h += notUsed('headshot');
   h += `<div class="field-row">${renderUploader('headshot', 'A square image crops best. Max 1&nbsp;MB.')}</div>`;
   // No picker of stock faces here, on purpose — it invited people to ship a
   // stranger's photograph as their own. There is one default portrait, and the
