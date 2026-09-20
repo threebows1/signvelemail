@@ -995,6 +995,47 @@ function hsvToHex(h, s, v) {
   return rgbToHex((rgb[0] + m) * 255, (rgb[1] + m) * 255, (rgb[2] + m) * 255);
 }
 
+// ── Compact rows ──
+// A control per line, showing only its current value until it is asked for.
+// The panel had every slider, button group and menu open at once, which made
+// thirty controls compete for attention with the one being looked for; a
+// colour row already worked this way and was the quietest thing on the page.
+//
+// Which row is open lives here rather than in S, for the same reason PICKER
+// does: it is a state of the interface, not of the signature, and it must
+// never be saved or synced.
+const OPENROW = {key: null};
+
+// The control itself is always rendered, and hidden with CSS rather than left
+// out. Anything driving the panel — the checks, a keyboard, an assistive
+// technology walking the tree — still finds it where it expects to.
+function optRow(key, label, value, control, hint) {
+  const open = OPENROW.key === key;
+  return `<div class="opt-row is-openable${open ? ' open' : ''}" data-action="toggleRow" data-row="${esc(key)}"
+      role="button" tabindex="0" aria-expanded="${open}">
+      <span class="opt-label">${label}</span>
+      <span class="opt-control"><span class="row-value">${value}</span>${icons.chevron}</span>
+    </div>
+    <div class="row-body${open ? '' : ' is-shut'}">
+      ${hint ? `<span class="field-hint">${hint}</span>` : ''}${control}
+    </div>`;
+}
+
+// Several rows are a group of buttons whose selected one is the value shown.
+function pickRow(key, label, action, options, current, hint) {
+  const chosen = options.find(o => String(o.val) === String(current));
+  const buttons = options.map(o =>
+    `<button class="${String(o.val) === String(current) ? 'active' : ''}" data-val="${esc(String(o.val))}">${o.label}</button>`
+  ).join('');
+  return optRow(key, label, chosen ? chosen.label : '', `<div class="toggle-group" data-action="${action}">${buttons}</div>`, hint);
+}
+
+// And several are a slider, whose value is already the label.
+function sliderRow(key, label, bind, min, max, step, hint) {
+  const control = `<div class="slider-row"><input type="range" min="${min}" max="${max}"${step ? ` step="${step}"` : ''} value="${S[bind]}" data-bind="${bind}"><span class="slider-val">${sliderLabel(bind, S[bind])}</span></div>`;
+  return optRow(key, label, sliderLabel(bind, S[bind]), control, hint);
+}
+
 function colorRow(label, key) {
   const val = String(S[key] || '#000000').toUpperCase();
   const open = PICKER.key === key;
@@ -1138,30 +1179,39 @@ function renderDesign() {
   };
 
   h += `<div class="opt-group">Type</div>`;
-  h += `<div class="field-row"><label class="field-label">Font family<span class="field-hint">All of these are already on the reader's machine — mail clients will not fetch a font.</span></label><select class="input" data-bind="font">${fontOptions(S.font)}</select></div>`;
-  h += `<div class="field-row"><label class="field-label">Display font<span class="field-hint">Used for the name. Falls back to the body font.</span></label><select class="input" data-bind="headingFont">${fontOptions(S.headingFont, 'Same as body')}</select></div>`;
-  h += `<div class="field-row"><label class="field-label">Font size</label><div class="slider-row"><input type="range" min="11" max="18" value="${S.bodySize}" data-bind="bodySize"><span class="slider-val">${S.bodySize}px</span></div></div>`;
-  h += `<div class="field-row"><label class="field-label">Weight</label><div class="toggle-group" data-action="fontWeight"><button class="${S.fontWeight==='regular'?'active':''}" data-val="regular">Regular</button><button class="${S.fontWeight==='semibold'?'active':''}" data-val="semibold">Semibold</button></div></div>`;
+  h += `<div class="opt-list">
+    ${optRow('font', 'Font family', esc(S.font),
+      `<select class="input" data-bind="font">${fontOptions(S.font)}</select>`,
+      'All of these are already on the reader’s machine — mail clients will not fetch a font.')}
+    ${optRow('headingFont', 'Display font', S.headingFont ? esc(S.headingFont) : 'Same as body',
+      `<select class="input" data-bind="headingFont">${fontOptions(S.headingFont, 'Same as body')}</select>`,
+      'Used for the name. Falls back to the body font.')}
+    ${sliderRow('bodySize', 'Font size', 'bodySize', 11, 18)}
+    ${pickRow('fontWeight', 'Weight', 'fontWeight', [
+      {val:'regular', label:'Regular'}, {val:'semibold', label:'Semibold'},
+    ], S.fontWeight)}
+  </div>`;
 
   h += `<div class="opt-group">Name &amp; role</div>`;
-  h += `<div class="field-row"><label class="field-label">Name size</label><div class="slider-row"><input type="range" min="70" max="200" step="5" value="${S.nameScale}" data-bind="nameScale"><span class="slider-val">${S.nameScale}%</span></div></div>`;
-  h += `<div class="field-row"><label class="field-label">Letter spacing</label><div class="slider-row"><input type="range" min="-3" max="24" value="${S.nameTracking}" data-bind="nameTracking"><span class="slider-val">${(S.nameTracking/100).toFixed(2)}em</span></div></div>`;
-  h += `<div class="opt-list"><div class="opt-row">
-    <span class="opt-label">Name in capitals</span>
-    <span class="opt-control"><div class="toggle-switch${S.nameUppercase?' on':''}" data-action="toggleNameCaps"></div></span>
-  </div></div>`;
-  h += `<div class="field-row"><label class="field-label">Role style<span class="field-hint">Minimal sets the role inline in one line, so it stays plain there.</span></label><div class="toggle-group" data-action="roleStyle">
-    <button class="${S.roleStyle==='plain'?'active':''}" data-val="plain">Plain</button>
-    <button class="${S.roleStyle==='caps'?'active':''}" data-val="caps">Tracked</button>
-    <button class="${S.roleStyle==='chip'?'active':''}" data-val="chip">Chip</button>
-    <button class="${S.roleStyle==='pill'?'active':''}" data-val="pill">Pill</button>
-  </div></div>`;
+  h += `<div class="opt-list">
+    ${sliderRow('nameScale', 'Name size', 'nameScale', 70, 200, 5)}
+    ${sliderRow('nameTracking', 'Letter spacing', 'nameTracking', -3, 24)}
+    <div class="opt-row">
+      <span class="opt-label">Name in capitals</span>
+      <span class="opt-control"><div class="toggle-switch${S.nameUppercase?' on':''}" data-action="toggleNameCaps"></div></span>
+    </div>
+    ${pickRow('roleStyle', 'Role style', 'roleStyle', [
+      {val:'plain', label:'Plain'}, {val:'caps', label:'Tracked'},
+      {val:'chip', label:'Chip'}, {val:'pill', label:'Pill'},
+    ], S.roleStyle, 'Minimal sets the role inline in one line, so it stays plain there.')}
+  </div>`;
 
   h += `<div class="opt-group">Colour</div>`;
-  h += `<div class="field-row"><label class="field-label">Theme presets</label><div class="swatch-row">`;
-  accents.forEach(c => { h += `<div class="swatch${S.accentColor===c?' active':''}" style="background:${c}" data-color="${c}" data-action="accentColor"></div>`; });
-  h += `</div></div>`;
+  let presetSwatches = '';
+  accents.forEach(c => { presetSwatches += `<div class="swatch${S.accentColor===c?' active':''}" style="background:${c}" data-color="${c}" data-action="accentColor"></div>`; });
   h += `<div class="opt-list">
+    ${optRow('accentPresets', 'Theme presets', accents.indexOf(S.accentColor) !== -1 ? 'In use' : 'Custom',
+      `<div class="swatch-row">${presetSwatches}</div>`)}
     ${colorRow('Theme colour', 'accentColor')}
     ${colorRow('Second colour', 'accent2Color')}
     ${colorRow('Name colour', 'nameColor')}
@@ -1178,49 +1228,57 @@ function renderDesign() {
   </div></div>`;
   if (S.bgEnabled) {
     const bgPresets = ['#14121F','#1B2A4A','#0F3D33','#B3221E','#5B2EFF','#F5F4FB'];
-    h += `<div class="field-row"><label class="field-label">Panel presets</label><div class="swatch-row">`;
-    bgPresets.forEach(c => { h += `<div class="swatch${S.bgColor===c?' active':''}" style="background:${c}" data-color="${c}" data-action="bgColorPreset"></div>`; });
-    h += `</div></div>`;
-    h += `<div class="opt-list">${colorRow('Panel colour', 'bgColor')}</div>`;
-    h += `<div class="field-row"><label class="field-label">Panel padding</label><div class="slider-row"><input type="range" min="0" max="48" value="${S.bgPadding}" data-bind="bgPadding"><span class="slider-val">${S.bgPadding}px</span></div></div>`;
-    h += `<div class="field-row"><label class="field-label">Corner radius</label><div class="slider-row"><input type="range" min="0" max="28" value="${S.bgRadius}" data-bind="bgRadius"><span class="slider-val">${S.bgRadius}px</span></div></div>`;
+    let bgSwatches = '';
+    bgPresets.forEach(c => { bgSwatches += `<div class="swatch${S.bgColor===c?' active':''}" style="background:${c}" data-color="${c}" data-action="bgColorPreset"></div>`; });
+    h += `<div class="opt-list">
+      ${optRow('bgPresets', 'Panel presets', bgPresets.indexOf(S.bgColor) !== -1 ? 'In use' : 'Custom',
+        `<div class="swatch-row">${bgSwatches}</div>`)}
+      ${colorRow('Panel colour', 'bgColor')}
+      ${sliderRow('bgPadding', 'Panel padding', 'bgPadding', 0, 48)}
+      ${sliderRow('bgRadius', 'Corner radius', 'bgRadius', 0, 28)}
+    </div>`;
     if (isDarkColor(S.bgColor)) h += `<div class="inline-note">Dark panel detected — text is switched to a light colour automatically. Your saved text colours return if you turn the panel off.</div>`;
     h += `<div class="inline-note">Solid panel colours survive in email. Background <em>images</em> do not — Gmail and Outlook strip them.</div>`;
   }
 
+  const iconModes = [
+    {val:'circle', label:'Circles'}, {val:'filled', label:'Filled'}, {val:'icons', label:'Plain'},
+    {val:'letters', label:'Letters'}, {val:'labels', label:'Labels'},
+  ];
   h += `<div class="opt-group">Contact details</div>`;
-  h += `<div class="field-row"><label class="field-label">Columns</label><div class="toggle-group" data-action="contactColumns">
-    <button class="${S.contactColumns===1?'active':''}" data-val="1">One</button>
-    <button class="${S.contactColumns===2?'active':''}" data-val="2">Two</button>
-  </div></div>`;
-  h += `<div class="opt-list"><div class="opt-row">
-    <span class="opt-label">Show icons</span>
-    <span class="opt-control"><div class="toggle-switch${S.showContactIcons?' on':''}" data-action="toggleContactIcons"></div></span>
-  </div></div>`;
-  if (S.showContactIcons) {
-    h += `<div class="field-row"><label class="field-label">Icon type</label><div class="toggle-group" data-action="contactIconMode"><button class="${S.contactIconMode==='circle'?'active':''}" data-val="circle">Circles</button><button class="${S.contactIconMode==='filled'?'active':''}" data-val="filled">Filled</button><button class="${S.contactIconMode==='icons'?'active':''}" data-val="icons">Plain</button><button class="${S.contactIconMode==='letters'?'active':''}" data-val="letters">Letters</button><button class="${S.contactIconMode==='labels'?'active':''}" data-val="labels">Labels</button></div></div>`;
-    if (S.contactIconMode !== 'labels' && S.contactIconMode !== 'letters') {
-      h += `<div class="field-row"><label class="field-label">Icon size</label><div class="slider-row"><input type="range" min="14" max="34" value="${S.contactIconSize}" data-bind="contactIconSize"><span class="slider-val">${S.contactIconSize}px</span></div></div>`;
-    }
-  }
+  h += `<div class="opt-list">
+    ${pickRow('contactColumns', 'Columns', 'contactColumns', [
+      {val:1, label:'One'}, {val:2, label:'Two'},
+    ], S.contactColumns)}
+    <div class="opt-row">
+      <span class="opt-label">Show icons</span>
+      <span class="opt-control"><div class="toggle-switch${S.showContactIcons?' on':''}" data-action="toggleContactIcons"></div></span>
+    </div>
+    ${S.showContactIcons ? pickRow('contactIconMode', 'Icon type', 'contactIconMode', iconModes, S.contactIconMode) : ''}
+    ${S.showContactIcons && S.contactIconMode !== 'labels' && S.contactIconMode !== 'letters'
+      ? sliderRow('contactIconSize', 'Icon size', 'contactIconSize', 14, 34) : ''}
+  </div>`;
 
-  h += `<div class="opt-group">Social icons</div>`;
-  h += `<div class="field-row"><label class="field-label">Icon type</label><div class="chip-row">`;
+  let socialChips = '';
   ['chip','circle','filled','plain','outline'].forEach(s => {
-    h += `<button class="chip${S.socialStyle===s?' active':''}" data-action="socialStyle" data-val="${s}">${s.charAt(0).toUpperCase()+s.slice(1)}</button>`;
+    socialChips += `<button class="chip${S.socialStyle===s?' active':''}" data-action="socialStyle" data-val="${s}">${s.charAt(0).toUpperCase()+s.slice(1)}</button>`;
   });
-  h += `</div></div>`;
-  h += `<div class="field-row"><label class="field-label">Icon size</label><div class="slider-row"><input type="range" min="14" max="40" value="${S.socialIconSize}" data-bind="socialIconSize"><span class="slider-val">${S.socialIconSize}px</span></div></div>`;
+  h += `<div class="opt-group">Social icons</div>`;
+  h += `<div class="opt-list">
+    ${optRow('socialStyle', 'Icon type', S.socialStyle.charAt(0).toUpperCase() + S.socialStyle.slice(1),
+      `<div class="chip-row">${socialChips}</div>`)}
+    ${sliderRow('socialIconSize', 'Icon size', 'socialIconSize', 14, 40)}
+  </div>`;
 
   h += `<div class="opt-group">Lines &amp; spacing</div>`;
-  h += `<div class="opt-list"><div class="opt-row">
-    <span class="opt-label">Show dividing lines</span>
-    <span class="opt-control"><div class="toggle-switch${S.dividerEnabled?' on':''}" data-action="toggleDivider"></div></span>
-  </div></div>`;
-  if (S.dividerEnabled) {
-    h += `<div class="field-row"><label class="field-label">Line width</label><div class="slider-row"><input type="range" min="1" max="6" value="${S.dividerWidth}" data-bind="dividerWidth"><span class="slider-val">${S.dividerWidth}px</span></div></div>`;
-  }
-  h += `<div class="field-row"><label class="field-label">Block spacing</label><div class="slider-row"><input type="range" min="2" max="20" value="${S.blockSpacing}" data-bind="blockSpacing"><span class="slider-val">${S.blockSpacing}px</span></div></div>`;
+  h += `<div class="opt-list">
+    <div class="opt-row">
+      <span class="opt-label">Show dividing lines</span>
+      <span class="opt-control"><div class="toggle-switch${S.dividerEnabled?' on':''}" data-action="toggleDivider"></div></span>
+    </div>
+    ${S.dividerEnabled ? sliderRow('dividerWidth', 'Line width', 'dividerWidth', 1, 6) : ''}
+    ${sliderRow('blockSpacing', 'Block spacing', 'blockSpacing', 2, 20)}
+  </div>`;
   return h;
 }
 
@@ -2684,6 +2742,11 @@ function setupEvents() {
           break;
         case 'togglePicker':
           PICKER.key = PICKER.key === togAction.dataset.key ? null : togAction.dataset.key;
+          break;
+        case 'toggleRow':
+          // One open at a time, so the panel cannot creep back to being a wall
+          // of controls by opening them one by one.
+          OPENROW.key = OPENROW.key === togAction.dataset.row ? null : togAction.dataset.row;
           break;
         case 'useSample': {
           const kind = togAction.dataset.kind;
