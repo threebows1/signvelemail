@@ -1022,12 +1022,50 @@ function optRow(key, label, value, control, hint) {
 }
 
 // Several rows are a group of buttons whose selected one is the value shown.
+// An option may carry a `swatch`: a miniature of what it actually produces,
+// shown in place of its name. The name then becomes the button's accessible
+// name and its tooltip, so nothing is lost by not printing it.
 function pickRow(key, label, action, options, current, hint) {
   const chosen = options.find(o => String(o.val) === String(current));
+  const swatched = options.some(o => o.swatch);
   const buttons = options.map(o =>
-    `<button class="${String(o.val) === String(current) ? 'active' : ''}" data-val="${esc(String(o.val))}">${o.label}</button>`
+    `<button class="${String(o.val) === String(current) ? 'active' : ''}" data-val="${esc(String(o.val))}"${
+      o.swatch ? ` title="${esc(o.label)}" aria-label="${esc(o.label)}"` : ''
+    }>${o.swatch || o.label}</button>`
   ).join('');
-  return optRow(key, label, chosen ? chosen.label : '', `<div class="toggle-group" data-action="${action}">${buttons}</div>`, hint);
+  return optRow(key, label, chosen ? chosen.label : '',
+    `<div class="toggle-group${swatched ? ' is-swatches' : ''}" data-action="${action}">${buttons}</div>`, hint);
+}
+
+// ── Treatment miniatures ──
+// A name for a treatment only means something to somebody who already knows
+// what the treatment looks like. These draw it instead, at the size the row
+// allows, from the same rules the signature is built with — a ring, a solid
+// disc, a boxed word, a bare word — so the choice is made by eye.
+//
+// Three of the five social treatments set the platform's name rather than its
+// glyph, which is the thing worth seeing: "in" stands in for the label there,
+// short enough to sit in a 5-across row.
+function swatchSocial(style) {
+  const c = S.socialIconColor || S.accentColor;
+  const glyph = (socialIcons.linkedin || '')
+    .replace(/width="16"/, 'width="11"').replace(/height="16"/, 'height="11"');
+  if (style === 'circle')  return `<span class="sw-ring" style="border-color:${c};color:${c}">${glyph}</span>`;
+  if (style === 'filled')  return `<span class="sw-ring" style="background:${c};border-color:${c};color:#fff">${glyph}</span>`;
+  if (style === 'chip')    return `<span class="sw-box" style="background:${c};border-color:${c};color:#fff">in</span>`;
+  if (style === 'outline') return `<span class="sw-box" style="border-color:${c};color:${c}">in</span>`;
+  return `<span class="sw-bare" style="color:${c}">in</span>`;
+}
+
+function swatchContactIcon(mode) {
+  const c = S.iconColor || S.accentColor;
+  const glyph = (contactIcons.email || '')
+    .replace(/width="14"/, 'width="11"').replace(/height="14"/, 'height="11"');
+  if (mode === 'circle')  return `<span class="sw-ring" style="border-color:${c};color:${c}">${glyph}</span>`;
+  if (mode === 'filled')  return `<span class="sw-ring" style="background:${c};border-color:${c};color:#fff">${glyph}</span>`;
+  if (mode === 'icons')   return `<span class="sw-bare" style="color:${c}">${glyph}</span>`;
+  if (mode === 'letters') return `<span class="sw-bare" style="color:${c};font-weight:700">E.</span>`;
+  return `<span class="sw-bare" style="color:${c};font-weight:600">Email</span>`;
 }
 
 // And several are a slider, whose value is already the label.
@@ -1241,10 +1279,11 @@ function renderDesign() {
     h += `<div class="inline-note">Solid panel colours survive in email. Background <em>images</em> do not — Gmail and Outlook strip them.</div>`;
   }
 
-  const iconModes = [
-    {val:'circle', label:'Circles'}, {val:'filled', label:'Filled'}, {val:'icons', label:'Plain'},
-    {val:'letters', label:'Letters'}, {val:'labels', label:'Labels'},
-  ];
+  const iconModes = ['circle','filled','icons','letters','labels'].map(m => ({
+    val: m,
+    label: {circle:'Circles', filled:'Filled', icons:'Plain', letters:'Letters', labels:'Labels'}[m],
+    swatch: swatchContactIcon(m),
+  }));
   h += `<div class="opt-group">Contact details</div>`;
   h += `<div class="opt-list">
     ${pickRow('contactColumns', 'Columns', 'contactColumns', [
@@ -1261,7 +1300,8 @@ function renderDesign() {
 
   let socialChips = '';
   ['chip','circle','filled','plain','outline'].forEach(s => {
-    socialChips += `<button class="chip${S.socialStyle===s?' active':''}" data-action="socialStyle" data-val="${s}">${s.charAt(0).toUpperCase()+s.slice(1)}</button>`;
+    const name = s.charAt(0).toUpperCase() + s.slice(1);
+    socialChips += `<button class="chip is-swatch${S.socialStyle===s?' active':''}" data-action="socialStyle" data-val="${s}" title="${name}" aria-label="${name}">${swatchSocial(s)}</button>`;
   });
   h += `<div class="opt-group">Social icons</div>`;
   h += `<div class="opt-list">
