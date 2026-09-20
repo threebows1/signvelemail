@@ -677,21 +677,6 @@ const railIcons = {
   rollout:    `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M8 10.5l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>`,
 };
 
-// Short status line shown at the right of each section header.
-function sectionMeta(id) {
-  switch (id) {
-    case 'templates':  return `${S.template} · ${S.alignment}`;
-    case 'design':     return `${S.font} · ${S.bodySize}px`;
-    case 'media':      return `${S.logoUrl?'Logo':'No logo'} · ${S.headshotUrl?'Photo':'Initials'}`;
-    case 'contacts':   return `${S.contactFields.filter(f=>f.enabled && f.value).length} of ${S.contactFields.length} shown`;
-    case 'social':     return `${S.socialLinks.filter(s=>s.enabled).length} active`;
-    case 'banner':     return S.bannerEnabled ? 'Banner on' : 'Banner off';
-    case 'disclaimer': return S.disclaimerEnabled ? `${S.disclaimerText.length} chars` : 'Hidden';
-    case 'rollout':    return `${Object.values(S.rolloutLocks).filter(v=>v==='locked').length} locked`;
-    default: return '';
-  }
-}
-
 // ───────────── DOM refs ─────────────
 const $header = document.getElementById('header');
 const $panel  = document.getElementById('panel');
@@ -833,16 +818,10 @@ function renderPanel() {
   const sec = sections[i];
   const lockKey = sectionLocks[sec.id];
   const locked = lockKey && S.rolloutLocks[lockKey] === 'locked';
-  const scopeLabel = S.scope === 'default' ? 'Brand default' : `${S.scope} override`;
-
   $panel.innerHTML = `
     <div class="sheet">
       <p class="sheet-eyebrow">${sec.cat}</p>
       <h1 class="sheet-title">${sec.title}</h1>
-      <div class="sheet-status">
-        <span class="status-pill${S.scope!=='default'?' is-override':''}"><span class="status-dot"></span>${esc(scopeLabel)}</span>
-        <span class="status-meta">${esc(sectionMeta(sec.id))}</span>
-      </div>
       <div class="sheet-body${locked?' locked':''}">
         ${locked?`<div class="sheet-locked-tag">${icons.lock} Locked</div>`:''}
         ${renderSectionContent(i)}
