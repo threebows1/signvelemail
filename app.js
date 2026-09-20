@@ -1055,7 +1055,7 @@ function pickRow(key, label, action, options, current, hint) {
 function swatchSocial(style) {
   const c = S.socialIconColor || S.accentColor;
   const glyph = (socialIcons.linkedin || '')
-    .replace(/width="16"/, 'width="12"').replace(/height="16"/, 'height="12"');
+    .replace(/width="16"/, 'width="14"').replace(/height="16"/, 'height="14"');
   if (style === 'circle')  return `<span class="sw-ring" style="border-color:${c};color:${c}">${glyph}</span>`;
   if (style === 'filled')  return `<span class="sw-ring" style="background:${c};border-color:${c};color:#fff">${glyph}</span>`;
   if (style === 'chip')    return `<span class="sw-box" style="background:${c};border-color:${c};color:#fff">in</span>`;
@@ -1065,13 +1065,14 @@ function swatchSocial(style) {
 
 function swatchContactIcon(mode) {
   const c = S.iconColor || S.accentColor;
-  // Thicker than the icon it stands for. These glyphs are drawn on a 24 grid
-  // with a 2px stroke, which lands under a pixel once the miniature scales it
-  // down — thin enough that the envelope closed up into a blob and the whole
-  // swatch read as a grey dot, worst of all as white on a filled disc.
+  // Nearly filling the ring, and drawn heavier than the icon it stands for.
+  // The ring is 21px and takes 3 of that for its own border, so a 12px glyph
+  // sat in the middle of it with room to spare and its 2px stroke — under a
+  // pixel once scaled — closed up into a grey smudge. The ring's size is not
+  // the thing to change: that sets the row's height. The glyph inside it is.
   const glyph = (contactIcons.email || '')
-    .replace(/width="14"/, 'width="12"').replace(/height="14"/, 'height="12"')
-    .replace(/stroke-width="2"/, 'stroke-width="2.6"');
+    .replace(/width="14"/, 'width="16"').replace(/height="14"/, 'height="16"')
+    .replace(/stroke-width="2"/, 'stroke-width="3"');
   if (mode === 'circle')  return `<span class="sw-ring" style="border-color:${c};color:${c}">${glyph}</span>`;
   if (mode === 'filled')  return `<span class="sw-ring" style="background:${c};border-color:${c};color:#fff">${glyph}</span>`;
   if (mode === 'icons')   return `<span class="sw-bare" style="color:${c}">${glyph}</span>`;
