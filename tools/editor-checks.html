@@ -46,7 +46,11 @@
     // Templates section: every card must switch the live template.
     click(document.querySelector('#rail [data-goto="0"]'));
     const ids = [].map.call(document.querySelectorAll('#panel [data-tmpl]'), c => c.dataset.tmpl);
-    if (ids.length !== 17) E.push('expected 17 template cards, got ' + ids.length);
+    // Counted against the themes rather than a number written here, so adding
+    // a layout does not mean remembering to change this line — the fault it
+    // guards against is a card that never reached the panel, not a count.
+    const themed = Object.keys(templateThemes).length;
+    if (ids.length !== themed) E.push('expected ' + themed + ' template cards, got ' + ids.length);
     // Each click re-renders the panel, so the card has to be looked up again
     // every time — a cached NodeList is detached after the first click.
     ids.forEach(want => {
@@ -143,7 +147,11 @@
 
       ['top', 'middle', 'bottom'].forEach(v => {
         S.photoAlign = v;
-        PHOTO_TEMPLATES.forEach(id => {
+        // Only the layouts that set the portrait beside text: this control
+        // aligns it against that block, and a layout giving the portrait a row
+        // of its own has nothing to align it against. Taken from the app's own
+        // list so the two cannot drift.
+        PHOTO_BESIDE_TEXT.forEach(id => {
           S.template = id;
           const h = generateSignaturePreview();
           // The cell holding the portrait is the one that has to move. Matched

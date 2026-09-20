@@ -122,6 +122,11 @@ const templateThemes = {
   grid:       {accent:'#3FCF8E', accent2:'#111614', panel:'#0D0F0E', social:'filled', icons:'labels', cols:2, role:'caps', caps:false, track:-1, shape:'circle'},
   feature:    {accent:'#8FCBFF', accent2:'#0E4FA8', panel:'#1668D8', social:'filled', icons:'icons', cols:2, role:'pill', caps:false, track:0, shape:'circle', ring:4},
   minimal:    {accent:'#475569', accent2:'#1F2937', panel:null, social:'plain',  icons:'icons',   cols:1, role:'plain', caps:false, track:0},
+  // The only one that stacks. Every other layout sets the portrait or the logo
+  // beside the text, which needs width to work; this one runs down a single
+  // narrow column, so it holds its shape in a phone's mail app and in the
+  // reading pane of a client that gives a message half a window.
+  stacked:    {accent:'#7E22CE', accent2:'#3B0764', panel:null, social:'circle', icons:'icons',   cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
 };
 
 // Falls back to the theme accent, so a layout added later still gets a mark.
@@ -857,6 +862,7 @@ function tmplPreviews() {
     grid: `<div style="background:${themeOf('grid').panel};border-radius:3px;padding:5px;width:44px"><div style="display:flex;gap:4px;align-items:center">${bar(20,4,'#fff',0)}<div style="margin-left:auto">${dot(12,'#2A3B33')}</div></div><div style="height:1px;background:${A('grid')};margin:4px 0"></div><div style="display:flex;gap:4px">${rows(2,10,'#5F6E67')}<div>${rows(2,10,'#5F6E67')}</div></div></div>`,
     feature: `<div style="background:${themeOf('feature').panel};border-radius:3px;padding:5px;width:44px;display:flex;gap:4px;align-items:center"><div style="width:15px;height:15px;border-radius:50%;border:2px solid #fff;background:#5B9BEA;box-sizing:border-box;flex-shrink:0"></div><div>${bar(18,4,'#fff',2)}${bar(10,3,A('feature'),2)}<div style="display:flex;gap:3px">${bar(7,2,'#A9CCF4')}${bar(7,2,'#A9CCF4')}</div></div></div>`,
     minimal: `<div>${bar(34,3,0,3)}${bar(24,2)}</div>`,
+    stacked: `<div style="width:26px">${dot(13,'var(--tmpl-ink)')}<div style="height:3px"></div>${bar(20,3,0,2)}${bar(13,2,0,3)}<div style="height:1px;background:var(--border);margin-bottom:3px"></div>${rows(3,22)}<div style="height:2px;background:${A('stacked')};margin:3px 0"></div><div style="display:flex;gap:2px">${dot(5,A('stacked'))}${dot(5,A('stacked'))}${dot(5,A('stacked'))}</div></div>`,
   };
 }
 
@@ -867,8 +873,9 @@ function renderTemplates() {
     accentbar:'Accent bar', colorblock:'Colour block', darkcard:'Dark card', connect:'Connect bar',
     ribbon:'Ribbon', brandmark:'Brandmark', inline:'Inline', labelled:'Labelled',
     band:'Banner band', editorial:'Editorial', grid:'Grid', feature:'Feature', minimal:'Minimal',
+    stacked:'Stacked',
   };
-  const order = ['corporate','spotlight','split','directory','accentbar','colorblock','darkcard',
+  const order = ['corporate','spotlight','stacked','split','directory','accentbar','colorblock','darkcard',
                  'connect','ribbon','brandmark','inline','labelled','band','editorial','grid','feature','minimal'];
 
   let h = `<div class="field-row"><label class="field-label">Template</label><div class="template-grid">`;
@@ -1344,8 +1351,14 @@ function renderDesign() {
 // themselves: 'card' was in here long after that template was retired, and
 // 'feature' draws a logo but was missing, so the panel told anyone on it that
 // there was no logo slot while the layout was rendering one.
-const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','feature'];
-const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature'];
+const LOGO_TEMPLATES = ['corporate','split','directory','accentbar','colorblock','connect','ribbon','brandmark','inline','band','feature','stacked'];
+const PHOTO_TEMPLATES = ['spotlight','darkcard','connect','ribbon','labelled','band','editorial','grid','feature','stacked'];
+
+// Of those, the ones that set the portrait beside the text. "Photo position"
+// aligns the picture against the block next to it, so it only means anything
+// here: the stacked layout gives the portrait a row of its own with nothing
+// alongside, and there is nothing to align it against.
+const PHOTO_BESIDE_TEXT = PHOTO_TEMPLATES.filter(t => t !== 'stacked');
 
 function renderMedia() {
   // Not every layout has a slot for both images — say so rather than letting
@@ -1383,6 +1396,9 @@ function renderMedia() {
   // uploader above is how anyone replaces it.
 
   h += `<div class="field-row"><label class="field-label">Shape</label><div class="toggle-group" data-action="headshotShape"><button class="${S.headshotShape==='circle'?'active':''}" data-val="circle">Circle</button><button class="${S.headshotShape==='rounded'?'active':''}" data-val="rounded">Rounded</button><button class="${S.headshotShape==='square'?'active':''}" data-val="square">Square</button></div></div>`;
+  // Shown on every layout, like the rest of the photo settings: they are saved
+  // whether or not the current one draws a portrait, and apply the moment a
+  // layout that does is picked.
   h += `<div class="field-row"><label class="field-label">Photo position<span class="field-hint">Against the text beside it.</span></label><div class="toggle-group" data-action="photoAlign"><button class="${S.photoAlign==='top'?'active':''}" data-val="top">Top</button><button class="${S.photoAlign==='middle'?'active':''}" data-val="middle">Middle</button><button class="${S.photoAlign==='bottom'?'active':''}" data-val="bottom">Bottom</button></div></div>`;
   h += `<div class="field-row"><label class="field-label">Photo size<span class="field-hint">Auto follows the template.</span></label><div class="slider-row"><input type="range" min="0" max="140" step="4" value="${S.headshotSize}" data-bind="headshotSize"><span class="slider-val">${S.headshotSize ? S.headshotSize + 'px' : 'Auto'}</span></div></div>`;
   h += `<div class="field-row"><label class="field-label">Ring width</label><div class="slider-row"><input type="range" min="0" max="10" value="${S.photoRing}" data-bind="photoRing"><span class="slider-val">${S.photoRing}px</span></div></div>`;
@@ -1731,7 +1747,11 @@ function buildSignatureBody() {
                          // Corporate draws its own table rather than going
                          // through outer(), and used to carry its own copy of
                          // this number. Listed here so one rule governs them all.
-                         corporate:560};
+                         corporate:560,
+                         // Narrow on purpose: this one stacks, so the width is
+                         // what makes it a column rather than a wide block with
+                         // the parts stranded at the top.
+                         stacked:340};
   // The background panel wraps the whole signature and adds its padding
   // outside it, so a 600px layout in a panel padded 24px is 648px wide — wider
   // than the layout was drawn for, wider than the preview column, and wider
@@ -1739,9 +1759,15 @@ function buildSignatureBody() {
   // cutting. Take the padding out of the layout instead of adding it on, so
   // turning the panel on changes the colour behind a signature and not its
   // size. Floored, so a heavy padding cannot squeeze the content to nothing.
+  //
+  // The floor is half the layout's own width rather than a fixed 320px. A flat
+  // floor is above some layouts entirely — the stacked one is drawn at 340 —
+  // so the subtraction hit the floor, stopped, and the panel's padding went
+  // back to being added on top: switching the panel on made that layout wider
+  // than it is without one, which is the exact thing this was written to stop.
   const baseW = S.panelWidth || templateWidth[S.template] || 0;
   const layoutW = baseW
-    ? Math.max(320, baseW - (S.bgEnabled ? S.bgPadding * 2 : 0))
+    ? Math.max(Math.round(baseW / 2), baseW - (S.bgEnabled ? S.bgPadding * 2 : 0))
     : 0;
   const widthAttr = layoutW ? ` width="${layoutW}"` : '';
   const widthCss = layoutW ? `width:${layoutW}px;max-width:100%;` : '';
@@ -2622,6 +2648,31 @@ function buildSignatureBody() {
       ${bannerHTML}
       ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td><p style="${discStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
     </tbody></table>`;
+  }
+
+  // ── Stacked ──
+  // One narrow column, read top to bottom: portrait, who you are, a rule, the
+  // contacts under one another, a rule in the theme colour, then the mark and
+  // the social icons. The only layout in the set that does not put something
+  // beside something else, which is what lets it hold together at 340px — a
+  // phone, or a reading pane given half a window.
+  if (S.template === 'stacked') {
+    const gap = parseInt(sp);
+    return outer(`
+      ${S.headshotUrl && showImages ? `<tr><td style="padding-bottom:${gap + 4}px;">${photoHTML({shape: 'circle', size: S.headshotSize || 72, ring: S.photoRing, ringColor: S.photoRingColor})}</td></tr>` : ''}
+      <tr><td>
+        <p style="${nameStyleAt(bs + 5)}">${eName}</p>
+        ${roleHTML({mb: 2})}
+        <p style="${titleStyle}">${esc(pCompany)}</p>
+        ${taglineHTML}
+      </td></tr>
+      ${S.dividerEnabled ? `<tr><td style="padding:${gap + 2}px 0;">${hairline()}</td></tr>` : `<tr><td style="height:${gap + 2}px;"></td></tr>`}
+      <tr><td>${contactHTML}</td></tr>
+      ${S.dividerEnabled ? `<tr><td style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</td></tr>` : `<tr><td style="height:${gap + 2}px;"></td></tr>`}
+      ${logoHTML ? `<tr><td style="padding-bottom:${gap}px;">${logoAs({size: Math.min(S.logoHeight, 34)})}</td></tr>` : ''}
+      ${socialHTML ? `<tr><td>${socialHTML}</td></tr>` : ''}
+      ${bannerImgHTML ? `<tr><td style="padding-top:${gap + 4}px;">${bannerImgHTML}</td></tr>` : ''}
+      ${discRow(1, `${gap + 6}px 0 0`)}`);
   }
 
   // minimal
