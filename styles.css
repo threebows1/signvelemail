@@ -5,6 +5,9 @@
    generateSignaturePreview() — nothing here reaches them. */
 :root{
   --canvas:#F5F4FB;--white:#FFFFFF;--border:#E9E7F2;
+  /* Lighter than --border on purpose: it separates rows inside a group rather
+     than enclosing anything, and section labels sit back further still. */
+  --hairline:#F0EEF6;--label:#A8A4BE;
   --ink:#14121F;--muted:#6B6880;--accent:#5B2EFF;
   --accent-light:#EEEAFF;--accent-ink:#3A1CB0;
   --mint:#00E5A0;--danger:#FF4D5E;
@@ -454,17 +457,19 @@ select.input{cursor:pointer;appearance:auto}
   font-size:11px;line-height:1.5;color:var(--muted);
 }
 
-/* ── Compact option rows (label left, control right) ── */
-.opt-list{
-  border:1px solid var(--border);border-radius:var(--radius);
-  overflow:hidden;margin-bottom:12px;
-}
+/* ── Compact option rows (label left, control right) ──
+   No box around a group. The border and the row dividers inside it were
+   drawing the same line twice, and once every control is one line with its
+   value on the right, the spacing and the section label group things on their
+   own. What is left is a hairline between rows, lighter than the borders
+   elsewhere because it separates rather than encloses. */
+.opt-list{margin-bottom:6px}
 .opt-row{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:9px 11px;border-bottom:1px solid var(--border);
+  padding:10px 2px;border-bottom:1px solid var(--hairline);
 }
 .opt-row:last-child{border-bottom:none}
-.opt-label{font-size:11.5px;font-weight:500;color:var(--ink)}
+.opt-label{font-size:11.5px;font-weight:500;color:var(--ink);transition:color .15s}
 .opt-control{display:flex;align-items:center;gap:8px;flex-shrink:0}
 
 /* ── Openable rows ──
@@ -472,15 +477,18 @@ select.input{cursor:pointer;appearance:auto}
    always in the tree and hidden here, so whatever drives the panel — a check,
    a keyboard, a screen reader — still finds the control where it expects it. */
 .opt-row.is-openable{cursor:pointer;user-select:none}
-.opt-row.is-openable:hover{background:var(--canvas)}
+/* The label answers instead of the row filling in — there is no box here for a
+   fill to sit inside, and a band of colour across an open list is the noise
+   this treatment exists to remove. */
+.opt-row.is-openable:hover .opt-label{color:var(--accent)}
 .opt-row.is-openable:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .opt-row.is-openable svg{color:var(--muted);transition:transform .18s}
 .opt-row.is-openable.open svg{transform:rotate(180deg)}
 .row-value{
-  font-size:11px;color:var(--muted);max-width:140px;
+  font-size:11px;color:var(--ink);font-weight:500;max-width:140px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.row-body{padding:2px 11px 11px;border-bottom:1px solid var(--border)}
+.row-body{padding:2px 2px 12px;border-bottom:1px solid var(--hairline)}
 .row-body:last-child{border-bottom:none}
 .row-body.is-shut{display:none}
 .row-body > .field-hint{margin:0 0 7px}
@@ -546,11 +554,14 @@ select.input{cursor:pointer;appearance:auto}
   border:1px solid rgba(0,0,0,.25);box-shadow:0 1px 3px rgba(0,0,0,.3);cursor:pointer;
 }
 .picker-hue:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* With the boxes gone this label is what separates one group from the next,
+   so it carries the space a rule used to and sits lighter than the rows it
+   heads — a marker, not another line to read. */
 .opt-group{
   font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--muted);margin:18px 0 8px;padding-top:14px;border-top:1px solid var(--border);
+  color:var(--label);margin:18px 0 8px;padding-top:18px;
 }
-.sheet-body > .opt-group:first-child{margin-top:0;padding-top:0;border-top:none}
+.sheet-body > .opt-group:first-child{margin-top:0;padding-top:0}
 .inline-note{
   font-size:10.5px;line-height:1.5;color:var(--accent-ink);
   background:var(--accent-light);border-radius:var(--radius-sm);
