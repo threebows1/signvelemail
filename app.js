@@ -803,8 +803,11 @@ function renderRail() {
     // Skipping rather than filtering keeps `i` equal to the real index in
     // `sections`, which is what data-goto and renderSectionContent both use.
     if (sec.adminOnly && !isAdmin()) return;
+    // A gap where the category used to be named. The word still appears, as
+    // the eyebrow above the section's own title — saying it twice put two
+    // pieces of chrome in the rail for every one thing you can click.
     if (sec.cat !== lastCat) {
-      html += `<div class="rail-cat">${sec.cat}</div>`;
+      if (lastCat) html += `<div class="rail-gap"></div>`;
       lastCat = sec.cat;
     }
     const lockKey = sectionLocks[sec.id];
