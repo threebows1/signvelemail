@@ -545,6 +545,10 @@ const S = {
   // Still off by default: a placeholder that shipped switched on would be
   // pasted into a mail client and sent as a grey box by whoever did not look.
   bannerImage: DEFAULT_BANNER_URL,
+  // Small by default. A campaign image used to render 520px wide, which is the
+  // width of the signature itself, so it read as a picture with a signature
+  // underneath rather than a signature with an image in it.
+  bannerWidth: 140,
   ctaLabel: '',
   ctaUrl: '',
   ctaStyle: 'solid',
@@ -1348,7 +1352,8 @@ function renderBanner() {
     });
     if (S.bannerImage) h += `<button class="sample-thumb is-clear" data-action="sampleBanner" data-url="" title="No image">None</button>`;
     h += `</div></div>`;
-    if (S.bannerImage) h += `<div class="inline-note">A wide image replaces the text banner. Host it publicly — an uploaded copy will be stripped in transit.</div>`;
+    if (S.bannerImage) h += `<div class="field-row"><label class="field-label">Image width</label><div class="slider-row"><input type="range" min="80" max="520" step="10" value="${S.bannerWidth}" data-bind="bannerWidth"><span class="slider-val">${S.bannerWidth}px</span></div></div>`;
+    if (S.bannerImage) h += `<div class="inline-note">An image replaces the text banner. Host it publicly — an uploaded copy will be stripped in transit.</div>`;
     h += `<div class="field-row"><label class="field-label">Button label</label><input class="input" value="${esc(S.ctaLabel)}" data-bind="ctaLabel"></div>`;
     h += `<div class="field-row"><label class="field-label">Button URL</label><input class="input" value="${esc(S.ctaUrl)}" data-bind="ctaUrl"></div>`;
     h += `<div class="field-row"><label class="field-label">Button style</label><div class="toggle-group" data-action="ctaStyle"><button class="${S.ctaStyle==='solid'?'active':''}" data-val="solid">Solid</button><button class="${S.ctaStyle==='outline'?'active':''}" data-val="outline">Outline</button><button class="${S.ctaStyle==='pill'?'active':''}" data-val="pill">Pill</button></div></div>`;
@@ -2035,8 +2040,9 @@ function buildSignatureBody() {
 
   // A hosted campaign image, used in place of the text banner where a template
   // supports it. Width is capped so it cannot blow out a narrow reading pane.
+  const bannerW = S.bannerWidth || 140;
   const bannerImgHTML = (S.bannerEnabled && S.bannerImage && showImages)
-    ? `<img src="${esc(S.bannerImage)}" width="520" style="display:block;width:100%;max-width:520px;height:auto;border-radius:6px;" alt="${esc(S.bannerMessage || 'Campaign')}">`
+    ? `<img src="${esc(S.bannerImage)}" width="${bannerW}" style="display:block;width:100%;max-width:${bannerW}px;height:auto;border-radius:6px;" alt="${esc(S.bannerMessage || 'Campaign')}">`
     : '';
 
   // ── Assemble by template ──
