@@ -141,15 +141,9 @@ public URL — `https://signvel.com/email-logo.png`.
 
 ### Regenerating it
 
-`tools/make-email-logo.ps1` renders the mark headlessly and writes the file
-straight to the repository root, which is what Cloudflare serves:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/make-email-logo.ps1
-```
-
-Or open `tools/make-email-logo.html` and click **Download**, saving it to the
-repository root as `email-logo.png`. Either way, deploy afterwards.
+Open `tools/make-email-logo.html` and click **Download**, saving it to the
+repository root as `email-logo.png` — the root is what Cloudflare serves.
+Deploy afterwards.
 
 It renders at 144×60 and the templates display it at 48×20 — drawn at 3x so it
 stays sharp on a retina screen. The ground is filled with `#F5F4FB` to match

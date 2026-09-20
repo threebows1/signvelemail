@@ -72,7 +72,7 @@
   document.getElementById('preview').src = url;
 
   // Also emitted as bare base64 into #out, so the PNG can be produced
-  // headlessly by tools/make-email-logo.ps1 without a manual download.
+  // here and saved to the repository root by hand.
   document.getElementById('out').textContent = url.slice(url.indexOf(',') + 1);
 
   document.title = 'PASS — 144x60 png ready';
