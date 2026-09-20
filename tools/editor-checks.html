@@ -753,10 +753,17 @@
     click(document.querySelector('#rail [data-goto="5"]'));
     const bt = $('#panel [data-action="toggleBanner"]');
     if (!S.bannerEnabled) click(bt);
-    const bans = document.querySelectorAll('#panel [data-action="sampleBanner"]');
-    if (bans.length < 4) E.push('expected 4 sample banners, got ' + bans.length);
-    click(bans[1]);
-    if (S.bannerImage !== bans[1].dataset.url) E.push('sample banner did not apply');
+    // One placeholder, plus the "None" chip once an image is set. No stock
+    // photographs: they were dropped from the picker, so finding one offered
+    // here again means the list has been reintroduced by accident.
+    const bans = [].slice.call(document.querySelectorAll('#panel [data-action="sampleBanner"]'));
+    const offered = bans.map(b => b.dataset.url).filter(Boolean);
+    if (!offered.length) E.push('no sample banner offered at all');
+    if (offered.some(u => /images\.unsplash\.com/.test(u))) {
+      E.push('a stock photograph is offered as a sample banner again');
+    }
+    click(bans[0]);
+    if (S.bannerImage !== bans[0].dataset.url) E.push('sample banner did not apply');
 
     // Dark panel: every layout must stay readable on a dark ground.
     S.bgEnabled = true; S.bgColor = '#14121F';

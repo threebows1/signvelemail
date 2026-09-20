@@ -156,16 +156,22 @@ const sampleHeadshots = [
 
 const DEFAULT_BANNER_URL = 'https://signvel.com/sample-banner.png';
 
-// The placeholder leads: the banner slot is there to be filled with the
-// company's own artwork, and it shows the shape and proportion that slot gives
-// an image without a stock scene reading as part of the design. The
-// photographs behind it stay, for anyone who wants one.
+// One placeholder, and nothing else. The banner slot is for the company's own
+// artwork; a stock photograph of somebody else's office sitting in it reads as
+// part of a design that is about to be sent, the same way a stock face did in
+// the portrait slot.
 const sampleBanners = [
   {id:'b0', label:'Placeholder', url:DEFAULT_BANNER_URL},
-  {id:'b1', label:'Travel',  url:'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1040&h=260&fit=crop'},
-  {id:'b2', label:'Desk',    url:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1040&h=260&fit=crop'},
-  {id:'b3', label:'Team',    url:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1040&h=260&fit=crop'},
-  {id:'b4', label:'Meeting', url:'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1040&h=260&fit=crop'},
+];
+
+// The stock photographs that used to be offered here. A saved signature still
+// carrying one was picked from a list this product no longer stands behind, so
+// it follows the placeholder forward. An uploaded image is left alone.
+const RETIRED_SAMPLE_BANNERS = [
+  'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1040&h=260&fit=crop',
+  'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1040&h=260&fit=crop',
+  'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1040&h=260&fit=crop',
+  'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1040&h=260&fit=crop',
 ];
 
 // What every layout previews with until somebody uploads their own. A drawn
@@ -189,12 +195,20 @@ function ensureDefaultPortrait() {
   }
 }
 
-// A banner nobody has touched — no image, no message, no subtext, no call to
-// action — is an empty slot rather than a choice, so it takes the placeholder
-// the way a fresh signature does. Anything with words in it is left alone: the
-// image wins over the text banner in several layouts, so filling the slot on a
-// banner somebody has written would quietly replace what they wrote.
+// Two cases follow the placeholder forward. One of the stock photographs that
+// used to be offered, wherever it appears — that list is gone, and a signature
+// still carrying one is showing an image this product no longer offers. And a
+// banner nobody has touched at all: no image, no message, no subtext, no call
+// to action, which is an empty slot rather than a choice.
+//
+// A banner with words in it keeps its empty image slot: the image wins over
+// the text banner in several layouts, so filling it would quietly replace what
+// somebody wrote — the sales scope preset is exactly that case.
 function ensureDefaultBanner() {
+  if (RETIRED_SAMPLE_BANNERS.indexOf(S.bannerImage) !== -1) {
+    S.bannerImage = DEFAULT_BANNER_URL;
+    return;
+  }
   if (!S.bannerImage && !S.bannerMessage && !S.bannerSubtext && !S.ctaLabel) {
     S.bannerImage = DEFAULT_BANNER_URL;
   }
