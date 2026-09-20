@@ -757,6 +757,24 @@
       S.socialLinks = keep;
     })();
 
+    // ── Logo height reaches every layout that draws a logo ──
+    // Measured from the default upwards, not from the bottom of the slider: a
+    // layout that clamps the size to something at or under 40 still answers a
+    // drag from 20, and looks dead where anybody actually starts. Seven
+    // layouts shipped that way, each capping the size to keep its mark small,
+    // which is a floor's job — a ceiling takes the control away.
+    (function () {
+      const keepT = S.template, keepH = S.logoHeight;
+      const sizes = () => (generateSignaturePreview().match(/(width|height)[:="]+\s*(\d+)/g) || []).join(',');
+      LOGO_TEMPLATES.forEach(t => {
+        S.template = t;
+        S.logoHeight = 40; const at40 = sizes();
+        S.logoHeight = 72; const at72 = sizes();
+        if (at40 === at72) E.push(t + ': logo height does nothing from its default upwards');
+      });
+      S.template = keepT; S.logoHeight = keepH;
+    })();
+
     // Banner section: sample banners must be offered once the banner is on.
     click(document.querySelector('#rail [data-goto="5"]'));
     const bt = $('#panel [data-action="toggleBanner"]');

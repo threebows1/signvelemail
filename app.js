@@ -2291,7 +2291,7 @@ function buildSignatureBody() {
   if (S.template === 'colorblock') {
     const blockW = 136;
     const mark = S.logoUrl
-      ? logoAs({size: 58, maxw: blockW - 40, colour: '#FFFFFF', hollow: true, mono: true})
+      ? logoAs({size: Math.max(44, S.logoHeight + 18), maxw: blockW - 40, colour: '#FFFFFF', hollow: true, mono: true})
       : `<div style="font-family:${ff};font-size:${bs + 10}px;font-weight:800;letter-spacing:.04em;color:#ffffff;line-height:1.2;">${esc((pCompany || 'Logo').split(' ')[0].toUpperCase())}</div>`;
     return outer(`
       <tr>
@@ -2719,7 +2719,7 @@ function buildSignatureBody() {
       ${S.dividerEnabled ? `<tr><td style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</td></tr>` : `<tr><td style="height:${gap + 2}px;"></td></tr>`}
       <tr><td>${contactHTML}</td></tr>
       ${S.dividerEnabled ? `<tr><td style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</td></tr>` : `<tr><td style="height:${gap + 2}px;"></td></tr>`}
-      ${logoHTML ? `<tr><td style="padding-bottom:${gap}px;">${logoAs({size: Math.min(S.logoHeight, 34)})}</td></tr>` : ''}
+      ${logoHTML ? `<tr><td style="padding-bottom:${gap}px;">${logoAs({size: Math.max(26, S.logoHeight - 8)})}</td></tr>` : ''}
       ${socialHTML ? `<tr><td>${socialHTML}</td></tr>` : ''}
       ${bannerImgHTML ? `<tr><td style="padding-top:${gap + 4}px;">${bannerImgHTML}</td></tr>` : ''}
       ${discRow(1, `${gap + 6}px 0 0`)}`);
@@ -2734,7 +2734,7 @@ function buildSignatureBody() {
   if (S.template === 'profile') {
     const gap = parseInt(sp);
     const media = `${S.headshotUrl && showImages ? photoHTML({shape: 'circle', size: S.headshotSize || 78, ring: S.photoRing, ringColor: S.photoRingColor}) : ''}${
-      logoHTML ? `<div style="padding-top:${S.headshotUrl && showImages ? gap + 4 : 0}px;">${logoAs({size: Math.min(S.logoHeight, 34)})}</div>` : ''}`;
+      logoHTML ? `<div style="padding-top:${S.headshotUrl && showImages ? gap + 4 : 0}px;">${logoAs({size: Math.max(26, S.logoHeight - 8)})}</div>` : ''}`;
     return outer(`
       <tr>
         ${media.trim() ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:26px;">${media}</td>` : ''}
@@ -2773,7 +2773,7 @@ function buildSignatureBody() {
       </td></tr>
       ${rule}
       <tr>
-        ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:26px;">${logoAs({size: Math.min(S.logoHeight, 40)})}</td>` : ''}
+        ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:26px;">${logoAs({size: Math.max(30, S.logoHeight)})}</td>` : ''}
         <td width="100%" style="width:100%;vertical-align:middle;">${contactHTML}</td>
       </tr>
       ${rule}
@@ -2801,7 +2801,7 @@ function buildSignatureBody() {
           ${roleHTML({mb: 2})}
           <p style="${titleStyle}">${esc(pCompany)}</p>
           ${taglineHTML}
-          ${logoHTML ? `<div style="padding-top:${gap + 2}px;">${logoAs({size: Math.min(S.logoHeight, 32)})}</div>` : ''}
+          ${logoHTML ? `<div style="padding-top:${gap + 2}px;">${logoAs({size: Math.max(24, S.logoHeight - 10)})}</div>` : ''}
         </td>
         <td style="vertical-align:top;">${contactHTML}</td>
       </tr>
@@ -2829,7 +2829,7 @@ function buildSignatureBody() {
         <p style="${titleStyle}">${esc(pCompany)}</p>
         ${taglineHTML}
       </td></tr>
-      ${logoHTML ? `<tr><td style="padding-top:${gap + 2}px;">${logoAs({size: Math.min(S.logoHeight, 38)})}</td></tr>` : ''}
+      ${logoHTML ? `<tr><td style="padding-top:${gap + 2}px;">${logoAs({size: Math.max(30, S.logoHeight - 4)})}</td></tr>` : ''}
       ${rule}
       <tr><td>${contactHTML}</td></tr>
       ${rule}
@@ -2849,8 +2849,8 @@ function buildSignatureBody() {
     return outer(`
       <tr>
         ${S.headshotUrl && showImages ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:22px;">${photoHTML({shape: 'circle', size: S.headshotSize || 84, ring: S.photoRing, ringColor: S.photoRingColor})}${
-          logoHTML ? `<div style="padding-top:${gap + 4}px;">${logoAs({size: Math.min(S.logoHeight, 34)})}</div>` : ''}</td>`
-        : logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:22px;">${logoAs({size: Math.min(S.logoHeight, 34)})}</td>` : ''}
+          logoHTML ? `<div style="padding-top:${gap + 4}px;">${logoAs({size: Math.max(26, S.logoHeight - 8)})}</div>` : ''}</td>`
+        : logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:22px;">${logoAs({size: Math.max(26, S.logoHeight - 8)})}</td>` : ''}
         ${S.dividerEnabled ? `<td width="${barW}" bgcolor="${ac}" style="width:${barW}px;background-color:${ac};font-size:1px;line-height:1px;">&nbsp;</td>` : ''}
         <td width="100%" style="width:100%;vertical-align:middle;padding-left:${S.dividerEnabled ? 22 : 0}px;">
           <p style="${nameStyleAt(bs + 3)}">${eName}</p>
@@ -2887,7 +2887,7 @@ function buildSignatureBody() {
       <tr>
         <td colspan="3">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tbody><tr>
-            ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:24px;">${logoAs({size: Math.min(S.logoHeight, 34)})}</td>` : ''}
+            ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:24px;">${logoAs({size: Math.max(26, S.logoHeight - 8)})}</td>` : ''}
             ${socialHTML ? `<td width="100%" style="width:100%;vertical-align:middle;">${socialHTML}</td>` : '<td></td>'}
           </tr></tbody></table>
         </td>
