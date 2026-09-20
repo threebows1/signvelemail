@@ -1204,12 +1204,19 @@ function renderUploader(kind, hint) {
   const action = kind + 'Upload';
   const url = S[kind + 'Url'];
   const input = `<input type="file" accept="${UPLOAD_ACCEPT}" data-action="${action}" hidden>`;
+  // What ships in the slot needs no name. "Sample logo" printed under the
+  // sample logo says only what the picture already says, and reads as a label
+  // on something you might have chosen — nobody needs telling that dropping a
+  // file replaces it. A name someone uploaded is worth showing: it is the one
+  // way to tell which of two similar marks is actually in there.
+  const sample = kind === 'logo' ? DEFAULT_LOGO_URL : DEFAULT_HEADSHOT_URL;
+  const named = url !== sample ? esc(S[kind + 'Name'] || 'Image loaded') : '';
   let h;
   if (url) {
     h = `<div class="uploader is-loaded" data-drop="${action}">
       <span class="uploader-thumb"><img src="${esc(url)}" alt=""></span>
       <span class="uploader-meta">
-        <span class="uploader-name">${esc(S[kind + 'Name'] || 'Image loaded')}</span>
+        ${named ? `<span class="uploader-name">${named}</span>` : ''}
         <span class="uploader-hint">${hint}</span>
       </span>
       <label class="btn uploader-action">Replace${input}</label>
@@ -1237,7 +1244,6 @@ function renderUploader(kind, hint) {
   // to an account that has never chosen, and never again after that. Anyone
   // who cleared a logo in an earlier version was stuck with a blank space and
   // no control that said otherwise.
-  const sample = kind === 'logo' ? DEFAULT_LOGO_URL : DEFAULT_HEADSHOT_URL;
   if (url !== sample) {
     h += `<div class="add-chips"><button class="chip accent" data-action="useSample" data-kind="${kind}">
       Use the sample ${kind === 'logo' ? 'logo' : 'portrait'}</button></div>`;
