@@ -1028,12 +1028,15 @@ function optRow(key, label, value, control, hint) {
 function pickRow(key, label, action, options, current, hint) {
   const chosen = options.find(o => String(o.val) === String(current));
   const swatched = options.some(o => o.swatch);
+  // Where the options are drawn, the closed row shows the drawing too: the
+  // name was only ever a stand-in for the thing it could not show.
+  const value = chosen ? (chosen.swatch || chosen.label) : '';
   const buttons = options.map(o =>
     `<button class="${String(o.val) === String(current) ? 'active' : ''}" data-val="${esc(String(o.val))}"${
       o.swatch ? ` title="${esc(o.label)}" aria-label="${esc(o.label)}"` : ''
     }>${o.swatch || o.label}</button>`
   ).join('');
-  return optRow(key, label, chosen ? chosen.label : '',
+  return optRow(key, label, value,
     `<div class="toggle-group${swatched ? ' is-swatches' : ''}" data-action="${action}">${buttons}</div>`, hint);
 }
 
@@ -1298,14 +1301,16 @@ function renderDesign() {
       ? sliderRow('contactIconSize', 'Icon size', 'contactIconSize', 14, 34) : ''}
   </div>`;
 
+  // The two that carry a glyph lead, because they are what a signature with
+  // social icons usually wants; the three that set the platform's name follow.
   let socialChips = '';
-  ['chip','circle','filled','plain','outline'].forEach(s => {
+  ['circle','filled','chip','plain','outline'].forEach(s => {
     const name = s.charAt(0).toUpperCase() + s.slice(1);
     socialChips += `<button class="chip is-swatch${S.socialStyle===s?' active':''}" data-action="socialStyle" data-val="${s}" title="${name}" aria-label="${name}">${swatchSocial(s)}</button>`;
   });
   h += `<div class="opt-group">Social icons</div>`;
   h += `<div class="opt-list">
-    ${optRow('socialStyle', 'Icon type', S.socialStyle.charAt(0).toUpperCase() + S.socialStyle.slice(1),
+    ${optRow('socialStyle', 'Icon type', swatchSocial(S.socialStyle),
       `<div class="chip-row">${socialChips}</div>`)}
     ${sliderRow('socialIconSize', 'Icon size', 'socialIconSize', 14, 40)}
   </div>`;
