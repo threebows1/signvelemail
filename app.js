@@ -154,12 +154,14 @@ const sampleHeadshots = [
   {id:'h8', label:'Oliver', url:unsplash('photo-1506794778202-cad84cf45f1d')},
 ];
 
+const DEFAULT_BANNER_URL = 'https://signvel.com/sample-banner.png';
+
 // The placeholder leads: the banner slot is there to be filled with the
 // company's own artwork, and it shows the shape and proportion that slot gives
 // an image without a stock scene reading as part of the design. The
 // photographs behind it stay, for anyone who wants one.
 const sampleBanners = [
-  {id:'b0', label:'Placeholder', url:'https://signvel.com/sample-banner.png'},
+  {id:'b0', label:'Placeholder', url:DEFAULT_BANNER_URL},
   {id:'b1', label:'Travel',  url:'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1040&h=260&fit=crop'},
   {id:'b2', label:'Desk',    url:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1040&h=260&fit=crop'},
   {id:'b3', label:'Team',    url:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1040&h=260&fit=crop'},
@@ -184,6 +186,17 @@ const RETIRED_DEFAULT_HEADSHOTS = [sampleHeadshots[0].url, 'https://signvel.com/
 function ensureDefaultPortrait() {
   if (RETIRED_DEFAULT_HEADSHOTS.indexOf(S.headshotUrl) !== -1) {
     S.headshotUrl = DEFAULT_HEADSHOT_URL;
+  }
+}
+
+// A banner nobody has touched — no image, no message, no subtext, no call to
+// action — is an empty slot rather than a choice, so it takes the placeholder
+// the way a fresh signature does. Anything with words in it is left alone: the
+// image wins over the text banner in several layouts, so filling the slot on a
+// banner somebody has written would quietly replace what they wrote.
+function ensureDefaultBanner() {
+  if (!S.bannerImage && !S.bannerMessage && !S.bannerSubtext && !S.ctaLabel) {
+    S.bannerImage = DEFAULT_BANNER_URL;
   }
 }
 
@@ -517,7 +530,7 @@ const S = {
   // proportion it gives an image straight away rather than an empty strip.
   // Still off by default: a placeholder that shipped switched on would be
   // pasted into a mail client and sent as a grey box by whoever did not look.
-  bannerImage: 'https://signvel.com/sample-banner.png',
+  bannerImage: DEFAULT_BANNER_URL,
   ctaLabel: '',
   ctaUrl: '',
   ctaStyle: 'solid',
@@ -2955,6 +2968,7 @@ function adoptCloudState(row) {
   ensureSocialCatalogue();
   ensureDefaultPortrait();
   ensureDefaultLogo();
+  ensureDefaultBanner();
   return true;
 }
 
@@ -3124,6 +3138,7 @@ function loadState() {
   // default was something else.
   ensureDefaultPortrait();
   ensureDefaultLogo();
+  ensureDefaultBanner();
 }
 
 function resetState() {
