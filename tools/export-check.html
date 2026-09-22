@@ -48,11 +48,15 @@
   ['circle','filled'].forEach(m => {
     S.contactIconMode = m;
     const n = generateExportHTML('newoutlook');
-    // E for email, T for telephone, W for web — inside the round badge.
-    ['E','T','W'].forEach(L => {
-      if (!new RegExp('>' + L + '<').test(n)) E.push('newoutlook/' + m + ': no ' + L + ' badge');
+    // New Outlook keeps the drawing, served over https rather than inlined.
+    ['c-email', 'c-phone', 'c-website'].forEach(f => {
+      if (n.indexOf('https://signvel.com/icons/' + f + '-') < 0) E.push('newoutlook/' + m + ': no hosted ' + f);
     });
     if (!/border-radius:50%/.test(n)) E.push('newoutlook/' + m + ': lost its round badges');
+    // A filled badge needs the white glyph and an open one the ink glyph, or
+    // the icon disappears into its own ground.
+    const tone = m === 'filled' ? 'white' : 'ink';
+    if (n.indexOf('c-email-' + tone + '.png') < 0) E.push('newoutlook/' + m + ': wrong tone, wanted ' + tone);
     const c = generateExportHTML('classic');
     ['E.','T.','W.'].forEach(L => {
       if (c.indexOf('>' + L + '<') < 0) E.push('classic/' + m + ': no ' + L + ' lead');
@@ -201,6 +205,43 @@
   } catch (err) {
     document.getElementById('out').textContent += '\nSTYLE CHECK THREW: ' + err.message;
     document.title = 'FAIL style threw';
+  }
+})();
+</script>
+<script>
+// Every hosted glyph the New Outlook variant asks for must exist as a file,
+// or the recipient gets a broken image where the icon should be. Checked by
+// loading each one, not by trusting the name.
+(function () {
+  const urls = new Set();
+  const MODES = ['circle','filled','icons','letters','labels'];
+  const SOCIAL = ['circle','filled','chip','plain','outline'];
+  Object.keys(templateThemes).forEach(t => {
+    S.template = t;
+    MODES.forEach(m => { S.contactIconMode = m;
+      SOCIAL.forEach(s => { S.socialStyle = s;
+        const h = generateExportHTML('newoutlook');
+        (h.match(/https:\/\/signvel\.com\/icons\/[a-z0-9-]+\.png/g) || []).forEach(u => urls.add(u));
+      });
+    });
+  });
+  const out = document.getElementById('out');
+  const list = Array.from(urls); // a Set has no length, so [].slice.call would give []
+  if (!list.length) { out.textContent += '\nNO HOSTED ICONS REFERENCED'; document.title = 'FAIL icons 0'; return; }
+  let done = 0; const missing = [];
+  list.forEach(u => {
+    const img = new Image();
+    // Loaded from the local file the URL maps to, since the harness runs offline.
+    const local = '../icons/' + u.split('/').pop();
+    img.onload  = () => { if (++done === list.length) report(); };
+    img.onerror = () => { missing.push(u.split('/').pop()); if (++done === list.length) report(); };
+    img.src = local;
+  });
+  function report() {
+    out.textContent += missing.length
+      ? '\nMISSING ICON FILES: ' + missing.join(', ')
+      : '\n' + list.length + ' hosted glyphs referenced, every file present';
+    if (missing.length) document.title = 'FAIL icons ' + missing.length;
   }
 })();
 </script>

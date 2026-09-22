@@ -1,0 +1,55 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>make-icons</title></head>
+<body>
+<!-- Draws every glyph the signature uses to a PNG and prints it as base64, so
+     the icons can be hosted over https. Both Outlooks strip inline <svg>, and
+     data: URIs are stripped by Gmail and Outlook alike, so a hosted raster is
+     the only form that reaches a recipient in every client.
+
+     Run it, decode the lines into icons/. It is not deployed: tools/ is in
+     .assetsignore, and this only ever needs running when a glyph changes. -->
+<pre id="out"></pre>
+<script src="../config.js"></script>
+<script src="../cloud.js"></script>
+<script src="../app.js"></script>
+<script>
+// 3x the largest size the editor draws them at, so they stay sharp on a
+// retina screen, and the same ground rule as the email logo: flat, never
+// transparent-against-nothing, because Outlook's PNG alpha has a history of
+// rendering as a black box. These are alpha, but drawn white or ink so the
+// badge behind them supplies the ground.
+const SIZE = 72;
+const COLOURS = {white: '#FFFFFF', ink: '#14121F'};
+const all = {};
+Object.keys(contactIcons).forEach(k => { all['c-' + k] = contactIcons[k]; });
+Object.keys(socialIcons).forEach(k => { all['s-' + k] = socialIcons[k]; });
+
+function draw(svgStr, colour) {
+  return new Promise(resolve => {
+    // The editor's SVGs carry currentColor; give them a real one to paint with.
+    let s = svgStr.replace(/currentColor/g, colour);
+    if (!/xmlns=/.test(s)) s = s.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+    s = s.replace(/width="\d+"/, 'width="' + SIZE + '"').replace(/height="\d+"/, 'height="' + SIZE + '"');
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = SIZE;
+      c.getContext('2d').drawImage(img, 0, 0, SIZE, SIZE);
+      resolve(c.toDataURL('image/png').split(',')[1]);
+    };
+    img.onerror = () => resolve('');
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s)));
+  });
+}
+
+(async function () {
+  const lines = [];
+  for (const name of Object.keys(all)) {
+    for (const tone of Object.keys(COLOURS)) {
+      const b64 = await draw(all[name], COLOURS[tone]);
+      lines.push(name + '-' + tone + '|' + (b64 || 'FAILED'));
+    }
+  }
+  document.getElementById('out').textContent = lines.join('\n');
+  document.title = lines.some(l => /\|FAILED$/.test(l)) ? 'FAIL' : 'PASS ' + lines.length;
+})();
+</script></body></html>

@@ -62,9 +62,35 @@ let EXPORT_TARGET = null;
 
 const EXPORT_TARGETS = [
   {id: '',           label: 'Standard',        note: 'Gmail, Apple Mail, and anything that renders SVG.'},
-  {id: 'newoutlook', label: 'New Outlook',     note: 'Round badges kept; the glyphs become letters, which new Outlook does not strip.'},
+  {id: 'newoutlook', label: 'New Outlook',     note: 'The same design as Standard. New Outlook draws a remote image and a round badge perfectly well — only the inline SVG had to go, so the glyphs are served from signvel.com.'},
   {id: 'classic',    label: 'Outlook classic', note: 'No badges: Word draws them square. Letters in the theme colour instead.'},
 ];
+
+// Hosted glyphs, for the clients that will not draw an <svg>.
+//
+// New Outlook is a browser and renders a remote image and a border-radius
+// perfectly well — it is only inline SVG it strips out. So it gets the same
+// design as Standard, with the drawing served from here instead of written
+// into the message. data: would not do: Gmail and Outlook both strip it.
+//
+// Two tones rather than a colour per theme, because the theme colour is the
+// person's own and no set of files can cover it: white for a filled badge,
+// ink for an open one, where the themed ring is doing the colouring anyway.
+//
+// tools/make-icons.html regenerates icons/ from these same SVGs.
+const ICON_HOST = 'https://signvel.com/icons/';
+const HOSTED_ICONS = {
+  email: 'c-email', mobile: 'c-mobile', phone: 'c-phone', website: 'c-website',
+  address: 'c-address', office: 'c-office', pronouns: 'c-pronouns', booking: 'c-booking',
+  linkedin: 's-linkedin', x: 's-x', instagram: 's-instagram', youtube: 's-youtube',
+  facebook: 's-facebook', tiktok: 's-tiktok', pinterest: 's-pinterest',
+};
+function hostedIcon(name, tone, size, extraStyle) {
+  const file = HOSTED_ICONS[name];
+  if (!file) return '';
+  return `<img src="${ICON_HOST}${file}-${tone}.png" width="${size}" height="${size}" alt=""`
+    + ` style="display:block;width:${size}px;height:${size}px;border:0;outline:none;text-decoration:none;${extraStyle || ''}">`;
+}
 
 // Which target is chosen, in the toolbar and the dialog alike — they are one
 // control shown twice, so picking in either moves both. Interface state, not
@@ -2115,7 +2141,7 @@ function buildSignatureBody() {
   // Divider rules. The old flat #DDDBE4 was invisible at 1px, and vanished
   // completely once a dark background panel was switched on.
   const ruleColor = onDark ? 'rgba(255,255,255,.22)' : '#C6C3D4';
-  const circleIcon = (svg, filled, colour, letter) => {
+  const circleIcon = (svg, filled, colour, letter, hosted) => {
     const cc = colour || ic;
     const sz = S.contactIconSize || 22;
     const inner = Math.round(sz * 0.5);
@@ -2125,7 +2151,10 @@ function buildSignatureBody() {
     // A drawing needs the line box zeroed or the badge grows taller than it is
     // wide and the circle turns oval. A letter needs the opposite: the line box
     // is what centres it.
-    const body = letter
+    const body = hosted
+      ? {content: hostedIcon(hosted, filled ? 'white' : 'ink', inner, 'margin:0 auto;'),
+         type: 'font-size:0;line-height:0;'}
+      : letter
       ? {content: esc(letter),
          type: `color:${glyphColor};font-family:${ff};font-size:${Math.round(sz * 0.46)}px;font-weight:700;line-height:${sz - 3}px;`}
       : {content: svgToImgTag(svg, inner, inner, glyphColor, 'margin:0 auto;'),
@@ -2177,11 +2206,17 @@ function buildSignatureBody() {
         leadPad: '3px 8px 3px 0', val, valPad: '3px 0', align: 'top',
       };
     }
+    // New Outlook gets the drawing, served from signvel.com — the design is
+    // the same as Standard's, only the glyph arrives as an image.
+    const hosted = EXPORT_TARGET === 'newoutlook' ? f.type : '';
+    const glyphPx = Math.round(S.contactIconSize * 0.64);
     const lead = badged
-      ? circleIcon(contactIcons[f.type], mode === 'filled', badgeColor, EXPORT_TARGET ? letter : '')
-      : (EXPORT_TARGET
+      ? circleIcon(contactIcons[f.type], mode === 'filled', badgeColor, EXPORT_TARGET ? letter : '', hosted)
+      : (hosted
+          ? hostedIcon(hosted, 'ink', glyphPx, 'display:inline-block;vertical-align:middle;')
+          : EXPORT_TARGET
           ? `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(letter)}.</span>`
-          : svgToImgTag(contactIcons[f.type], Math.round(S.contactIconSize * 0.64), Math.round(S.contactIconSize * 0.64), badgeColor, 'vertical-align:middle;'));
+          : svgToImgTag(contactIcons[f.type], glyphPx, glyphPx, badgeColor, 'vertical-align:middle;'));
     return {lead, leadPad: badged ? '3px 10px 3px 0' : '1px 7px 1px 0', val, valPad: '3px 0', align: 'middle', raw: !EXPORT_TARGET};
   }
 
@@ -2291,7 +2326,15 @@ function buildSignatureBody() {
       if (style === 'circle' || style === 'filled' || style === 'glyph') {
         const iconScale = Math.round(sz * (style === 'glyph' ? 0.78 : 0.55));
         // Bare glyph, no ring — the treatment the minimal reference layouts use.
+        const hostedMark = EXPORT_TARGET === 'newoutlook' ? sl.type : '';
         if (style === 'glyph') {
+          if (hostedMark) {
+            const img = hostedIcon(hostedMark, 'ink', iconScale, 'margin:0 auto;');
+            if (img) {
+              out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${img}</a></td>`;
+              return;
+            }
+          }
           if (EXPORT_TARGET) {
             out += `<td style="${gap}vertical-align:middle;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-2}px;color:${colour};text-decoration:none;font-weight:600;">${esc(sl.label)}</a></td>`;
             return;
@@ -2303,7 +2346,10 @@ function buildSignatureBody() {
         const solid = style === 'filled';
         const glyphColor = solid ? (o.glyphColor || '#ffffff') : colour;
         const initial = (sl.label || sl.type || '?').charAt(0).toUpperCase();
-        const inner = EXPORT_TARGET
+        const hostedBadge = hostedMark ? hostedIcon(hostedMark, solid ? 'white' : 'ink', iconScale, 'margin:0 auto;') : '';
+        const inner = hostedBadge
+          ? {mark: hostedBadge, type: 'font-size:0;line-height:0;'}
+          : EXPORT_TARGET
           ? {mark: esc(initial), type: `color:${glyphColor};font-family:${ff};font-size:${Math.round(sz * 0.46)}px;font-weight:700;line-height:${sz - 4}px;`}
           : {mark: svgToImgTag(svgIcon, iconScale, iconScale, glyphColor, 'margin:0 auto;'), type: 'font-size:0;line-height:0;'};
         const bg = solid ? `background-color:${colour};` : '';
