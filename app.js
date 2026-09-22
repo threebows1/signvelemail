@@ -795,15 +795,34 @@ const disclaimerPresets = {
 // The font matters most. Anything in the signature that does not name its own
 // face inherits the client's, which is Calibri in Word and a system face in
 // Apple Mail, and that is a visible difference in the same signature.
+// The bar across the top of the preview, drawn as that kind of program draws
+// it: a Mac window, a Windows one, a browser tab, or a phone. It carries no
+// words — the client is named beside the Install button, and repeating it
+// over the message was noise.
+function windowChrome(client) {
+  const kind = (CHROME[client.chrome] || {}).frame || 'web';
+  const mark = mailLogos[client.logo || client.id] || '';
+  if (kind === 'macos') {
+    return `<div class="mock-chrome is-macos"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="mock-chrome-mark">${mark}</span></div>`;
+  }
+  if (kind === 'windows') {
+    return `<div class="mock-chrome is-windows"><span class="mock-chrome-mark">${mark}</span><span class="win-btns"><i class="min"></i><i class="max"></i><i class="cls"></i></span></div>`;
+  }
+  if (kind === 'phone') {
+    return `<div class="mock-chrome is-phone"><span class="phone-bar"></span><span class="mock-chrome-mark">${mark}</span></div>`;
+  }
+  return `<div class="mock-chrome is-web"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url-pill"><span class="mock-chrome-mark">${mark}</span></span></div>`;
+}
+
 const CHROME = {
-  apple:   {font:"-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif", width:680, bg:'#FFFFFF'},
-  ios:     {font:"-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif", width:390, bg:'#FFFFFF'},
-  gmail:   {font:"Roboto, Arial, Helvetica, sans-serif", width:640, bg:'#FFFFFF'},
-  yahoo:   {font:"'Helvetica Neue', Helvetica, Arial, sans-serif", width:640, bg:'#FFFFFF'},
-  word:    {font:"Calibri, 'Segoe UI', Arial, sans-serif", width:580, bg:'#FFFFFF'},
-  segoe:   {font:"'Segoe UI', Tahoma, Arial, sans-serif", width:640, bg:'#FFFFFF'},
-  linuxy:  {font:"'Segoe UI', Ubuntu, Cantarell, Arial, sans-serif", width:660, bg:'#FFFFFF'},
-  proton:  {font:"Inter, 'Segoe UI', Arial, sans-serif", width:640, bg:'#F5F5F7'},
+  apple:   {font:"-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif", width:680, bg:'#FFFFFF', frame:'macos'},
+  ios:     {font:"-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif", width:390, bg:'#FFFFFF', frame:'phone'},
+  gmail:   {font:"Roboto, Arial, Helvetica, sans-serif", width:640, bg:'#FFFFFF', frame:'web'},
+  yahoo:   {font:"'Helvetica Neue', Helvetica, Arial, sans-serif", width:640, bg:'#FFFFFF', frame:'web'},
+  word:    {font:"Calibri, 'Segoe UI', Arial, sans-serif", width:580, bg:'#FFFFFF', frame:'windows'},
+  segoe:   {font:"'Segoe UI', Tahoma, Arial, sans-serif", width:640, bg:'#FFFFFF', frame:'windows'},
+  linuxy:  {font:"'Segoe UI', Ubuntu, Cantarell, Arial, sans-serif", width:660, bg:'#FFFFFF', frame:'windows'},
+  proton:  {font:"Inter, 'Segoe UI', Arial, sans-serif", width:640, bg:'#F5F5F7', frame:'web'},
 };
 
 // Every client the signature is claimed to work in gets a tab, so the claim
@@ -2000,12 +2019,8 @@ function renderStage() {
     ? `font-family:${ch.font};`
     : `max-width:${ch.width}px;font-family:${ch.font};${S.darkMode ? '' : `background:${ch.bg};`}`;
   h += `<div class="preview-wrapper"><div class="email-mock${S.darkMode?' dark':''}${S.device==='mobile'?' mobile-view':''}" style="${mockStyle}">
-    <div class="email-mock-header">
-      <p class="email-mock-subject">Re: Partnership proposal</p>
-      <p class="email-mock-meta"><span class="email-mock-client">${mailLogos[current.logo || current.id] || ''}${esc(current.label)}</span> · Daniel Reyes to you</p>
-    </div>
+    ${windowChrome(current)}
     <div class="email-mock-body">
-      <p>Thanks for your time today — sending the details across as promised.</p>
       <div class="signature-container">${withExportTarget(currentTarget(), generateSignaturePreview)}</div>
     </div>
   </div></div>`;

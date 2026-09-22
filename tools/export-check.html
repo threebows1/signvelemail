@@ -534,13 +534,22 @@
     const cs = getComputedStyle(mock);
     const face = (cs.fontFamily || '').split(',')[0].replace(/["']/g, '').trim();
     const width = mock.style.maxWidth || '';
-    // The header has to name the client, or the preview is unlabelled again.
-    const said = (document.querySelector('.email-mock-client') || {}).textContent || '';
-    if (said.indexOf(c.label) < 0) F.push(c.id + ': the message does not name it (' + said + ')');
-    if (!document.querySelector('.email-mock-client svg')) F.push(c.id + ': no logo on the message');
+    // The window is drawn as that kind of program draws it, and carries the
+    // client's mark but no words — the name belongs beside the Install button.
+    const chrome = document.querySelector('.mock-chrome');
+    if (!chrome) { F.push(c.id + ': no window frame'); return; }
+    if (chrome.textContent.trim()) F.push(c.id + ': the frame carries text: ' + chrome.textContent.trim());
+    if (!chrome.querySelector('svg')) F.push(c.id + ': no mark on the frame');
+    // The fake message that used to sit above the signature is gone.
+    if (document.querySelector('.email-mock-subject') || document.querySelector('.email-mock-meta'))
+      F.push(c.id + ': the mock still carries a fake subject or from line');
+    // Direct children only: the signature has paragraphs of its own.
+    if (document.querySelectorAll('.email-mock-body > p').length)
+      F.push(c.id + ': the mock still carries fake message text');
     // And the signature is still inside it.
     if (!document.querySelector('.email-mock-body .signature-container')) F.push(c.id + ': no signature in the mock');
-    seen[c.id] = face + '|' + width;
+    const frame = (chrome.className.match(/is-[a-z]+/) || [''])[0];
+    seen[c.id] = face + '|' + width + '|' + frame;
   });
   // Not every client differs from every other — Airmail and Spark are both
   // macOS — but a preview where all fifteen were identical is the fault being
@@ -554,7 +563,7 @@
   S.client = 'gmail'; renderStage();
   const out = document.getElementById('out');
   out.textContent += '\n' + (F.length ? 'PREVIEW FAIL:\n' + F.join('\n')
-    : 'preview: ' + distinct + ' distinct frames, each naming its client');
+    : 'preview: ' + distinct + ' distinct frames, drawn as that kind of program, no text');
   if (F.length) document.title = 'FAIL preview ' + F.length;
   window.__previewRan = true;
 })();
