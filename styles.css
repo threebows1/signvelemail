@@ -123,6 +123,11 @@ a{color:var(--accent);text-decoration:none}
 .toggle-group button:last-child{border-right:none}
 .toggle-group button.active{background:var(--ink);color:var(--white)}
 
+/* The same picker in the top bar. It governs the copy button beside it, so it
+   sits with the buttons rather than out among the title and scope. */
+.topbar-targets{flex-shrink:0;margin-right:2px}
+.topbar-targets button{white-space:nowrap}
+
 /* Pill buttons, matching the Sign Vel site. */
 .btn{
   font-size:12px;font-weight:600;padding:6px 15px;border-radius:9999px;

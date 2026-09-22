@@ -61,10 +61,15 @@ const contactLetters = {email:'E',mobile:'M',phone:'T',address:'A',website:'W',o
 let EXPORT_TARGET = null;
 
 const EXPORT_TARGETS = [
-  {id: '',           label: 'Standard',        note: 'Gmail, Apple Mail, and anything that renders SVG.'},
-  {id: 'newoutlook', label: 'New Outlook',     note: 'Round badges kept; the glyphs become letters, which new Outlook does not strip.'},
-  {id: 'classic',    label: 'Outlook classic', note: 'No badges: Word draws them square. Letters in the theme colour instead.'},
+  {id: '',           label: 'Standard',        shortLabel: 'Standard', note: 'Gmail, Apple Mail, and anything that renders SVG.'},
+  {id: 'newoutlook', label: 'New Outlook',     shortLabel: 'New Outlook', note: 'Round badges kept; the glyphs become letters, which new Outlook does not strip.'},
+  {id: 'classic',    label: 'Outlook classic', shortLabel: 'Classic', note: 'No badges: Word draws them square. Letters in the theme colour instead.'},
 ];
+
+// Which target is chosen, in the toolbar and the dialog alike — they are one
+// control shown twice, so picking in either moves both. Interface state, not
+// the signature's: never saved, and it starts at Standard each session.
+let exportTargetShown = '';
 
 // These helpers render SVGs onto a canvas and emit <img> tags with PNG
 // data URIs, which every email client renders.
@@ -775,6 +780,9 @@ function renderHeader() {
     <div class="header-spacer"></div>
     ${renderAccount()}
     <button class="btn" id="resetBtn" title="Clear saved settings and start from the defaults">Reset</button>
+    <div class="toggle-group topbar-targets" id="headerTargets" title="Which client the copied markup is written for">${EXPORT_TARGETS.map(t =>
+      `<button class="${t.id === exportTargetShown ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${esc(t.shortLabel || t.label)}</button>`
+    ).join('')}</div>
     <button class="btn" id="copyBtn">Copy signature</button>
     <span class="copy-feedback" id="copyFeedback"></span>
     <button class="btn btn-accent" id="exportBtn">Export HTML</button>
@@ -2977,13 +2985,16 @@ function buildSignatureBody() {
 // ═══════════════════════════════════════
 // Export HTML (fully inlined, table-based)
 // ═══════════════════════════════════════
-function generateExportHTML(target) {
-  // Set for the duration of the render and put back afterwards, so the live
-  // preview beside the dialog is never left showing a client's variant.
+// Renders with a target set, and puts it back afterwards, so the live preview
+// beside the dialog is never left showing a client's variant.
+function withExportTarget(target, fn) {
   const before = EXPORT_TARGET;
   EXPORT_TARGET = target || null;
-  let html;
-  try { html = generateSignaturePreview(); } finally { EXPORT_TARGET = before; }
+  try { return fn(); } finally { EXPORT_TARGET = before; }
+}
+
+function generateExportHTML(target) {
+  const html = withExportTarget(target, generateSignaturePreview);
   const note = (EXPORT_TARGETS.find(t => t.id === (target || '')) || EXPORT_TARGETS[0]).label;
   return `<!-- Sign Vel signature — ${note} -->\n${html}`;
 }
@@ -3004,7 +3015,9 @@ function generateExportHTML(target) {
 // is called straight from the click without awaiting anything first — an await
 // would spend the activation and the write would be refused.
 function copySignature() {
-  const html = generateSignaturePreview();
+  // Written for whichever target the toolbar has chosen, so pasting straight
+  // into Outlook carries the same markup the export dialog would hand over.
+  const html = withExportTarget(exportTargetShown, generateSignaturePreview);
 
   if (navigator.clipboard && window.ClipboardItem) {
     const item = new ClipboardItem({
@@ -3054,9 +3067,8 @@ function showCopyFeedback(msg) {
   if (el) { el.textContent = msg; setTimeout(() => { el.textContent = ''; }, 2500); }
 }
 
-// Which variant the dialog is showing. Interface state, not the signature's —
-// never saved, and it resets to Standard each time the dialog opens.
-let exportTargetShown = '';
+// (exportTargetShown is declared beside EXPORT_TARGETS, because the toolbar
+// reads it while the header renders, long before this point in the file.)
 
 function renderExportTargets() {
   const picker = document.getElementById('exportTargets');
@@ -3097,8 +3109,20 @@ function setupEvents() {
       Cloud.signOut().then(() => { renderHeader(); showCopyFeedback('Signed out'); });
       return;
     }
+    // The toolbar picker governs the copy button beside it as well as the
+    // dialog, so what you copy is always the variant showing as chosen.
+    const target = e.target.closest('#headerTargets button[data-target]');
+    if (target) {
+      exportTargetShown = target.dataset.target;
+      renderHeader();
+      if (!$exportOverlay.classList.contains('hidden')) {
+        renderExportTargets();
+        $exportCode.textContent = generateExportHTML(exportTargetShown);
+      }
+      return;
+    }
     if (e.target.closest('#copyBtn')) { copySignature(); return; }
-    if (e.target.closest('#exportBtn')) { showExport(); return; }
+    if (e.target.closest('#exportBtn')) { showExport(exportTargetShown); return; }
   });
 
   $header.addEventListener('change', e => {

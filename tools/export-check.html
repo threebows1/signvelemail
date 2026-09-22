@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><title>export-check</title></head>
 <body>
-  <div class="app" id="app" style="display:none"><aside class="rail" id="rail"></aside>
+  <div class="app" id="app"><aside class="rail" id="rail"></aside>
   <div class="workspace"><header class="topbar" id="header"></header>
   <div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
   <div class="export-overlay hidden" id="exportOverlay"><div class="export-panel">
@@ -83,6 +83,25 @@
     E.push('the clicked target is not marked');
   document.querySelector('#exportTargets button[data-target=""]').click();
   if (code.textContent !== standard)     E.push('going back to Standard did not restore it');
+
+  // The toolbar picker is the same control as the dialog's, so picking in one
+  // has to move the other, and the copy button has to follow both.
+  const hdr = () => [].slice.call(document.querySelectorAll('#headerTargets button'));
+  if (hdr().map(b => b.dataset.target).join(',') !== ',newoutlook,classic')
+    E.push('toolbar targets: ' + hdr().map(b => b.dataset.target).join(','));
+  hdr().find(b => b.dataset.target === 'classic').click();
+  if (exportTargetShown !== 'classic') E.push('the toolbar did not set the target');
+  if (!hdr().find(b => b.dataset.target === 'classic').classList.contains('active'))
+    E.push('the toolbar does not mark what is chosen');
+  if (!document.querySelector('#exportTargets button[data-target="classic"]').classList.contains('active'))
+    E.push('the dialog did not follow the toolbar');
+  // What the copy button would put on the clipboard, by the same route it takes.
+  const copied = withExportTarget(exportTargetShown, generateSignaturePreview);
+  if (/<svg|data:image/i.test(copied)) E.push('Copy signature ignored the chosen target');
+  hdr().find(b => b.dataset.target === '').click();
+  if (/<svg|data:image/i.test(withExportTarget(exportTargetShown, generateSignaturePreview)) === false)
+    E.push('back on Standard, the copy is still a variant');
+  if (EXPORT_TARGET !== null) E.push('the toolbar left EXPORT_TARGET set');
   document.getElementById('out').textContent = E.length ? E.slice(0,12).join('\n') + '\n\n(' + E.length + ' total)' : 'ok — 24 layouts x 25 combinations, both variants clean';
   document.title = E.length ? 'FAIL ' + E.length : 'PASS';
   </script>
@@ -103,12 +122,23 @@
     if (cs.color === (cs.backgroundColor === 'rgba(0, 0, 0, 0)' ? (rowBg === 'rgba(0, 0, 0, 0)' ? panelBg : rowBg) : cs.backgroundColor))
       F.push(b.textContent + ': text the same colour as its ground');
   });
+  // The toolbar copy of the picker, in the light top bar rather than the dialog.
+  const hb = [].slice.call(document.querySelectorAll('#headerTargets button'));
+  if (hb.length !== 3) F.push('toolbar picker: ' + hb.length + ' buttons');
+  hb.forEach(function (b) {
+    const r = b.getBoundingClientRect();
+    if (r.width < 45 || r.height < 18) F.push('toolbar ' + b.textContent + ': ' + Math.round(r.width) + 'x' + Math.round(r.height));
+  });
+  if (hb.length === 3 && hb[0].getBoundingClientRect().top !== hb[2].getBoundingClientRect().top) F.push('the toolbar picker wrapped');
+
   const note = document.getElementById('exportNote').getBoundingClientRect();
   if (note.height < 10) F.push('the note is not on screen');
   // The three sit on one line rather than stacking.
   if (bs.length === 3 && (bs[0].getBoundingClientRect().top !== bs[2].getBoundingClientRect().top)) F.push('the targets wrapped onto two lines');
   const out = document.getElementById('out');
-  out.textContent += '\n' + (F.length ? 'STYLE FAIL:\n' + F.join('\n') : 'picker: ' + bs.map(b => Math.round(b.getBoundingClientRect().width) + 'x' + Math.round(b.getBoundingClientRect().height)).join(' ') + ', on one line, legible');
+  const dims = l => l.map(b => Math.round(b.getBoundingClientRect().width) + 'x' + Math.round(b.getBoundingClientRect().height)).join(' ');
+  out.textContent += '\n' + (F.length ? 'STYLE FAIL:\n' + F.join('\n')
+    : 'dialog picker:  ' + dims(bs) + ', on one line, legible\ntoolbar picker: ' + dims(hb) + ', on one line');
   if (F.length) document.title = 'FAIL style ' + F.length;
 })();
 </script>
