@@ -84,24 +84,27 @@
   document.querySelector('#exportTargets button[data-target=""]').click();
   if (code.textContent !== standard)     E.push('going back to Standard did not restore it');
 
-  // The toolbar picker is the same control as the dialog's, so picking in one
-  // has to move the other, and the copy button has to follow both.
-  const hdr = () => [].slice.call(document.querySelectorAll('#headerTargets button'));
-  if (hdr().map(b => b.dataset.target).join(',') !== ',newoutlook,classic')
-    E.push('toolbar targets: ' + hdr().map(b => b.dataset.target).join(','));
-  hdr().find(b => b.dataset.target === 'classic').click();
-  if (exportTargetShown !== 'classic') E.push('the toolbar did not set the target');
-  if (!hdr().find(b => b.dataset.target === 'classic').classList.contains('active'))
-    E.push('the toolbar does not mark what is chosen');
+  // The preview bar picker is the same control as the dialog's, so picking in
+  // one has to move the other, the preview itself, and the copy button.
+  const bar = () => [].slice.call(document.querySelectorAll('#stageTargets button'));
+  const shown = () => document.querySelector('.signature-container').innerHTML;
+  if (bar().map(b => b.dataset.target).join(',') !== ',newoutlook,classic')
+    E.push('preview bar targets: ' + bar().map(b => b.dataset.target).join(','));
+  if (!/<svg|data:image/i.test(shown())) E.push('the preview did not start on Standard');
+  bar().find(b => b.dataset.target === 'classic').click();
+  if (exportTargetShown !== 'classic') E.push('the preview bar did not set the target');
+  if (!bar().find(b => b.dataset.target === 'classic').classList.contains('active'))
+    E.push('the preview bar does not mark what is chosen');
+  // The whole reason it sits in this bar: it has to change what is on screen.
+  if (/<svg|data:image/i.test(shown())) E.push('the preview did not redraw for classic');
   if (!document.querySelector('#exportTargets button[data-target="classic"]').classList.contains('active'))
-    E.push('the dialog did not follow the toolbar');
+    E.push('the dialog did not follow the preview bar');
   // What the copy button would put on the clipboard, by the same route it takes.
-  const copied = withExportTarget(exportTargetShown, generateSignaturePreview);
-  if (/<svg|data:image/i.test(copied)) E.push('Copy signature ignored the chosen target');
-  hdr().find(b => b.dataset.target === '').click();
-  if (/<svg|data:image/i.test(withExportTarget(exportTargetShown, generateSignaturePreview)) === false)
-    E.push('back on Standard, the copy is still a variant');
-  if (EXPORT_TARGET !== null) E.push('the toolbar left EXPORT_TARGET set');
+  if (/<svg|data:image/i.test(withExportTarget(exportTargetShown, generateSignaturePreview)))
+    E.push('Copy signature ignored the chosen target');
+  bar().find(b => b.dataset.target === '').click();
+  if (!/<svg|data:image/i.test(shown())) E.push('back on Standard, the preview is still a variant');
+  if (EXPORT_TARGET !== null) E.push('the preview bar left EXPORT_TARGET set');
   document.getElementById('out').textContent = E.length ? E.slice(0,12).join('\n') + '\n\n(' + E.length + ' total)' : 'ok — 24 layouts x 25 combinations, both variants clean';
   document.title = E.length ? 'FAIL ' + E.length : 'PASS';
   </script>
@@ -122,14 +125,14 @@
     if (cs.color === (cs.backgroundColor === 'rgba(0, 0, 0, 0)' ? (rowBg === 'rgba(0, 0, 0, 0)' ? panelBg : rowBg) : cs.backgroundColor))
       F.push(b.textContent + ': text the same colour as its ground');
   });
-  // The toolbar copy of the picker, in the light top bar rather than the dialog.
-  const hb = [].slice.call(document.querySelectorAll('#headerTargets button'));
-  if (hb.length !== 3) F.push('toolbar picker: ' + hb.length + ' buttons');
+  // The preview bar copy of the picker, in the light bar rather than the dialog.
+  const hb = [].slice.call(document.querySelectorAll('#stageTargets button'));
+  if (hb.length !== 3) F.push('preview bar picker: ' + hb.length + ' buttons');
   hb.forEach(function (b) {
     const r = b.getBoundingClientRect();
-    if (r.width < 45 || r.height < 18) F.push('toolbar ' + b.textContent + ': ' + Math.round(r.width) + 'x' + Math.round(r.height));
+    if (r.width < 45 || r.height < 18) F.push('preview bar ' + b.textContent + ': ' + Math.round(r.width) + 'x' + Math.round(r.height));
   });
-  if (hb.length === 3 && hb[0].getBoundingClientRect().top !== hb[2].getBoundingClientRect().top) F.push('the toolbar picker wrapped');
+  if (hb.length === 3 && hb[0].getBoundingClientRect().top !== hb[2].getBoundingClientRect().top) F.push('the preview bar picker wrapped');
 
   const note = document.getElementById('exportNote').getBoundingClientRect();
   if (note.height < 10) F.push('the note is not on screen');

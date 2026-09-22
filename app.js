@@ -780,9 +780,6 @@ function renderHeader() {
     <div class="header-spacer"></div>
     ${renderAccount()}
     <button class="btn" id="resetBtn" title="Clear saved settings and start from the defaults">Reset</button>
-    <div class="toggle-group topbar-targets" id="headerTargets" title="Which client the copied markup is written for">${EXPORT_TARGETS.map(t =>
-      `<button class="${t.id === exportTargetShown ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${esc(t.shortLabel || t.label)}</button>`
-    ).join('')}</div>
     <button class="btn" id="copyBtn">Copy signature</button>
     <span class="copy-feedback" id="copyFeedback"></span>
     <button class="btn btn-accent" id="exportBtn">Export HTML</button>
@@ -1657,11 +1654,19 @@ function renderStage() {
     <button class="${S.device==='mobile'?'active':''}" data-device="mobile">Mobile</button>
   </div>
   <div class="toggle-row gap-6"><label class="field-label" style="margin:0;font-size:11px">Dark</label><div class="toggle-switch${S.darkMode?' on':''}" data-action="toggleDark"></div></div>
+  <div class="toggle-row gap-6 stage-targets-row">
+    <label class="field-label" style="margin:0;font-size:11px">Written for</label>
+    <div class="toggle-group stage-targets" id="stageTargets">${EXPORT_TARGETS.map(t =>
+      `<button class="${t.id === exportTargetShown ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${esc(t.shortLabel || t.label)}</button>`
+    ).join('')}</div>
+  </div>
   </div>`;
 
+  // The preview is drawn for the chosen target, so this control shows its own
+  // effect: pick Classic and the badges go, which is what the paste will do.
   h += `<div class="preview-wrapper"><div class="email-mock${S.darkMode?' dark':''}${S.device==='mobile'?' mobile-view':''}">
     <div class="email-mock-body">
-      <div class="signature-container">${generateSignaturePreview()}</div>
+      <div class="signature-container">${withExportTarget(exportTargetShown, generateSignaturePreview)}</div>
     </div>
   </div></div>`;
 
@@ -3109,18 +3114,6 @@ function setupEvents() {
       Cloud.signOut().then(() => { renderHeader(); showCopyFeedback('Signed out'); });
       return;
     }
-    // The toolbar picker governs the copy button beside it as well as the
-    // dialog, so what you copy is always the variant showing as chosen.
-    const target = e.target.closest('#headerTargets button[data-target]');
-    if (target) {
-      exportTargetShown = target.dataset.target;
-      renderHeader();
-      if (!$exportOverlay.classList.contains('hidden')) {
-        renderExportTargets();
-        $exportCode.textContent = generateExportHTML(exportTargetShown);
-      }
-      return;
-    }
     if (e.target.closest('#copyBtn')) { copySignature(); return; }
     if (e.target.closest('#exportBtn')) { showExport(exportTargetShown); return; }
   });
@@ -3464,6 +3457,18 @@ function setupEvents() {
     if (deviceBtn) { S.device = deviceBtn.dataset.device; renderStage(); return; }
     const darkToggle = e.target.closest('[data-action="toggleDark"]');
     if (darkToggle) { S.darkMode = !S.darkMode; renderStage(); return; }
+    // The target governs the preview, the copy button and the export dialog
+    // alike, so the dialog is brought into step if it happens to be open.
+    const targetBtn = e.target.closest('#stageTargets button[data-target]');
+    if (targetBtn) {
+      exportTargetShown = targetBtn.dataset.target;
+      renderStage();
+      if (!$exportOverlay.classList.contains('hidden')) {
+        renderExportTargets();
+        $exportCode.textContent = generateExportHTML(exportTargetShown);
+      }
+      return;
+    }
   });
 
 
@@ -3478,6 +3483,7 @@ function setupEvents() {
     if (!btn) return;
     exportTargetShown = btn.dataset.target;
     renderExportTargets();
+    renderStage();
     $exportCode.textContent = generateExportHTML(exportTargetShown);
     const copy = document.getElementById('exportCopyBtn');
     if (copy) copy.textContent = 'Copy HTML';
