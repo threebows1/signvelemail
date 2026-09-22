@@ -399,3 +399,36 @@
   if (F.length) document.title = 'FAIL classic ' + F.length;
 })();
 </script>
+<script>
+// The client list is a compatibility claim, so each tab has to be real: a
+// logo, a name, and the right markup behind it.
+(function () {
+  const F = [];
+  const tabs = [].slice.call(document.querySelectorAll('#clientTabs button'));
+  if (tabs.length !== previewClients.length) F.push('tabs drawn ' + tabs.length + ' vs listed ' + previewClients.length);
+  previewClients.forEach(c => {
+    const el = document.querySelector('#clientTabs button[data-client="' + c.id + '"]');
+    if (!el) { F.push('no tab for ' + c.id); return; }
+    if (!el.querySelector('svg')) F.push(c.id + ': no logo drawn');
+    if (!el.textContent.trim()) F.push(c.id + ': no name');
+  });
+  // Exactly three carry markup of their own; every other client renders the
+  // Standard form, and claiming otherwise would be the bug.
+  const withTarget = previewClients.filter(c => c.target);
+  if (withTarget.map(c => c.target).sort().join(',') !== 'classic,newoutlook')
+    F.push('targets carried: ' + withTarget.map(c => c.id + '=' + c.target).join(' '));
+  previewClients.filter(c => !c.target).forEach(c => {
+    S.client = c.id;
+    if (currentTarget() !== '') F.push(c.id + ' does not render Standard');
+  });
+  // A tab saved before the list changed must not leave the bar unmarked.
+  S.client = 'a-client-that-no-longer-exists';
+  renderStage();
+  if (!document.querySelector('#clientTabs button.active')) F.push('a stale saved tab leaves none marked');
+  S.client = 'gmail'; renderStage();
+  const out = document.getElementById('out');
+  out.textContent += '\n' + (F.length ? 'CLIENTS FAIL:\n' + F.join('\n')
+    : previewClients.length + ' clients, all with a logo and a name, ' + withTarget.length + ' with markup of their own');
+  if (F.length) document.title = 'FAIL clients ' + F.length;
+})();
+</script>

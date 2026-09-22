@@ -762,6 +762,10 @@ const mailLogos = {
   thunderbird: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#0A84FF" d="M9.948 4.444h-.005c-1.92.788-2.126 2.55-1.817 3.499v.02C9.236 7.18 10.658 6.76 12 6.76c3.26 0 5.902 2.156 5.902 4.815 0 2.66-2.643 4.816-5.902 4.816l-.083-.002c-.155-.006-.354-.013-.435.118-.096.156.116.397.238.536 1.274 1.441 3.123 1.622 3.608 1.67l.076.008c-4.281.414-9.304-2.32-9.306-7.076 0-1.12.414-2.073 1.075-2.83l-.005-.002h-.003C7.31 6.38 6.376 3.47 4.629 2.898c-.124-.04-.246.054-.262.183-.23 1.924-.727 2.59-1.264 3.31-.805 1.08-1.39 2.328-1.365 3.698a10.99 10.99 0 0 1-.705-1.91c-.024-.09-.17-.365-.333-.272-.13.072-.227.274-.296.485A12.137 12.137 0 0 0 0 11.489c0 6.536 5.475 12 12 12 6.627 0 12-5.372 12-12 0-2.526-.781-4.87-2.115-6.805l.167-.002c.518 0 1.024.045 1.51.129-.734-.816-1.724-1.475-2.877-1.904a8.54 8.54 0 0 1 2.494-.495c-1.426-1.166-3.508-1.9-5.827-1.9-3.355 0-6.648 1.29-7.404 3.93z"/></g></svg>`,
   proton: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#6D4AFF" d="m15.24 8.998 3.656-3.073v15.81H2.482C1.11 21.735 0 20.609 0 19.223V6.944l7.58 6.38a2.186 2.186 0 0 0 2.871-.042l4.792-4.284h-.003zm-5.456 3.538 1.809-1.616a2.438 2.438 0 0 1-1.178-.533L.905 2.395A.552.552 0 0 0 0 2.826v2.811l8.226 6.923a1.186 1.186 0 0 0 1.558-.024zM23.871 2.463a.551.551 0 0 0-.776-.068l-3.199 2.688v16.653h1.623c1.371 0 2.481-1.127 2.481-2.513V2.824a.551.551 0 0 0-.129-.36z"/></g></svg>`,
   icloud: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#3693F3" d="M13.762 4.29a6.51 6.51 0 0 0-5.669 3.332 3.571 3.571 0 0 0-1.558-.36 3.571 3.571 0 0 0-3.516 3A4.918 4.918 0 0 0 0 14.796a4.918 4.918 0 0 0 4.92 4.914 4.93 4.93 0 0 0 .617-.045h14.42c2.305-.272 4.041-2.258 4.043-4.589v-.009a4.594 4.594 0 0 0-3.727-4.508 6.51 6.51 0 0 0-6.511-6.27z"/></g></svg>`,
+  // For the clients with no mark of their own. Drawing an approximation of
+  // someone's logo is worse than not drawing it: a plain envelope is honest,
+  // and the name beside it is what identifies the tab anyway.
+  generic: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#EEEDF5"/><g transform="translate(4.5 6.5)"><rect x=".5" y=".5" width="14" height="11" rx="2" fill="#fff" stroke="#8B88A0"/><path d="M1.5 2.5 7.5 7l6-4.5" fill="none" stroke="#8B88A0" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`,
   mobile: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="7.5" y="3.4" width="9" height="17.2" rx="2.4" fill="none" stroke="#6B6880" stroke-width="1.7"/><path d="M10.6 17.8h2.8" stroke="#6B6880" stroke-width="1.7" stroke-linecap="round"/></svg>`,
 };
 
@@ -778,16 +782,27 @@ const disclaimerPresets = {
 // signature cannot be written for all of them at once. Each carries the export
 // target it previews, and picking the tab is what chooses that target — for
 // every other client it is Standard, which is what they all render.
+// Every client the signature is claimed to work in gets a tab, so the claim
+// can be checked rather than taken on trust. Only the three Outlooks need
+// markup of their own; the rest all render the Standard form, which is what
+// having no target means.
 const previewClients = [
-  {id:'gmail',       label:'Gmail'},
-  {id:'outlook-new', label:'New Outlook',      logo:'outlook', target:'newoutlook'},
-  {id:'outlook-classic', label:'Classic Outlook', logo:'outlook', target:'classic'},
-  {id:'outlook',     label:'Standard Outlook', logo:'outlook', target:''},
-  {id:'apple',       label:'Apple Mail'},
-  {id:'yahoo',       label:'Yahoo'},
-  {id:'thunderbird', label:'Thunderbird'},
-  {id:'proton',      label:'Proton'},
-  {id:'mobile',      label:'Mobile'},
+  {id:'apple',           label:'Apple Mail (macOS)',   logo:'apple'},
+  {id:'ios-mail',        label:'Mail (iOS)',           logo:'apple'},
+  {id:'airmail',         label:'Airmail (macOS)',      logo:'generic'},
+  {id:'spark',           label:'Spark (macOS)',        logo:'generic'},
+  {id:'gmail',           label:'Gmail (web)',          logo:'gmail'},
+  {id:'gmail-ios',       label:'Gmail (iOS)',          logo:'gmail'},
+  {id:'yahoo',           label:'Yahoo (web)',          logo:'yahoo'},
+  // The three renderers, kept together: a browser, Word, and a WebView.
+  {id:'outlook-new',     label:'Outlook modern',       logo:'outlook', target:'newoutlook'},
+  {id:'outlook-classic', label:'Outlook classic',      logo:'outlook', target:'classic'},
+  {id:'outlook',         label:'Outlook (iOS)',        logo:'outlook', target:''},
+  {id:'windows-mail',    label:'Mail (Windows)',       logo:'generic'},
+  {id:'mailbird',        label:'Mailbird',             logo:'generic'},
+  {id:'emclient',        label:'eM Client',            logo:'generic'},
+  {id:'thunderbird',     label:'Thunderbird',          logo:'thunderbird'},
+  {id:'proton',          label:'Proton Mail',          logo:'proton'},
 ];
 
 // ───────────── Install hints ─────────────
@@ -1929,6 +1944,9 @@ function renderRollout() {
 // ═══════════════════════════════════════
 function renderStage() {
   const clients = previewClients;
+  // A tab saved before the list changed no longer exists, which would leave
+  // none of them marked and the target silently Standard.
+  if (!clients.some(c => c.id === S.client)) S.client = 'gmail';
   // Two deliberate rows rather than one row left to wrap: the clients on top,
   // and everything that changes how the signature is drawn underneath. Where
   // the wrap fell otherwise depended on the window, and the target picker
