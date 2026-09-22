@@ -412,6 +412,23 @@
     if (!el.querySelector('svg')) F.push(c.id + ': no logo drawn');
     if (!el.textContent.trim()) F.push(c.id + ': no name');
   });
+  // "Has a logo" was not enough: five clients shared one grey envelope and
+  // passed. A mark may only be shared where the product is the same one —
+  // Gmail twice, Apple twice, Outlook three times — never beyond that.
+  const byLogo = {};
+  previewClients.forEach(c => {
+    const k = c.logo || c.id;
+    (byLogo[k] = byLogo[k] || []).push(c.id);
+  });
+  Object.keys(byLogo).forEach(k => {
+    if (byLogo[k].length > 3) F.push('one mark for ' + byLogo[k].length + ' clients: ' + byLogo[k].join(', '));
+  });
+  const distinct = Object.keys(byLogo).length;
+  if (distinct < 10) F.push('only ' + distinct + ' distinct marks across ' + previewClients.length + ' clients');
+  // Every mark named has to exist, or the tab draws nothing at all.
+  previewClients.forEach(c => {
+    if (!mailLogos[c.logo || c.id]) F.push(c.id + ': names a mark that does not exist (' + (c.logo || c.id) + ')');
+  });
   // Exactly three carry markup of their own; every other client renders the
   // Standard form, and claiming otherwise would be the bug.
   const withTarget = previewClients.filter(c => c.target);
@@ -428,7 +445,7 @@
   S.client = 'gmail'; renderStage();
   const out = document.getElementById('out');
   out.textContent += '\n' + (F.length ? 'CLIENTS FAIL:\n' + F.join('\n')
-    : previewClients.length + ' clients, all with a logo and a name, ' + withTarget.length + ' with markup of their own');
+    : previewClients.length + ' clients, ' + distinct + ' distinct marks, ' + withTarget.length + ' with markup of their own');
   if (F.length) document.title = 'FAIL clients ' + F.length;
 })();
 </script>

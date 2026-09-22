@@ -762,10 +762,15 @@ const mailLogos = {
   thunderbird: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#0A84FF" d="M9.948 4.444h-.005c-1.92.788-2.126 2.55-1.817 3.499v.02C9.236 7.18 10.658 6.76 12 6.76c3.26 0 5.902 2.156 5.902 4.815 0 2.66-2.643 4.816-5.902 4.816l-.083-.002c-.155-.006-.354-.013-.435.118-.096.156.116.397.238.536 1.274 1.441 3.123 1.622 3.608 1.67l.076.008c-4.281.414-9.304-2.32-9.306-7.076 0-1.12.414-2.073 1.075-2.83l-.005-.002h-.003C7.31 6.38 6.376 3.47 4.629 2.898c-.124-.04-.246.054-.262.183-.23 1.924-.727 2.59-1.264 3.31-.805 1.08-1.39 2.328-1.365 3.698a10.99 10.99 0 0 1-.705-1.91c-.024-.09-.17-.365-.333-.272-.13.072-.227.274-.296.485A12.137 12.137 0 0 0 0 11.489c0 6.536 5.475 12 12 12 6.627 0 12-5.372 12-12 0-2.526-.781-4.87-2.115-6.805l.167-.002c.518 0 1.024.045 1.51.129-.734-.816-1.724-1.475-2.877-1.904a8.54 8.54 0 0 1 2.494-.495c-1.426-1.166-3.508-1.9-5.827-1.9-3.355 0-6.648 1.29-7.404 3.93z"/></g></svg>`,
   proton: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#6D4AFF" d="m15.24 8.998 3.656-3.073v15.81H2.482C1.11 21.735 0 20.609 0 19.223V6.944l7.58 6.38a2.186 2.186 0 0 0 2.871-.042l4.792-4.284h-.003zm-5.456 3.538 1.809-1.616a2.438 2.438 0 0 1-1.178-.533L.905 2.395A.552.552 0 0 0 0 2.826v2.811l8.226 6.923a1.186 1.186 0 0 0 1.558-.024zM23.871 2.463a.551.551 0 0 0-.776-.068l-3.199 2.688v16.653h1.623c1.371 0 2.481-1.127 2.481-2.513V2.824a.551.551 0 0 0-.129-.36z"/></g></svg>`,
   icloud: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#3693F3" d="M13.762 4.29a6.51 6.51 0 0 0-5.669 3.332 3.571 3.571 0 0 0-1.558-.36 3.571 3.571 0 0 0-3.516 3A4.918 4.918 0 0 0 0 14.796a4.918 4.918 0 0 0 4.92 4.914 4.93 4.93 0 0 0 .617-.045h14.42c2.305-.272 4.041-2.258 4.043-4.589v-.009a4.594 4.594 0 0 0-3.727-4.508 6.51 6.51 0 0 0-6.511-6.27z"/></g></svg>`,
-  // For the clients with no mark of their own. Drawing an approximation of
-  // someone's logo is worse than not drawing it: a plain envelope is honest,
-  // and the name beside it is what identifies the tab anyway.
-  generic: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#EEEDF5"/><g transform="translate(4.5 6.5)"><rect x=".5" y=".5" width="14" height="11" rx="2" fill="#fff" stroke="#8B88A0"/><path d="M1.5 2.5 7.5 7l6-4.5" fill="none" stroke="#8B88A0" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`,
+  // The clients with no mark in this file get one of their own rather than a
+  // shared envelope: five identical grey icons told you nothing about which
+  // tab was which. Each is a plain glyph in the product's own colour — near
+  // enough to tell them apart at 20px, and not a copy of anyone's logo.
+  airmail: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#1B8CF3"/><path d="M5 12.4 19 5.5l-4.6 13.2-2.6-4.9-4.4 2.3.8-3z" fill="#fff"/></svg>`,
+  spark: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#E8453C"/><path d="M13.4 4 7 13.2h4l-1.2 6.8 6.6-9.4h-4.2z" fill="#fff"/></svg>`,
+  windowsmail: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#0078D4"/><g transform="translate(4 7)"><rect x=".6" y=".6" width="14.8" height="10.8" rx="1.6" fill="#fff"/><path d="M2 2.6 8 7l6-4.4" fill="none" stroke="#0078D4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`,
+  mailbird: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#1F3A63"/><path d="M6 15.8c3.6.9 7-.6 8.7-3.6l2.1.5-1.3-2 1.5-1.9-2.4.2C13.5 6.6 11 5.4 8.7 6.2c2.2.5 3 1.9 3.2 3.4-1.9.4-4.2 1.7-5.9 6.2z" fill="#fff"/></svg>`,
+  emclient: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#F4900C"/><path d="M12 5.4A6.6 6.6 0 1 0 17.4 16l-1.9-1.2A4.4 4.4 0 1 1 12 7.6a4.4 4.4 0 0 1 4.3 3.3H10v2.2h8.5A6.6 6.6 0 0 0 12 5.4z" fill="#fff"/></svg>`,
   mobile: `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="7.5" y="3.4" width="9" height="17.2" rx="2.4" fill="none" stroke="#6B6880" stroke-width="1.7"/><path d="M10.6 17.8h2.8" stroke="#6B6880" stroke-width="1.7" stroke-linecap="round"/></svg>`,
 };
 
@@ -789,8 +794,8 @@ const disclaimerPresets = {
 const previewClients = [
   {id:'apple',           label:'Apple Mail (macOS)',   logo:'apple'},
   {id:'ios-mail',        label:'Mail (iOS)',           logo:'apple'},
-  {id:'airmail',         label:'Airmail (macOS)',      logo:'generic'},
-  {id:'spark',           label:'Spark (macOS)',        logo:'generic'},
+  {id:'airmail',         label:'Airmail (macOS)',      logo:'airmail'},
+  {id:'spark',           label:'Spark (macOS)',        logo:'spark'},
   {id:'gmail',           label:'Gmail (web)',          logo:'gmail'},
   {id:'gmail-ios',       label:'Gmail (iOS)',          logo:'gmail'},
   {id:'yahoo',           label:'Yahoo (web)',          logo:'yahoo'},
@@ -798,9 +803,9 @@ const previewClients = [
   {id:'outlook-new',     label:'Outlook modern',       logo:'outlook', target:'newoutlook'},
   {id:'outlook-classic', label:'Outlook classic',      logo:'outlook', target:'classic'},
   {id:'outlook',         label:'Outlook (iOS)',        logo:'outlook', target:''},
-  {id:'windows-mail',    label:'Mail (Windows)',       logo:'generic'},
-  {id:'mailbird',        label:'Mailbird',             logo:'generic'},
-  {id:'emclient',        label:'eM Client',            logo:'generic'},
+  {id:'windows-mail',    label:'Mail (Windows)',       logo:'windowsmail'},
+  {id:'mailbird',        label:'Mailbird',             logo:'mailbird'},
+  {id:'emclient',        label:'eM Client',            logo:'emclient'},
   {id:'thunderbird',     label:'Thunderbird',          logo:'thunderbird'},
   {id:'proton',          label:'Proton Mail',          logo:'proton'},
 ];
