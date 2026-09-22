@@ -344,3 +344,58 @@
   if (F.length) document.title = 'FAIL colour ' + F.length;
 })();
 </script>
+<script>
+// Classic Outlook draws through Word: it keeps an image and discards a
+// border-radius, so a badge only survives as a picture with the circle in it.
+(function () {
+  const F = [];
+  S.template = 'corporate'; S.bgEnabled = false;
+  S.accentColor = '#2B4C7E'; S.iconColor = '#2B4C7E'; S.socialIconColor = '#2B4C7E';
+  S.contactIconMode = 'circle'; S.socialStyle = 'circle'; S.iconAssets = {};
+
+  // With no set, it must fall back to something Word can draw — letters and
+  // text links — rather than asking for a circle it will square off.
+  let h = generateExportHTML('classic');
+  const visible = h.replace(/<!--\[if !mso\]><!-->[\s\S]*?<!--<!\[endif\]-->/g, '');
+  if (/border-radius:50%/.test(visible)) F.push('no set: classic still asks for a round badge');
+  if (h.indexOf('>E.<') < 0) F.push('no set: no letter fallback');
+
+  // With one, the badge is a picture and the letters are gone.
+  const px = S.contactIconSize || 22;
+  const ground = badgeGround();
+  const bUrl = 'https://example.test/badge-email.png';
+  S.iconAssets[badgeAssetKey('email', S.iconColor, false, px, ground)] = bUrl;
+  h = generateExportHTML('classic');
+  if (h.indexOf(bUrl) < 0) F.push('the baked badge was not used');
+  if (h.indexOf('>E.<') >= 0) F.push('the letter survived alongside the badge');
+  if (h.indexOf('width="' + px + '"') < 0) F.push('the badge is not drawn at its own size');
+
+  // A filled badge, a different size and a different ground are all different
+  // pictures — reusing one would show the wrong drawing.
+  if (badgeAssetKey('email', S.iconColor, true, px, ground) === badgeAssetKey('email', S.iconColor, false, px, ground))
+    F.push('filled and open share a key');
+  if (badgeAssetKey('email', S.iconColor, false, px + 2, ground) === badgeAssetKey('email', S.iconColor, false, px, ground))
+    F.push('two sizes share a key');
+  if (badgeAssetKey('email', S.iconColor, false, px, '#101010') === badgeAssetKey('email', S.iconColor, false, px, ground))
+    F.push('two grounds share a key');
+
+  // Whatever it falls back to, classic may never carry what Word cannot show.
+  ['circle', 'filled', 'icons', 'letters'].forEach(m => {
+    S.contactIconMode = m;
+    ['circle', 'filled', 'glyph', 'plain', 'chip'].forEach(s => {
+      S.socialStyle = s;
+      const c = generateExportHTML('classic');
+      if (/<svg|data:image/i.test(c)) F.push('classic/' + m + '/' + s + ': carries something Word cannot show');
+      const vis = c.replace(/<!--\[if !mso\]><!-->[\s\S]*?<!--<!\[endif\]-->/g, '');
+      if (/border-radius:50%/.test(vis)) F.push('classic/' + m + '/' + s + ': a round badge Word will square');
+    });
+  });
+
+  S.contactIconMode = 'circle'; S.socialStyle = 'circle'; S.iconAssets = {};
+  S.iconColor = ''; S.socialIconColor = '';
+  const out = document.getElementById('out');
+  out.textContent += '\n' + (F.length ? 'CLASSIC FAIL:\n' + F.join('\n')
+    : 'classic: baked badges used when present, letters and text when not');
+  if (F.length) document.title = 'FAIL classic ' + F.length;
+})();
+</script>

@@ -63,7 +63,7 @@ let EXPORT_TARGET = null;
 const EXPORT_TARGETS = [
   {id: '',           label: 'Standard',        note: 'Gmail, Apple Mail, and anything that renders SVG.'},
   {id: 'newoutlook', label: 'New Outlook',     note: 'The same design as Standard. New Outlook draws a remote image and a round badge perfectly well — only the inline SVG had to go, so the glyphs are served from signvel.com.'},
-  {id: 'classic',    label: 'Outlook classic', note: 'No badges: Word draws them square. Letters in the theme colour instead.'},
+  {id: 'classic',    label: 'Outlook classic', note: 'Word draws this one, and throws away a rounded corner — so the badge is drawn into the picture instead, circle and all. Letters until that set is made.'},
 ];
 
 // Hosted glyphs, for the clients that will not draw an <svg>.
@@ -112,8 +112,23 @@ const iconAssetPending = {};
 // a new file rather than reusing one already uploaded in the old shape.
 const ICON_ASSET_VERSION = 'v2';
 
+const hex6 = h => String(h || '').replace('#', '').toLowerCase();
+
 function iconAssetKey(name, hex) {
-  return name + '-' + String(hex || '').replace('#', '').toLowerCase() + '-' + ICON_ASSET_VERSION;
+  return name + '-' + hex6(hex) + '-' + ICON_ASSET_VERSION;
+}
+
+// A whole badge is keyed by everything drawn into it, so changing any of it
+// makes a new file rather than showing the old one at the wrong size or on
+// the wrong ground.
+function badgeAssetKey(name, hex, filled, px, ground) {
+  return 'badge-' + name + '-' + hex6(hex) + '-' + (filled ? 'fill' : 'ring')
+    + '-' + px + '-' + hex6(ground) + '-' + ICON_ASSET_VERSION;
+}
+
+function hostedBadgeFor(name, hex, filled, px, ground) {
+  const map = S.iconAssets || {};
+  return map[badgeAssetKey(name, hex, filled, px, ground)] || '';
 }
 
 function hostedIconFor(name, hex) {
@@ -160,6 +175,70 @@ function drawIconBlob(svgStr, colour) {
   });
 }
 
+// Draws a whole badge — the ring or the filled disc, with the glyph centred
+// inside it — as one image, at 3x the size it is shown at.
+//
+// This is for classic Outlook, which renders through Word: it draws an image
+// perfectly well but throws away border-radius, so a badge built out of CSS
+// arrives square. Baked into the picture, the circle is just part of the
+// drawing and there is nothing left for Word to discard.
+//
+// The open style is given a real ground rather than left transparent, because
+// Outlook's handling of PNG alpha has a history of rendering as a black box —
+// the same reason the email logo is drawn on a flat ground.
+function drawBadgeBlob(svgStr, colour, filled, px, ground) {
+  return new Promise(resolve => {
+    const S3 = px * 3;
+    let s = String(svgStr || '').replace(/currentColor/g, filled ? '#FFFFFF' : colour);
+    if (!/xmlns=/.test(s)) s = s.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+    s = s.replace(/width="\d+"/, 'width="72"').replace(/height="\d+"/, 'height="72"');
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = S3;
+      const ctx = c.getContext('2d');
+      const r = S3 / 2;
+
+      ctx.beginPath();
+      ctx.arc(r, r, r - 2.25, 0, Math.PI * 2);
+      ctx.fillStyle = filled ? colour : (ground || '#FFFFFF');
+      ctx.fill();
+      if (!filled) {
+        ctx.lineWidth = 4.5;
+        ctx.strokeStyle = colour;
+        ctx.stroke();
+      }
+
+      // The glyph, normalised the same way the bare ones are, at half the
+      // badge — which is the proportion the CSS badge uses.
+      const g = document.createElement('canvas');
+      g.width = g.height = 72;
+      const gx = g.getContext('2d');
+      gx.drawImage(img, 0, 0, 72, 72);
+      const box = inkBounds(gx, 72, 72);
+      const inner = S3 * 0.5;
+      if (box) {
+        const scale = (72 * ICON_INK_SHARE) / Math.max(box.w, box.h);
+        const drawn = 72 * scale;
+        const cx = (box.x + box.w / 2) * scale, cy = (box.y + box.h / 2) * scale;
+        const k = inner / (72 * ICON_INK_SHARE);
+        ctx.drawImage(img, r - cx * k, r - cy * k, drawn * k, drawn * k);
+      } else {
+        ctx.drawImage(img, r - inner / 2, r - inner / 2, inner, inner);
+      }
+      c.toBlob(b => resolve(b), 'image/png');
+    };
+    img.onerror = () => resolve(null);
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s)));
+  });
+}
+
+// The ground a badge is drawn against, which is the signature's own panel
+// when it has one and the message behind it otherwise.
+function badgeGround() {
+  return (S.bgEnabled && S.bgColor) ? S.bgColor : '#FFFFFF';
+}
+
 // The rectangle the drawing actually occupies, ignoring transparent margin.
 function inkBounds(ctx, w, h) {
   const d = ctx.getImageData(0, 0, w, h).data;
@@ -178,44 +257,70 @@ function inkBounds(ctx, w, h) {
 
 // Which glyphs the signature is actually using, and in which colour. Only the
 // ones drawn in a colour need a file: a filled badge already has the white one.
-function neededIconAssets() {
+function neededIconAssets(target) {
   const want = [];
   const mode = S.contactIconMode || 'circle';
-  if (mode !== 'letters' && mode !== 'labels') {
-    const colour = S.iconColor || S.accentColor;
-    // A filled badge paints the ground and keeps the white glyph.
-    if (mode !== 'filled') {
-      (S.contactFields || []).forEach(f => {
-        if (f.enabled && contactIcons[f.type]) want.push({name: f.type, svg: contactIcons[f.type], hex: colour});
-      });
-    }
-  }
   const sStyle = S.socialStyle || 'circle';
-  if (sStyle === 'circle' || sStyle === 'glyph') {
-    const colour = S.socialIconColor || S.accentColor;
-    (S.socialLinks || []).forEach(sl => {
-      if (sl.enabled && socialIcons[sl.type]) want.push({name: sl.type, svg: socialIcons[sl.type], hex: colour});
-    });
+  const cColour = S.iconColor || S.accentColor;
+  const sColour = S.socialIconColor || S.accentColor;
+  const contacts = (S.contactFields || []).filter(f => f.enabled && contactIcons[f.type]);
+  const socials = (S.socialLinks || []).filter(sl => sl.enabled && socialIcons[sl.type]);
+
+  if (target === 'classic') {
+    // Word discards the CSS badge, so the badge itself has to be the picture.
+    const ground = badgeGround();
+    if (mode === 'circle' || mode === 'filled') {
+      const px = S.contactIconSize || 22;
+      contacts.forEach(f => want.push({
+        badge: true, name: f.type, svg: contactIcons[f.type], hex: cColour,
+        filled: mode === 'filled', px, ground,
+        key: badgeAssetKey(f.type, cColour, mode === 'filled', px, ground),
+      }));
+    } else if (mode !== 'letters' && mode !== 'labels') {
+      contacts.forEach(f => want.push({name: f.type, svg: contactIcons[f.type], hex: cColour, key: iconAssetKey(f.type, cColour)}));
+    }
+    if (sStyle === 'circle' || sStyle === 'filled') {
+      const px = S.socialIconSize || 24;
+      socials.forEach(sl => want.push({
+        badge: true, name: sl.type, svg: socialIcons[sl.type], hex: sColour,
+        filled: sStyle === 'filled', px, ground,
+        key: badgeAssetKey(sl.type, sColour, sStyle === 'filled', px, ground),
+      }));
+    } else if (sStyle === 'glyph') {
+      socials.forEach(sl => want.push({name: sl.type, svg: socialIcons[sl.type], hex: sColour, key: iconAssetKey(sl.type, sColour)}));
+    }
+    return want.filter(w => !(S.iconAssets || {})[w.key] && !iconAssetPending[w.key]);
   }
-  return want.filter(w => !hostedIconFor(w.name, w.hex) && !iconAssetPending[iconAssetKey(w.name, w.hex)]);
+
+  // New Outlook draws the badge itself, so only the glyph needs a file — and
+  // only where it is drawn in a colour, since a filled badge keeps the white.
+  if (mode !== 'letters' && mode !== 'labels' && mode !== 'filled') {
+    contacts.forEach(f => want.push({name: f.type, svg: contactIcons[f.type], hex: cColour, key: iconAssetKey(f.type, cColour)}));
+  }
+  if (sStyle === 'circle' || sStyle === 'glyph') {
+    socials.forEach(sl => want.push({name: sl.type, svg: socialIcons[sl.type], hex: sColour, key: iconAssetKey(sl.type, sColour)}));
+  }
+  return want.filter(w => !(S.iconAssets || {})[w.key] && !iconAssetPending[w.key]);
 }
 
 // Makes and uploads whatever is missing, then redraws once at the end rather
 // than once per glyph. Never throws: a failure just leaves the fallback.
 let iconAssetRun = null;
-function syncIconAssets() {
+function syncIconAssets(target) {
   if (iconAssetRun) return iconAssetRun;
-  const want = neededIconAssets();
+  const want = neededIconAssets(target);
   if (!want.length || !window.Cloud || !Cloud.isReady) return Promise.resolve(false);
   const c = Cloud.state();
   if (!c || !c.signedIn) return Promise.resolve(false);
-  want.forEach(w => { iconAssetPending[iconAssetKey(w.name, w.hex)] = true; });
+  want.forEach(w => { iconAssetPending[w.key] = true; });
   iconAssetRun = (async () => {
     let added = false;
     for (const w of want) {
-      const key = iconAssetKey(w.name, w.hex);
+      const key = w.key;
       try {
-        const blob = await drawIconBlob(w.svg, w.hex);
+        const blob = w.badge
+          ? await drawBadgeBlob(w.svg, w.hex, w.filled, w.px, w.ground)
+          : await drawIconBlob(w.svg, w.hex);
         if (!blob) continue;
         const file = new File([blob], key + '.png', {type: 'image/png'});
         const res = await Cloud.uploadAsset(file, 'icon-' + key);
@@ -1860,9 +1965,10 @@ function renderStage() {
   </div></div>`;
 
   $stage.innerHTML = h;
-  // Only New Outlook needs a file per colour, so nothing is drawn or uploaded
-  // until that tab is the one in use. It redraws itself when a set arrives.
-  if (currentTarget() === 'newoutlook') syncIconAssets();
+  // Only the Outlook variants need files, and each needs a different set —
+  // glyphs for New Outlook, whole badges for classic — so nothing is drawn or
+  // uploaded until one of those tabs is in use. It redraws when a set arrives.
+  if (currentTarget()) syncIconAssets(currentTarget());
   scheduleAllSaves();
 }
 
@@ -2355,6 +2461,19 @@ function buildSignatureBody() {
     // row of squares looks like a fault rather than a choice. The letter alone
     // carries it, which is what the Letters treatment already does.
     if (EXPORT_TARGET === 'classic') {
+      // The badge drawn into the picture, which is the only kind Word keeps.
+      const sz = S.contactIconSize || 22;
+      const baked = badged ? hostedBadgeFor(f.type, badgeColor, mode === 'filled', sz, badgeGround()) : '';
+      if (baked) {
+        return {lead: iconImgTag(baked, sz), leadPad: '3px 10px 3px 0', val, valPad: '3px 0', align: 'middle'};
+      }
+      // A bare glyph needs no badge, so the coloured drawing alone will do.
+      const flat = !badged && mode !== 'letters' && mode !== 'labels' ? hostedIconFor(f.type, badgeColor) : '';
+      if (flat) {
+        const gp = Math.round(sz * 0.64);
+        return {lead: iconImgTag(flat, gp, 'display:inline-block;vertical-align:middle;'),
+                leadPad: '1px 7px 1px 0', val, valPad: '3px 0', align: 'middle'};
+      }
       return {
         lead: `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(letter)}.</span>`,
         leadPad: '3px 8px 3px 0', val, valPad: '3px 0', align: 'top',
@@ -2477,9 +2596,18 @@ function buildSignatureBody() {
     // icons do. Classic Outlook takes the plain name, which needs no shape at
     // all; new Outlook keeps its ring and carries the platform's initial.
     let style = o.style || S.socialStyle;
-    if (EXPORT_TARGET === 'classic' && (style === 'circle' || style === 'filled' || style === 'glyph')) style = 'plain';
     const colour = o.color || sc;
     const sz = o.size || S.socialIconSize;
+    // Word throws the CSS badge away, so a badged style only survives as a
+    // picture with the badge drawn into it. Where there is no such picture
+    // there is nothing to show but the name, which is the plain treatment.
+    if (EXPORT_TARGET === 'classic') {
+      const ground = badgeGround();
+      const haveAll = (list) => list.every(sl => (style === 'glyph')
+        ? hostedIconFor(sl.type, colour)
+        : hostedBadgeFor(sl.type, colour, style === 'filled', sz, ground));
+      if ((style === 'circle' || style === 'filled' || style === 'glyph') && !haveAll(activeSocials)) style = 'plain';
+    }
     const iconSz = sz + 'px';
     let out = `<table role="presentation" cellpadding="0" cellspacing="0" border="0"${al === 'center' ? ' align="center"' : ''}><tbody><tr>`;
     activeSocials.forEach((sl, idx) => {
@@ -2488,6 +2616,17 @@ function buildSignatureBody() {
       if (style === 'circle' || style === 'filled' || style === 'glyph') {
         const iconScale = Math.round(sz * (style === 'glyph' ? 0.78 : 0.55));
         // Bare glyph, no ring — the treatment the minimal reference layouts use.
+        // Classic gets the badge as a picture; nothing else it draws survives.
+        if (EXPORT_TARGET === 'classic') {
+          const baked = style === 'glyph'
+            ? hostedIconFor(sl.type, colour)
+            : hostedBadgeFor(sl.type, colour, style === 'filled', sz, badgeGround());
+          if (baked) {
+            const px = style === 'glyph' ? iconScale : sz;
+            out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${iconImgTag(baked, px)}</a></td>`;
+            return;
+          }
+        }
         const hostedMark = EXPORT_TARGET === 'newoutlook' ? sl.type : '';
         const exactMark = hostedMark ? hostedIconFor(hostedMark, colour) : '';
         if (style === 'glyph') {
