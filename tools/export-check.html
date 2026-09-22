@@ -228,20 +228,33 @@
   const out = document.getElementById('out');
   const list = Array.from(urls); // a Set has no length, so [].slice.call would give []
   if (!list.length) { out.textContent += '\nNO HOSTED ICONS REFERENCED'; document.title = 'FAIL icons 0'; return; }
-  let done = 0; const missing = [];
+  let done = 0; const missing = [], blank = [];
   list.forEach(u => {
     const img = new Image();
     // Loaded from the local file the URL maps to, since the harness runs offline.
     const local = '../icons/' + u.split('/').pop();
-    img.onload  = () => { if (++done === list.length) report(); };
+    // A valid PNG can still be blank, which would look exactly like success
+    // in every other check here, so the pixels are counted.
+    img.onload  = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const d = ctx.getImageData(0, 0, c.width, c.height).data;
+      let lit = 0;
+      for (let i = 3; i < d.length; i += 4) if (d[i] > 8) lit++;
+      const pct = lit / (c.width * c.height);
+      if (pct < 0.02) blank.push(u.split('/').pop() + ' ' + Math.round(pct * 100) + '%');
+      if (++done === list.length) report();
+    };
     img.onerror = () => { missing.push(u.split('/').pop()); if (++done === list.length) report(); };
     img.src = local;
   });
   function report() {
-    out.textContent += missing.length
-      ? '\nMISSING ICON FILES: ' + missing.join(', ')
-      : '\n' + list.length + ' hosted glyphs referenced, every file present';
-    if (missing.length) document.title = 'FAIL icons ' + missing.length;
+    out.textContent += missing.length ? '\nMISSING ICON FILES: ' + missing.join(', ')
+      : blank.length ? '\nBLANK ICON FILES: ' + blank.join(', ')
+      : '\n' + list.length + ' hosted glyphs referenced, every file present and drawn';
+    if (missing.length || blank.length) document.title = 'FAIL icons ' + (missing.length + blank.length);
   }
 })();
 </script>
