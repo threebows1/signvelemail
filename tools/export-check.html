@@ -232,7 +232,7 @@
   const out = document.getElementById('out');
   const list = Array.from(urls); // a Set has no length, so [].slice.call would give []
   if (!list.length) { out.textContent += '\nNO HOSTED ICONS REFERENCED'; document.title = 'FAIL icons 0'; return; }
-  let done = 0; const missing = [], blank = [];
+  let done = 0; const missing = [], blank = [], spans = [], offcentre = [];
   list.forEach(u => {
     const img = new Image();
     // Loaded from the local file the URL maps to, since the harness runs offline.
@@ -249,16 +249,31 @@
       for (let i = 3; i < d.length; i += 4) if (d[i] > 8) lit++;
       const pct = lit / (c.width * c.height);
       if (pct < 0.02) blank.push(u.split('/').pop() + ' ' + Math.round(pct * 100) + '%');
+      // Every glyph has to fill the same share of its canvas and sit in the
+      // middle of it, or one reads as too big for its badge and another as
+      // adrift in the same ring.
+      const box = inkBounds(ctx, c.width, c.height);
+      if (box) {
+        spans.push(Math.max(box.w, box.h));
+        const off = Math.max(Math.abs((box.x + box.w / 2) - c.width / 2), Math.abs((box.y + box.h / 2) - c.height / 2));
+        if (off > 1) offcentre.push(u.split('/').pop() + ' by ' + off.toFixed(1) + 'px');
+      }
       if (++done === list.length) report();
     };
     img.onerror = () => { missing.push(u.split('/').pop()); if (++done === list.length) report(); };
     img.src = local;
   });
   function report() {
+    const spread = spans.length ? Math.max.apply(null, spans) - Math.min.apply(null, spans) : 0;
+    const uneven = spread > 3;
     out.textContent += missing.length ? '\nMISSING ICON FILES: ' + missing.join(', ')
       : blank.length ? '\nBLANK ICON FILES: ' + blank.join(', ')
-      : '\n' + list.length + ' hosted glyphs referenced, every file present and drawn';
-    if (missing.length || blank.length) document.title = 'FAIL icons ' + (missing.length + blank.length);
+      : uneven ? '\nICON SIZES UNEVEN: ink spans ' + Math.min.apply(null, spans) + '-' + Math.max.apply(null, spans) + ' of 72'
+      : offcentre.length ? '\nICONS OFF CENTRE: ' + offcentre.join(', ')
+      : '\n' + list.length + ' hosted glyphs referenced, present and drawn, ink '
+        + Math.min.apply(null, spans) + '-' + Math.max.apply(null, spans) + ' of 72, all centred';
+    if (missing.length || blank.length || uneven || offcentre.length)
+      document.title = 'FAIL icons ' + (missing.length + blank.length + offcentre.length + (uneven ? 1 : 0));
   }
 })();
 </script>

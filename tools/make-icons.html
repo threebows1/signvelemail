@@ -33,12 +33,38 @@ function draw(svgStr, colour) {
     img.onload = () => {
       const c = document.createElement('canvas');
       c.width = c.height = SIZE;
-      c.getContext('2d').drawImage(img, 0, 0, SIZE, SIZE);
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, SIZE, SIZE);
+      // Normalised exactly as app.js normalises the uploaded set, so the
+      // fallback glyph sits in its badge the same way the real one does.
+      const box = inkBounds(ctx, SIZE, SIZE);
+      if (box) {
+        const scale = (SIZE * 0.78) / Math.max(box.w, box.h);
+        const cx = (box.x + box.w / 2) * scale, cy = (box.y + box.h / 2) * scale;
+        ctx.clearRect(0, 0, SIZE, SIZE);
+        ctx.drawImage(img, SIZE / 2 - cx, SIZE / 2 - cy, SIZE * scale, SIZE * scale);
+      }
       resolve(c.toDataURL('image/png').split(',')[1]);
     };
     img.onerror = () => resolve('');
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s)));
   });
+}
+
+// The rectangle the drawing occupies, ignoring transparent margin.
+function inkBounds(ctx, w, h) {
+  const d = ctx.getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let p = 3, i = 0; p < d.length; p += 4, i++) {
+    if (d[p] > 16) {
+      const px = i % w, py = (i / w) | 0;
+      if (px < x0) x0 = px;
+      if (px > x1) x1 = px;
+      if (py < y0) y0 = py;
+      if (py > y1) y1 = py;
+    }
+  }
+  return x1 < 0 ? null : {x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1};
 }
 
 (async function () {

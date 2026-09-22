@@ -108,8 +108,12 @@ function iconImgTag(url, size, extraStyle) {
 // filled badge, which needs nothing hosted beyond the files in icons/.
 const iconAssetPending = {};
 
+// The version is part of the key so a change to how the glyph is drawn makes
+// a new file rather than reusing one already uploaded in the old shape.
+const ICON_ASSET_VERSION = 'v2';
+
 function iconAssetKey(name, hex) {
-  return name + '-' + String(hex || '').replace('#', '').toLowerCase();
+  return name + '-' + String(hex || '').replace('#', '').toLowerCase() + '-' + ICON_ASSET_VERSION;
 }
 
 function hostedIconFor(name, hex) {
@@ -119,6 +123,14 @@ function hostedIconFor(name, hex) {
 
 // Draws one glyph at 72px — 3x the largest the editor uses — in the colour
 // asked for, and hands back a PNG blob.
+//
+// The drawing is then normalised: each glyph is scaled so its ink fills the
+// same share of the canvas and centred on that ink. Left alone they do not
+// match — the map pin's ink fills the full 72, the envelope's only 54 — so
+// inside a badge the pin reads as too big for its ring and the envelope as
+// adrift in it. Normalising makes every glyph sit in the circle the same way.
+const ICON_INK_SHARE = 0.78;
+
 function drawIconBlob(svgStr, colour) {
   return new Promise(resolve => {
     let s = String(svgStr || '').replace(/currentColor/g, colour);
@@ -128,12 +140,40 @@ function drawIconBlob(svgStr, colour) {
     img.onload = () => {
       const c = document.createElement('canvas');
       c.width = c.height = 72;
-      c.getContext('2d').drawImage(img, 0, 0, 72, 72);
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, 72, 72);
+
+      const box = inkBounds(ctx, 72, 72);
+      if (box) {
+        const span = Math.max(box.w, box.h);
+        const scale = (72 * ICON_INK_SHARE) / span;
+        const w = 72 * scale, h = 72 * scale;
+        // Where the ink's own centre lands once scaled, moved to the middle.
+        const cx = (box.x + box.w / 2) * scale, cy = (box.y + box.h / 2) * scale;
+        ctx.clearRect(0, 0, 72, 72);
+        ctx.drawImage(img, 36 - cx, 36 - cy, w, h);
+      }
       c.toBlob(b => resolve(b), 'image/png');
     };
     img.onerror = () => resolve(null);
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s)));
   });
+}
+
+// The rectangle the drawing actually occupies, ignoring transparent margin.
+function inkBounds(ctx, w, h) {
+  const d = ctx.getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let p = 3, i = 0; p < d.length; p += 4, i++) {
+    if (d[p] > 16) {
+      const px = i % w, py = (i / w) | 0;
+      if (px < x0) x0 = px;
+      if (px > x1) x1 = px;
+      if (py < y0) y0 = py;
+      if (py > y1) y1 = py;
+    }
+  }
+  return x1 < 0 ? null : {x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1};
 }
 
 // Which glyphs the signature is actually using, and in which colour. Only the
