@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Side panel — design options</title>
+<!--
+  Sign Vel — four treatments of the settings panel, side by side
+
+  Open it:  tools\panel-designs.html   (no server needed)
+
+  Each column is the REAL Design section — renderDesign() from app.js, the same
+  markup the editor ships — under a different skin. Nothing here is a mockup,
+  so what is being judged is the actual content at the actual width, and the
+  one that wins ships as CSS rather than being rebuilt.
+
+  Every row is live: tap one and it opens, exactly as it does in the editor.
+-->
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body{margin:0;background:#EEECF5;font-family:var(--sans,system-ui);}
+  .board{display:flex;gap:18px;padding:18px;align-items:flex-start;overflow-x:auto}
+  .col{flex:0 0 340px}
+  .col-head{padding:0 2px 10px}
+  .col-name{font:700 13px system-ui;color:#141220;margin:0 0 3px}
+  .col-note{font:400 11px/1.45 system-ui;color:#6B6880;margin:0}
+  .sheet{background:#fff;border-radius:14px;padding:16px 14px;box-shadow:0 1px 3px rgba(20,18,31,.08);
+         height:760px;overflow-y:auto}
+  .sheet::-webkit-scrollbar{width:5px}
+  .sheet::-webkit-scrollbar-thumb{background:#DCD9E8;border-radius:3px}
+
+  /* ═══ 2. Hairline — no boxes at all ═══
+     The card borders were doing the same job as the row dividers. Dropping
+     them leaves the type and the whitespace to group things. */
+  .v-hairline .opt-list{border:none;border-radius:0;margin-bottom:6px}
+  .v-hairline .opt-row{padding:10px 2px;border-bottom:1px solid #F0EEF6}
+  .v-hairline .opt-row.is-openable:hover{background:transparent}
+  .v-hairline .opt-row.is-openable:hover .opt-label{color:var(--accent)}
+  .v-hairline .row-body{padding:2px 2px 12px;border-bottom:1px solid #F0EEF6}
+  .v-hairline .row-value{color:#141220;font-weight:500}
+  .v-hairline .opt-group{border-top:none;padding-top:18px;color:#A8A4BE}
+
+  /* ═══ 3. Soft cards — each group is its own tinted block ═══
+     Reads as "these belong together" without a heading doing all the work. */
+  .v-cards .opt-list{border:none;border-radius:12px;background:#F8F7FC;padding:2px 4px;margin-bottom:8px}
+  .v-cards .opt-row{padding:10px;border-bottom:1px solid #EFEDF7}
+  .v-cards .opt-row.is-openable:hover{background:rgba(91,46,255,.04);border-radius:8px}
+  .v-cards .row-body{padding:2px 10px 12px;border-bottom:1px solid #EFEDF7;background:transparent}
+  .v-cards .opt-row.open{background:#fff;border-radius:8px 8px 0 0;box-shadow:0 1px 2px rgba(20,18,31,.06)}
+  .v-cards .row-body:not(.is-shut){background:#fff;border-radius:0 0 8px 8px;box-shadow:0 1px 2px rgba(20,18,31,.06)}
+  .v-cards .opt-group{border-top:none;padding-top:16px}
+
+  /* ═══ 4. Dense — a tool, not a form ═══
+     Tighter rows and a monospace value, so the column shows far more at once
+     and the numbers line up down the right edge. */
+  .v-dense .opt-list{border-color:#EDEBF4;border-radius:8px;margin-bottom:8px}
+  .v-dense .opt-row{padding:6px 10px}
+  .v-dense .opt-label{font-size:11px}
+  .v-dense .row-value{font-family:var(--mono,ui-monospace,monospace);font-size:10px;letter-spacing:.02em}
+  .v-dense .row-body{padding:2px 10px 9px}
+  .v-dense .opt-group{margin:12px 0 5px;padding-top:10px}
+  .v-dense .opt-row.open{background:#F7F5FF;box-shadow:inset 2px 0 0 var(--accent)}
+  .v-dense .field-hint{font-size:9.5px}
+</style>
+</head>
+<body>
+<div class="board" id="board"></div>
+
+<script src="../config.js"></script>
+<script src="../cloud.js"></script>
+<script src="../app.js"></script>
+<script>
+(function () {
+  const VARIANTS = [
+    {cls:'', name:'1 · Current (shipped)',
+     note:'Bordered list per group. What is live now.'},
+    {cls:'v-hairline', name:'2 · Hairline',
+     note:'No boxes. Groups held together by spacing and a light section label — the quietest of the four.'},
+    {cls:'v-cards', name:'3 · Soft cards',
+     note:'Each group a tinted block; the open row lifts to white. Clearest grouping, slightly heavier.'},
+    {cls:'v-dense', name:'4 · Dense',
+     note:'Tighter rows, monospace values aligned down the right. Shows about a third more per screen.'},
+  ];
+
+  const board = document.getElementById('board');
+  // ?open=roleStyle starts every column with that row open, for comparing the
+  // opened state rather than clicking four columns to the same place by hand.
+  const wanted = /[?&]open=([a-zA-Z]+)/.exec(location.search);
+  if (wanted) OPENROW.key = wanted[1];
+  const panelHTML = renderDesign();   // the real section, not a copy of it
+
+  VARIANTS.forEach(v => {
+    const col = document.createElement('div');
+    col.className = 'col';
+    col.innerHTML =
+      '<div class="col-head"><p class="col-name">' + v.name + '</p>' +
+      '<p class="col-note">' + v.note + '</p></div>' +
+      '<div class="sheet ' + v.cls + '"><div class="sheet-body">' + panelHTML + '</div></div>';
+    board.appendChild(col);
+  });
+
+  // Every column stays live: a row opens where it is tapped, and only the
+  // column tapped in redraws, so four independent panels can be compared open
+  // as well as shut.
+  board.addEventListener('click', e => {
+    const row = e.target.closest('[data-action="toggleRow"]');
+    if (!row) return;
+    const body = row.closest('.sheet-body');
+    const key = row.dataset.row;
+    OPENROW.key = OPENROW.key === key ? null : key;
+    body.innerHTML = renderDesign();
+  });
+
+  document.title = 'Side panel — ' + VARIANTS.length + ' options';
+})();
+</script>
+</body>
+</html>
