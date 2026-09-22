@@ -1,0 +1,114 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>export-check</title></head>
+<body>
+  <div class="app" id="app" style="display:none"><aside class="rail" id="rail"></aside>
+  <div class="workspace"><header class="topbar" id="header"></header>
+  <div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+  <div class="export-overlay hidden" id="exportOverlay"><div class="export-panel">
+    <div class="export-panel-header"><h2>E</h2><button class="export-close" id="exportClose">x</button></div>
+    <div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p class="export-note" id="exportNote"></p></div>
+    <pre class="export-code"><code id="exportCode"></code></pre>
+    <div class="export-actions"><button class="btn btn-accent" id="exportCopyBtn">C</button></div></div></div>
+  <link rel="stylesheet" href="../styles.css"><pre id="out" style="position:fixed;left:0;bottom:0;z-index:99;background:#fff"></pre>
+  <script>try { localStorage.clear(); } catch (e) {}</script>
+  <script src="../config.js"></script>
+  <script src="../cloud.js"></script>
+  <script src="../app.js"></script>
+  <script>
+  const E = [];
+  // Every layout, every icon treatment, both Outlook variants.
+  const MODES = ['circle','filled','icons','letters','labels'];
+  const SOCIAL = ['circle','filled','chip','plain','outline'];
+  Object.keys(templateThemes).forEach(t => {
+    S.template = t;
+    MODES.forEach(m => {
+      S.contactIconMode = m;
+      SOCIAL.forEach(s => {
+        S.socialStyle = s;
+        ['newoutlook','classic'].forEach(target => {
+          const h = generateExportHTML(target);
+          // Neither Outlook renders these, so neither may appear.
+          if (/<svg/i.test(h))        E.push(t+'/'+m+'/'+s+'/'+target+': contains <svg>');
+          if (/data:image/i.test(h))  E.push(t+'/'+m+'/'+s+'/'+target+': contains a data: image');
+          
+          // Word ignores a radius, so nothing classic actually renders may ask
+          // for one. What sits in an <!--[if !mso]> block is invisible to it.
+          if (target === 'classic') {
+            const seen = h.replace(/<!--\[if !mso\]><!-->[\s\S]*?<!--<!\[endif\]-->/g, '');
+            if (/border-radius:50%/.test(seen))
+              E.push(t+'/'+m+'/'+s+'/classic: a round badge classic can see');
+          }
+        });
+      });
+    });
+  });
+  // Clean is not enough: a variant that dropped the glyph and put nothing back
+  // would also pass every check above. The mark has to be there to be read.
+  S.template='corporate'; S.socialStyle='circle';
+  S.email='a@b.com'; S.phone='+971 4 000 0000'; S.website='b.com';
+  ['circle','filled'].forEach(m => {
+    S.contactIconMode = m;
+    const n = generateExportHTML('newoutlook');
+    // E for email, T for telephone, W for web — inside the round badge.
+    ['E','T','W'].forEach(L => {
+      if (!new RegExp('>' + L + '<').test(n)) E.push('newoutlook/' + m + ': no ' + L + ' badge');
+    });
+    if (!/border-radius:50%/.test(n)) E.push('newoutlook/' + m + ': lost its round badges');
+    const c = generateExportHTML('classic');
+    ['E.','T.','W.'].forEach(L => {
+      if (c.indexOf('>' + L + '<') < 0) E.push('classic/' + m + ': no ' + L + ' lead');
+    });
+  });
+
+  // The standard variant must be untouched, and the preview must not be left
+  // on a client's variant afterwards.
+  S.template='corporate'; S.contactIconMode='circle'; S.socialStyle='circle';
+  if (!/<svg|data:image/i.test(generateExportHTML('')))   E.push('standard export lost its glyphs');
+  generateExportHTML('classic');
+  if (EXPORT_TARGET !== null) E.push('EXPORT_TARGET left set after an export');
+  if (!/<svg|data:image/i.test(generateSignaturePreview())) E.push('the live preview was left on a variant');
+  // The dialog offers all three.
+  showExport();
+  const btns = [].map.call(document.querySelectorAll('#exportTargets button'), b => b.dataset.target);
+  if (btns.join(',') !== ',newoutlook,classic') E.push('targets offered: ' + btns.join(','));
+  // Clicking a target has to swap the code in the box — that box is what the
+  // copy button reads, so anything it does not update is never copied.
+  const code = document.getElementById('exportCode');
+  const standard = code.textContent;
+  const note = document.getElementById('exportNote').textContent;
+  document.querySelector('#exportTargets button[data-target="classic"]').click();
+  if (code.textContent === standard)     E.push('clicking classic did not change the code');
+  if (/<svg|data:image/i.test(code.textContent)) E.push('the classic box still holds a stripped glyph');
+  if (document.getElementById('exportNote').textContent === note) E.push('the note did not follow the target');
+  if (!document.querySelector('#exportTargets button[data-target="classic"]').className.match(/active|is-on|selected/))
+    E.push('the clicked target is not marked');
+  document.querySelector('#exportTargets button[data-target=""]').click();
+  if (code.textContent !== standard)     E.push('going back to Standard did not restore it');
+  document.getElementById('out').textContent = E.length ? E.slice(0,12).join('\n') + '\n\n(' + E.length + ' total)' : 'ok — 24 layouts x 25 combinations, both variants clean';
+  document.title = E.length ? 'FAIL ' + E.length : 'PASS';
+  </script>
+</body></html>
+<script>
+// The picker has to be legible in the dark dialog: on screen, big enough to
+// hit, and not text the same colour as what is behind it.
+(function () {
+  const F = [];
+  const row = document.querySelector('.export-targets-row');
+  const bs = [].slice.call(document.querySelectorAll('#exportTargets button'));
+  const rowBg = getComputedStyle(row).backgroundColor;
+  const panelBg = getComputedStyle(document.querySelector('.export-panel')).backgroundColor;
+  bs.forEach(b => {
+    const r = b.getBoundingClientRect(), cs = getComputedStyle(b);
+    // 23px is what every .toggle-group button in the app measures.
+    if (r.width < 60 || r.height < 22) F.push(b.textContent + ': ' + Math.round(r.width) + 'x' + Math.round(r.height));
+    if (cs.color === (cs.backgroundColor === 'rgba(0, 0, 0, 0)' ? (rowBg === 'rgba(0, 0, 0, 0)' ? panelBg : rowBg) : cs.backgroundColor))
+      F.push(b.textContent + ': text the same colour as its ground');
+  });
+  const note = document.getElementById('exportNote').getBoundingClientRect();
+  if (note.height < 10) F.push('the note is not on screen');
+  // The three sit on one line rather than stacking.
+  if (bs.length === 3 && (bs[0].getBoundingClientRect().top !== bs[2].getBoundingClientRect().top)) F.push('the targets wrapped onto two lines');
+  const out = document.getElementById('out');
+  out.textContent += '\n' + (F.length ? 'STYLE FAIL:\n' + F.join('\n') : 'picker: ' + bs.map(b => Math.round(b.getBoundingClientRect().width) + 'x' + Math.round(b.getBoundingClientRect().height)).join(' ') + ', on one line, legible');
+  if (F.length) document.title = 'FAIL style ' + F.length;
+})();
+</script>

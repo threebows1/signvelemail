@@ -45,6 +45,72 @@ const icons = {
 // Single-letter prefixes for the 'letters' display mode: E: M: T: A:
 const contactLetters = {email:'E',mobile:'M',phone:'T',address:'A',website:'W',office:'O',pronouns:'P',booking:'B'};
 
+// ───────────── SVG → PNG for email clients ─────────────
+// Outlook (both classic and New) strips inline <svg> from HTML emails.
+// ───────────── Export targets ─────────────
+// Which client the markup is being written for. null is the live preview and
+// the ordinary copy, where an <svg> glyph is fine.
+//
+// Both Outlooks strip <svg> out of a message, so neither ever sees the icons —
+// the new one leaves the ring standing empty, and Word's engine drops the
+// border-radius as well, so classic shows an empty square. A letter is text:
+// it survives both, in the icon's own colour, and needs nothing hosted.
+//
+//   'newoutlook' — keeps the round badge, puts a letter in it
+//   'classic'    — drops the badge entirely rather than ship a square
+let EXPORT_TARGET = null;
+
+const EXPORT_TARGETS = [
+  {id: '',           label: 'Standard',        note: 'Gmail, Apple Mail, and anything that renders SVG.'},
+  {id: 'newoutlook', label: 'New Outlook',     note: 'Round badges kept; the glyphs become letters, which new Outlook does not strip.'},
+  {id: 'classic',    label: 'Outlook classic', note: 'No badges: Word draws them square. Letters in the theme colour instead.'},
+];
+
+// These helpers render SVGs onto a canvas and emit <img> tags with PNG
+// data URIs, which every email client renders.
+const _pngIconCache = new Map();
+
+// Renders an SVG string to a PNG data-URI through a canvas.
+// Returns a cached PNG if available; otherwise kicks off background
+// rendering (Image load → canvas draw → toDataURL) and returns an
+// SVG-in-img fallback that works in browsers for the live preview.
+// By the next renderStage() cycle the PNG is cached and the copy/export
+// path hands Outlook a real image.
+function svgToImgTag(svgStr, width, height, color, extraStyle) {
+  if (!svgStr) return '';
+  const w = Math.round(width);
+  const h = Math.round(height);
+  const key = svgStr + '|' + w + '|' + h + '|' + color;
+
+  // Prepare a standalone SVG with explicit colour, size, and namespace.
+  let svg = svgStr.replace(/currentColor/g, color || '#000000');
+  svg = svg.replace(/width="14"/, 'width="' + w + '"').replace(/height="14"/, 'height="' + h + '"');
+  svg = svg.replace(/width="16"/, 'width="' + w + '"').replace(/height="16"/, 'height="' + h + '"');
+  if (!svg.includes('xmlns=')) svg = svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+
+  const cached = _pngIconCache.get(key);
+  if (cached) {
+    return '<img src="' + cached + '" width="' + w + '" height="' + h + '" alt="" style="display:block;' + (extraStyle || '') + '">';
+  }
+
+  // Not yet cached — render to PNG asynchronously via Image + canvas.
+  const svgUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  const img = new Image();
+  img.onload = function () {
+    var s = 2;  // 2× for retina sharpness
+    var c = document.createElement('canvas');
+    c.width = w * s; c.height = h * s;
+    var ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, w * s, h * s);
+    _pngIconCache.set(key, c.toDataURL('image/png'));
+  };
+  img.src = svgUri;
+
+  // Fallback: SVG data URI in an <img> — works in browsers for the live
+  // preview while the PNG renders in the background.
+  return '<img src="' + svgUri + '" width="' + w + '" height="' + h + '" alt="" style="display:block;' + (extraStyle || '') + '">';
+}
+
 // ───────────── Demo logo ─────────────
 // The logo every layout shows until somebody uploads their own — this
 // product's own lockup, drawn by tools/make-sample-logo.ps1 and served from
@@ -2022,18 +2088,22 @@ function buildSignatureBody() {
   // Divider rules. The old flat #DDDBE4 was invisible at 1px, and vanished
   // completely once a dark background panel was switched on.
   const ruleColor = onDark ? 'rgba(255,255,255,.22)' : '#C6C3D4';
-  const circleIcon = (svg, filled, colour) => {
+  const circleIcon = (svg, filled, colour, letter) => {
     const cc = colour || ic;
     const sz = S.contactIconSize || 22;
     const inner = Math.round(sz * 0.5);
-    const scaled = (svg||'')
-      .replace(/width="14"/, `width="${inner}"`)
-      .replace(/height="14"/, `height="${inner}"`)
-      .replace(/<svg /, '<svg style="display:block;margin:0 auto;" ');
-    const glyph = filled ? '#ffffff' : cc;
+    const glyphColor = filled ? '#ffffff' : cc;
     const bg = filled ? `background-color:${cc};` : '';
     const bgAttr = filled ? ` bgcolor="${cc}"` : '';
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:1.5px solid ${cc};border-radius:50%;color:${glyph};text-align:center;vertical-align:middle;font-size:0;line-height:0;">${scaled}</td></tr></table>`;
+    // A drawing needs the line box zeroed or the badge grows taller than it is
+    // wide and the circle turns oval. A letter needs the opposite: the line box
+    // is what centres it.
+    const body = letter
+      ? {content: esc(letter),
+         type: `color:${glyphColor};font-family:${ff};font-size:${Math.round(sz * 0.46)}px;font-weight:700;line-height:${sz - 3}px;`}
+      : {content: svgToImgTag(svg, inner, inner, glyphColor, 'margin:0 auto;'),
+         type: 'font-size:0;line-height:0;'};
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:1.5px solid ${cc};border-radius:50%;text-align:center;vertical-align:middle;${body.type}">${body.content}</td></tr></table>`;
   };
 
   const activeContacts = pFields.filter(f => f.enabled && f.value);
@@ -2070,10 +2140,22 @@ function buildSignatureBody() {
       };
     }
     const badged = mode === 'circle' || mode === 'filled';
+    const letter = contactLetters[f.type] || '•';
+    // Written for classic Outlook, the badge goes: Word squares it off, and a
+    // row of squares looks like a fault rather than a choice. The letter alone
+    // carries it, which is what the Letters treatment already does.
+    if (EXPORT_TARGET === 'classic') {
+      return {
+        lead: `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(letter)}.</span>`,
+        leadPad: '3px 8px 3px 0', val, valPad: '3px 0', align: 'top',
+      };
+    }
     const lead = badged
-      ? circleIcon(contactIcons[f.type], mode === 'filled', badgeColor)
-      : `<span style="display:inline-block;vertical-align:middle;color:${badgeColor};width:${Math.round(S.contactIconSize * 0.64)}px;height:${Math.round(S.contactIconSize * 0.64)}px;">${contactIcons[f.type] || ''}</span>`;
-    return {lead, leadPad: badged ? '3px 10px 3px 0' : '1px 7px 1px 0', val, valPad: '3px 0', align: 'middle', raw: true};
+      ? circleIcon(contactIcons[f.type], mode === 'filled', badgeColor, EXPORT_TARGET ? letter : '')
+      : (EXPORT_TARGET
+          ? `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(letter)}.</span>`
+          : svgToImgTag(contactIcons[f.type], Math.round(S.contactIconSize * 0.64), Math.round(S.contactIconSize * 0.64), badgeColor, 'vertical-align:middle;'));
+    return {lead, leadPad: badged ? '3px 10px 3px 0' : '1px 7px 1px 0', val, valPad: '3px 0', align: 'middle', raw: !EXPORT_TARGET};
   }
 
   // Lays the active contacts out as a table. `cols` of 2 pairs them across,
@@ -2167,7 +2249,11 @@ function buildSignatureBody() {
   function socialBlock(opts) {
     const o = opts || {};
     if (!activeSocials.length) return '';
-    const style = o.style || S.socialStyle;
+    // The glyph treatments are drawings, so they go the same way the contact
+    // icons do. Classic Outlook takes the plain name, which needs no shape at
+    // all; new Outlook keeps its ring and carries the platform's initial.
+    let style = o.style || S.socialStyle;
+    if (EXPORT_TARGET === 'classic' && (style === 'circle' || style === 'filled' || style === 'glyph')) style = 'plain';
     const colour = o.color || sc;
     const sz = o.size || S.socialIconSize;
     const iconSz = sz + 'px';
@@ -2177,20 +2263,25 @@ function buildSignatureBody() {
       const svgIcon = socialIcons[sl.type] || '';
       if (style === 'circle' || style === 'filled' || style === 'glyph') {
         const iconScale = Math.round(sz * (style === 'glyph' ? 0.78 : 0.55));
-        const scaledSvg = svgIcon
-          .replace(/width="16"/, `width="${iconScale}"`)
-          .replace(/height="16"/, `height="${iconScale}"`)
-          .replace(/<svg /, '<svg style="display:block;margin:0 auto;" ');
         // Bare glyph, no ring — the treatment the minimal reference layouts use.
         if (style === 'glyph') {
-          out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;color:${colour};font-size:0;line-height:0;">${scaledSvg}</a></td>`;
+          if (EXPORT_TARGET) {
+            out += `<td style="${gap}vertical-align:middle;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-2}px;color:${colour};text-decoration:none;font-weight:600;">${esc(sl.label)}</a></td>`;
+            return;
+          }
+          const glyphImg = svgToImgTag(svgIcon, iconScale, iconScale, colour, 'margin:0 auto;');
+          out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${glyphImg}</a></td>`;
           return;
         }
         const solid = style === 'filled';
-        const glyph = solid ? (o.glyphColor || '#ffffff') : colour;
+        const glyphColor = solid ? (o.glyphColor || '#ffffff') : colour;
+        const initial = (sl.label || sl.type || '?').charAt(0).toUpperCase();
+        const inner = EXPORT_TARGET
+          ? {mark: esc(initial), type: `color:${glyphColor};font-family:${ff};font-size:${Math.round(sz * 0.46)}px;font-weight:700;line-height:${sz - 4}px;`}
+          : {mark: svgToImgTag(svgIcon, iconScale, iconScale, glyphColor, 'margin:0 auto;'), type: 'font-size:0;line-height:0;'};
         const bg = solid ? `background-color:${colour};` : '';
         const bgAttr = solid ? ` bgcolor="${colour}"` : '';
-        out += `<td style="${gap}vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:2px solid ${colour};border-radius:50%;color:${glyph};text-align:center;vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;color:${glyph};font-size:0;line-height:0;">${scaledSvg}</a></td></tr></table></td>`;
+        out += `<td style="${gap}vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:2px solid ${colour};border-radius:50%;text-align:center;vertical-align:middle;${inner.type}"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;color:${glyphColor};${inner.type}">${inner.mark}</a></td></tr></table></td>`;
       } else if (style === 'chip') {
         out += `<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="${colour}" style="background-color:${colour};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-4}px;color:#fff;text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`;
       } else if (style === 'outline') {
@@ -2886,9 +2977,15 @@ function buildSignatureBody() {
 // ═══════════════════════════════════════
 // Export HTML (fully inlined, table-based)
 // ═══════════════════════════════════════
-function generateExportHTML() {
-  const html = generateSignaturePreview();
-  return `<!-- Signature Studio Export -->\n${html}`;
+function generateExportHTML(target) {
+  // Set for the duration of the render and put back afterwards, so the live
+  // preview beside the dialog is never left showing a client's variant.
+  const before = EXPORT_TARGET;
+  EXPORT_TARGET = target || null;
+  let html;
+  try { html = generateSignaturePreview(); } finally { EXPORT_TARGET = before; }
+  const note = (EXPORT_TARGETS.find(t => t.id === (target || '')) || EXPORT_TARGETS[0]).label;
+  return `<!-- Sign Vel signature — ${note} -->\n${html}`;
 }
 
 // ═══════════════════════════════════════
@@ -2957,9 +3054,25 @@ function showCopyFeedback(msg) {
   if (el) { el.textContent = msg; setTimeout(() => { el.textContent = ''; }, 2500); }
 }
 
-function showExport() {
-  const html = generateExportHTML();
-  $exportCode.textContent = html;
+// Which variant the dialog is showing. Interface state, not the signature's —
+// never saved, and it resets to Standard each time the dialog opens.
+let exportTargetShown = '';
+
+function renderExportTargets() {
+  const picker = document.getElementById('exportTargets');
+  if (!picker) return;
+  picker.innerHTML = EXPORT_TARGETS.map(t =>
+    `<button class="${t.id === exportTargetShown ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${t.label}</button>`
+  ).join('');
+  const note = document.getElementById('exportNote');
+  const chosen = EXPORT_TARGETS.find(t => t.id === exportTargetShown) || EXPORT_TARGETS[0];
+  if (note) note.textContent = chosen.note;
+}
+
+function showExport(target) {
+  exportTargetShown = target || '';
+  renderExportTargets();
+  $exportCode.textContent = generateExportHTML(exportTargetShown);
   $exportOverlay.classList.remove('hidden');
 }
 
@@ -3332,6 +3445,19 @@ function setupEvents() {
 
   // Export overlay
   document.getElementById('exportClose').addEventListener('click', () => { $exportOverlay.classList.add('hidden'); });
+
+  // Switching target re-renders the code in place, so the two Outlook variants
+  // can be compared without closing the dialog.
+  const targets = document.getElementById('exportTargets');
+  if (targets) targets.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-target]');
+    if (!btn) return;
+    exportTargetShown = btn.dataset.target;
+    renderExportTargets();
+    $exportCode.textContent = generateExportHTML(exportTargetShown);
+    const copy = document.getElementById('exportCopyBtn');
+    if (copy) copy.textContent = 'Copy HTML';
+  });
   $exportOverlay.addEventListener('click', e => { if (e.target === $exportOverlay) $exportOverlay.classList.add('hidden'); });
   document.getElementById('exportCopyBtn').addEventListener('click', () => {
     const text = $exportCode.textContent;

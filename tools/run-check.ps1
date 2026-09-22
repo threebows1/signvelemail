@@ -21,7 +21,7 @@ Start-Process -FilePath $edge -NoNewWindow -Wait -RedirectStandardOutput $dom -A
 
 $html = Get-Content $dom -Raw
 if ($html -match '<title>(.*?)</title>') { Write-Output "TITLE: $($Matches[1])" } else { Write-Output "TITLE: (none)" }
-if ($html -match '(?s)<pre id="out">(.*?)</pre>') { Write-Output "----"; Write-Output $Matches[1].Trim() }
+if ($html -match '(?s)<pre id="(?:out|report)"[^>]*>(.*?)</pre>') { Write-Output "----"; Write-Output $Matches[1].Trim() }
 
 Remove-Item $dom -ErrorAction SilentlyContinue
 Remove-Item $ud -Recurse -Force -ErrorAction SilentlyContinue

@@ -335,6 +335,14 @@ textarea.input{resize:vertical;min-height:60px}
 .export-panel-header h2{font-size:14px;font-weight:600;color:#E0E0E0}
 .export-close{color:#888;font-size:16px;padding:4px;cursor:pointer}
 .export-close:hover{color:#fff}
+/* Target picker. The dialog is dark, so the toggle group's own light styling
+   is repainted here rather than left to read as a hole in the panel. */
+.export-targets-row{padding:12px 16px 0}
+.export-targets-row .toggle-group{border-color:#3A3750}
+.export-targets-row .toggle-group button{background:#221F33;color:#B9B6C9;border-right-color:#3A3750}
+.export-targets-row .toggle-group button:hover{background:#2C2942;color:#fff}
+.export-targets-row .toggle-group button.active{background:var(--accent);color:#fff}
+.export-note{font-size:11px;line-height:1.5;color:#8B88A0;margin:8px 0 0}
 .export-code{
   flex:1;overflow:auto;padding:16px;margin:0;
   font-family:var(--mono);font-size:12px;line-height:1.55;

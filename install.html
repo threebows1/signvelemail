@@ -70,7 +70,7 @@
           <li>Click <strong>Save</strong>, and send yourself a test message to confirm.</li>
         </ol>
         <div class="callout">
-          <strong>Expect two differences here.</strong> Outlook renders mail through Microsoft Word, which ignores <span class="inline-code">border-radius</span> — circular icon badges and a round portrait will arrive as squares. It also does not display inline SVG, so icons need to be hosted images to appear at all. Everything else — layout, spacing, colour, links, and where the logo and photo sit against the text — comes through intact: those are set with the <span class="inline-code">valign</span> attribute as well as the stylesheet, which is the form Word honours.
+          <strong>One visual difference here.</strong> Outlook renders mail through Microsoft Word, which ignores <span class="inline-code">border-radius</span> — circular icon badges and a round portrait will arrive as squares. Everything else — layout, spacing, colour, links, icons, and where the logo and photo sit against the text — comes through intact: the icons are rendered as PNG images rather than SVG, and positions are set with the <span class="inline-code">valign</span> attribute as well as the stylesheet, which is the form Word honours.
         </div>
       </div>
 
