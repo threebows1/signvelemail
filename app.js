@@ -61,9 +61,9 @@ const contactLetters = {email:'E',mobile:'M',phone:'T',address:'A',website:'W',o
 let EXPORT_TARGET = null;
 
 const EXPORT_TARGETS = [
-  {id: '',           label: 'Standard',        shortLabel: 'Standard', note: 'Gmail, Apple Mail, and anything that renders SVG.'},
-  {id: 'newoutlook', label: 'New Outlook',     shortLabel: 'New Outlook', note: 'Round badges kept; the glyphs become letters, which new Outlook does not strip.'},
-  {id: 'classic',    label: 'Outlook classic', shortLabel: 'Classic', note: 'No badges: Word draws them square. Letters in the theme colour instead.'},
+  {id: '',           label: 'Standard',        note: 'Gmail, Apple Mail, and anything that renders SVG.'},
+  {id: 'newoutlook', label: 'New Outlook',     note: 'Round badges kept; the glyphs become letters, which new Outlook does not strip.'},
+  {id: 'classic',    label: 'Outlook classic', note: 'No badges: Word draws them square. Letters in the theme colour instead.'},
 ];
 
 // Which target is chosen, in the toolbar and the dialog alike — they are one
@@ -1642,21 +1642,31 @@ function renderRollout() {
 // ═══════════════════════════════════════
 function renderStage() {
   const clients = previewClients;
+  // Two deliberate rows rather than one row left to wrap: the clients on top,
+  // and everything that changes how the signature is drawn underneath. Where
+  // the wrap fell otherwise depended on the window, and the target picker
+  // landed in a different place on every screen.
   let h = `<div class="stage-toolbar">
+    <div class="stage-toolbar-row">
     <div class="client-tabs" id="clientTabs">`;
   clients.forEach(c => {
     h += `<button class="client-tab${S.client===c.id?' active':''}" data-client="${c.id}" title="${esc(c.label)}">
       <span class="client-tab-logo">${mailLogos[c.id]||''}</span><span>${esc(c.label)}</span>
     </button>`;
   });
-  h += `</div><div class="toggle-group stage-targets" id="stageTargets" title="Which client the signature is written for — the preview, the copy and the export all follow it">${EXPORT_TARGETS.map(t =>
-      `<button class="${t.id === exportTargetShown ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${esc(t.shortLabel || t.label)}</button>`
-    ).join('')}</div>
+  h += `</div>
   <div class="toggle-group" id="deviceTabs">
     <button class="${S.device==='desktop'?'active':''}" data-device="desktop">Desktop</button>
     <button class="${S.device==='mobile'?'active':''}" data-device="mobile">Mobile</button>
   </div>
-  <div class="toggle-row gap-6"><label class="field-label" style="margin:0;font-size:11px">Dark</label><div class="toggle-switch${S.darkMode?' on':''}" data-action="toggleDark"></div></div>
+  </div>
+  <div class="stage-toolbar-row">
+    <label class="field-label stage-targets-label">Written for</label>
+    <div class="toggle-group stage-targets" id="stageTargets">${EXPORT_TARGETS.map(t =>
+      `<button class="${t.id === exportTargetShown ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${esc(t.label)}</button>`
+    ).join('')}</div>
+    <div class="toggle-row gap-6"><label class="field-label" style="margin:0;font-size:11px">Dark</label><div class="toggle-switch${S.darkMode?' on':''}" data-action="toggleDark"></div></div>
+  </div>
   </div>`;
 
   // The preview is drawn for the chosen target, so this control shows its own
