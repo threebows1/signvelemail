@@ -18,7 +18,9 @@
 // rendering as a black box. These are alpha, but drawn white or ink so the
 // badge behind them supplies the ground.
 const SIZE = 72;
-const COLOURS = {white: '#FFFFFF', ink: '#14121F'};
+// White only. An ink glyph has no ground to sit on that would make it read
+// as anything but black, so nothing emits one — see the badge fallbacks.
+const COLOURS = {white: '#FFFFFF'};
 const all = {};
 Object.keys(contactIcons).forEach(k => { all['c-' + k] = contactIcons[k]; });
 Object.keys(socialIcons).forEach(k => { all['s-' + k] = socialIcons[k]; });

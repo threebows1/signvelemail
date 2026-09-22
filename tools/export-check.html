@@ -29,6 +29,9 @@
           // Neither Outlook renders these, so neither may appear.
           if (/<svg/i.test(h))        E.push(t+'/'+m+'/'+s+'/'+target+': contains <svg>');
           if (/data:image/i.test(h))  E.push(t+'/'+m+'/'+s+'/'+target+': contains a data: image');
+          // Every icon carries the theme colour, on itself or on its ground.
+          // An ink glyph is black whatever is behind it, so none may appear.
+          if (/-ink\.png/.test(h))    E.push(t+'/'+m+'/'+s+'/'+target+': an ink glyph');
           
           // Word ignores a radius, so nothing classic actually renders may ask
           // for one. What sits in an <!--[if !mso]> block is invisible to it.
@@ -56,7 +59,7 @@
     // Every badge is filled for New Outlook, so every badged glyph is white:
     // an ink glyph in there would be the black-in-a-blue-ring fault again.
     if (n.indexOf('c-email-white.png') < 0) E.push('newoutlook/' + m + ': badge glyph is not white');
-    if (n.indexOf('c-email-ink.png') >= 0)  E.push('newoutlook/' + m + ': an ink glyph is still inside a badge');
+    if (n.indexOf('-ink.png') >= 0) E.push('newoutlook/' + m + ': an ink glyph is still inside a badge');
     // The badge itself must carry the theme colour, which is what makes the
     // fill worth having — a grey disc would be no better than a black glyph.
     if (n.indexOf('bgcolor="' + S.accentColor + '"') < 0 && n.toLowerCase().indexOf('bgcolor="' + S.accentColor.toLowerCase() + '"') < 0)
@@ -317,13 +320,13 @@
   h = generateExportHTML('newoutlook');
   if (h.indexOf(url) < 0) F.push('the uploaded glyph was not used');
   if (h.indexOf('c-email-white.png') >= 0) F.push('the badge is still filled white with a set available');
-  if (h.indexOf('c-email-ink.png') >= 0) F.push('an ink glyph survived alongside the set');
+  if (h.indexOf('-ink.png') >= 0) F.push('an ink glyph survived alongside the set');
 
   // The bare treatment is the other half of the report: it was black.
   S.contactIconMode = 'icons';
   h = generateExportHTML('newoutlook');
   if (h.indexOf(url) < 0) F.push('the bare glyph did not use the uploaded colour');
-  if (h.indexOf('c-email-ink.png') >= 0) F.push('the bare glyph is still ink');
+  if (h.indexOf('-ink.png') >= 0) F.push('the bare glyph is still ink');
 
   // A colour change must not reuse the old file.
   S.accentColor = '#B4121F'; S.iconColor = '#B4121F'; S.socialIconColor = '#B4121F';

@@ -2429,8 +2429,11 @@ function buildSignatureBody() {
     // is what centres it.
     const body = (hosted && exactUrl && !filled)
       ? {content: iconImgTag(exactUrl, inner, 'margin:0 auto;'), type: 'font-size:0;line-height:0;'}
-      : hosted
-      ? {content: hostedIcon(hosted, filled ? 'white' : 'ink', inner, 'margin:0 auto;'),
+      // Only a filled badge can take a hosted glyph without a coloured set:
+      // white on the themed ground. An open one would need an ink glyph, and
+      // that is the black-in-a-blue-ring fault, so it takes the letter instead.
+      : (hosted && filled)
+      ? {content: hostedIcon(hosted, 'white', inner, 'margin:0 auto;'),
          type: 'font-size:0;line-height:0;'}
       : letter
       ? {content: esc(letter),
@@ -2509,10 +2512,11 @@ function buildSignatureBody() {
     const lead = badged
       ? circleIcon(contactIcons[f.type], mode === 'filled' || (!!hosted && !exact), badgeColor,
                    EXPORT_TARGET ? letter : '', hosted, exact)
+      // A bare glyph has no ground to colour, so either it is the theme colour
+      // or it is not an icon at all. The ink one was black against the ring's
+      // blue, which read as a fault; the letter at least belongs to the design.
       : (exact
           ? iconImgTag(exact, glyphPx, 'display:inline-block;vertical-align:middle;')
-          : hosted
-          ? hostedIcon(hosted, 'ink', glyphPx, 'display:inline-block;vertical-align:middle;')
           : EXPORT_TARGET
           ? `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(letter)}.</span>`
           : svgToImgTag(contactIcons[f.type], glyphPx, glyphPx, badgeColor, 'vertical-align:middle;'));
@@ -2649,9 +2653,9 @@ function buildSignatureBody() {
         const exactMark = hostedMark ? hostedIconFor(hostedMark, colour) : '';
         if (style === 'glyph') {
           if (hostedMark) {
-            const img = exactMark
-              ? iconImgTag(exactMark, iconScale, 'margin:0 auto;')
-              : hostedIcon(hostedMark, 'ink', iconScale, 'margin:0 auto;');
+            // Coloured or not at all — a bare glyph has nothing behind it to
+            // carry the colour, so an ink one would just be black.
+            const img = exactMark ? iconImgTag(exactMark, iconScale, 'margin:0 auto;') : '';
             if (img) {
               out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${img}</a></td>`;
               return;
@@ -2672,7 +2676,8 @@ function buildSignatureBody() {
         const initial = (sl.label || sl.type || '?').charAt(0).toUpperCase();
         const hostedBadge = !hostedMark ? ''
           : (exactMark && !solid) ? iconImgTag(exactMark, iconScale, 'margin:0 auto;')
-          : hostedIcon(hostedMark, solid ? 'white' : 'ink', iconScale, 'margin:0 auto;');
+          : solid ? hostedIcon(hostedMark, 'white', iconScale, 'margin:0 auto;')
+          : '';
         const inner = hostedBadge
           ? {mark: hostedBadge, type: 'font-size:0;line-height:0;'}
           : EXPORT_TARGET
