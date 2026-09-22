@@ -308,8 +308,13 @@ textarea.input{resize:vertical;min-height:60px}
   padding:16px 20px;border-bottom:1px solid var(--border);
 }
 .email-mock.dark .email-mock-header{border-color:#333}
-.email-mock-subject{font-size:15px;font-weight:600;margin-bottom:2px}
-.email-mock-meta{font-size:11px;color:var(--muted)}
+.email-mock-subject{font-size:15px;font-weight:600;margin:0 0 3px}
+.email-mock-meta{font-size:11px;color:var(--muted);margin:0;display:flex;align-items:center;gap:6px}
+/* Whose window this is meant to be — the one thing in the mock that is about
+   the client rather than the message. */
+.email-mock-client{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--ink)}
+.email-mock-client svg{width:15px;height:15px}
+.email-mock.dark .email-mock-client{color:#E8E6F0}
 
 .email-mock-body{padding:20px;font-size:14px;line-height:1.6}
 .email-mock-body p{margin-bottom:8px}

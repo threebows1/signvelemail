@@ -787,27 +787,46 @@ const disclaimerPresets = {
 // signature cannot be written for all of them at once. Each carries the export
 // target it previews, and picking the tab is what chooses that target — for
 // every other client it is Standard, which is what they all render.
+// How each client frames a message: the font it reads in, the width of its
+// reading pane, and the tint behind the message. Naming the client over a
+// preview that looked the same for all fifteen was a claim the preview did
+// not back up — these are what actually differ between them.
+//
+// The font matters most. Anything in the signature that does not name its own
+// face inherits the client's, which is Calibri in Word and a system face in
+// Apple Mail, and that is a visible difference in the same signature.
+const CHROME = {
+  apple:   {font:"-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif", width:680, bg:'#FFFFFF'},
+  ios:     {font:"-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif", width:390, bg:'#FFFFFF'},
+  gmail:   {font:"Roboto, Arial, Helvetica, sans-serif", width:640, bg:'#FFFFFF'},
+  yahoo:   {font:"'Helvetica Neue', Helvetica, Arial, sans-serif", width:640, bg:'#FFFFFF'},
+  word:    {font:"Calibri, 'Segoe UI', Arial, sans-serif", width:580, bg:'#FFFFFF'},
+  segoe:   {font:"'Segoe UI', Tahoma, Arial, sans-serif", width:640, bg:'#FFFFFF'},
+  linuxy:  {font:"'Segoe UI', Ubuntu, Cantarell, Arial, sans-serif", width:660, bg:'#FFFFFF'},
+  proton:  {font:"Inter, 'Segoe UI', Arial, sans-serif", width:640, bg:'#F5F5F7'},
+};
+
 // Every client the signature is claimed to work in gets a tab, so the claim
 // can be checked rather than taken on trust. Only the three Outlooks need
 // markup of their own; the rest all render the Standard form, which is what
 // having no target means.
 const previewClients = [
-  {id:'apple',           label:'Apple Mail (macOS)',   logo:'apple',       install:'applemail'},
-  {id:'ios-mail',        label:'Mail (iOS)',           logo:'apple',       install:'applemail'},
-  {id:'airmail',         label:'Airmail (macOS)',      logo:'airmail'},
-  {id:'spark',           label:'Spark (macOS)',        logo:'spark'},
-  {id:'gmail',           label:'Gmail (web)',          logo:'gmail',       install:'gmail'},
-  {id:'gmail-ios',       label:'Gmail (iOS)',          logo:'gmail',       install:'gmail'},
-  {id:'yahoo',           label:'Yahoo (web)',          logo:'yahoo',       install:'yahoo'},
+  {id:'apple',           label:'Apple Mail (macOS)',   logo:'apple',       install:'applemail', chrome:'apple'},
+  {id:'ios-mail',        label:'Mail (iOS)',           logo:'apple',       install:'applemail', chrome:'ios'},
+  {id:'airmail',         label:'Airmail (macOS)',      logo:'airmail',     chrome:'apple'},
+  {id:'spark',           label:'Spark (macOS)',        logo:'spark',       chrome:'apple'},
+  {id:'gmail',           label:'Gmail (web)',          logo:'gmail',       install:'gmail',     chrome:'gmail'},
+  {id:'gmail-ios',       label:'Gmail (iOS)',          logo:'gmail',       install:'gmail',     chrome:'gmail'},
+  {id:'yahoo',           label:'Yahoo (web)',          logo:'yahoo',       install:'yahoo',     chrome:'yahoo'},
   // The three renderers, kept together: a browser, Word, and a WebView.
-  {id:'outlook-new',     label:'Outlook modern',       logo:'outlook', target:'newoutlook', install:'outlook365'},
-  {id:'outlook-classic', label:'Outlook classic',      logo:'outlook', target:'classic', install:'outlook365'},
-  {id:'outlook',         label:'Outlook (iOS)',        logo:'outlook', target:'', install:'outlook365'},
-  {id:'windows-mail',    label:'Mail (Windows)',       logo:'windowsmail'},
-  {id:'mailbird',        label:'Mailbird',             logo:'mailbird'},
-  {id:'emclient',        label:'eM Client',            logo:'emclient'},
-  {id:'thunderbird',     label:'Thunderbird',          logo:'thunderbird', install:'thunderbird'},
-  {id:'proton',          label:'Proton Mail',          logo:'proton',      install:'proton'},
+  {id:'outlook-new',     label:'Outlook modern',       logo:'outlook', target:'newoutlook', install:'outlook365', chrome:'segoe'},
+  {id:'outlook-classic', label:'Outlook classic',      logo:'outlook', target:'classic', install:'outlook365', chrome:'word'},
+  {id:'outlook',         label:'Outlook (iOS)',        logo:'outlook', target:'', install:'outlook365', chrome:'segoe'},
+  {id:'windows-mail',    label:'Mail (Windows)',       logo:'windowsmail', chrome:'segoe'},
+  {id:'mailbird',        label:'Mailbird',             logo:'mailbird',    chrome:'segoe'},
+  {id:'emclient',        label:'eM Client',            logo:'emclient',    chrome:'segoe'},
+  {id:'thunderbird',     label:'Thunderbird',          logo:'thunderbird', install:'thunderbird', chrome:'linuxy'},
+  {id:'proton',          label:'Proton Mail',          logo:'proton',      install:'proton',    chrome:'proton'},
 ];
 
 // ───────────── Install hints ─────────────
@@ -1974,8 +1993,19 @@ function renderStage() {
 
   // The preview is drawn for the chosen target, so this control shows its own
   // effect: pick Classic and the badges go, which is what the paste will do.
-  h += `<div class="preview-wrapper"><div class="email-mock${S.darkMode?' dark':''}${S.device==='mobile'?' mobile-view':''}">
+  // Framed as that client frames it: its reading width, its default face, and
+  // a header saying whose window this is meant to be.
+  const ch = CHROME[current.chrome] || CHROME.gmail;
+  const mockStyle = S.device === 'mobile'
+    ? `font-family:${ch.font};`
+    : `max-width:${ch.width}px;font-family:${ch.font};${S.darkMode ? '' : `background:${ch.bg};`}`;
+  h += `<div class="preview-wrapper"><div class="email-mock${S.darkMode?' dark':''}${S.device==='mobile'?' mobile-view':''}" style="${mockStyle}">
+    <div class="email-mock-header">
+      <p class="email-mock-subject">Re: Partnership proposal</p>
+      <p class="email-mock-meta"><span class="email-mock-client">${mailLogos[current.logo || current.id] || ''}${esc(current.label)}</span> · Daniel Reyes to you</p>
+    </div>
     <div class="email-mock-body">
+      <p>Thanks for your time today — sending the details across as promised.</p>
       <div class="signature-container">${withExportTarget(currentTarget(), generateSignaturePreview)}</div>
     </div>
   </div></div>`;

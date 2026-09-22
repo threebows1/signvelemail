@@ -519,11 +519,52 @@
 })();
 </script>
 <script>
+// Naming the client over a preview that looked the same for all fifteen was
+// the fault. The mock has to actually be that client's: its face, its reading
+// width, and its name on the message.
+(function () {
+  const F = [];
+  const seen = {};
+  previewClients.forEach(c => {
+    S.client = c.id;
+    S.device = 'desktop';
+    renderStage();
+    const mock = document.querySelector('.email-mock');
+    if (!mock) { F.push(c.id + ': no mock drawn'); return; }
+    const cs = getComputedStyle(mock);
+    const face = (cs.fontFamily || '').split(',')[0].replace(/["']/g, '').trim();
+    const width = mock.style.maxWidth || '';
+    // The header has to name the client, or the preview is unlabelled again.
+    const said = (document.querySelector('.email-mock-client') || {}).textContent || '';
+    if (said.indexOf(c.label) < 0) F.push(c.id + ': the message does not name it (' + said + ')');
+    if (!document.querySelector('.email-mock-client svg')) F.push(c.id + ': no logo on the message');
+    // And the signature is still inside it.
+    if (!document.querySelector('.email-mock-body .signature-container')) F.push(c.id + ': no signature in the mock');
+    seen[c.id] = face + '|' + width;
+  });
+  // Not every client differs from every other — Airmail and Spark are both
+  // macOS — but a preview where all fifteen were identical is the fault being
+  // fixed, so the frames have to fall into several distinct kinds.
+  const kinds = Object.keys(seen).map(k => seen[k]);
+  const distinct = new Set(kinds).size;
+  if (distinct < 4) F.push('only ' + distinct + ' distinct frames across ' + kinds.length + ' clients');
+  // The two that matter most, because Word reads in Calibri and Apple does not.
+  if (seen['outlook-classic'] === seen['apple'])
+    F.push('Outlook classic and Apple Mail frame the message identically');
+  S.client = 'gmail'; renderStage();
+  const out = document.getElementById('out');
+  out.textContent += '\n' + (F.length ? 'PREVIEW FAIL:\n' + F.join('\n')
+    : 'preview: ' + distinct + ' distinct frames, each naming its client');
+  if (F.length) document.title = 'FAIL preview ' + F.length;
+  window.__previewRan = true;
+})();
+</script>
+<script>
 // A block that fails to parse never runs, its try/catch never fires, and the
 // title is left saying PASS from the block before it. That has happened twice,
 // so each block now leaves a mark and the last one checks they are all there.
 (function () {
-  const missing = ['__mainRan', '__styleRan', '__installRan'].filter(k => !window[k]);
+  const missing = ['__mainRan', '__styleRan', '__installRan', '__previewRan'].filter(k => !window[k]);
   if (missing.length) {
     document.getElementById('out').textContent += '\nA CHECK BLOCK NEVER RAN: ' + missing.join(', ');
     document.title = 'FAIL dead-block';
