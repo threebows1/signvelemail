@@ -92,10 +92,14 @@ function hostedIcon(name, tone, size, extraStyle) {
     + ` style="display:block;width:${size}px;height:${size}px;border:0;outline:none;text-decoration:none;${extraStyle || ''}">`;
 }
 
-// Which target is chosen, in the toolbar and the dialog alike — they are one
-// control shown twice, so picking in either moves both. Interface state, not
-// the signature's: never saved, and it starts at Standard each session.
-let exportTargetShown = '';
+// Which target is in force. Derived from the selected client tab rather than
+// held alongside it: the two were separate state, and a reload restored the
+// tab without the target, so New Outlook sat selected while the preview, the
+// copy and the export were all still Standard.
+function currentTarget() {
+  const c = previewClients.find(x => x.id === S.client);
+  return (c && c.target) || '';
+}
 
 // These helpers render SVGs onto a canvas and emit <img> tags with PNG
 // data URIs, which every email client renders.
@@ -1698,7 +1702,7 @@ function renderStage() {
   </div>
   <div class="stage-toolbar-row">
     <div class="toggle-row gap-6"><label class="field-label" style="margin:0;font-size:11px">Dark</label><div class="toggle-switch${S.darkMode?' on':''}" data-action="toggleDark"></div></div>
-    <span class="stage-target-note">${esc((EXPORT_TARGETS.find(t => t.id === exportTargetShown) || EXPORT_TARGETS[0]).note)}</span>
+    <span class="stage-target-note">${esc((EXPORT_TARGETS.find(t => t.id === currentTarget()) || EXPORT_TARGETS[0]).note)}</span>
   </div>
   </div>`;
 
@@ -1706,7 +1710,7 @@ function renderStage() {
   // effect: pick Classic and the badges go, which is what the paste will do.
   h += `<div class="preview-wrapper"><div class="email-mock${S.darkMode?' dark':''}${S.device==='mobile'?' mobile-view':''}">
     <div class="email-mock-body">
-      <div class="signature-container">${withExportTarget(exportTargetShown, generateSignaturePreview)}</div>
+      <div class="signature-container">${withExportTarget(currentTarget(), generateSignaturePreview)}</div>
     </div>
   </div></div>`;
 
@@ -3082,7 +3086,7 @@ function generateExportHTML(target) {
 function copySignature() {
   // Written for whichever target the toolbar has chosen, so pasting straight
   // into Outlook carries the same markup the export dialog would hand over.
-  const html = withExportTarget(exportTargetShown, generateSignaturePreview);
+  const html = withExportTarget(currentTarget(), generateSignaturePreview);
 
   if (navigator.clipboard && window.ClipboardItem) {
     const item = new ClipboardItem({
@@ -3132,24 +3136,23 @@ function showCopyFeedback(msg) {
   if (el) { el.textContent = msg; setTimeout(() => { el.textContent = ''; }, 2500); }
 }
 
-// (exportTargetShown is declared beside EXPORT_TARGETS, because the toolbar
-// reads it while the header renders, long before this point in the file.)
+// (the chosen target is derived by currentTarget(), beside EXPORT_TARGETS,
+// because the stage reads it long before this point in the file.)
 
 function renderExportTargets() {
   const picker = document.getElementById('exportTargets');
   if (!picker) return;
   picker.innerHTML = EXPORT_TARGETS.map(t =>
-    `<button class="${t.id === exportTargetShown ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${t.label}</button>`
+    `<button class="${t.id === currentTarget() ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${t.label}</button>`
   ).join('');
   const note = document.getElementById('exportNote');
-  const chosen = EXPORT_TARGETS.find(t => t.id === exportTargetShown) || EXPORT_TARGETS[0];
+  const chosen = EXPORT_TARGETS.find(t => t.id === currentTarget()) || EXPORT_TARGETS[0];
   if (note) note.textContent = chosen.note;
 }
 
-function showExport(target) {
-  exportTargetShown = target || '';
+function showExport() {
   renderExportTargets();
-  $exportCode.textContent = generateExportHTML(exportTargetShown);
+  $exportCode.textContent = generateExportHTML(currentTarget());
   $exportOverlay.classList.remove('hidden');
 }
 
@@ -3175,7 +3178,7 @@ function setupEvents() {
       return;
     }
     if (e.target.closest('#copyBtn')) { copySignature(); return; }
-    if (e.target.closest('#exportBtn')) { showExport(exportTargetShown); return; }
+    if (e.target.closest('#exportBtn')) { showExport(); return; }
   });
 
   $header.addEventListener('change', e => {
@@ -3516,12 +3519,10 @@ function setupEvents() {
       S.client = clientBtn.dataset.client;
       // The tab is the target: picking Classic Outlook is what writes the
       // signature for Word, and every other client gets Standard.
-      const c = previewClients.find(x => x.id === S.client);
-      exportTargetShown = (c && c.target) || '';
       renderStage();
       if (!$exportOverlay.classList.contains('hidden')) {
         renderExportTargets();
-        $exportCode.textContent = generateExportHTML(exportTargetShown);
+        $exportCode.textContent = generateExportHTML(currentTarget());
       }
       return;
     }
@@ -3541,14 +3542,18 @@ function setupEvents() {
   if (targets) targets.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-target]');
     if (!btn) return;
-    exportTargetShown = btn.dataset.target;
     // Choosing here moves the preview tab to match, so the two never disagree
-    // about which client the signature is being written for.
-    const tab = previewClients.find(c => (c.target || '') === exportTargetShown && c.target !== undefined);
-    if (tab) S.client = tab.id;
+    // about which client is being written for. A tab that already gives this
+    // target is left alone, so choosing Standard while previewing Gmail does
+    // not drag the preview over to Outlook.
+    const want = btn.dataset.target;
+    if (currentTarget() !== want) {
+      const tab = previewClients.find(c => c.target !== undefined && (c.target || '') === want);
+      if (tab) S.client = tab.id;
+    }
     renderExportTargets();
     renderStage();
-    $exportCode.textContent = generateExportHTML(exportTargetShown);
+    $exportCode.textContent = generateExportHTML(currentTarget());
     const copy = document.getElementById('exportCopyBtn');
     if (copy) copy.textContent = 'Copy HTML';
   });

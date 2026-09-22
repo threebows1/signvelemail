@@ -99,29 +99,29 @@
   if (!/<svg|data:image/i.test(shown())) E.push('the preview did not start on Standard');
 
   tab('outlook-classic').click();
-  if (exportTargetShown !== 'classic') E.push('the Classic Outlook tab did not set the target');
+  if (currentTarget() !== 'classic') E.push('the Classic Outlook tab did not set the target');
   if (!tab('outlook-classic').classList.contains('active')) E.push('the clicked tab is not marked');
   // The whole point of splitting the tab: the preview has to change with it.
   if (/<svg|data:image/i.test(shown())) E.push('the preview did not redraw for Classic Outlook');
   if (!document.querySelector('#exportTargets button[data-target="classic"]').classList.contains('active'))
     E.push('the dialog did not follow the tab');
   // What the copy button would put on the clipboard, by the same route it takes.
-  if (/<svg|data:image/i.test(withExportTarget(exportTargetShown, generateSignaturePreview)))
+  if (/<svg|data:image/i.test(withExportTarget(currentTarget(), generateSignaturePreview)))
     E.push('Copy signature ignored the chosen tab');
 
   tab('outlook-new').click();
-  if (exportTargetShown !== 'newoutlook') E.push('the New Outlook tab did not set the target');
+  if (currentTarget() !== 'newoutlook') E.push('the New Outlook tab did not set the target');
   if (/<svg|data:image/i.test(shown())) E.push('the preview did not redraw for New Outlook');
   if (!/border-radius:50%/.test(shown())) E.push('New Outlook lost its round badges in the preview');
 
   // Standard Outlook, and every client that is not Outlook, gets the ordinary
   // markup back — the target must not stick once the tab moves off Outlook.
   tab('outlook').click();
-  if (exportTargetShown !== '') E.push('Standard Outlook did not go back to Standard');
+  if (currentTarget() !== '') E.push('Standard Outlook did not go back to Standard');
   if (!/<svg|data:image/i.test(shown())) E.push('Standard Outlook is still drawing a variant');
   tab('outlook-classic').click();
   tab('gmail').click();
-  if (exportTargetShown !== '') E.push('the target stuck after moving to Gmail');
+  if (currentTarget() !== '') E.push('the target stuck after moving to Gmail');
   if (!/<svg|data:image/i.test(shown())) E.push('Gmail is still drawing a variant');
 
   // Choosing in the dialog has to move the tab, so the two never disagree.
@@ -256,5 +256,26 @@
       : '\n' + list.length + ' hosted glyphs referenced, every file present and drawn';
     if (missing.length || blank.length) document.title = 'FAIL icons ' + (missing.length + blank.length);
   }
+})();
+</script>
+<script>
+// The fault the tab split introduced: the target lived alongside S.client
+// instead of being derived from it, so a reload restored the tab with the
+// preview, the copy and the export all still on Standard.
+(function () {
+  const F = [];
+  S.client = 'outlook-new';
+  if (currentTarget() !== 'newoutlook') F.push('a restored New Outlook tab does not give its target');
+  renderStage();
+  const shown = document.querySelector('.signature-container').innerHTML;
+  if (/<svg|data:image/i.test(shown)) F.push('a restored tab renders the preview as Standard');
+  if (document.querySelector('.stage-target-note').textContent.indexOf('Standard') === 0)
+    F.push('a restored tab shows the Standard note');
+  S.client = 'gmail';
+  if (currentTarget() !== '') F.push('Gmail does not give Standard');
+  renderStage();
+  const out = document.getElementById('out');
+  out.textContent += '\n' + (F.length ? 'RELOAD FAIL:\n' + F.join('\n') : 'a restored tab carries its target into the preview');
+  if (F.length) document.title = 'FAIL reload ' + F.length;
 })();
 </script>
