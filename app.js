@@ -792,22 +792,22 @@ const disclaimerPresets = {
 // markup of their own; the rest all render the Standard form, which is what
 // having no target means.
 const previewClients = [
-  {id:'apple',           label:'Apple Mail (macOS)',   logo:'apple'},
-  {id:'ios-mail',        label:'Mail (iOS)',           logo:'apple'},
+  {id:'apple',           label:'Apple Mail (macOS)',   logo:'apple',       install:'applemail'},
+  {id:'ios-mail',        label:'Mail (iOS)',           logo:'apple',       install:'applemail'},
   {id:'airmail',         label:'Airmail (macOS)',      logo:'airmail'},
   {id:'spark',           label:'Spark (macOS)',        logo:'spark'},
-  {id:'gmail',           label:'Gmail (web)',          logo:'gmail'},
-  {id:'gmail-ios',       label:'Gmail (iOS)',          logo:'gmail'},
-  {id:'yahoo',           label:'Yahoo (web)',          logo:'yahoo'},
+  {id:'gmail',           label:'Gmail (web)',          logo:'gmail',       install:'gmail'},
+  {id:'gmail-ios',       label:'Gmail (iOS)',          logo:'gmail',       install:'gmail'},
+  {id:'yahoo',           label:'Yahoo (web)',          logo:'yahoo',       install:'yahoo'},
   // The three renderers, kept together: a browser, Word, and a WebView.
-  {id:'outlook-new',     label:'Outlook modern',       logo:'outlook', target:'newoutlook'},
-  {id:'outlook-classic', label:'Outlook classic',      logo:'outlook', target:'classic'},
-  {id:'outlook',         label:'Outlook (iOS)',        logo:'outlook', target:''},
+  {id:'outlook-new',     label:'Outlook modern',       logo:'outlook', target:'newoutlook', install:'outlook365'},
+  {id:'outlook-classic', label:'Outlook classic',      logo:'outlook', target:'classic', install:'outlook365'},
+  {id:'outlook',         label:'Outlook (iOS)',        logo:'outlook', target:'', install:'outlook365'},
   {id:'windows-mail',    label:'Mail (Windows)',       logo:'windowsmail'},
   {id:'mailbird',        label:'Mailbird',             logo:'mailbird'},
   {id:'emclient',        label:'eM Client',            logo:'emclient'},
-  {id:'thunderbird',     label:'Thunderbird',          logo:'thunderbird'},
-  {id:'proton',          label:'Proton Mail',          logo:'proton'},
+  {id:'thunderbird',     label:'Thunderbird',          logo:'thunderbird', install:'thunderbird'},
+  {id:'proton',          label:'Proton Mail',          logo:'proton',      install:'proton'},
 ];
 
 // ───────────── Install hints ─────────────
@@ -1956,18 +1956,11 @@ function renderStage() {
   // and everything that changes how the signature is drawn underneath. Where
   // the wrap fell otherwise depended on the window, and the target picker
   // landed in a different place on every screen.
+  const current = clients.find(c => c.id === S.client) || clients[0];
   let h = `<div class="stage-toolbar">
     <div class="stage-toolbar-row">
-    <div class="client-tabs" id="clientTabs">`;
-  clients.forEach(c => {
-    const hint = c.target !== undefined
-      ? (EXPORT_TARGETS.find(t => t.id === c.target) || {}).note || c.label
-      : c.label;
-    h += `<button class="client-tab${S.client===c.id?' active':''}" data-client="${c.id}" title="${esc(hint)}">
-      <span class="client-tab-logo">${mailLogos[c.logo || c.id]||''}</span><span>${esc(c.label)}</span>
-    </button>`;
-  });
-  h += `</div>
+    <button class="btn btn-accent" id="installBtn">Install signature</button>
+    <span class="stage-client"><span class="stage-client-logo">${mailLogos[current.logo || current.id] || ''}</span>${esc(current.label)}</span>
   <div class="toggle-group" id="deviceTabs">
     <button class="${S.device==='desktop'?'active':''}" data-device="desktop">Desktop</button>
     <button class="${S.device==='mobile'?'active':''}" data-device="mobile">Mobile</button>
@@ -3484,6 +3477,65 @@ function renderExportTargets() {
   if (note) note.textContent = chosen.note;
 }
 
+// ═══════════════════════════════════════
+// Install: pick the client, then its steps
+// ═══════════════════════════════════════
+// The client list used to be fifteen tabs across the top of the preview,
+// which is a lot of chrome for something chosen once. It lives behind one
+// button now: pick where the signature is going, and the steps for that
+// client follow — with the preview and the export markup set to match.
+let installPicked = '';
+
+function renderInstall() {
+  const body = document.getElementById('installBody');
+  const title = document.getElementById('installTitle');
+  if (!body) return;
+  const client = previewClients.find(c => c.id === installPicked);
+
+  if (!client) {
+    if (title) title.textContent = 'Where is this signature going?';
+    body.innerHTML = `<div class="install-grid">${previewClients.map(c =>
+      `<button class="install-card${S.client === c.id ? ' current' : ''}" data-client="${c.id}">
+        <span class="install-card-logo">${mailLogos[c.logo || c.id] || ''}</span>
+        <span class="install-card-name">${esc(c.label)}</span>
+      </button>`).join('')}</div>`;
+    return;
+  }
+
+  // Chosen: the steps for that client, and the button that does the work.
+  const t = installTargets.find(i => i.id === client.install);
+  const steps = t ? t.steps : [
+    'Open your mail client and find its signature settings.',
+    'Create a signature, or edit the one you have.',
+    'Paste with Ctrl+V, or Cmd+V on a Mac.',
+    'Save, and send yourself a test message to check it.',
+  ];
+  const note = t ? t.note : 'No step-by-step for this one yet — the paste is the same everywhere, and the markup is already written for it.';
+  const useExport = t && t.use === 'Export HTML';
+  if (title) title.textContent = 'Install in ' + client.label;
+  body.innerHTML = `
+    <div class="install-steps-head">
+      <span class="install-card-logo">${mailLogos[client.logo || client.id] || ''}</span>
+      <div>
+        <p class="install-steps-for">${esc(client.label)}${t && t.time ? ' · about ' + esc(t.time) : ''}</p>
+        <p class="install-steps-note">${esc((EXPORT_TARGETS.find(x => x.id === currentTarget()) || EXPORT_TARGETS[0]).note)}</p>
+      </div>
+    </div>
+    <ol class="install-steps">${steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+    <p class="install-steps-note">${esc(note)}</p>
+    <div class="install-actions">
+      <button class="btn" id="installBack">Choose another client</button>
+      <button class="btn btn-accent" id="installCopy">${useExport ? 'Export HTML' : 'Copy signature'}</button>
+    </div>`;
+}
+
+function showInstall(picked) {
+  installPicked = picked || '';
+  renderInstall();
+  const overlay = document.getElementById('installOverlay');
+  if (overlay) overlay.classList.remove('hidden');
+}
+
 function showExport() {
   renderExportTargets();
   $exportCode.textContent = generateExportHTML(currentTarget());
@@ -3846,20 +3898,43 @@ function setupEvents() {
     if (file) acceptUpload(zone.dataset.drop, file);
   });
 
-  // Stage events
-  $stage.addEventListener('click', e => {
-    const clientBtn = e.target.closest('#clientTabs button');
-    if (clientBtn) {
-      S.client = clientBtn.dataset.client;
-      // The tab is the target: picking Classic Outlook is what writes the
-      // signature for Word, and every other client gets Standard.
+  // Install picker. Guarded, because app.js is loaded by pages that have no
+  // install markup at all — the check harnesses among them — and a throw here
+  // takes every listener after it down with it.
+  const installOverlay = document.getElementById('installOverlay');
+  const installCloseBtn = document.getElementById('installClose');
+  if (installCloseBtn) installCloseBtn.addEventListener('click', () => installOverlay.classList.add('hidden'));
+  if (installOverlay) installOverlay.addEventListener('click', e => {
+    if (e.target === installOverlay) { installOverlay.classList.add('hidden'); return; }
+    const card = e.target.closest('.install-card[data-client]');
+    if (card) {
+      // Picking the client is what sets the target: the preview, the copy and
+      // the export all follow from it, exactly as the tabs used to do.
+      S.client = card.dataset.client;
+      installPicked = S.client;
       renderStage();
+      renderInstall();
       if (!$exportOverlay.classList.contains('hidden')) {
         renderExportTargets();
         $exportCode.textContent = generateExportHTML(currentTarget());
       }
       return;
     }
+    if (e.target.closest('#installBack')) { installPicked = ''; renderInstall(); return; }
+    if (e.target.closest('#installCopy')) {
+      const t = installTargets.find(i => i.id === (previewClients.find(c => c.id === installPicked) || {}).install);
+      if (t && t.use === 'Export HTML') { installOverlay.classList.add('hidden'); showExport(); return; }
+      copySignature();
+      const btn = e.target.closest('#installCopy');
+      btn.textContent = 'Copied ✓';
+      setTimeout(() => { btn.textContent = 'Copy signature'; }, 2000);
+      return;
+    }
+  });
+
+  // Stage events
+  $stage.addEventListener('click', e => {
+    if (e.target.closest('#installBtn')) { showInstall(); return; }
     const deviceBtn = e.target.closest('#deviceTabs button');
     if (deviceBtn) { S.device = deviceBtn.dataset.device; renderStage(); return; }
     const darkToggle = e.target.closest('[data-action="toggleDark"]');

@@ -3,6 +3,7 @@
   <div class="app" id="app"><aside class="rail" id="rail"></aside>
   <div class="workspace"><header class="topbar" id="header"></header>
   <div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+  <div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button class="btn" id="installClose">Cancel</button></div><div class="install-body" id="installBody"></div></div></div>
   <div class="export-overlay hidden" id="exportOverlay"><div class="export-panel">
     <div class="export-panel-header"><h2>E</h2><button class="export-close" id="exportClose">x</button></div>
     <div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p class="export-note" id="exportNote"></p></div>
@@ -92,17 +93,25 @@
 
   // The client tab is the target now: three Outlook tabs, each writing the
   // signature differently, and every other client on Standard.
-  const tab = id => document.querySelector('#clientTabs button[data-client="' + id + '"]');
+  // Picking a card replaces the grid with that client's steps, so the grid is
+  // reopened for each pick rather than assuming the cards are still there.
+  const pick = id => {
+    showInstall();
+    const card = document.querySelector('.install-card[data-client="' + id + '"]');
+    if (!card) { E.push('no card for ' + id); return false; }
+    card.click();
+    return true;
+  };
   const shown = () => document.querySelector('.signature-container').innerHTML;
-  const tabIds = [].map.call(document.querySelectorAll('#clientTabs button'), b => b.dataset.client);
+  showInstall(); const tabIds = [].map.call(document.querySelectorAll('.install-card'), b => b.dataset.client);
   ['outlook-new', 'outlook-classic', 'outlook'].forEach(id => {
     if (tabIds.indexOf(id) < 0) E.push('no ' + id + ' tab');
   });
   if (!/<svg|data:image/i.test(shown())) E.push('the preview did not start on Standard');
 
-  tab('outlook-classic').click();
+  pick('outlook-classic');
   if (currentTarget() !== 'classic') E.push('the Classic Outlook tab did not set the target');
-  if (!tab('outlook-classic').classList.contains('active')) E.push('the clicked tab is not marked');
+  if (S.client !== 'outlook-classic') E.push('picking the card did not select the client');
   // The whole point of splitting the tab: the preview has to change with it.
   if (/<svg|data:image/i.test(shown())) E.push('the preview did not redraw for Classic Outlook');
   // The dialog is open, so it has to follow the tab — in what it says and in
@@ -114,18 +123,18 @@
   if (/<svg|data:image/i.test(withExportTarget(currentTarget(), generateSignaturePreview)))
     E.push('Copy signature ignored the chosen tab');
 
-  tab('outlook-new').click();
+  pick('outlook-new');
   if (currentTarget() !== 'newoutlook') E.push('the New Outlook tab did not set the target');
   if (/<svg|data:image/i.test(shown())) E.push('the preview did not redraw for New Outlook');
   if (!/border-radius:50%/.test(shown())) E.push('New Outlook lost its round badges in the preview');
 
   // Standard Outlook, and every client that is not Outlook, gets the ordinary
   // markup back — the target must not stick once the tab moves off Outlook.
-  tab('outlook').click();
+  pick('outlook');
   if (currentTarget() !== '') E.push('Standard Outlook did not go back to Standard');
   if (!/<svg|data:image/i.test(shown())) E.push('Standard Outlook is still drawing a variant');
-  tab('outlook-classic').click();
-  tab('gmail').click();
+  pick('outlook-classic');
+  pick('gmail');
   if (currentTarget() !== '') E.push('the target stuck after moving to Gmail');
   if (!/<svg|data:image/i.test(shown())) E.push('Gmail is still drawing a variant');
 
@@ -134,6 +143,7 @@
   if (code.textContent !== standard) E.push('Gmail did not give the same Standard markup as Apple Mail');
   if (EXPORT_TARGET !== null) E.push('the preview bar left EXPORT_TARGET set');
   document.getElementById('out').textContent = E.length ? E.slice(0,12).join('\n') + '\n\n(' + E.length + ' total)' : 'ok — 24 layouts x 25 combinations, both variants clean';
+  window.__mainRan = true;
   document.title = E.length ? 'FAIL ' + E.length : 'PASS';
   </script>
 </body></html>
@@ -156,20 +166,24 @@
     if (r.width < 40 || r.height < 14) F.push('the client label is ' + Math.round(r.width) + 'x' + Math.round(r.height));
     if (cs.color === cs.backgroundColor) F.push('the client label is the colour of its own ground');
   }
-  // The three Outlook tabs, in the light bar rather than the dialog.
-  const hb = [].slice.call(document.querySelectorAll('#clientTabs button')).filter(function (b) { return /outlook/.test(b.dataset.client); });
-  if (hb.length !== 3) F.push('Outlook tabs: ' + hb.length);
-  hb.forEach(function (b) {
+  // The cards in the picker, which has to be open to have any geometry.
+  showInstall();
+  const hb = [].slice.call(document.querySelectorAll('.install-card')).filter(function (b) { return /outlook/.test(b.dataset.client); });
+  if (hb.length !== 3) F.push('Outlook cards: ' + hb.length);
+  [].slice.call(document.querySelectorAll('.install-card')).forEach(function (b) {
     const r = b.getBoundingClientRect();
-    if (r.width < 45 || r.height < 18) F.push('tab ' + b.textContent + ': ' + Math.round(r.width) + 'x' + Math.round(r.height));
+    // A card has to be big enough to hit and to read its logo and name.
+    if (r.width < 120 || r.height < 40) F.push('card ' + b.textContent.trim() + ': ' + Math.round(r.width) + 'x' + Math.round(r.height));
+    const logo = b.querySelector('.install-card-logo svg');
+    if (logo && logo.getBoundingClientRect().width < 14) F.push('card ' + b.textContent.trim() + ': logo too small');
   });
   // Whether they wrap depends on the window, which this one is far too narrow
   // to judge. What must hold at any width is that the three are adjacent, so
   // they read as one client split three ways rather than scattered.
-  const order = [].map.call(document.querySelectorAll('#clientTabs button'), b => b.dataset.client);
+  const order = [].map.call(document.querySelectorAll('.install-card'), b => b.dataset.client);
   const at = order.map((id, i) => /outlook/.test(id) ? i : -1).filter(i => i >= 0);
   if (at.length === 3 && (at[1] !== at[0] + 1 || at[2] !== at[1] + 1))
-    F.push('the Outlook tabs are not adjacent: ' + order.join(' '));
+    F.push('the Outlook cards are not adjacent: ' + order.join(' '));
   const note = document.getElementById('exportNote').getBoundingClientRect();
   if (note.height < 10) F.push('the note is not on screen');
   // The three sit on one line rather than stacking.
@@ -404,10 +418,11 @@
 // logo, a name, and the right markup behind it.
 (function () {
   const F = [];
-  const tabs = [].slice.call(document.querySelectorAll('#clientTabs button'));
+  showInstall();
+  const tabs = [].slice.call(document.querySelectorAll('.install-card'));
   if (tabs.length !== previewClients.length) F.push('tabs drawn ' + tabs.length + ' vs listed ' + previewClients.length);
   previewClients.forEach(c => {
-    const el = document.querySelector('#clientTabs button[data-client="' + c.id + '"]');
+    const el = document.querySelector('.install-card[data-client="' + c.id + '"]');
     if (!el) { F.push('no tab for ' + c.id); return; }
     if (!el.querySelector('svg')) F.push(c.id + ': no logo drawn');
     if (!el.textContent.trim()) F.push(c.id + ': no name');
@@ -440,8 +455,8 @@
   });
   // A tab saved before the list changed must not leave the bar unmarked.
   S.client = 'a-client-that-no-longer-exists';
-  renderStage();
-  if (!document.querySelector('#clientTabs button.active')) F.push('a stale saved tab leaves none marked');
+  renderStage(); showInstall();
+  if (!document.querySelector('.install-card.current')) F.push('a stale saved client leaves none marked in the picker');
   S.client = 'gmail'; renderStage();
   const out = document.getElementById('out');
   out.textContent += '\n' + (F.length ? 'CLIENTS FAIL:\n' + F.join('\n')
@@ -450,11 +465,65 @@
 })();
 </script>
 <script>
+// The install button is the only way to the client list now, so the button,
+// the picker and the steps all have to work — and picking has to set the
+// target, which is what the tabs used to do.
+(function () {
+  const F = [];
+  document.getElementById('installOverlay').classList.add('hidden');
+  S.client = 'gmail'; renderStage();
+  const btn = document.getElementById('installBtn');
+  if (!btn) F.push('no Install signature button on the stage');
+  if (document.querySelectorAll('#clientTabs .client-tab').length) F.push('the old client tabs are still on the stage');
+  // The stage says which client it is drawing for, since the tabs no longer do.
+  const said = (document.querySelector('.stage-client') || {}).textContent || '';
+  if (said.indexOf('Gmail') < 0) F.push('the stage does not name the client: ' + said);
+
+  if (btn) btn.click();
+  const overlay = document.getElementById('installOverlay');
+  if (overlay.classList.contains('hidden')) F.push('the button did not open the picker');
+
+  // Picking Outlook classic has to carry through to the markup.
+  const card = document.querySelector('.install-card[data-client="outlook-classic"]');
+  if (!card) F.push('no card for outlook-classic');
+  else {
+    card.click();
+    if (currentTarget() !== 'classic') F.push('picking a client did not set the target');
+    if (/<svg|data:image/i.test(withExportTarget(currentTarget(), generateSignaturePreview)))
+      F.push('the copy did not follow the picked client');
+    // And the steps for it should be on screen, not the grid.
+    const steps = document.querySelectorAll('.install-steps li');
+    if (!steps.length) F.push('no steps shown after picking');
+    if (document.querySelectorAll('.install-card').length) F.push('still showing the grid after picking');
+    if ((document.getElementById('installTitle').textContent || '').indexOf('Outlook classic') < 0)
+      F.push('the steps do not name the client');
+    // Back returns to the grid.
+    const back = document.getElementById('installBack');
+    if (!back) F.push('no way back to the list');
+    else { back.click(); if (!document.querySelectorAll('.install-card').length) F.push('back did not return to the grid'); }
+  }
+  // A client with no steps of its own still gets something to follow.
+  const generic = previewClients.find(c => !c.install);
+  if (generic) {
+    showInstall(generic.id);
+    if (!document.querySelectorAll('.install-steps li').length)
+      F.push(generic.id + ': no steps at all');
+  }
+  document.getElementById('installOverlay').classList.add('hidden');
+  S.client = 'gmail'; renderStage();
+  const out = document.getElementById('out');
+  out.textContent += '\n' + (F.length ? 'INSTALL FAIL:\n' + F.join('\n')
+    : 'install: one button, ' + previewClients.length + ' clients behind it, each with steps');
+  if (F.length) document.title = 'FAIL install ' + F.length;
+  window.__installRan = true;
+})();
+</script>
+<script>
 // A block that fails to parse never runs, its try/catch never fires, and the
 // title is left saying PASS from the block before it. That has happened twice,
 // so each block now leaves a mark and the last one checks they are all there.
 (function () {
-  const missing = ['__styleRan'].filter(k => !window[k]);
+  const missing = ['__mainRan', '__styleRan', '__installRan'].filter(k => !window[k]);
   if (missing.length) {
     document.getElementById('out').textContent += '\nA CHECK BLOCK NEVER RAN: ' + missing.join(', ');
     document.title = 'FAIL dead-block';
