@@ -74,23 +74,18 @@
   generateExportHTML('classic');
   if (EXPORT_TARGET !== null) E.push('EXPORT_TARGET left set after an export');
   if (!/<svg|data:image/i.test(generateSignaturePreview())) E.push('the live preview was left on a variant');
-  // The dialog offers all three.
+  // The dialog exports for the client being previewed and offers no choice of
+  // its own — a second picker there could disagree with the tab.
+  S.client = 'apple';
   showExport();
-  const btns = [].map.call(document.querySelectorAll('#exportTargets button'), b => b.dataset.target);
-  if (btns.join(',') !== ',newoutlook,classic') E.push('targets offered: ' + btns.join(','));
-  // Clicking a target has to swap the code in the box — that box is what the
-  // copy button reads, so anything it does not update is never copied.
+  if (document.querySelectorAll('#exportTargets button[data-target]').length)
+    E.push('the dialog still offers a target picker');
   const code = document.getElementById('exportCode');
+  const forLabel = () => (document.querySelector('.export-for') || {}).textContent || '';
+  if (forLabel().indexOf('Apple Mail') < 0) E.push('the dialog does not name the client: ' + forLabel());
+  if (!/<svg|data:image/i.test(code.textContent)) E.push('Apple Mail did not get the Standard markup');
   const standard = code.textContent;
   const note = document.getElementById('exportNote').textContent;
-  document.querySelector('#exportTargets button[data-target="classic"]').click();
-  if (code.textContent === standard)     E.push('clicking classic did not change the code');
-  if (/<svg|data:image/i.test(code.textContent)) E.push('the classic box still holds a stripped glyph');
-  if (document.getElementById('exportNote').textContent === note) E.push('the note did not follow the target');
-  if (!document.querySelector('#exportTargets button[data-target="classic"]').className.match(/active|is-on|selected/))
-    E.push('the clicked target is not marked');
-  document.querySelector('#exportTargets button[data-target=""]').click();
-  if (code.textContent !== standard)     E.push('going back to Standard did not restore it');
 
   // The client tab is the target now: three Outlook tabs, each writing the
   // signature differently, and every other client on Standard.
@@ -107,8 +102,11 @@
   if (!tab('outlook-classic').classList.contains('active')) E.push('the clicked tab is not marked');
   // The whole point of splitting the tab: the preview has to change with it.
   if (/<svg|data:image/i.test(shown())) E.push('the preview did not redraw for Classic Outlook');
-  if (!document.querySelector('#exportTargets button[data-target="classic"]').classList.contains('active'))
-    E.push('the dialog did not follow the tab');
+  // The dialog is open, so it has to follow the tab — in what it says and in
+  // the code it hands over.
+  if (forLabel().indexOf('classic') < 0) E.push('the open dialog still names the old client: ' + forLabel());
+  if (/<svg|data:image/i.test(code.textContent)) E.push('the open dialog kept the Standard markup');
+  if (document.getElementById('exportNote').textContent === note) E.push('the note did not follow the tab');
   // What the copy button would put on the clipboard, by the same route it takes.
   if (/<svg|data:image/i.test(withExportTarget(currentTarget(), generateSignaturePreview)))
     E.push('Copy signature ignored the chosen tab');
@@ -128,11 +126,9 @@
   if (currentTarget() !== '') E.push('the target stuck after moving to Gmail');
   if (!/<svg|data:image/i.test(shown())) E.push('Gmail is still drawing a variant');
 
-  // Choosing in the dialog has to move the tab, so the two never disagree.
-  document.querySelector('#exportTargets button[data-target="classic"]').click();
-  if (S.client !== 'outlook-classic') E.push('the dialog did not move the tab: ' + S.client);
-  if (!tab('outlook-classic').classList.contains('active')) E.push('the moved tab is not marked');
-  document.querySelector('#exportTargets button[data-target=""]').click();
+  // Back on a plain client, the dialog says so and hands back Standard.
+  if (forLabel().indexOf('Gmail') < 0) E.push('the dialog did not follow back to Gmail: ' + forLabel());
+  if (code.textContent !== standard) E.push('Gmail did not give the same Standard markup as Apple Mail');
   if (EXPORT_TARGET !== null) E.push('the preview bar left EXPORT_TARGET set');
   document.getElementById('out').textContent = E.length ? E.slice(0,12).join('\n') + '\n\n(' + E.length + ' total)' : 'ok — 24 layouts x 25 combinations, both variants clean';
   document.title = E.length ? 'FAIL ' + E.length : 'PASS';
@@ -147,16 +143,16 @@
   // PASS that had checked nothing. It is caught and reported now.
   try {
   const row = document.querySelector('.export-targets-row');
-  const bs = [].slice.call(document.querySelectorAll('#exportTargets button'));
-  const rowBg = getComputedStyle(row).backgroundColor;
-  const panelBg = getComputedStyle(document.querySelector('.export-panel')).backgroundColor;
-  bs.forEach(b => {
-    const r = b.getBoundingClientRect(), cs = getComputedStyle(b);
-    // 23px is what every .toggle-group button in the app measures.
-    if (r.width < 60 || r.height < 22) F.push(b.textContent + ': ' + Math.round(r.width) + 'x' + Math.round(r.height));
-    if (cs.color === (cs.backgroundColor === 'rgba(0, 0, 0, 0)' ? (rowBg === 'rgba(0, 0, 0, 0)' ? panelBg : rowBg) : cs.backgroundColor))
-      F.push(b.textContent + ': text the same colour as its ground');
-  });
+  // The dialog carries a label rather than a picker now: on screen, and not
+  // the same colour as what it sits on.
+  const bs = [];
+  const tag = document.querySelector('.export-for');
+  if (!tag) F.push('the dialog does not say which client it is for');
+  else {
+    const r = tag.getBoundingClientRect(), cs = getComputedStyle(tag);
+    if (r.width < 40 || r.height < 14) F.push('the client label is ' + Math.round(r.width) + 'x' + Math.round(r.height));
+    if (cs.color === cs.backgroundColor) F.push('the client label is the colour of its own ground');
+  }
   // The three Outlook tabs, in the light bar rather than the dialog.
   const hb = [].slice.call(document.querySelectorAll('#clientTabs button')).filter(function (b) { return /outlook/.test(b.dataset.client); });
   if (hb.length !== 3) F.push('Outlook tabs: ' + hb.length);
@@ -174,10 +170,10 @@
   const note = document.getElementById('exportNote').getBoundingClientRect();
   if (note.height < 10) F.push('the note is not on screen');
   // The three sit on one line rather than stacking.
-  if (bs.length === 3 && (bs[0].getBoundingClientRect().top !== bs[2].getBoundingClientRect().top)) F.push('the targets wrapped onto two lines');
+  // (the dialog has no picker to wrap any more)
   const out = document.getElementById('out');
   const dims = l => l.map(b => Math.round(b.getBoundingClientRect().width) + 'x' + Math.round(b.getBoundingClientRect().height)).join(' ');
-  const summary = 'dialog picker: ' + dims(bs) + ', on one line, legible\nOutlook tabs:  ' + dims(hb) + ', adjacent';
+  const summary = 'dialog: names the client, no picker\nOutlook tabs:  ' + dims(hb) + ', adjacent';
   // The headless window is far narrower than any real editor, so measuring the
   // row as it falls here says nothing. Widen the bar and find the width at
   // which the clients, the targets and the device toggle share one row.
@@ -206,6 +202,7 @@
   out.textContent += '\n' + (F.length ? 'STYLE FAIL:\n' + F.join('\n')
     : summary + '\ntwo declared rows, stacked — row 1 needs ' + needs[0] + 'px of stage, row 2 needs ' + needs[1] + 'px');
   if (F.length) document.title = 'FAIL style ' + F.length;
+  window.__styleRan = true;
   } catch (err) {
     document.getElementById('out').textContent += '\nSTYLE CHECK THREW: ' + err.message;
     document.title = 'FAIL style threw';
@@ -430,5 +427,17 @@
   out.textContent += '\n' + (F.length ? 'CLIENTS FAIL:\n' + F.join('\n')
     : previewClients.length + ' clients, all with a logo and a name, ' + withTarget.length + ' with markup of their own');
   if (F.length) document.title = 'FAIL clients ' + F.length;
+})();
+</script>
+<script>
+// A block that fails to parse never runs, its try/catch never fires, and the
+// title is left saying PASS from the block before it. That has happened twice,
+// so each block now leaves a mark and the last one checks they are all there.
+(function () {
+  const missing = ['__styleRan'].filter(k => !window[k]);
+  if (missing.length) {
+    document.getElementById('out').textContent += '\nA CHECK BLOCK NEVER RAN: ' + missing.join(', ');
+    document.title = 'FAIL dead-block';
+  }
 })();
 </script>

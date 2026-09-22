@@ -3461,12 +3461,14 @@ function showCopyFeedback(msg) {
 // (the chosen target is derived by currentTarget(), beside EXPORT_TARGETS,
 // because the stage reads it long before this point in the file.)
 
+// The dialog exports for the client being previewed, and says which. It used
+// to offer the three targets again, which was the same choice in a second
+// place — and a confusing one, since it could disagree with the tab you had
+// picked. The tab is the choice; this only reports what it means.
 function renderExportTargets() {
   const picker = document.getElementById('exportTargets');
-  if (!picker) return;
-  picker.innerHTML = EXPORT_TARGETS.map(t =>
-    `<button class="${t.id === currentTarget() ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${t.label}</button>`
-  ).join('');
+  const client = previewClients.find(c => c.id === S.client) || previewClients[0];
+  if (picker) picker.innerHTML = `<span class="export-for">for ${esc(client.label)}</span>`;
   const note = document.getElementById('exportNote');
   const chosen = EXPORT_TARGETS.find(t => t.id === currentTarget()) || EXPORT_TARGETS[0];
   if (note) note.textContent = chosen.note;
@@ -3858,27 +3860,6 @@ function setupEvents() {
   // Export overlay
   document.getElementById('exportClose').addEventListener('click', () => { $exportOverlay.classList.add('hidden'); });
 
-  // Switching target re-renders the code in place, so the two Outlook variants
-  // can be compared without closing the dialog.
-  const targets = document.getElementById('exportTargets');
-  if (targets) targets.addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-target]');
-    if (!btn) return;
-    // Choosing here moves the preview tab to match, so the two never disagree
-    // about which client is being written for. A tab that already gives this
-    // target is left alone, so choosing Standard while previewing Gmail does
-    // not drag the preview over to Outlook.
-    const want = btn.dataset.target;
-    if (currentTarget() !== want) {
-      const tab = previewClients.find(c => c.target !== undefined && (c.target || '') === want);
-      if (tab) S.client = tab.id;
-    }
-    renderExportTargets();
-    renderStage();
-    $exportCode.textContent = generateExportHTML(currentTarget());
-    const copy = document.getElementById('exportCopyBtn');
-    if (copy) copy.textContent = 'Copy HTML';
-  });
   $exportOverlay.addEventListener('click', e => { if (e.target === $exportOverlay) $exportOverlay.classList.add('hidden'); });
   document.getElementById('exportCopyBtn').addEventListener('click', () => {
     const text = $exportCode.textContent;
