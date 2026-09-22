@@ -1649,17 +1649,14 @@ function renderStage() {
       <span class="client-tab-logo">${mailLogos[c.id]||''}</span><span>${esc(c.label)}</span>
     </button>`;
   });
-  h += `</div><div class="toggle-group" id="deviceTabs">
+  h += `</div><div class="toggle-group stage-targets" id="stageTargets" title="Which client the signature is written for — the preview, the copy and the export all follow it">${EXPORT_TARGETS.map(t =>
+      `<button class="${t.id === exportTargetShown ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${esc(t.shortLabel || t.label)}</button>`
+    ).join('')}</div>
+  <div class="toggle-group" id="deviceTabs">
     <button class="${S.device==='desktop'?'active':''}" data-device="desktop">Desktop</button>
     <button class="${S.device==='mobile'?'active':''}" data-device="mobile">Mobile</button>
   </div>
   <div class="toggle-row gap-6"><label class="field-label" style="margin:0;font-size:11px">Dark</label><div class="toggle-switch${S.darkMode?' on':''}" data-action="toggleDark"></div></div>
-  <div class="toggle-row gap-6 stage-targets-row">
-    <label class="field-label" style="margin:0;font-size:11px">Written for</label>
-    <div class="toggle-group stage-targets" id="stageTargets">${EXPORT_TARGETS.map(t =>
-      `<button class="${t.id === exportTargetShown ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${esc(t.shortLabel || t.label)}</button>`
-    ).join('')}</div>
-  </div>
   </div>`;
 
   // The preview is drawn for the chosen target, so this control shows its own

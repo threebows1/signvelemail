@@ -123,10 +123,10 @@ a{color:var(--accent);text-decoration:none}
 .toggle-group button:last-child{border-right:none}
 .toggle-group button.active{background:var(--ink);color:var(--white)}
 
-/* The same picker in the preview bar. It governs what the preview draws as
-   well as what the copy and the export give, so it belongs beside the client
-   tabs rather than up among the account buttons. */
-.stage-targets-row{flex-shrink:0}
+/* The same picker in the preview bar, in the row with the client tabs. It
+   governs what the preview draws as well as what the copy and the export
+   give. Segmented like the device toggle beside it, so it reads as a choice
+   about the markup rather than as three more clients to preview. */
 .stage-targets{flex-shrink:0}
 .stage-targets button{white-space:nowrap}
 

@@ -133,6 +133,13 @@
     if (r.width < 45 || r.height < 18) F.push('preview bar ' + b.textContent + ': ' + Math.round(r.width) + 'x' + Math.round(r.height));
   });
   if (hb.length === 3 && hb[0].getBoundingClientRect().top !== hb[2].getBoundingClientRect().top) F.push('the preview bar picker wrapped');
+  // It now shares the row with the client tabs and the device toggle. Three
+  // more buttons in a full row is exactly where a toolbar starts stacking, so
+  // this reports which row each group actually landed on.
+  const rowOf = sel => Math.round(document.querySelector(sel).getBoundingClientRect().top);
+  const rows = {clients: rowOf('#clientTabs'), targets: rowOf('#stageTargets'), device: rowOf('#deviceTabs')};
+  window.__rows = rows;
+  window.__barWidth = Math.round(document.querySelector('.stage-toolbar').getBoundingClientRect().width);
 
   const note = document.getElementById('exportNote').getBoundingClientRect();
   if (note.height < 10) F.push('the note is not on screen');
@@ -141,7 +148,30 @@
   const out = document.getElementById('out');
   const dims = l => l.map(b => Math.round(b.getBoundingClientRect().width) + 'x' + Math.round(b.getBoundingClientRect().height)).join(' ');
   out.textContent += '\n' + (F.length ? 'STYLE FAIL:\n' + F.join('\n')
-    : 'dialog picker:  ' + dims(bs) + ', on one line, legible\ntoolbar picker: ' + dims(hb) + ', on one line');
+    : 'dialog picker:      ' + dims(bs) + ', on one line, legible\npreview bar picker: ' + dims(hb) + ', on one line');
+  // The headless window is far narrower than any real editor, so measuring the
+  // row as it falls here says nothing. Widen the bar and find the width at
+  // which the clients, the targets and the device toggle share one row.
+  // Widening the bar only fights its flex parent here, so the row's natural
+  // width is added up instead: every group laid end to end, plus the gaps and
+  // the bar's own padding. That is the stage width the row needs to stay flat.
+  const barEl = document.querySelector('.stage-toolbar');
+  const gap = parseFloat(getComputedStyle(barEl).gap) || 10;
+  const pad = parseFloat(getComputedStyle(barEl).paddingLeft) + parseFloat(getComputedStyle(barEl).paddingRight);
+  const natural = el => {
+    const kids = [].slice.call(el.children);
+    const g = parseFloat(getComputedStyle(el).gap) || 0;
+    return kids.reduce((n, k) => n + k.getBoundingClientRect().width, 0) + g * Math.max(0, kids.length - 1);
+  };
+  const groups = [].slice.call(barEl.children);
+  const need = Math.round(groups.reduce((n, g2) => n + natural(g2), 0) + gap * (groups.length - 1) + pad);
+  out.textContent += '\nthe row needs ' + need + 'px of stage to stay flat'
+    + ' (' + groups.map(g2 => (g2.id || 'dark') + ' ' + Math.round(natural(g2))).join(', ') + ')';
+  // What matters more than the whole row staying flat is that the targets stay
+  // up with the client tabs when it does wrap, which is where they were asked
+  // to be. That needs only the first two groups to fit.
+  const withClients = Math.round(natural(groups[0]) + gap + natural(groups[1]) + pad);
+  out.textContent += '\nthe targets sit beside the clients from ' + withClients + 'px of stage';
   if (F.length) document.title = 'FAIL style ' + F.length;
 })();
 </script>
