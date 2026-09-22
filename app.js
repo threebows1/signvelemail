@@ -2214,8 +2214,12 @@ function buildSignatureBody() {
     // the same as Standard's, only the glyph arrives as an image.
     const hosted = EXPORT_TARGET === 'newoutlook' ? f.type : '';
     const glyphPx = Math.round(S.contactIconSize * 0.64);
+    // A hosted PNG cannot be recoloured, and the theme colour is the person's
+    // own, so an open badge would put a black glyph inside a coloured ring.
+    // Filling the badge puts the colour where CSS can paint it exactly and
+    // leaves the glyph white, which is the one tone that works on any colour.
     const lead = badged
-      ? circleIcon(contactIcons[f.type], mode === 'filled', badgeColor, EXPORT_TARGET ? letter : '', hosted)
+      ? circleIcon(contactIcons[f.type], mode === 'filled' || !!hosted, badgeColor, EXPORT_TARGET ? letter : '', hosted)
       : (hosted
           ? hostedIcon(hosted, 'ink', glyphPx, 'display:inline-block;vertical-align:middle;')
           : EXPORT_TARGET
@@ -2347,7 +2351,10 @@ function buildSignatureBody() {
           out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${glyphImg}</a></td>`;
           return;
         }
-        const solid = style === 'filled';
+        // Filled for the same reason as the contact badges: the hosted glyph
+        // comes in white or ink only, and white on the themed ground is the
+        // pair that keeps the colour exact.
+        const solid = style === 'filled' || !!hostedMark;
         const glyphColor = solid ? (o.glyphColor || '#ffffff') : colour;
         const initial = (sl.label || sl.type || '?').charAt(0).toUpperCase();
         const hostedBadge = hostedMark ? hostedIcon(hostedMark, solid ? 'white' : 'ink', iconScale, 'margin:0 auto;') : '';

@@ -53,10 +53,14 @@
       if (n.indexOf('https://signvel.com/icons/' + f + '-') < 0) E.push('newoutlook/' + m + ': no hosted ' + f);
     });
     if (!/border-radius:50%/.test(n)) E.push('newoutlook/' + m + ': lost its round badges');
-    // A filled badge needs the white glyph and an open one the ink glyph, or
-    // the icon disappears into its own ground.
-    const tone = m === 'filled' ? 'white' : 'ink';
-    if (n.indexOf('c-email-' + tone + '.png') < 0) E.push('newoutlook/' + m + ': wrong tone, wanted ' + tone);
+    // Every badge is filled for New Outlook, so every badged glyph is white:
+    // an ink glyph in there would be the black-in-a-blue-ring fault again.
+    if (n.indexOf('c-email-white.png') < 0) E.push('newoutlook/' + m + ': badge glyph is not white');
+    if (n.indexOf('c-email-ink.png') >= 0)  E.push('newoutlook/' + m + ': an ink glyph is still inside a badge');
+    // The badge itself must carry the theme colour, which is what makes the
+    // fill worth having — a grey disc would be no better than a black glyph.
+    if (n.indexOf('bgcolor="' + S.accentColor + '"') < 0 && n.toLowerCase().indexOf('bgcolor="' + S.accentColor.toLowerCase() + '"') < 0)
+      E.push('newoutlook/' + m + ': the filled badge is not the theme colour');
     const c = generateExportHTML('classic');
     ['E.','T.','W.'].forEach(L => {
       if (c.indexOf('>' + L + '<') < 0) E.push('classic/' + m + ': no ' + L + ' lead');
