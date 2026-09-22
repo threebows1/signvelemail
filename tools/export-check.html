@@ -84,26 +84,47 @@
   document.querySelector('#exportTargets button[data-target=""]').click();
   if (code.textContent !== standard)     E.push('going back to Standard did not restore it');
 
-  // The preview bar picker is the same control as the dialog's, so picking in
-  // one has to move the other, the preview itself, and the copy button.
-  const bar = () => [].slice.call(document.querySelectorAll('#stageTargets button'));
+  // The client tab is the target now: three Outlook tabs, each writing the
+  // signature differently, and every other client on Standard.
+  const tab = id => document.querySelector('#clientTabs button[data-client="' + id + '"]');
   const shown = () => document.querySelector('.signature-container').innerHTML;
-  if (bar().map(b => b.dataset.target).join(',') !== ',newoutlook,classic')
-    E.push('preview bar targets: ' + bar().map(b => b.dataset.target).join(','));
+  const tabIds = [].map.call(document.querySelectorAll('#clientTabs button'), b => b.dataset.client);
+  ['outlook-new', 'outlook-classic', 'outlook'].forEach(id => {
+    if (tabIds.indexOf(id) < 0) E.push('no ' + id + ' tab');
+  });
   if (!/<svg|data:image/i.test(shown())) E.push('the preview did not start on Standard');
-  bar().find(b => b.dataset.target === 'classic').click();
-  if (exportTargetShown !== 'classic') E.push('the preview bar did not set the target');
-  if (!bar().find(b => b.dataset.target === 'classic').classList.contains('active'))
-    E.push('the preview bar does not mark what is chosen');
-  // The whole reason it sits in this bar: it has to change what is on screen.
-  if (/<svg|data:image/i.test(shown())) E.push('the preview did not redraw for classic');
+
+  tab('outlook-classic').click();
+  if (exportTargetShown !== 'classic') E.push('the Classic Outlook tab did not set the target');
+  if (!tab('outlook-classic').classList.contains('active')) E.push('the clicked tab is not marked');
+  // The whole point of splitting the tab: the preview has to change with it.
+  if (/<svg|data:image/i.test(shown())) E.push('the preview did not redraw for Classic Outlook');
   if (!document.querySelector('#exportTargets button[data-target="classic"]').classList.contains('active'))
-    E.push('the dialog did not follow the preview bar');
+    E.push('the dialog did not follow the tab');
   // What the copy button would put on the clipboard, by the same route it takes.
   if (/<svg|data:image/i.test(withExportTarget(exportTargetShown, generateSignaturePreview)))
-    E.push('Copy signature ignored the chosen target');
-  bar().find(b => b.dataset.target === '').click();
-  if (!/<svg|data:image/i.test(shown())) E.push('back on Standard, the preview is still a variant');
+    E.push('Copy signature ignored the chosen tab');
+
+  tab('outlook-new').click();
+  if (exportTargetShown !== 'newoutlook') E.push('the New Outlook tab did not set the target');
+  if (/<svg|data:image/i.test(shown())) E.push('the preview did not redraw for New Outlook');
+  if (!/border-radius:50%/.test(shown())) E.push('New Outlook lost its round badges in the preview');
+
+  // Standard Outlook, and every client that is not Outlook, gets the ordinary
+  // markup back — the target must not stick once the tab moves off Outlook.
+  tab('outlook').click();
+  if (exportTargetShown !== '') E.push('Standard Outlook did not go back to Standard');
+  if (!/<svg|data:image/i.test(shown())) E.push('Standard Outlook is still drawing a variant');
+  tab('outlook-classic').click();
+  tab('gmail').click();
+  if (exportTargetShown !== '') E.push('the target stuck after moving to Gmail');
+  if (!/<svg|data:image/i.test(shown())) E.push('Gmail is still drawing a variant');
+
+  // Choosing in the dialog has to move the tab, so the two never disagree.
+  document.querySelector('#exportTargets button[data-target="classic"]').click();
+  if (S.client !== 'outlook-classic') E.push('the dialog did not move the tab: ' + S.client);
+  if (!tab('outlook-classic').classList.contains('active')) E.push('the moved tab is not marked');
+  document.querySelector('#exportTargets button[data-target=""]').click();
   if (EXPORT_TARGET !== null) E.push('the preview bar left EXPORT_TARGET set');
   document.getElementById('out').textContent = E.length ? E.slice(0,12).join('\n') + '\n\n(' + E.length + ' total)' : 'ok — 24 layouts x 25 combinations, both variants clean';
   document.title = E.length ? 'FAIL ' + E.length : 'PASS';
@@ -114,6 +135,9 @@
 // hit, and not text the same colour as what is behind it.
 (function () {
   const F = [];
+  // A throw in here used to take the whole report with it, silently, leaving a
+  // PASS that had checked nothing. It is caught and reported now.
+  try {
   const row = document.querySelector('.export-targets-row');
   const bs = [].slice.call(document.querySelectorAll('#exportTargets button'));
   const rowBg = getComputedStyle(row).backgroundColor;
@@ -125,29 +149,27 @@
     if (cs.color === (cs.backgroundColor === 'rgba(0, 0, 0, 0)' ? (rowBg === 'rgba(0, 0, 0, 0)' ? panelBg : rowBg) : cs.backgroundColor))
       F.push(b.textContent + ': text the same colour as its ground');
   });
-  // The preview bar copy of the picker, in the light bar rather than the dialog.
-  const hb = [].slice.call(document.querySelectorAll('#stageTargets button'));
-  if (hb.length !== 3) F.push('preview bar picker: ' + hb.length + ' buttons');
+  // The three Outlook tabs, in the light bar rather than the dialog.
+  const hb = [].slice.call(document.querySelectorAll('#clientTabs button')).filter(function (b) { return /outlook/.test(b.dataset.client); });
+  if (hb.length !== 3) F.push('Outlook tabs: ' + hb.length);
   hb.forEach(function (b) {
     const r = b.getBoundingClientRect();
-    if (r.width < 45 || r.height < 18) F.push('preview bar ' + b.textContent + ': ' + Math.round(r.width) + 'x' + Math.round(r.height));
+    if (r.width < 45 || r.height < 18) F.push('tab ' + b.textContent + ': ' + Math.round(r.width) + 'x' + Math.round(r.height));
   });
-  if (hb.length === 3 && hb[0].getBoundingClientRect().top !== hb[2].getBoundingClientRect().top) F.push('the preview bar picker wrapped');
-  // It now shares the row with the client tabs and the device toggle. Three
-  // more buttons in a full row is exactly where a toolbar starts stacking, so
-  // this reports which row each group actually landed on.
-  const rowOf = sel => Math.round(document.querySelector(sel).getBoundingClientRect().top);
-  const rows = {clients: rowOf('#clientTabs'), targets: rowOf('#stageTargets'), device: rowOf('#deviceTabs')};
-  window.__rows = rows;
-  window.__barWidth = Math.round(document.querySelector('.stage-toolbar').getBoundingClientRect().width);
-
+  // Whether they wrap depends on the window, which this one is far too narrow
+  // to judge. What must hold at any width is that the three are adjacent, so
+  // they read as one client split three ways rather than scattered.
+  const order = [].map.call(document.querySelectorAll('#clientTabs button'), b => b.dataset.client);
+  const at = order.map((id, i) => /outlook/.test(id) ? i : -1).filter(i => i >= 0);
+  if (at.length === 3 && (at[1] !== at[0] + 1 || at[2] !== at[1] + 1))
+    F.push('the Outlook tabs are not adjacent: ' + order.join(' '));
   const note = document.getElementById('exportNote').getBoundingClientRect();
   if (note.height < 10) F.push('the note is not on screen');
   // The three sit on one line rather than stacking.
   if (bs.length === 3 && (bs[0].getBoundingClientRect().top !== bs[2].getBoundingClientRect().top)) F.push('the targets wrapped onto two lines');
   const out = document.getElementById('out');
   const dims = l => l.map(b => Math.round(b.getBoundingClientRect().width) + 'x' + Math.round(b.getBoundingClientRect().height)).join(' ');
-  const summary = 'dialog picker:      ' + dims(bs) + ', on one line, legible\npreview bar picker: ' + dims(hb) + ', on one line';
+  const summary = 'dialog picker: ' + dims(bs) + ', on one line, legible\nOutlook tabs:  ' + dims(hb) + ', adjacent';
   // The headless window is far narrower than any real editor, so measuring the
   // row as it falls here says nothing. Widen the bar and find the width at
   // which the clients, the targets and the device toggle share one row.
@@ -176,5 +198,9 @@
   out.textContent += '\n' + (F.length ? 'STYLE FAIL:\n' + F.join('\n')
     : summary + '\ntwo declared rows, stacked — row 1 needs ' + needs[0] + 'px of stage, row 2 needs ' + needs[1] + 'px');
   if (F.length) document.title = 'FAIL style ' + F.length;
+  } catch (err) {
+    document.getElementById('out').textContent += '\nSTYLE CHECK THREW: ' + err.message;
+    document.title = 'FAIL style threw';
+  }
 })();
 </script>

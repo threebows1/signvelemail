@@ -496,9 +496,16 @@ const disclaimerPresets = {
 };
 
 // Preview tabs, in the order they appear above the stage.
+//
+// Outlook is three tabs rather than one, because it is three renderers and a
+// signature cannot be written for all of them at once. Each carries the export
+// target it previews, and picking the tab is what chooses that target — for
+// every other client it is Standard, which is what they all render.
 const previewClients = [
   {id:'gmail',       label:'Gmail'},
-  {id:'outlook',     label:'Outlook'},
+  {id:'outlook-new', label:'New Outlook',      logo:'outlook', target:'newoutlook'},
+  {id:'outlook-classic', label:'Classic Outlook', logo:'outlook', target:'classic'},
+  {id:'outlook',     label:'Standard Outlook', logo:'outlook', target:''},
   {id:'apple',       label:'Apple Mail'},
   {id:'yahoo',       label:'Yahoo'},
   {id:'thunderbird', label:'Thunderbird'},
@@ -1650,8 +1657,11 @@ function renderStage() {
     <div class="stage-toolbar-row">
     <div class="client-tabs" id="clientTabs">`;
   clients.forEach(c => {
-    h += `<button class="client-tab${S.client===c.id?' active':''}" data-client="${c.id}" title="${esc(c.label)}">
-      <span class="client-tab-logo">${mailLogos[c.id]||''}</span><span>${esc(c.label)}</span>
+    const hint = c.target !== undefined
+      ? (EXPORT_TARGETS.find(t => t.id === c.target) || {}).note || c.label
+      : c.label;
+    h += `<button class="client-tab${S.client===c.id?' active':''}" data-client="${c.id}" title="${esc(hint)}">
+      <span class="client-tab-logo">${mailLogos[c.logo || c.id]||''}</span><span>${esc(c.label)}</span>
     </button>`;
   });
   h += `</div>
@@ -1661,11 +1671,8 @@ function renderStage() {
   </div>
   </div>
   <div class="stage-toolbar-row">
-    <label class="field-label stage-targets-label">Written for</label>
-    <div class="toggle-group stage-targets" id="stageTargets">${EXPORT_TARGETS.map(t =>
-      `<button class="${t.id === exportTargetShown ? 'active' : ''}" data-target="${t.id}" title="${esc(t.note)}">${esc(t.label)}</button>`
-    ).join('')}</div>
     <div class="toggle-row gap-6"><label class="field-label" style="margin:0;font-size:11px">Dark</label><div class="toggle-switch${S.darkMode?' on':''}" data-action="toggleDark"></div></div>
+    <span class="stage-target-note">${esc((EXPORT_TARGETS.find(t => t.id === exportTargetShown) || EXPORT_TARGETS[0]).note)}</span>
   </div>
   </div>`;
 
@@ -3459,16 +3466,12 @@ function setupEvents() {
   // Stage events
   $stage.addEventListener('click', e => {
     const clientBtn = e.target.closest('#clientTabs button');
-    if (clientBtn) { S.client = clientBtn.dataset.client; renderStage(); return; }
-    const deviceBtn = e.target.closest('#deviceTabs button');
-    if (deviceBtn) { S.device = deviceBtn.dataset.device; renderStage(); return; }
-    const darkToggle = e.target.closest('[data-action="toggleDark"]');
-    if (darkToggle) { S.darkMode = !S.darkMode; renderStage(); return; }
-    // The target governs the preview, the copy button and the export dialog
-    // alike, so the dialog is brought into step if it happens to be open.
-    const targetBtn = e.target.closest('#stageTargets button[data-target]');
-    if (targetBtn) {
-      exportTargetShown = targetBtn.dataset.target;
+    if (clientBtn) {
+      S.client = clientBtn.dataset.client;
+      // The tab is the target: picking Classic Outlook is what writes the
+      // signature for Word, and every other client gets Standard.
+      const c = previewClients.find(x => x.id === S.client);
+      exportTargetShown = (c && c.target) || '';
       renderStage();
       if (!$exportOverlay.classList.contains('hidden')) {
         renderExportTargets();
@@ -3476,6 +3479,10 @@ function setupEvents() {
       }
       return;
     }
+    const deviceBtn = e.target.closest('#deviceTabs button');
+    if (deviceBtn) { S.device = deviceBtn.dataset.device; renderStage(); return; }
+    const darkToggle = e.target.closest('[data-action="toggleDark"]');
+    if (darkToggle) { S.darkMode = !S.darkMode; renderStage(); return; }
   });
 
 
@@ -3489,6 +3496,10 @@ function setupEvents() {
     const btn = e.target.closest('button[data-target]');
     if (!btn) return;
     exportTargetShown = btn.dataset.target;
+    // Choosing here moves the preview tab to match, so the two never disagree
+    // about which client the signature is being written for.
+    const tab = previewClients.find(c => (c.target || '') === exportTargetShown && c.target !== undefined);
+    if (tab) S.client = tab.id;
     renderExportTargets();
     renderStage();
     $exportCode.textContent = generateExportHTML(exportTargetShown);

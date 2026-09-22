@@ -123,12 +123,10 @@ a{color:var(--accent);text-decoration:none}
 .toggle-group button:last-child{border-right:none}
 .toggle-group button.active{background:var(--ink);color:var(--white)}
 
-/* The same picker in the preview bar, on the second row with Dark. It governs
-   what the preview draws as well as what the copy and the export give, so it
-   is labelled rather than left to read as three more clients to preview. */
-.stage-targets{flex-shrink:0}
-.stage-targets button{white-space:nowrap}
-.stage-targets-label{margin:0;font-size:11px}
+/* What the chosen client tab means for the markup, in the row under it. The
+   three Outlook tabs each write the signature differently, and this is the
+   one line saying how — the tabs alone cannot carry that. */
+.stage-target-note{font-size:11px;color:var(--muted);line-height:1.4}
 
 /* Pill buttons, matching the Sign Vel site. */
 .btn{
