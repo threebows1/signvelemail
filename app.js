@@ -88,8 +88,110 @@ const HOSTED_ICONS = {
 function hostedIcon(name, tone, size, extraStyle) {
   const file = HOSTED_ICONS[name];
   if (!file) return '';
-  return `<img src="${ICON_HOST}${file}-${tone}.png" width="${size}" height="${size}" alt=""`
+  return iconImgTag(`${ICON_HOST}${file}-${tone}.png`, size, extraStyle);
+}
+
+function iconImgTag(url, size, extraStyle) {
+  return `<img src="${url}" width="${size}" height="${size}" alt=""`
     + ` style="display:block;width:${size}px;height:${size}px;border:0;outline:none;text-decoration:none;${extraStyle || ''}">`;
+}
+
+// ───────────── Glyphs in the theme colour ─────────────
+// The two hosted tones cannot carry a colour the person chose themselves, and
+// new Outlook strips an embedded image, so an exactly coloured glyph has to be
+// a file somewhere. It gets drawn here and uploaded to the account's own
+// storage — the same path a logo upload takes — and the URL is kept in the
+// signature, so it is drawn and sent once per glyph per colour.
+//
+// Everything below degrades: no account, no plan, an upload that fails, or a
+// colour whose set is still being made all fall back to the white glyph on a
+// filled badge, which needs nothing hosted beyond the files in icons/.
+const iconAssetPending = {};
+
+function iconAssetKey(name, hex) {
+  return name + '-' + String(hex || '').replace('#', '').toLowerCase();
+}
+
+function hostedIconFor(name, hex) {
+  const map = S.iconAssets || {};
+  return map[iconAssetKey(name, hex)] || '';
+}
+
+// Draws one glyph at 72px — 3x the largest the editor uses — in the colour
+// asked for, and hands back a PNG blob.
+function drawIconBlob(svgStr, colour) {
+  return new Promise(resolve => {
+    let s = String(svgStr || '').replace(/currentColor/g, colour);
+    if (!/xmlns=/.test(s)) s = s.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+    s = s.replace(/width="\d+"/, 'width="72"').replace(/height="\d+"/, 'height="72"');
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = 72;
+      c.getContext('2d').drawImage(img, 0, 0, 72, 72);
+      c.toBlob(b => resolve(b), 'image/png');
+    };
+    img.onerror = () => resolve(null);
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s)));
+  });
+}
+
+// Which glyphs the signature is actually using, and in which colour. Only the
+// ones drawn in a colour need a file: a filled badge already has the white one.
+function neededIconAssets() {
+  const want = [];
+  const mode = S.contactIconMode || 'circle';
+  if (mode !== 'letters' && mode !== 'labels') {
+    const colour = S.iconColor || S.accentColor;
+    // A filled badge paints the ground and keeps the white glyph.
+    if (mode !== 'filled') {
+      (S.contactFields || []).forEach(f => {
+        if (f.enabled && contactIcons[f.type]) want.push({name: f.type, svg: contactIcons[f.type], hex: colour});
+      });
+    }
+  }
+  const sStyle = S.socialStyle || 'circle';
+  if (sStyle === 'circle' || sStyle === 'glyph') {
+    const colour = S.socialIconColor || S.accentColor;
+    (S.socialLinks || []).forEach(sl => {
+      if (sl.enabled && socialIcons[sl.type]) want.push({name: sl.type, svg: socialIcons[sl.type], hex: colour});
+    });
+  }
+  return want.filter(w => !hostedIconFor(w.name, w.hex) && !iconAssetPending[iconAssetKey(w.name, w.hex)]);
+}
+
+// Makes and uploads whatever is missing, then redraws once at the end rather
+// than once per glyph. Never throws: a failure just leaves the fallback.
+let iconAssetRun = null;
+function syncIconAssets() {
+  if (iconAssetRun) return iconAssetRun;
+  const want = neededIconAssets();
+  if (!want.length || !window.Cloud || !Cloud.isReady) return Promise.resolve(false);
+  const c = Cloud.state();
+  if (!c || !c.signedIn) return Promise.resolve(false);
+  want.forEach(w => { iconAssetPending[iconAssetKey(w.name, w.hex)] = true; });
+  iconAssetRun = (async () => {
+    let added = false;
+    for (const w of want) {
+      const key = iconAssetKey(w.name, w.hex);
+      try {
+        const blob = await drawIconBlob(w.svg, w.hex);
+        if (!blob) continue;
+        const file = new File([blob], key + '.png', {type: 'image/png'});
+        const res = await Cloud.uploadAsset(file, 'icon-' + key);
+        if (res && res.ok && res.url) {
+          S.iconAssets = S.iconAssets || {};
+          S.iconAssets[key] = res.url;
+          added = true;
+        }
+      } catch (e) { /* the fallback stands */ }
+      delete iconAssetPending[key];
+    }
+    iconAssetRun = null;
+    if (added) { saveState(); renderStage(); }
+    return added;
+  })();
+  return iconAssetRun;
 }
 
 // Which target is in force. Derived from the selected client tab rather than
@@ -576,6 +678,9 @@ const installTargets = [
 const S = {
   scope: 'default',
   scopeData: {},
+  // Glyphs drawn in a theme colour and uploaded, keyed name-hex. A cache of
+  // URLs rather than settings: safe to lose, rebuilt on demand.
+  iconAssets: {},
   panelCollapsed: false,
   client: 'gmail',
   device: 'desktop',
@@ -1715,6 +1820,9 @@ function renderStage() {
   </div></div>`;
 
   $stage.innerHTML = h;
+  // Only New Outlook needs a file per colour, so nothing is drawn or uploaded
+  // until that tab is the one in use. It redraws itself when a set arrives.
+  if (currentTarget() === 'newoutlook') syncIconAssets();
   scheduleAllSaves();
 }
 
@@ -2145,7 +2253,7 @@ function buildSignatureBody() {
   // Divider rules. The old flat #DDDBE4 was invisible at 1px, and vanished
   // completely once a dark background panel was switched on.
   const ruleColor = onDark ? 'rgba(255,255,255,.22)' : '#C6C3D4';
-  const circleIcon = (svg, filled, colour, letter, hosted) => {
+  const circleIcon = (svg, filled, colour, letter, hosted, exactUrl) => {
     const cc = colour || ic;
     const sz = S.contactIconSize || 22;
     const inner = Math.round(sz * 0.5);
@@ -2155,7 +2263,9 @@ function buildSignatureBody() {
     // A drawing needs the line box zeroed or the badge grows taller than it is
     // wide and the circle turns oval. A letter needs the opposite: the line box
     // is what centres it.
-    const body = hosted
+    const body = (hosted && exactUrl && !filled)
+      ? {content: iconImgTag(exactUrl, inner, 'margin:0 auto;'), type: 'font-size:0;line-height:0;'}
+      : hosted
       ? {content: hostedIcon(hosted, filled ? 'white' : 'ink', inner, 'margin:0 auto;'),
          type: 'font-size:0;line-height:0;'}
       : letter
@@ -2214,13 +2324,17 @@ function buildSignatureBody() {
     // the same as Standard's, only the glyph arrives as an image.
     const hosted = EXPORT_TARGET === 'newoutlook' ? f.type : '';
     const glyphPx = Math.round(S.contactIconSize * 0.64);
-    // A hosted PNG cannot be recoloured, and the theme colour is the person's
-    // own, so an open badge would put a black glyph inside a coloured ring.
-    // Filling the badge puts the colour where CSS can paint it exactly and
-    // leaves the glyph white, which is the one tone that works on any colour.
+    // A glyph drawn in the theme colour and uploaded to the account keeps the
+    // design exactly: an open badge stays open, with the colour in the glyph.
+    // Without one, the badge is filled instead, so the colour is at least in
+    // the ground and the white glyph reads against it.
+    const exact = hosted ? hostedIconFor(hosted, badgeColor) : '';
     const lead = badged
-      ? circleIcon(contactIcons[f.type], mode === 'filled' || !!hosted, badgeColor, EXPORT_TARGET ? letter : '', hosted)
-      : (hosted
+      ? circleIcon(contactIcons[f.type], mode === 'filled' || (!!hosted && !exact), badgeColor,
+                   EXPORT_TARGET ? letter : '', hosted, exact)
+      : (exact
+          ? iconImgTag(exact, glyphPx, 'display:inline-block;vertical-align:middle;')
+          : hosted
           ? hostedIcon(hosted, 'ink', glyphPx, 'display:inline-block;vertical-align:middle;')
           : EXPORT_TARGET
           ? `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(letter)}.</span>`
@@ -2335,9 +2449,12 @@ function buildSignatureBody() {
         const iconScale = Math.round(sz * (style === 'glyph' ? 0.78 : 0.55));
         // Bare glyph, no ring — the treatment the minimal reference layouts use.
         const hostedMark = EXPORT_TARGET === 'newoutlook' ? sl.type : '';
+        const exactMark = hostedMark ? hostedIconFor(hostedMark, colour) : '';
         if (style === 'glyph') {
           if (hostedMark) {
-            const img = hostedIcon(hostedMark, 'ink', iconScale, 'margin:0 auto;');
+            const img = exactMark
+              ? iconImgTag(exactMark, iconScale, 'margin:0 auto;')
+              : hostedIcon(hostedMark, 'ink', iconScale, 'margin:0 auto;');
             if (img) {
               out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${img}</a></td>`;
               return;
@@ -2351,13 +2468,14 @@ function buildSignatureBody() {
           out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${glyphImg}</a></td>`;
           return;
         }
-        // Filled for the same reason as the contact badges: the hosted glyph
-        // comes in white or ink only, and white on the themed ground is the
-        // pair that keeps the colour exact.
-        const solid = style === 'filled' || !!hostedMark;
+        // Filled only when there is no exactly coloured glyph to put in an
+        // open ring — the same trade as the contact badges.
+        const solid = style === 'filled' || (!!hostedMark && !exactMark);
         const glyphColor = solid ? (o.glyphColor || '#ffffff') : colour;
         const initial = (sl.label || sl.type || '?').charAt(0).toUpperCase();
-        const hostedBadge = hostedMark ? hostedIcon(hostedMark, solid ? 'white' : 'ink', iconScale, 'margin:0 auto;') : '';
+        const hostedBadge = !hostedMark ? ''
+          : (exactMark && !solid) ? iconImgTag(exactMark, iconScale, 'margin:0 auto;')
+          : hostedIcon(hostedMark, solid ? 'white' : 'ink', iconScale, 'margin:0 auto;');
         const inner = hostedBadge
           ? {mark: hostedBadge, type: 'font-size:0;line-height:0;'}
           : EXPORT_TARGET

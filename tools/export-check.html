@@ -283,3 +283,49 @@
   if (F.length) document.title = 'FAIL reload ' + F.length;
 })();
 </script>
+<script>
+// The exactly-coloured glyphs: uploaded per account, so the harness stands in
+// for the upload and checks what the markup does with the result.
+(function () {
+  const F = [];
+  S.template = 'corporate'; S.socialStyle = 'circle';
+  // Keyed on the colour the renderer resolves, not the accent: a layout can
+  // override the icon colour, and the key has to follow what is drawn.
+  S.accentColor = '#2B4C7E'; S.iconColor = '#2B4C7E'; S.socialIconColor = '#2B4C7E';
+  S.iconAssets = {};
+
+  // Without a set, the badge fills so the colour is at least in the ground.
+  S.contactIconMode = 'circle';
+  let h = generateExportHTML('newoutlook');
+  if (h.indexOf('c-email-white.png') < 0) F.push('no set: the badge did not fall back to filled white');
+
+  // With one, the ring stays open and the glyph carries the colour.
+  const url = 'https://example.test/icon/email-2b4c7e.png';
+  S.iconAssets[iconAssetKey('email', S.iconColor)] = url;
+  h = generateExportHTML('newoutlook');
+  if (h.indexOf(url) < 0) F.push('the uploaded glyph was not used');
+  if (h.indexOf('c-email-white.png') >= 0) F.push('the badge is still filled white with a set available');
+  if (h.indexOf('c-email-ink.png') >= 0) F.push('an ink glyph survived alongside the set');
+
+  // The bare treatment is the other half of the report: it was black.
+  S.contactIconMode = 'icons';
+  h = generateExportHTML('newoutlook');
+  if (h.indexOf(url) < 0) F.push('the bare glyph did not use the uploaded colour');
+  if (h.indexOf('c-email-ink.png') >= 0) F.push('the bare glyph is still ink');
+
+  // A colour change must not reuse the old file.
+  S.accentColor = '#B4121F'; S.iconColor = '#B4121F'; S.socialIconColor = '#B4121F';
+  h = generateExportHTML('newoutlook');
+  if (h.indexOf(url) >= 0) F.push('a new colour reused the old glyph');
+
+  // Nothing here may reach a client as an embedded image, which is the whole
+  // reason the files exist.
+  if (/data:image|<svg/i.test(h)) F.push('the variant fell back to something New Outlook strips');
+
+  S.accentColor = '#2B4C7E'; S.iconColor = ''; S.socialIconColor = ''; S.contactIconMode = 'circle'; S.iconAssets = {};
+  const out = document.getElementById('out');
+  out.textContent += '\n' + (F.length ? 'COLOUR FAIL:\n' + F.join('\n')
+    : 'exact-colour glyphs: used when present, filled-white fallback when not');
+  if (F.length) document.title = 'FAIL colour ' + F.length;
+})();
+</script>
