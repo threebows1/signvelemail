@@ -468,11 +468,14 @@ select.input{cursor:pointer;appearance:auto}
   display:flex;align-items:center;justify-content:center;gap:8px;
   flex-wrap:wrap;margin-top:8px;
 }
-/* Room to read as an invitation rather than a thin strip, and the same room
-   in every slot: the logo's note runs to two lines and the headshot's to one,
-   which left two boxes of different heights sitting one above the other. The
-   floor is set by the taller, so they match whatever their notes say. */
-.uploader{padding:20px 14px;min-height:124px}
+/* A square, the same in every slot. The notes differ in length — the logo's
+   runs to two lines and the headshot's to one — so left to themselves the
+   boxes came out different heights, sitting one directly above the other
+   where it showed. A fixed square settles it.
+
+   The ratio rather than a second fixed number, so a panel narrower than 270
+   gives a smaller square rather than a tall thin one. */
+.uploader{padding:20px 14px;width:270px;max-width:100%;aspect-ratio:1/1;margin:0 auto}
 .uploader-name{
   font-size:11px;font-weight:500;color:var(--ink);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;

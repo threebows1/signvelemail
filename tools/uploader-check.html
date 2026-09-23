@@ -49,7 +49,19 @@ zones.forEach(z => {
 const boxes = zones.map(z => z.getBoundingClientRect());
 const hs = boxes.map(b => Math.round(b.height));
 const ws = boxes.map(b => Math.round(b.width));
-if (new Set(hs).size > 1) F.push('boxes are different heights: ' + hs.join(', '));
+if (new Set(hs).size > 1) F.push("boxes are different heights: " + hs.join(", "));
+// Square, and the size asked for.
+boxes.forEach(function (b) {
+  const w = Math.round(b.width), h = Math.round(b.height);
+  if (Math.abs(w - h) > 1) F.push("a box is not square: " + w + "x" + h);
+  if (w !== 270) F.push("a box is " + w + " wide, not 270");
+});
+// A fixed square can be too small for what is written inside it, and the
+// text spills out rather than the box growing to fit.
+zones.forEach(function (z) {
+  if (z.scrollHeight > z.clientHeight + 1)
+    F.push('the text overflows its box by ' + (z.scrollHeight - z.clientHeight) + 'px');
+});
 if (new Set(ws).size > 1) F.push('boxes are different widths: ' + ws.join(', '));
 const filledSize = hs[0] + 'x' + ws[0];
 // Both slots ship with a picture in them, so the empty state has to be asked
