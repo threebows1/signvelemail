@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Icon type — options</title>
+<!--
+  Sign Vel — treatments for the contact icon, side by side
+
+  Open it:  tools\icon-options.html   (no server needed)
+
+  The glyphs are the editor's own, pulled from app.js, drawn at the size the
+  signature draws them and in the theme colour the signature uses. Nothing
+  here is a picture of an idea: what is on screen is what the row would look
+  like, so the one that wins can ship as markup rather than being rebuilt
+  from a screenshot.
+
+  The first five are what the editor offers today. The rest are the proposals.
+-->
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body{margin:0;background:#EEECF5;font-family:var(--ui-font);overflow:auto;height:auto}
+  .page{max-width:1120px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
+  .sub{font-size:13px;color:var(--muted);margin:0 0 22px;line-height:1.6;max-width:70ch}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+  .card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .card.is-current{border-color:#C9C4E8}
+  .card-head{
+    display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+    padding:12px 16px;border-bottom:1px solid var(--hairline);
+  }
+  .card-name{font-size:13px;font-weight:700}
+  .tag{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .tag.now{color:var(--accent)}
+  .card-body{padding:18px 16px}
+  .card-note{
+    padding:0 16px 14px;font-size:11.5px;line-height:1.55;color:var(--muted);
+  }
+  /* The row itself, drawn as a signature draws it: a table, one line per
+     contact, the glyph in its own cell. */
+  table.rowset{border-collapse:separate;border-spacing:0}
+  table.rowset td{padding:0}
+  .bar{
+    display:flex;gap:10px;align-items:center;padding:10px 20px;background:#fff;
+    border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;
+  }
+  .bar label{font-size:11px;font-weight:600;color:var(--muted)}
+  .bar input[type=color]{width:28px;height:22px;padding:0;border:1px solid var(--border);border-radius:4px;background:#fff}
+</style>
+</head>
+<body>
+<div class="bar">
+  <label for="c">Theme colour</label>
+  <input type="color" id="c" value="#2B4C7E">
+  <label for="sz">Size</label>
+  <input type="range" id="sz" min="16" max="30" value="22">
+  <span class="tag" id="szOut">22px</span>
+</div>
+
+<div class="page">
+  <h1>Icon type</h1>
+  <p class="sub">Every row below is the real contact list, drawn with the editor's own glyphs at the size
+  the signature uses. The first five are what the row offers today; the rest are proposals. Change the
+  colour or the size above and they all follow, because none of them is a picture.</p>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script src="../config.js"></script>
+<script src="../cloud.js"></script>
+<script src="../app.js"></script>
+<script>
+const FIELDS = [
+  {type: 'email',   label: 'Email',   letter: 'E', value: 'daniel@signvel.com'},
+  {type: 'phone',   label: 'Phone',   letter: 'T', value: '+971 4 123 4567'},
+  {type: 'address', label: 'Address', letter: 'A', value: 'Business Bay, Dubai'},
+  {type: 'website', label: 'Web',     letter: 'W', value: 'signvel.com'},
+];
+
+const ff = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+const INK = '#4A4A48';
+
+// The editor's own glyph, at whatever size and colour is asked for.
+function glyph(type, px, colour) {
+  return (contactIcons[type] || '')
+    .replace(/width="\d+"/, 'width="' + px + '"')
+    .replace(/height="\d+"/, 'height="' + px + '"')
+    .replace(/currentColor/g, colour);
+}
+
+function value(f, colour) {
+  return '<span style="font-family:' + ff + ';font-size:13px;color:' + INK + ';line-height:1.6;">' + f.value + '</span>';
+}
+
+// Each treatment says what stands in the lead cell, and how much room it takes.
+const TREATMENTS = [
+  {
+    name: 'Circle', now: true,
+    note: 'An open ring in the theme colour, glyph inside. What the editor opens on.',
+    lead: (f, sz, c) => badge(f, sz, c, {fill: false, radius: '50%'}),
+  },
+  {
+    name: 'Filled', now: true,
+    note: 'The same ring, solid. Reads heavier and holds its shape on a coloured ground.',
+    lead: (f, sz, c) => badge(f, sz, c, {fill: true, radius: '50%'}),
+  },
+  {
+    name: 'Icons', now: true,
+    note: 'The glyph on its own, no badge. The lightest of the set.',
+    lead: (f, sz, c) => '<span style="display:inline-block;line-height:0;">' + glyph(f.type, Math.round(sz * 0.64), c) + '</span>',
+  },
+  {
+    name: 'Letters', now: true,
+    note: 'A letter and a full stop. No drawing at all, so nothing can be stripped.',
+    lead: (f, sz, c) => '<span style="font-family:' + ff + ';font-size:12px;font-weight:700;color:' + c + ';line-height:1.6;">' + f.letter + '.</span>',
+  },
+  {
+    name: 'Labels', now: true,
+    note: 'The field named in words. The most explicit, and the widest.',
+    lead: (f, sz, c) => '<span style="font-family:' + ff + ';font-size:11px;font-weight:600;color:' + c + ';line-height:1.6;">' + f.label + '</span>',
+  },
+
+  {
+    name: 'Rounded square',
+    note: 'A filled square with soft corners. Sits squarer against a logo than a circle does, and Word keeps a square whatever it does to the corners.',
+    lead: (f, sz, c) => badge(f, sz, c, {fill: true, radius: '6px'}),
+  },
+  {
+    name: 'Tinted',
+    note: 'The badge in a wash of the theme colour, the glyph at full strength. Quieter than a solid disc, and it keeps the colour.',
+    lead: (f, sz, c) => badge(f, sz, c, {fill: false, radius: '50%', bg: tint(c, 0.12), border: 'none', glyph: c}),
+  },
+  {
+    name: 'Rule',
+    note: 'No badge: a bar in the theme colour down the left of the glyph. The colour is in the line rather than around the mark.',
+    lead: (f, sz, c) =>
+      '<span style="display:inline-flex;align-items:center;gap:8px;">'
+      + '<span style="display:inline-block;width:2px;height:' + Math.round(sz * 0.72) + 'px;background:' + c + ';"></span>'
+      + '<span style="line-height:0;">' + glyph(f.type, Math.round(sz * 0.62), c) + '</span></span>',
+  },
+  {
+    name: 'Glyph and letter',
+    note: 'Both: the drawing for someone whose client renders it, the letter beside it for someone whose client does not.',
+    lead: (f, sz, c) =>
+      '<span style="display:inline-flex;align-items:center;gap:5px;">'
+      + '<span style="line-height:0;">' + glyph(f.type, Math.round(sz * 0.6), c) + '</span>'
+      + '<span style="font-family:' + ff + ';font-size:11px;font-weight:700;color:' + c + ';">' + f.letter + '</span></span>',
+  },
+  {
+    name: 'Underlined label',
+    note: 'The word, with a rule under it in the theme colour. Reads as a heading for the value beside it.',
+    lead: (f, sz, c) =>
+      '<span style="font-family:' + ff + ';font-size:11px;font-weight:600;color:' + c
+      + ';border-bottom:1.5px solid ' + c + ';padding-bottom:1px;line-height:1.5;">' + f.label + '</span>',
+  },
+  {
+    name: 'Monogram',
+    note: 'The letter inside the badge rather than the drawing. Survives every client, and still carries the shape and the colour.',
+    lead: (f, sz, c) => badge(f, sz, c, {fill: true, radius: '50%', letter: f.letter}),
+  },
+];
+
+// One badge, drawn the way the signature draws one: a fixed cell with the
+// glyph centred, because a line box would make the circle an oval.
+function badge(f, sz, c, o) {
+  const inner = Math.round(sz * 0.5);
+  const bg = o.bg || (o.fill ? c : 'transparent');
+  const border = o.border !== undefined ? o.border : '1.5px solid ' + c;
+  const mark = o.letter
+    ? '<span style="font-family:' + ff + ';font-size:' + Math.round(sz * 0.46)
+      + 'px;font-weight:700;color:' + (o.fill ? '#fff' : c) + ';line-height:' + (sz - 3) + 'px;">' + o.letter + '</span>'
+    : glyph(f.type, inner, o.glyph || (o.fill ? '#ffffff' : c));
+  return '<span style="display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;'
+    + 'width:' + sz + 'px;height:' + sz + 'px;border-radius:' + o.radius + ';background:' + bg + ';'
+    + 'border:' + border + ';line-height:0;">' + mark + '</span>';
+}
+
+function tint(hex, amount) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+  const mix = (v) => Math.round(v + (255 - v) * (1 - amount));
+  return 'rgb(' + mix(r) + ',' + mix(g) + ',' + mix(b) + ')';
+}
+
+function draw() {
+  const c = document.getElementById('c').value;
+  const sz = parseInt(document.getElementById('sz').value, 10);
+  document.getElementById('szOut').textContent = sz + 'px';
+  document.getElementById('grid').innerHTML = TREATMENTS.map(function (t) {
+    const rows = FIELDS.map(function (f) {
+      return '<tr><td style="padding:3px 10px 3px 0;vertical-align:middle;">' + t.lead(f, sz, c) + '</td>'
+        + '<td style="padding:3px 0;vertical-align:middle;">' + value(f, c) + '</td></tr>';
+    }).join('');
+    return '<div class="card' + (t.now ? ' is-current' : '') + '">'
+      + '<div class="card-head"><span class="card-name">' + t.name + '</span>'
+      + '<span class="tag' + (t.now ? ' now' : '') + '">' + (t.now ? 'in the editor' : 'proposal') + '</span></div>'
+      + '<div class="card-body"><table class="rowset"><tbody>' + rows + '</tbody></table></div>'
+      + '<p class="card-note">' + t.note + '</p></div>';
+  }).join('');
+}
+
+document.getElementById('c').addEventListener('input', draw);
+document.getElementById('sz').addEventListener('input', draw);
+draw();
+document.title = 'Icon type — ' + TREATMENTS.length + ' options';
+</script>
+</body>
+</html>
