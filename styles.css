@@ -461,13 +461,6 @@ select.input{cursor:pointer;appearance:auto}
 .uploader-text{font-size:11px;color:var(--ink)}
 .uploader-text u{text-decoration:underline;color:var(--accent)}
 .uploader-hint{font-size:10px;color:var(--muted);line-height:1.4}
-/* One box, full or empty, saying the same thing either way. What the slot
-   holds is named underneath rather than shown: the signature beside it is
-   already showing the picture, at the size it will be sent. */
-.uploader-foot{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  flex-wrap:wrap;margin-top:8px;
-}
 /* A square, the same in every slot. The notes differ in length — the logo's
    runs to two lines and the headshot's to one — so left to themselves the
    boxes came out different heights, sitting one directly above the other
@@ -476,11 +469,6 @@ select.input{cursor:pointer;appearance:auto}
    The ratio rather than a second fixed number, so a panel narrower than 270
    gives a smaller square rather than a tall thin one. */
 .uploader{padding:20px 14px;width:270px;max-width:100%;aspect-ratio:1/1;margin:0 auto}
-.uploader-name{
-  font-size:11px;font-weight:500;color:var(--ink);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.uploader-action{flex:0 0 auto;font-size:11px;padding:4px 8px;cursor:pointer}
 .uploader-error{
   margin-top:6px;font-size:10px;line-height:1.4;color:#B3261E;
   background:#FCEEEC;border:1px solid #F3D3CF;border-radius:var(--radius);padding:6px 8px;

@@ -1603,10 +1603,8 @@ function renderUploader(kind, hint) {
   // What ships in the slot needs no name. "Sample logo" printed under the
   // sample logo says only what the picture already says, and reads as a label
   // on something you might have chosen — nobody needs telling that dropping a
-  // file replaces it. A name someone uploaded is worth showing: it is the one
-  // way to tell which of two similar marks is actually in there.
+  // file replaces it.
   const sample = kind === 'logo' ? DEFAULT_LOGO_URL : DEFAULT_HEADSHOT_URL;
-  const named = url !== sample ? esc(S[kind + 'Name'] || 'Image loaded') : '';
   let h;
   // One box, and it says one thing whether the slot is full or empty: drop a
   // file here. It holds no picture of what is in the slot — the signature
@@ -1623,17 +1621,11 @@ function renderUploader(kind, hint) {
     <span class="uploader-hint">${hint}</span>
   </label>`;
 
-  if (url) {
-    h = `<div class="uploader-wrap">
-      ${zone}
-      <div class="uploader-foot">
-        <span class="uploader-name">${named || 'Image in place'}</span>
-        <button class="btn uploader-action" data-action="remove${kind.charAt(0).toUpperCase()+kind.slice(1)}">Remove</button>
-      </div>
-    </div>`;
-  } else {
-    h = zone;
-  }
+  // The same box either way, and nothing under it. What the slot holds was
+  // named there beside a Remove button, and neither earned the line: the
+  // signature is already showing the image, and dropping a new file over the
+  // old one is what replacing means.
+  h = zone;
   // Only the bad news. A hosted image is the expected case and does not need
   // announcing — every upload is hosted now. A local copy is the one that
   // arrives broken, so that is the only state that says anything.
