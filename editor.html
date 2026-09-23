@@ -37,6 +37,28 @@
       </div>
     </div>
   </div>
+  <!-- A link to this signature. The signature is in the link itself, so
+       whoever opens it needs no account and nothing is stored anywhere. -->
+  <div class="install-overlay hidden" id="shareOverlay">
+    <div class="install-panel is-narrow">
+      <div class="install-panel-header">
+        <h2>Share this signature</h2>
+        <button class="btn" id="shareClose">Close</button>
+      </div>
+      <div class="install-body">
+        <p class="share-lead">Anyone with this link can open the signature and copy it — no account, no sign-in.</p>
+        <div class="share-row">
+          <input type="text" id="shareUrl" class="share-url" readonly spellcheck="false">
+          <button class="btn btn-accent" id="shareCopyLink">Copy link</button>
+        </div>
+        <p class="share-size" id="shareSize"></p>
+        <div class="install-actions">
+          <a class="btn" id="shareOpen" href="#" target="_blank" rel="noopener">Open it yourself</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Picking where the signature is going: the client list, behind one
        button, with that client's steps once it is chosen. -->
   <div class="install-overlay hidden" id="installOverlay">

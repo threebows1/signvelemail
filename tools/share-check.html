@@ -1,0 +1,118 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>share-check</title></head><body>
+<pre id="out"></pre>
+<div class="app" id="app" style="position:absolute;left:-4000px"><aside class="rail" id="rail"></aside>
+<div class="workspace"><header class="topbar" id="header"></header>
+<div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel is-narrow">
+  <div class="install-panel-header"><h2>S</h2><button class="btn" id="shareClose">Close</button></div>
+  <div class="install-body"><p class="share-lead">l</p>
+    <div class="share-row"><input type="text" id="shareUrl" class="share-url" readonly><button class="btn btn-accent" id="shareCopyLink">Copy link</button></div>
+    <p class="share-size" id="shareSize"></p>
+    <div class="install-actions"><a class="btn" id="shareOpen" href="#">Open it yourself</a></div>
+  </div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button class="btn" id="installClose">Cancel</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel">
+  <div class="export-panel-header"><h2>E</h2><button class="export-close" id="exportClose">x</button></div>
+  <div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p class="export-note" id="exportNote"></p></div>
+  <pre class="export-code"><code id="exportCode"></code></pre>
+  <div class="export-actions"><button class="btn btn-accent" id="exportCopyBtn">C</button></div></div></div>
+<iframe id="f" style="width:900px;height:520px;border:1px solid #ccc"></iframe>
+<script>window.__err=[];window.addEventListener("error",function(e){window.__err.push(e.message+" @"+(e.filename||"").split("/").pop()+":"+e.lineno)});try { localStorage.clear(); } catch (e) {}</script>
+<script src="../config.js"></script>
+<script src="../cloud.js"></script>
+<script src="../app.js"></script>
+<script>
+// A shared link has to work for someone with no account, and it carries
+// markup from a stranger — so this checks both that a real link opens, and
+// that a hostile one cannot run anything.
+const out = document.getElementById('out');
+const lines = [];
+let fails = 0;
+function fail(msg) { fails++; lines.push('FAIL ' + msg); }
+
+async function run() {
+  // ── The editor end ──
+  if (!document.getElementById('shareBtn')) fail('no Share button in the top bar');
+  S.name = 'Daniel Reyes'; S.title = 'Head of Partnerships'; S.email = 'daniel@signvel.com';
+  S.template = 'corporate';
+
+  const url = await buildShareLink();
+  if (url.indexOf('share.html#') < 0) fail('the link does not point at the share page: ' + url.slice(0, 60));
+  const frag = url.split('#')[1] || '';
+  if (!/^[zr]:/.test(frag)) fail('the link carries no signature');
+  // The signature must ride in the fragment, which never reaches a server.
+  if (url.split('#')[0].indexOf('?') >= 0) fail('part of the signature is in the query, which is sent to the server');
+  lines.push('link is ' + url.length.toLocaleString() + ' characters, ' + (frag[0] === 'z' ? 'compressed' : 'uncompressed'));
+  if (frag[0] === 'z' && url.length > 6000) fail('the compressed link is ' + url.length + ' characters, too long to send');
+
+  // The dialog shows it.
+  showShare();
+  await new Promise(r => setTimeout(r, 400));
+  if (document.getElementById('shareOverlay').classList.contains('hidden')) fail('the Share button did not open the dialog');
+  const shown = document.getElementById('shareUrl').value;
+  if (shown.indexOf('share.html#') < 0) fail('the dialog does not show the link: ' + shown.slice(0, 40));
+  document.getElementById('shareOverlay').classList.add('hidden');
+
+  // ── The visitor end ──
+  const fr = document.getElementById('f');
+  // Each load needs a distinct URL: two addresses differing only after the #
+  // do not reload a frame, so onload never fires and the wait never ends.
+  let seq = 0;
+  const open = (hash) => new Promise(resolve => {
+    fr.onload = () => setTimeout(() => resolve(fr.contentDocument), 500);
+    fr.src = '../share.html?n=' + (++seq) + hash;
+  });
+
+  let d = await open('#' + frag);
+  const canvas = d.getElementById('shareCanvas');
+  if (!canvas || !/<table/i.test(canvas.innerHTML)) fail('a real link rendered no signature');
+  if (canvas && canvas.innerHTML.indexOf('Daniel Reyes') < 0) fail('the signature that arrived is not the one shared');
+  if (d.getElementById('shareActions').hidden) fail('the copy buttons were hidden on a good link');
+  // Nothing on that page may need an account.
+  if (d.querySelector('script[src*="cloud"]')) fail('the share page pulls in the cloud layer');
+
+  // ── A hostile link ──
+  // The page renders markup out of a URL, so anyone can put anything there.
+  const nasty = '<img src=x onerror="window.top.__XSS=1"><script>window.top.__XSS=2<\/script>'
+    + '<iframe src="javascript:window.top.__XSS=3"></iframe>'
+    + '<a href="javascript:window.top.__XSS=4">link</a><table><tr><td>safe</td></tr></table>';
+  const bytes = new TextEncoder().encode(nasty);
+  let b = '';
+  bytes.forEach(x => { b += String.fromCharCode(x); });
+  const payload = btoa(b).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  window.__XSS = 0;
+  d = await open('#r:' + payload);
+  const c2 = d.getElementById('shareCanvas');
+  const html2 = c2 ? c2.innerHTML : '';
+  if (window.__XSS) fail('a hostile link ran something (__XSS=' + window.__XSS + ')');
+  if (/<script|<iframe/i.test(html2)) fail('a script or frame survived the clean');
+  if (/onerror/i.test(html2)) fail('an on-handler survived the clean');
+  if (/javascript:/i.test(html2)) fail('a javascript: address survived the clean');
+  if (html2.indexOf('safe') < 0) fail('the clean threw away the ordinary markup too');
+
+  // ── Links that are wrong rather than hostile ──
+  d = await open('');
+  if (!d.querySelector('.share-empty')) fail('a link with no signature says nothing');
+  if (!d.getElementById('shareActions').hidden) fail('a link with no signature still offers copy buttons');
+  d = await open('#r:@@@not-base64@@@');
+  if (!d.querySelector('.share-empty')) fail('a damaged link says nothing');
+
+  lines.push(fails ? '' : 'a real link opens and copies; a hostile one runs nothing');
+  out.textContent = lines.join('\n');
+  document.title = fails ? 'FAIL ' + fails : 'PASS';
+}
+
+run().catch(e => {
+  out.textContent = (window.__err.join('\n') || '') + '\nTHREW: ' + e.message
+    + '\n' + (e.stack || '').split('\n').slice(0, 3).join('\n');
+  document.title = 'FAIL threw';
+});
+</script></body></html>
+<script>
+setTimeout(function () {
+  if (!document.getElementById('out').textContent.trim()) {
+    document.getElementById('out').textContent = 'NOTHING RAN\n' + (window.__err || []).join('\n');
+    document.title = 'FAIL silent';
+  }
+}, 20000);
+</script>

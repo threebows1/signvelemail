@@ -875,3 +875,16 @@ select.input{cursor:pointer;appearance:auto}
   .body.panel-collapsed .panel{box-shadow:none}
   .stage{width:100%}
 }
+
+/* ── Share dialog ──
+   The link to this signature. It is narrower than the install picker because
+   it holds one field rather than a grid. */
+.install-panel.is-narrow{max-width:560px}
+.share-lead{margin:0 0 14px;font-size:13px;line-height:1.6;color:var(--muted)}
+.share-row{display:flex;gap:8px;align-items:center}
+.share-url{
+  flex:1;min-width:0;padding:8px 12px;border:1px solid var(--border);
+  border-radius:9999px;background:var(--canvas);font-family:var(--mono);
+  font-size:11.5px;color:var(--ink);
+}
+.share-size{margin:10px 0 0;font-size:11.5px;line-height:1.55;color:var(--muted)}

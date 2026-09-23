@@ -1125,6 +1125,7 @@ function renderHeader() {
     <div class="header-spacer"></div>
     ${renderAccount()}
     <button class="btn" id="resetBtn" title="Clear saved settings and start from the defaults">Reset</button>
+    <button class="btn" id="shareBtn" title="Make a link to this signature that anyone can open">Share</button>
     <button class="btn" id="copyBtn">Copy signature</button>
     <span class="copy-feedback" id="copyFeedback"></span>
     <button class="btn btn-accent" id="exportBtn">Export HTML</button>
@@ -3523,6 +3524,63 @@ function renderExportTargets() {
 }
 
 // ═══════════════════════════════════════
+// Share: a link to this signature
+// ═══════════════════════════════════════
+// The signature travels in the link itself rather than in a database, so
+// there is nothing to store, nothing to expire, and the person opening it
+// needs no account — which is the whole point of sending someone a link.
+//
+// It rides in the fragment, after the #, which browsers never send to the
+// server. A shared signature holds someone's name, address and phone number;
+// keeping it out of the request means it stays out of server logs.
+//
+// Deflate where the browser has it, which takes a signature of some six
+// thousand characters down to under two, and plain base64 where it does not.
+function toBase64Url(bytes) {
+  let s = '';
+  bytes.forEach(b => { s += String.fromCharCode(b); });
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function buildShareLink() {
+  // Written with hosted images rather than embedded ones. The ordinary copy
+  // carries each icon as a data: URI, which is a kilobyte or two apiece and
+  // pushed the link past thirteen thousand characters — long enough that
+  // messaging apps trim it and the signature arrives broken. The hosted form
+  // is the same design by reference, and brings the link under two thousand.
+  const html = withExportTarget('newoutlook', generateSignaturePreview);
+  const raw = new TextEncoder().encode(html);
+  let payload, mark;
+  if (window.CompressionStream) {
+    try {
+      const packed = new Response(
+        new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate-raw'))
+      );
+      payload = toBase64Url(new Uint8Array(await packed.arrayBuffer()));
+      mark = 'z';
+    } catch (e) { payload = null; }
+  }
+  if (!payload) { payload = toBase64Url(raw); mark = 'r'; }
+  const url = new URL('share.html', location.href);
+  url.hash = mark + ':' + payload;
+  return url.href;
+}
+
+function showShare() {
+  const overlay = document.getElementById('shareOverlay');
+  const field = document.getElementById('shareUrl');
+  if (!overlay || !field) return;
+  field.value = 'Building the link…';
+  overlay.classList.remove('hidden');
+  buildShareLink().then(url => {
+    field.value = url;
+    field.select();
+    const size = document.getElementById('shareSize');
+    if (size) size.textContent = url.length.toLocaleString() + ' characters — the signature travels in the link, so nothing is stored and it never expires.';
+  }).catch(() => { field.value = ''; });
+}
+
+// ═══════════════════════════════════════
 // Install: pick the client, then its steps
 // ═══════════════════════════════════════
 // The client list used to be fifteen tabs across the top of the preview,
@@ -3608,6 +3666,7 @@ function setupEvents() {
       Cloud.signOut().then(() => { renderHeader(); showCopyFeedback('Signed out'); });
       return;
     }
+    if (e.target.closest('#shareBtn')) { showShare(); return; }
     if (e.target.closest('#copyBtn')) { copySignature(); return; }
     if (e.target.closest('#exportBtn')) { showExport(); return; }
   });
@@ -3942,6 +4001,24 @@ function setupEvents() {
     const file = e.dataTransfer && e.dataTransfer.files[0];
     if (file) acceptUpload(zone.dataset.drop, file);
   });
+
+  // Share dialog. Guarded like the rest: app.js runs on pages without it.
+  const shareOverlay = document.getElementById('shareOverlay');
+  if (shareOverlay) {
+    const closeShare = () => shareOverlay.classList.add('hidden');
+    document.getElementById('shareClose').addEventListener('click', closeShare);
+    shareOverlay.addEventListener('click', e => {
+      if (e.target === shareOverlay) { closeShare(); return; }
+      const open = e.target.closest('#shareOpen');
+      if (open) { open.href = document.getElementById('shareUrl').value || '#'; return; }
+      if (!e.target.closest('#shareCopyLink')) return;
+      const btn = e.target.closest('#shareCopyLink');
+      const url = document.getElementById('shareUrl').value;
+      const said = (t) => { btn.textContent = t; setTimeout(() => { btn.textContent = 'Copy link'; }, 2000); };
+      if (!url || !navigator.clipboard || !navigator.clipboard.writeText) { said('Not available'); return; }
+      navigator.clipboard.writeText(url).then(() => said('Copied ✓')).catch(() => said('Not available'));
+    });
+  }
 
   // Install picker. Guarded, because app.js is loaded by pages that have no
   // install markup at all — the check harnesses among them — and a throw here

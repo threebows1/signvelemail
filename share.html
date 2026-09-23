@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A signature to copy — Sign Vel</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" sizes="180x180">
+  <meta name="description" content="Someone shared an email signature with you. Copy it straight into Gmail, Outlook, or Apple Mail.">
+  <meta name="robots" content="noindex">
+  <!-- Someone else's link, opened by someone with no account. Nothing here
+       talks to the cloud layer and nothing is stored: the signature arrives
+       in the fragment of the URL, which the browser never sends to a server,
+       so a shared name and phone number stay out of the logs. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="home.css">
+</head>
+<body class="share-page">
+  <header class="share-head">
+    <a class="share-brand" href="index.html">Sign&nbsp;Vel</a>
+    <a class="btn btn-accent" href="editor.html">Make your own</a>
+  </header>
+
+  <main class="share-main">
+    <p class="share-kicker" id="shareKicker">A signature was shared with you</p>
+    <h1 class="share-title" id="shareTitle">Loading…</h1>
+
+    <div class="share-card">
+      <div class="share-canvas" id="shareCanvas"></div>
+    </div>
+
+    <div class="share-actions" id="shareActions">
+      <button class="btn btn-accent" id="shareCopy">Copy signature</button>
+      <button class="btn" id="shareCopyHtml">Copy HTML</button>
+      <span class="share-feedback" id="shareFeedback"></span>
+    </div>
+
+    <p class="share-note">
+      Paste it into your mail client's signature box with Ctrl+V, or Cmd+V on a Mac.
+      <a href="install.html">Step-by-step for each client</a>.
+    </p>
+  </main>
+
+  <footer class="share-foot">
+    <p>Made with <a href="index.html">Sign Vel</a> · <span class="footer-year"></span></p>
+  </footer>
+
+  <script>
+  (function () {
+    const canvas = document.getElementById('shareCanvas');
+    const title = document.getElementById('shareTitle');
+    const kicker = document.getElementById('shareKicker');
+
+    function fail(msg) {
+      kicker.textContent = '';
+      title.textContent = 'That link does not carry a signature';
+      canvas.innerHTML = '';
+      const p = document.createElement('p');
+      p.className = 'share-empty';
+      p.textContent = msg;
+      canvas.appendChild(p);
+      document.getElementById('shareActions').hidden = true;
+    }
+
+    function fromBase64Url(s) {
+      const b64 = s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4);
+      const bin = atob(b64);
+      const out = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+
+    // Anyone can write whatever they like after the #, so what comes out of a
+    // link is treated as hostile until it has been through here. A signature
+    // needs tables, text, links and images and nothing else; everything that
+    // could run — a script, a frame, an on-anything attribute, a javascript:
+    // address — is dropped rather than escaped, because escaping it would
+    // only mean rendering it wrongly rather than not at all.
+    const ALLOWED = new Set(['TABLE','THEAD','TBODY','TFOOT','TR','TD','TH','DIV','SPAN','P','A','IMG','BR','HR','STRONG','B','EM','I','U','SMALL','FONT','CENTER','UL','OL','LI','H1','H2','H3','H4','H5','H6']);
+    const ATTRS = new Set(['style','href','src','alt','title','width','height','align','valign','bgcolor','border','cellpadding','cellspacing','colspan','rowspan','role','target','rel','color','face','size','dir']);
+
+    function clean(html) {
+      const doc = new DOMParser().parseFromString('<div id="root">' + html + '</div>', 'text/html');
+      const root = doc.getElementById('root');
+      const walk = function (node) {
+        [].slice.call(node.children).forEach(function (el) {
+          if (!ALLOWED.has(el.tagName)) { el.remove(); return; }
+          [].slice.call(el.attributes).forEach(function (a) {
+            const name = a.name.toLowerCase();
+            const value = (a.value || '').trim();
+            if (name.indexOf('on') === 0 || !ATTRS.has(name)) { el.removeAttribute(a.name); return; }
+            if ((name === 'href' || name === 'src') && /^(javascript|vbscript)\s*:/i.test(value)) {
+              el.removeAttribute(a.name);
+            }
+            if (name === 'style' && /expression\s*\(|javascript:/i.test(value)) el.removeAttribute(a.name);
+          });
+          if (el.tagName === 'A') el.setAttribute('rel', 'noopener nofollow');
+          walk(el);
+        });
+      };
+      walk(root);
+      return root.innerHTML;
+    }
+
+    function load() {
+      const frag = (location.hash || '').replace(/^#/, '');
+      if (!frag) {
+        fail('The link has no signature in it. Ask whoever sent it for the whole link — everything after the # matters.');
+        return Promise.resolve();
+      }
+      const mark = frag.slice(0, 2);
+      const body = frag.slice(2);
+      if ((mark !== 'z:' && mark !== 'r:') || !body) {
+        fail('This link is not in a form this page understands.');
+        return Promise.resolve();
+      }
+      let bytes;
+      try {
+        bytes = fromBase64Url(body);
+      } catch (e) {
+        fail('The signature in this link could not be read. It may have been cut short when it was sent — these links are long, and some apps trim them.');
+        return Promise.resolve();
+      }
+      const text = (mark === 'r:')
+        ? Promise.resolve(new TextDecoder().decode(bytes))
+        : (window.DecompressionStream
+            ? new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw')))
+                .arrayBuffer().then(function (buf) { return new TextDecoder().decode(buf); })
+            : Promise.reject(new Error('no inflate')));
+
+      return text.then(function (html) {
+        const safe = clean(html);
+        if (!/<table|<div|<p/i.test(safe)) { fail('There was no signature inside this link.'); return; }
+        canvas.innerHTML = safe;
+        title.textContent = 'Ready to copy';
+      }).catch(function () {
+        fail('The signature in this link could not be read. It may have been cut short when it was sent — these links are long, and some apps trim them.');
+      });
+    }
+
+    load();
+
+    const feedback = document.getElementById('shareFeedback');
+    let resetAt = 0;
+    function said(text) {
+      feedback.textContent = text;
+      const mine = resetAt = Date.now();
+      setTimeout(function () { if (resetAt === mine) feedback.textContent = ''; }, 2200);
+    }
+
+    // Rich paste: the markup on the clipboard, which is what a signature box
+    // wants. The plain half is the same markup, so a box that only takes text
+    // still gets something usable.
+    document.getElementById('shareCopy').addEventListener('click', function () {
+      const html = canvas.innerHTML;
+      if (!html.trim()) { said('Nothing to copy'); return; }
+      if (navigator.clipboard && window.ClipboardItem) {
+        navigator.clipboard.write([new ClipboardItem({
+          'text/html': new Blob([html], {type: 'text/html'}),
+          'text/plain': new Blob([html], {type: 'text/plain'}),
+        })]).then(function () { said('Copied ✓'); }).catch(function () { selectCopy(html); });
+        return;
+      }
+      selectCopy(html);
+    });
+
+    document.getElementById('shareCopyHtml').addEventListener('click', function () {
+      const html = canvas.innerHTML;
+      if (!html.trim()) { said('Nothing to copy'); return; }
+      if (!navigator.clipboard || !navigator.clipboard.writeText) { said('Not available'); return; }
+      navigator.clipboard.writeText(html).then(function () { said('HTML copied ✓'); })
+        .catch(function () { said('Not available'); });
+    });
+
+    // The older path, for browsers without ClipboardItem. Its own white
+    // ground, so the selection does not pick up the page behind it.
+    function selectCopy(html) {
+      const el = document.createElement('div');
+      el.contentEditable = 'true';
+      el.innerHTML = html;
+      el.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;background:#FFFFFF;';
+      document.body.appendChild(el);
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      sel.removeAllRanges();
+      el.remove();
+      said(ok ? 'Copied ✓' : 'Not available');
+    }
+  })();
+  </script>
+  <script>document.querySelectorAll(".footer-year").forEach(function (e) { e.textContent = new Date().getFullYear(); });</script>
+</body>
+</html>
