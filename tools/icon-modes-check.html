@@ -57,3 +57,43 @@ document.getElementById('out').textContent = F.length ? F.join('\n')
   : 'rounded and rule draw, survive both Outlooks, and each has its own miniature';
 document.title = F.length ? 'FAIL ' + F.length : 'PASS';
 </script></body></html>
+<script>
+// The closed row's miniature is a preview of the signature, so it has to be
+// drawn in the signature's colour — not the panel's grey.
+(function () {
+  const G = [];
+  const themed = '#2B4C7E';
+  S.accentColor = themed; S.iconColor = '';
+  S.openSection = sections.findIndex(function (s) { return s.id === 'design'; });
+  ['circle','filled','rounded','rule','icons','letters','labels'].forEach(function (m) {
+    S.contactIconMode = m;
+    renderPanel();
+    const row = [].slice.call(document.querySelectorAll('.opt-row')).find(function (r) {
+      return (r.querySelector('.opt-label') || {}).textContent === 'Icon type';
+    });
+    if (!row) { G.push(m + ': no Icon type row'); return; }
+    const v = row.querySelector('.row-value');
+    if (!v || !v.innerHTML.trim()) { G.push(m + ': the row shows no miniature'); return; }
+    const box = v.getBoundingClientRect();
+    if (box.width < 8 || box.height < 8) G.push(m + ': the miniature is ' + Math.round(box.width) + 'x' + Math.round(box.height));
+    // A filled badge is white on the theme colour; everything else is the
+    // theme colour itself. Grey means it fell back to the panel's own ink.
+    const mark = v.querySelector('.sw-ring, .sw-bare, .sw-rule');
+    const paint = mark ? getComputedStyle(mark) : null;
+    if (paint) {
+      const fg = paint.color, bg = paint.backgroundColor;
+      const themedRgb = 'rgb(43, 76, 126)';
+      const ok = fg === themedRgb || bg === themedRgb || fg === 'rgb(255, 255, 255)';
+      if (!ok) G.push(m + ': miniature is ' + fg + ' on ' + bg + ', neither the theme colour nor white on it');
+    }
+    // Nothing in the row may be a picture that failed to load — that is what
+    // draws the grey placeholder people report as "it went grey".
+    [].slice.call(v.querySelectorAll('img')).forEach(function (im) {
+      if (im.complete && im.naturalWidth === 0) G.push(m + ': the miniature is a broken image');
+    });
+  });
+  const out = document.getElementById('out');
+  out.textContent += '\n' + (G.length ? 'ROW FAIL:\n' + G.join('\n') : 'every row miniature carries the theme colour');
+  if (G.length) document.title = 'FAIL row ' + G.length;
+})();
+</script>

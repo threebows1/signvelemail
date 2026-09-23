@@ -605,8 +605,8 @@ select.input{cursor:pointer;appearance:auto}
 .sw-ring svg,.sw-bare svg{display:block}
 /* A miniature standing in for the value on a closed row sits on the text
    baseline beside the chevron, not above it. */
-.row-value .sw-ring,.row-value .sw-box,.row-value .sw-bare{vertical-align:middle}
-.row-value:has(.sw-ring),.row-value:has(.sw-box),.row-value:has(.sw-bare){
+.row-value .sw-ring,.row-value .sw-box,.row-value .sw-bare,.row-value .sw-rule{vertical-align:middle}
+.row-value:has(.sw-ring),.row-value:has(.sw-box),.row-value:has(.sw-bare),.row-value:has(.sw-rule){
   display:inline-flex;align-items:center;overflow:visible;
 }
 .toggle-group.is-swatches button{padding:4px 7px;line-height:0}
