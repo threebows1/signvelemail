@@ -3041,6 +3041,7 @@ function buildSignatureBody() {
         <td width="100%" style="width:100%;vertical-align:middle;">
           <p style="${nameStyleAt(bs + 3)}">${eName}</p>
           ${roleHTML({size: bs - 1})}
+          ${taglineHTML}
         </td>
       </tr>
       <tr><td colspan="2" style="padding-top:${parseInt(sp) + 6}px;">
@@ -3195,6 +3196,7 @@ function buildSignatureBody() {
         <p style="${nameStyle}">${eName}</p>
         ${roleHTML({mb: 2})}
         <p style="${titleStyle}">${esc(pCompany)}</p>
+        ${taglineHTML}
       </td></tr>
       ${S.dividerEnabled ? `<tr><td style="padding-bottom:${sp};">${rule}</td></tr>` : ''}
       <tr><td>
@@ -3409,6 +3411,7 @@ function buildSignatureBody() {
   // minimal
   return outer(`
     <tr><td><span style="${nameStyle}">${eName}</span><span style="${titleStyle}"> · ${esc(pTitle)} · ${esc(pCompany)}</span></td></tr>
+    ${taglineHTML ? `<tr><td style="padding-top:2px;">${taglineHTML}</td></tr>` : ''}
     ${dividerHTML}
     <tr><td style="padding-top:${sp};">
       ${activeContacts.map(f => {

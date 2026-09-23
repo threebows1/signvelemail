@@ -757,6 +757,27 @@
       S.socialLinks = keep;
     })();
 
+    // ── A field the panel offers, every layout has to draw ──
+    // The Tagline box sat in Contact fields and did nothing on three of the
+    // twenty-four layouts: you typed into it and the signature never changed.
+    // A field that can be filled in and then silently dropped is worse than
+    // one that is not offered at all, so every layout is asked for each.
+    {
+      const MARK = 'ZZFIELDMARKZZ';
+      window.__taglineChecked = true;
+      const before = {tagline: S.tagline, template: S.template};
+      S.tagline = MARK;
+      const dropped = [];
+      Object.keys(templateThemes).forEach(id => {
+        S.template = id;
+        if (generateSignaturePreview().indexOf(MARK) < 0) dropped.push(id);
+      });
+      if (dropped.length) E.push('tagline typed but not drawn by: ' + dropped.join(', '));
+      if (!Object.keys(templateThemes).length) E.push('the tagline check walked no layouts at all');
+      S.tagline = before.tagline;
+      S.template = before.template;
+    }
+
     // ── Logo height reaches every layout that draws a logo ──
     // Measured from the default upwards, not from the bottom of the slider: a
     // layout that clamps the size to something at or under 40 still answers a
@@ -1013,6 +1034,7 @@
     S.template = 'corporate';
     if (!generateExportHTML().includes('<table')) E.push('export produced no table');
 
+    if (!window.__taglineChecked) E.push('the tagline check never ran');
     document.getElementById('report').textContent = E.length ? E.join('\n') : 'all good';
     document.title = E.length ? 'FAIL ' + E.length : 'PASS';
   })();
