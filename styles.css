@@ -572,8 +572,13 @@ select.input{cursor:pointer;appearance:auto}
    this treatment exists to remove. */
 .opt-row.is-openable:hover .opt-label{color:var(--accent)}
 .opt-row.is-openable:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.opt-row.is-openable svg{color:var(--muted);transition:transform .18s}
-.opt-row.is-openable.open svg{transform:rotate(180deg)}
+/* The chevron only. Written as `.opt-row svg` this caught the miniature in
+   the row's value as well: it painted it grey over the theme colour the
+   swatch had been given, and turned it upside down whenever the row was
+   open. The chevron is the direct child of the control; the miniature is
+   inside .row-value, which is what tells them apart. */
+.opt-row.is-openable > .opt-control > svg{color:var(--muted);transition:transform .18s}
+.opt-row.is-openable.open > .opt-control > svg{transform:rotate(180deg)}
 .row-value{
   font-size:11px;color:var(--ink);font-weight:500;max-width:140px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;

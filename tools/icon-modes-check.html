@@ -67,6 +67,9 @@ document.title = F.length ? 'FAIL ' + F.length : 'PASS';
   S.openSection = sections.findIndex(function (s) { return s.id === 'design'; });
   ['circle','filled','rounded','rule','icons','letters','labels'].forEach(function (m) {
     S.contactIconMode = m;
+    // Open, which is how it looks when the treatment is being chosen — the
+    // closed row was the only state being measured.
+    OPENROW.key = 'contactIconMode';
     renderPanel();
     const row = [].slice.call(document.querySelectorAll('.opt-row')).find(function (r) {
       return (r.querySelector('.opt-label') || {}).textContent === 'Icon type';
@@ -78,7 +81,11 @@ document.title = F.length ? 'FAIL ' + F.length : 'PASS';
     if (box.width < 8 || box.height < 8) G.push(m + ': the miniature is ' + Math.round(box.width) + 'x' + Math.round(box.height));
     // A filled badge is white on the theme colour; everything else is the
     // theme colour itself. Grey means it fell back to the panel's own ink.
-    const mark = v.querySelector('.sw-ring, .sw-bare, .sw-rule');
+    // The drawing itself, not the span around it. Measuring the wrapper is
+    // what let a rule meant for the chevron paint every svg in the row grey
+    // while this check went on passing: the span kept its theme colour, and
+    // the glyph inside it did not.
+    const mark = v.querySelector('svg') || v.querySelector('.sw-ring, .sw-bare, .sw-rule');
     const paint = mark ? getComputedStyle(mark) : null;
     if (paint) {
       const fg = paint.color, bg = paint.backgroundColor;
@@ -88,6 +95,10 @@ document.title = F.length ? 'FAIL ' + F.length : 'PASS';
     }
     // Nothing in the row may be a picture that failed to load — that is what
     // draws the grey placeholder people report as "it went grey".
+    // And it must not be lying on its side: the chevron's open-state rotation
+    // was reaching the miniature too and turning it upside down.
+    if (paint && paint.transform && paint.transform !== 'none')
+      G.push(m + ': the miniature is transformed (' + paint.transform + ')');
     [].slice.call(v.querySelectorAll('img')).forEach(function (im) {
       if (im.complete && im.naturalWidth === 0) G.push(m + ': the miniature is a broken image');
     });
