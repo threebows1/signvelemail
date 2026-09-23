@@ -1,0 +1,59 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>uploader-check</title>
+<link rel="stylesheet" href="../styles.css"></head><body>
+<div class="app" id="app"><aside class="rail" id="rail"></aside><div class="workspace"><header class="topbar" id="header"></header>
+<div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button class="btn" id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button class="btn" id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button class="btn" id="shareCopyLink">C</button></div><p id="shareSize"></p><div class="install-actions"><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button class="export-close" id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button class="btn" id="exportCopyBtn">C</button></div></div></div>
+<pre id="out" style="position:fixed;left:0;bottom:0;background:#fff;z-index:99"></pre>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+const F = [];
+// Open the Media section, where the logo and headshot slots live.
+const idx = sections.findIndex(s => s.id === 'media');
+S.openSection = idx >= 0 ? idx : S.openSection;
+renderPanel();
+const zones = [].slice.call(document.querySelectorAll('.uploader'));
+if (zones.length < 1) F.push('no uploader in the panel (section ' + idx + ')');
+zones.forEach(z => {
+  const loaded = z.classList.contains('is-loaded');
+  const where = loaded ? 'filled' : 'empty';
+  // Both states say the same thing and both take a drop.
+  if (!z.getAttribute('data-drop')) F.push(where + ': not a drop target');
+  if (!z.querySelector('input[type=file]')) F.push(where + ': no file input inside the zone');
+  if (z.tagName !== 'LABEL') F.push(where + ': the zone is a ' + z.tagName + ', so clicking it opens nothing');
+  const text = (z.querySelector('.uploader-text') || {}).textContent || '';
+  if (!/drop/i.test(text)) F.push(where + ': says "' + text + '" rather than inviting a drop');
+  if (/replace/i.test(z.textContent)) F.push(where + ': still says Replace');
+  if (loaded && !z.querySelector('.uploader-thumb img')) F.push('filled: no picture shown');
+});
+// Remove has to sit outside the label, or clicking it opens the file dialog.
+const removes = [].slice.call(document.querySelectorAll('[data-action^="remove"]'));
+if (!removes.length) F.push('no Remove control at all');
+removes.forEach(r => {
+  if (r.closest('label')) F.push('Remove is inside a label, so it would open the file picker too');
+});
+// The zone has to be big enough to drop on.
+zones.forEach(z => {
+  const b = z.getBoundingClientRect();
+  if (b.height < 60 || b.width < 120) F.push('a zone is only ' + Math.round(b.width) + 'x' + Math.round(b.height));
+});
+// Both slots ship with a picture in them, so the empty state has to be asked
+// for — otherwise only half of this is ever checked.
+S.logoUrl = ''; S.headshotUrl = '';
+renderPanel();
+const empties = [].slice.call(document.querySelectorAll('.uploader'));
+if (!empties.length) F.push('no uploader once the images are cleared');
+empties.forEach(function (z) {
+  if (z.classList.contains('is-loaded')) F.push('empty: still marked as loaded');
+  if (z.tagName !== 'LABEL') F.push('empty: the zone is a ' + z.tagName);
+  if (!z.querySelector('input[type=file]')) F.push('empty: no file input');
+  if (!/drop/i.test((z.querySelector('.uploader-text') || {}).textContent || '')) F.push('empty: no invitation to drop');
+  if (z.querySelector('.uploader-thumb img')) F.push('empty: still showing a picture');
+});
+
+document.getElementById('out').textContent = F.length ? F.join('\n')
+  : zones.length + ' filled and ' + empties.length + ' empty zones, both read the same and both take a drop';
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>

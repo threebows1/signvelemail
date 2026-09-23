@@ -1609,14 +1609,25 @@ function renderUploader(kind, hint) {
   const named = url !== sample ? esc(S[kind + 'Name'] || 'Image loaded') : '';
   let h;
   if (url) {
-    h = `<div class="uploader is-loaded" data-drop="${action}">
-      <span class="uploader-thumb"><img src="${esc(url)}" alt=""></span>
-      <span class="uploader-meta">
-        ${named ? `<span class="uploader-name">${named}</span>` : ''}
+    // Filled, it says the same thing as empty: drop a file here. "Replace" was
+    // a button describing the mechanism; dropping a file on it always worked,
+    // and the word never said so. The picture stands where the icon stands
+    // when there is none, and the invitation underneath is word for word the
+    // one on an empty slot, so the two read as one control in two states.
+    //
+    // Remove sits outside the label. Inside it, every click on it would open
+    // the file dialog as well — a label passes its clicks to its input.
+    h = `<div class="uploader-wrap">
+      <label class="uploader is-loaded" data-drop="${action}">
+        ${input}
+        <span class="uploader-thumb"><img src="${esc(url)}" alt=""></span>
+        <span class="uploader-text">Drag and drop an image here to upload, or <u>select a file</u></span>
         <span class="uploader-hint">${hint}</span>
-      </span>
-      <label class="btn uploader-action">Replace${input}</label>
-      <button class="btn uploader-action" data-action="remove${kind.charAt(0).toUpperCase()+kind.slice(1)}">Remove</button>
+      </label>
+      <div class="uploader-foot">
+        ${named ? `<span class="uploader-name">${named}</span>` : ''}
+        <button class="btn uploader-action" data-action="remove${kind.charAt(0).toUpperCase()+kind.slice(1)}">Remove</button>
+      </div>
     </div>`;
   } else {
     h = `<label class="uploader" data-drop="${action}">

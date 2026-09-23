@@ -461,22 +461,23 @@ select.input{cursor:pointer;appearance:auto}
 .uploader-text{font-size:11px;color:var(--ink)}
 .uploader-text u{text-decoration:underline;color:var(--accent)}
 .uploader-hint{font-size:10px;color:var(--muted);line-height:1.4}
-/* Filled or empty, it reads the same way: somewhere to drop a file. Once an
-   image was in it this turned into a solid-bordered row, which stopped looking
-   like a drop target — though it never stopped being one, since the drag
-   handler is on the same element either way. The picture leads, its name and
-   the note sit under it, and Replace and Remove share the line below: the meta
-   block is given the full width, so it takes a line of its own and the two
-   buttons wrap together onto the next one. */
+/* Filled or empty, it is one control in two states and says the same thing
+   in both: drop a file here. The only difference is what stands at the top —
+   the upload glyph when the slot is empty, the picture itself when it is not.
+   Remove sits under the zone rather than in it, because a click anywhere
+   inside a label reaches the file input. */
 .uploader.is-loaded{
-  cursor:default;border-style:dashed;
-  flex-wrap:wrap;justify-content:center;text-align:center;gap:8px;
+  flex-direction:column;justify-content:center;text-align:center;gap:6px;
   padding:16px 14px;background:var(--canvas);
 }
 .uploader.is-loaded:hover{border-color:var(--accent);background:var(--accent-light)}
-.uploader.is-loaded .uploader-thumb{width:56px;height:56px}
-.uploader.is-loaded .uploader-meta{flex:0 0 100%;align-items:center}
+.uploader.is-loaded .uploader-thumb{width:64px;height:64px;margin-bottom:2px}
+.uploader.is-loaded .uploader-text,
 .uploader.is-loaded .uploader-hint{max-width:34ch;margin:0 auto}
+.uploader-foot{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  flex-wrap:wrap;margin-top:8px;
+}
 /* Empty, it gets the room to read as an invitation rather than a thin strip. */
 .uploader:not(.is-loaded){padding:20px 14px}
 .uploader-thumb{
@@ -485,7 +486,6 @@ select.input{cursor:pointer;appearance:auto}
   display:flex;align-items:center;justify-content:center;overflow:hidden;
 }
 .uploader-thumb img{max-width:100%;max-height:100%;object-fit:contain}
-.uploader-meta{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto}
 .uploader-name{
   font-size:11px;font-weight:500;color:var(--ink);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
