@@ -461,14 +461,15 @@ select.input{cursor:pointer;appearance:auto}
 .uploader-text{font-size:11px;color:var(--ink)}
 .uploader-text u{text-decoration:underline;color:var(--accent)}
 .uploader-hint{font-size:10px;color:var(--muted);line-height:1.4}
-/* A square, the same in every slot. The notes differ in length — the logo's
-   runs to two lines and the headshot's to one — so left to themselves the
-   boxes came out different heights, sitting one directly above the other
-   where it showed. A fixed square settles it.
+/* One size in every slot. The notes differ in length — the logo's runs to two
+   lines and the headshot's to one — so left to size themselves the boxes came
+   out different heights, sitting one directly above the other where it
+   showed. Fixing both settles it.
 
-   The ratio rather than a second fixed number, so a panel narrower than 270
-   gives a smaller square rather than a tall thin one. */
-.uploader{padding:20px 14px;width:270px;max-width:100%;aspect-ratio:1/1;margin:0 auto}
+   The ratio carries the height rather than a second fixed number, so a panel
+   narrower than 280 gives a smaller box of the same shape rather than a tall
+   thin one. */
+.uploader{padding:20px 14px;width:280px;max-width:100%;aspect-ratio:280/175;margin:0 auto}
 .uploader-error{
   margin-top:6px;font-size:10px;line-height:1.4;color:#B3261E;
   background:#FCEEEC;border:1px solid #F3D3CF;border-radius:var(--radius);padding:6px 8px;

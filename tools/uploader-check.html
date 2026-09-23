@@ -47,11 +47,10 @@ const boxes = zones.map(z => z.getBoundingClientRect());
 const hs = boxes.map(b => Math.round(b.height));
 const ws = boxes.map(b => Math.round(b.width));
 if (new Set(hs).size > 1) F.push("boxes are different heights: " + hs.join(", "));
-// Square, and the size asked for.
+// The size asked for.
 boxes.forEach(function (b) {
   const w = Math.round(b.width), h = Math.round(b.height);
-  if (Math.abs(w - h) > 1) F.push("a box is not square: " + w + "x" + h);
-  if (w !== 270) F.push("a box is " + w + " wide, not 270");
+  if (w !== 280 || h !== 175) F.push("a box is " + w + "x" + h + ", not 280x175");
 });
 // A fixed square can be too small for what is written inside it, and the
 // text spills out rather than the box growing to fit.
