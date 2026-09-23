@@ -1,0 +1,23 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="../styles.css"><title>swatch</title>
+<style>body{background:#fff;padding:14px;height:auto;overflow:visible}
+  .strip{display:flex;gap:18px;align-items:center}
+  .zoom{zoom:6;display:flex;gap:6px;align-items:center;margin-top:14px}</style></head><body>
+<div class="app" id="app" style="display:none"><aside class="rail" id="rail"></aside><div class="workspace"><header class="topbar" id="header"></header><div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<div class="strip" id="strip"></div><div class="zoom" id="zoom"></div><p style="font:11px monospace;margin-top:10px" id="m"></p>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+S.accentColor = '#2B4C7E'; S.iconColor = '';
+const html = ['circle','filled','rounded','rule','icons'].map(function (m) { return swatchContactIcon(m); }).join('');
+document.getElementById('strip').innerHTML = html;
+document.getElementById('zoom').innerHTML = html;
+// The gap above and below the glyph inside the first ring, in CSS pixels.
+const ring = document.querySelector('#strip .sw-ring');
+const g = ring.querySelector('svg');
+const a = ring.getBoundingClientRect(), b = g.getBoundingClientRect();
+document.getElementById('m').textContent =
+  'top gap ' + (b.top - a.top).toFixed(2) + '  bottom gap ' + (a.bottom - b.bottom).toFixed(2)
+  + '  left ' + (b.left - a.left).toFixed(2) + '  right ' + (a.right - b.right).toFixed(2);
+</script></body></html>

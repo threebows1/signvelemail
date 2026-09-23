@@ -587,10 +587,19 @@ select.input{cursor:pointer;appearance:auto}
    An option drawn as what it produces rather than named. The button gives up
    its text padding to them and carries the name as its accessible name and
    tooltip, so the choice reads by eye without losing it for a screen reader. */
+/* The ring is drawn as an inset shadow rather than a border, so the glyph
+   inside it is centred against the whole box. A 1.5px border cannot land on
+   a whole pixel: at 125% or 150% display scaling it rounds up on one side and
+   down on the other, the content box shifts half a pixel, and the glyph sits
+   visibly off-centre. A shadow is painted over the box instead of taking
+   room out of it, so nothing it does can move what it surrounds. */
 .sw-ring{
   display:inline-flex;align-items:center;justify-content:center;
-  width:21px;height:21px;box-sizing:border-box;
-  border:1.5px solid currentColor;border-radius:50%;
+  /* 22 against a 12px glyph leaves a whole 5px each side. At 21 the gap was
+     4.5, and half a pixel is the one that rounds unevenly on a scaled
+     display and puts the glyph off centre. */
+  width:22px;height:22px;box-sizing:border-box;
+  box-shadow:inset 0 0 0 1.5px currentColor;border-radius:50%;
 }
 /* The same badge squared off, and the bar treatment — each miniature drawn
    the way the row itself draws it, so the button shows the thing it picks. */

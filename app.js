@@ -1512,8 +1512,10 @@ function swatchSocial(style) {
   const c = S.socialIconColor || S.accentColor;
   const glyph = (socialIcons.linkedin || '')
     .replace(/width="16"/, 'width="12"').replace(/height="16"/, 'height="12"');
-  if (style === 'circle')  return `<span class="sw-ring" style="border-color:${c};color:${c}">${glyph}</span>`;
-  if (style === 'filled')  return `<span class="sw-ring" style="background:${c};border-color:${c};color:#fff">${glyph}</span>`;
+  // Same ring as the contact swatches, and the same reason for the fill
+  // turning the shadow off: it would draw a white line inside the disc.
+  if (style === 'circle')  return `<span class="sw-ring" style="color:${c}">${glyph}</span>`;
+  if (style === 'filled')  return `<span class="sw-ring" style="background:${c};color:#fff;box-shadow:none;">${glyph}</span>`;
   if (style === 'chip')    return `<span class="sw-box" style="background:${c};border-color:${c};color:#fff">in</span>`;
   if (style === 'outline') return `<span class="sw-box" style="border-color:${c};color:${c}">in</span>`;
   return `<span class="sw-bare" style="color:${c}">in</span>`;
@@ -1528,9 +1530,12 @@ function swatchContactIcon(mode) {
   const glyph = (contactIcons.email || '')
     .replace(/width="14"/, 'width="12"').replace(/height="14"/, 'height="12"')
     .replace(/stroke-width="2"/, 'stroke-width="2.6"');
-  if (mode === 'circle')  return `<span class="sw-ring" style="border-color:${c};color:${c}">${glyph}</span>`;
-  if (mode === 'filled')  return `<span class="sw-ring" style="background:${c};border-color:${c};color:#fff">${glyph}</span>`;
-  if (mode === 'rounded') return `<span class="sw-ring is-square" style="background:${c};border-color:${c};color:#fff">${glyph}</span>`;
+  // A solid badge has no ring to draw, and the inset shadow that draws one
+  // would come out white on top of the fill.
+  const solid = `background:${c};color:#fff;box-shadow:none;`;
+  if (mode === 'circle')  return `<span class="sw-ring" style="color:${c}">${glyph}</span>`;
+  if (mode === 'filled')  return `<span class="sw-ring" style="${solid}">${glyph}</span>`;
+  if (mode === 'rounded') return `<span class="sw-ring is-square" style="${solid}">${glyph}</span>`;
   if (mode === 'rule')    return `<span class="sw-rule" style="color:${c}"><i style="background:${c}"></i>${glyph}</span>`;
   if (mode === 'icons')   return `<span class="sw-bare" style="color:${c}">${glyph}</span>`;
   if (mode === 'letters') return `<span class="sw-bare" style="color:${c};font-weight:700">E.</span>`;
