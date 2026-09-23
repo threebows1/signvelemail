@@ -20,9 +20,14 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="share-page">
+  <!-- Laid out as the editor is: the signature first, and the button that
+       installs it in the top right where the editor keeps its own. -->
   <header class="share-head">
     <a class="share-brand" href="index.html">Sign&nbsp;Vel</a>
-    <a class="btn btn-accent" href="editor.html">Make your own</a>
+    <div class="share-head-actions">
+      <a class="btn" href="editor.html">Make your own</a>
+      <button class="btn btn-accent" id="shareInstall" hidden>Install signature</button>
+    </div>
   </header>
 
   <main class="share-main">
@@ -30,9 +35,6 @@
     <h1 class="share-title" id="shareTitle">Loading…</h1>
 
     <div id="shareBody" hidden>
-      <p class="share-lead-line">Pick the mail client you use — the signature is written differently for each, and the copy button gives you the one that client can render.</p>
-      <div class="install-grid share-clients" id="shareClients"></div>
-
       <div class="share-stage">
         <div class="email-mock" id="shareMock"></div>
       </div>
@@ -41,13 +43,24 @@
         <button class="btn btn-accent" id="shareCopy">Copy signature</button>
         <button class="btn" id="shareCopyHtml">Copy HTML</button>
         <span class="share-feedback" id="shareFeedback"></span>
+        <span class="share-for" id="shareFor"></span>
       </div>
-
-      <div class="share-steps" id="shareSteps"></div>
     </div>
 
     <div id="shareError" hidden><p class="share-empty" id="shareErrorText"></p></div>
   </main>
+
+  <!-- The client list and its steps, behind the Install button, exactly as
+       the editor keeps them. -->
+  <div class="install-overlay hidden" id="installOverlay">
+    <div class="install-panel">
+      <div class="install-panel-header">
+        <h2 id="installTitle">Install your signature</h2>
+        <button class="btn" id="installClose">Cancel</button>
+      </div>
+      <div class="install-body" id="installBody"></div>
+    </div>
+  </div>
 
   <footer class="share-foot">
     <p>Made with <a href="index.html">Sign Vel</a> · <span class="footer-year"></span></p>
@@ -140,12 +153,6 @@
       const client = clientById(picked);
       S.client = client.id;
 
-      document.getElementById('shareClients').innerHTML = previewClients.map(function (c) {
-        return '<button class="install-card' + (c.id === picked ? ' current' : '') + '" data-client="' + c.id + '">'
-          + '<span class="install-card-logo">' + (mailLogos[c.logo || c.id] || '') + '</span>'
-          + '<span class="install-card-name">' + c.label.replace(/[<>&]/g, '') + '</span></button>';
-      }).join('');
-
       const ch = (CHROME[client.chrome] || CHROME.gmail);
       const mock = document.getElementById('shareMock');
       mock.className = 'email-mock';
@@ -157,29 +164,32 @@
         + withExportTarget(currentTarget(), generateSignaturePreview)
         + '</div></div>';
 
-      // The steps for that client, so the link ends where installing begins.
-      const t = installTargets.find(function (i) { return i.id === client.install; });
-      const steps = t ? t.steps : [
-        'Open your mail client and find its signature settings.',
-        'Create a signature, or edit the one you have.',
-        'Paste with Ctrl+V, or Cmd+V on a Mac.',
-        'Save, and send yourself a test message to check it.',
-      ];
-      document.getElementById('shareSteps').innerHTML =
-        '<h2 class="share-steps-title">Putting it in ' + client.label.replace(/[<>&]/g, '') + '</h2>'
-        + '<ol class="install-steps">' + steps.map(function (s) {
-            return '<li>' + s.replace(/[<>&]/g, '') + '</li>';
-          }).join('') + '</ol>';
-
-      document.getElementById('shareCopy').textContent =
-        (t && t.use === 'Export HTML') ? 'Copy HTML for ' + client.label.replace(/[<>&]/g, '') : 'Copy signature';
+      // Which client this copy is written for, beside the button that takes it.
+      document.getElementById('shareFor').textContent = 'written for ' + client.label;
+      // The picker stays in step when it is open behind nothing.
+      if (!document.getElementById('installOverlay').classList.contains('hidden')) renderInstall();
     }
 
-    document.getElementById('shareClients').addEventListener('click', function (e) {
+    // The client list is the editor's own, drawn by the editor's own code —
+    // grid, steps and all. Only the clicking is wired here, because the
+    // editor wires its copy inside setupEvents, which this page never runs.
+    const overlay = document.getElementById('installOverlay');
+    document.getElementById('shareInstall').addEventListener('click', function () { showInstall(); });
+    document.getElementById('installClose').addEventListener('click', function () { overlay.classList.add('hidden'); });
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) { overlay.classList.add('hidden'); return; }
       const card = e.target.closest('.install-card[data-client]');
-      if (!card) return;
-      picked = card.dataset.client;
-      draw();
+      if (card) {
+        picked = card.dataset.client;
+        draw();
+        showInstall(picked);
+        return;
+      }
+      if (e.target.closest('#installBack')) { showInstall(); return; }
+      if (e.target.closest('#installCopy')) {
+        overlay.classList.add('hidden');
+        document.getElementById('shareCopy').click();
+      }
     });
 
     // ── Taking it ──
@@ -239,6 +249,7 @@
       const who = (S.name || '').replace(/[<>&]/g, '').trim();
       title.textContent = who ? who + '’s signature' : 'A signature for you';
       body.hidden = false;
+      document.getElementById('shareInstall').hidden = false;
       draw();
       // What it actually adopted, so a check can see it from outside: a
       // top-level const is not a property of window.

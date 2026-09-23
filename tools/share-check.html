@@ -76,23 +76,32 @@ async function run() {
   if (sig && sig.textContent.indexOf('Daniel Reyes') < 0) fail('the signature that arrived is not the one shared');
   if ((d.getElementById('shareTitle').textContent || '').indexOf('Daniel Reyes') < 0) fail('the page does not say whose signature it is');
 
-  // ── The whole client list, which is the point of this round ──
-  const cards = [].slice.call(d.querySelectorAll('.install-card[data-client]'));
-  if (cards.length !== previewClients.length) fail('clients offered: ' + cards.length + ' of ' + previewClients.length);
-  ['apple', 'outlook-new', 'outlook-classic', 'gmail'].forEach(function (id) {
+  // ── The client list, behind the Install button as the editor keeps it ──
+  const installBtn = d.getElementById("shareInstall");
+  if (!installBtn || installBtn.hidden) fail("no Install signature button in the top right");
+  // The signature comes first on the page; the list is behind the button.
+  const mainKids = [].slice.call(d.querySelector(".share-main").children).map(function (n) { return n.id || n.className; });
+  if (mainKids.indexOf("shareBody") < 0) fail("no signature on the page");
+  if (d.querySelector(".share-main .install-grid")) fail("the client list is on the page rather than behind the button");
+  installBtn.click();
+  await new Promise(function (r) { setTimeout(r, 300); });
+  const cards = [].slice.call(d.querySelectorAll(".install-card[data-client]"));
+  if (cards.length !== previewClients.length) fail("clients offered: " + cards.length + " of " + previewClients.length);
+  ["apple", "outlook-new", "outlook-classic", "gmail"].forEach(function (id) {
     if (!d.querySelector('.install-card[data-client="' + id + '"]')) fail('no card for ' + id);
   });
-  if (!d.querySelector('.mock-chrome')) fail('the signature is not framed as a client');
+  if (!d.querySelector(".mock-chrome")) fail("the signature is not framed as a client");
 
   // Picking a client has to change the markup, or the list means nothing.
-  const before = d.querySelector('.signature-container').innerHTML;
+  const before = d.querySelector(".signature-container").innerHTML;
   d.querySelector('.install-card[data-client="outlook-classic"]').click();
-  await new Promise(r => setTimeout(r, 200));
-  const after = d.querySelector('.signature-container').innerHTML;
-  if (before === after) fail('picking Outlook classic changed nothing');
-  if (/<svg|data:image/i.test(after)) fail('Outlook classic was given markup Word cannot show');
-  if (!d.querySelector('.install-steps li')) fail('no steps for the chosen client');
-  if ((d.getElementById('shareSteps').textContent || '').indexOf('Outlook classic') < 0) fail('the steps do not name the chosen client');
+  await new Promise(function (r) { setTimeout(r, 300); });
+  const after = d.querySelector(".signature-container").innerHTML;
+  if (before === after) fail("picking Outlook classic changed nothing");
+  if (/<svg|data:image/i.test(after)) fail("Outlook classic was given markup Word cannot show");
+  if (!d.querySelector(".install-steps li")) fail("no steps for the chosen client");
+  if ((d.getElementById("installTitle").textContent || "").indexOf("Outlook classic") < 0) fail("the steps do not name the chosen client");
+  d.getElementById("installClose").click();
 
   // ── A hostile link ──
   // Settings come out of a URL, so anyone can put anything in one.
