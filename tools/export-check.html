@@ -17,7 +17,7 @@
   <script>
   const E = [];
   // Every layout, every icon treatment, both Outlook variants.
-  const MODES = ['circle','filled','icons','letters','labels'];
+  const MODES = ['circle','filled','rounded','rule','icons','letters','labels'];
   const SOCIAL = ['circle','filled','chip','plain','outline'];
   Object.keys(templateThemes).forEach(t => {
     S.template = t;
@@ -142,7 +142,7 @@
   if (forLabel().indexOf('Gmail') < 0) E.push('the dialog did not follow back to Gmail: ' + forLabel());
   if (code.textContent !== standard) E.push('Gmail did not give the same Standard markup as Apple Mail');
   if (EXPORT_TARGET !== null) E.push('the preview bar left EXPORT_TARGET set');
-  document.getElementById('out').textContent = E.length ? E.slice(0,12).join('\n') + '\n\n(' + E.length + ' total)' : 'ok — 24 layouts x 25 combinations, both variants clean';
+  document.getElementById('out').textContent = E.length ? E.slice(0,12).join('\n') + '\n\n(' + E.length + ' total)' : 'ok — 24 layouts x 35 combinations, both variants clean';
   window.__mainRan = true;
   document.title = E.length ? 'FAIL ' + E.length : 'PASS';
   </script>
@@ -232,7 +232,7 @@
 // loading each one, not by trusting the name.
 (function () {
   const urls = new Set();
-  const MODES = ['circle','filled','icons','letters','labels'];
+  const MODES = ['circle','filled','rounded','rule','icons','letters','labels'];
   const SOCIAL = ['circle','filled','chip','plain','outline'];
   Object.keys(templateThemes).forEach(t => {
     S.template = t;

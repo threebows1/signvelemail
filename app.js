@@ -121,14 +121,14 @@ function iconAssetKey(name, hex) {
 // A whole badge is keyed by everything drawn into it, so changing any of it
 // makes a new file rather than showing the old one at the wrong size or on
 // the wrong ground.
-function badgeAssetKey(name, hex, filled, px, ground) {
+function badgeAssetKey(name, hex, filled, px, ground, shape) {
   return 'badge-' + name + '-' + hex6(hex) + '-' + (filled ? 'fill' : 'ring')
-    + '-' + px + '-' + hex6(ground) + '-' + ICON_ASSET_VERSION;
+    + '-' + (shape || 'round') + '-' + px + '-' + hex6(ground) + '-' + ICON_ASSET_VERSION;
 }
 
-function hostedBadgeFor(name, hex, filled, px, ground) {
+function hostedBadgeFor(name, hex, filled, px, ground, shape) {
   const map = S.iconAssets || {};
-  return map[badgeAssetKey(name, hex, filled, px, ground)] || '';
+  return map[badgeAssetKey(name, hex, filled, px, ground, shape)] || '';
 }
 
 function hostedIconFor(name, hex) {
@@ -186,7 +186,7 @@ function drawIconBlob(svgStr, colour) {
 // The open style is given a real ground rather than left transparent, because
 // Outlook's handling of PNG alpha has a history of rendering as a black box —
 // the same reason the email logo is drawn on a flat ground.
-function drawBadgeBlob(svgStr, colour, filled, px, ground) {
+function drawBadgeBlob(svgStr, colour, filled, px, ground, shape) {
   return new Promise(resolve => {
     const S3 = px * 3;
     let s = String(svgStr || '').replace(/currentColor/g, filled ? '#FFFFFF' : colour);
@@ -199,8 +199,21 @@ function drawBadgeBlob(svgStr, colour, filled, px, ground) {
       const ctx = c.getContext('2d');
       const r = S3 / 2;
 
+      // Round or squared off, drawn into the picture either way — Word keeps
+      // whichever it is given here, having no corner left to discard.
       ctx.beginPath();
-      ctx.arc(r, r, r - 2.25, 0, Math.PI * 2);
+      if (shape === 'square') {
+        const pad = 2.25, rr = S3 * 0.22;
+        const x = pad, y = pad, w = S3 - pad * 2, h = S3 - pad * 2;
+        ctx.moveTo(x + rr, y);
+        ctx.arcTo(x + w, y, x + w, y + h, rr);
+        ctx.arcTo(x + w, y + h, x, y + h, rr);
+        ctx.arcTo(x, y + h, x, y, rr);
+        ctx.arcTo(x, y, x + w, y, rr);
+        ctx.closePath();
+      } else {
+        ctx.arc(r, r, r - 2.25, 0, Math.PI * 2);
+      }
       ctx.fillStyle = filled ? colour : (ground || '#FFFFFF');
       ctx.fill();
       if (!filled) {
@@ -269,12 +282,14 @@ function neededIconAssets(target) {
   if (target === 'classic') {
     // Word discards the CSS badge, so the badge itself has to be the picture.
     const ground = badgeGround();
-    if (mode === 'circle' || mode === 'filled') {
+    if (mode === 'circle' || mode === 'filled' || mode === 'rounded') {
       const px = S.contactIconSize || 22;
+      const solid = mode === 'filled' || mode === 'rounded';
+      const shape = mode === 'rounded' ? 'square' : 'round';
       contacts.forEach(f => want.push({
         badge: true, name: f.type, svg: contactIcons[f.type], hex: cColour,
-        filled: mode === 'filled', px, ground,
-        key: badgeAssetKey(f.type, cColour, mode === 'filled', px, ground),
+        filled: solid, px, ground, shape,
+        key: badgeAssetKey(f.type, cColour, solid, px, ground, shape),
       }));
     } else if (mode !== 'letters' && mode !== 'labels') {
       contacts.forEach(f => want.push({name: f.type, svg: contactIcons[f.type], hex: cColour, key: iconAssetKey(f.type, cColour)}));
@@ -293,8 +308,9 @@ function neededIconAssets(target) {
   }
 
   // New Outlook draws the badge itself, so only the glyph needs a file — and
-  // only where it is drawn in a colour, since a filled badge keeps the white.
-  if (mode !== 'letters' && mode !== 'labels' && mode !== 'filled') {
+  // only where it is drawn in a colour. A filled badge, rounded or not, keeps
+  // the white glyph that is already hosted.
+  if (mode !== 'letters' && mode !== 'labels' && mode !== 'filled' && mode !== 'rounded') {
     contacts.forEach(f => want.push({name: f.type, svg: contactIcons[f.type], hex: cColour, key: iconAssetKey(f.type, cColour)}));
   }
   if (sStyle === 'circle' || sStyle === 'glyph') {
@@ -319,7 +335,7 @@ function syncIconAssets(target) {
       const key = w.key;
       try {
         const blob = w.badge
-          ? await drawBadgeBlob(w.svg, w.hex, w.filled, w.px, w.ground)
+          ? await drawBadgeBlob(w.svg, w.hex, w.filled, w.px, w.ground, w.shape)
           : await drawIconBlob(w.svg, w.hex);
         if (!blob) continue;
         const file = new File([blob], key + '.png', {type: 'image/png'});
@@ -1514,6 +1530,8 @@ function swatchContactIcon(mode) {
     .replace(/stroke-width="2"/, 'stroke-width="2.6"');
   if (mode === 'circle')  return `<span class="sw-ring" style="border-color:${c};color:${c}">${glyph}</span>`;
   if (mode === 'filled')  return `<span class="sw-ring" style="background:${c};border-color:${c};color:#fff">${glyph}</span>`;
+  if (mode === 'rounded') return `<span class="sw-ring is-square" style="background:${c};border-color:${c};color:#fff">${glyph}</span>`;
+  if (mode === 'rule')    return `<span class="sw-rule" style="color:${c}"><i style="background:${c}"></i>${glyph}</span>`;
   if (mode === 'icons')   return `<span class="sw-bare" style="color:${c}">${glyph}</span>`;
   if (mode === 'letters') return `<span class="sw-bare" style="color:${c};font-weight:700">E.</span>`;
   return `<span class="sw-bare" style="color:${c};font-weight:600">Email</span>`;
@@ -1736,9 +1754,9 @@ function renderDesign() {
     h += `<div class="inline-note">Solid panel colours survive in email. Background <em>images</em> do not — Gmail and Outlook strip them.</div>`;
   }
 
-  const iconModes = ['circle','filled','icons','letters','labels'].map(m => ({
+  const iconModes = ['circle','filled','rounded','rule','icons','letters','labels'].map(m => ({
     val: m,
-    label: {circle:'Circles', filled:'Filled', icons:'Plain', letters:'Letters', labels:'Labels'}[m],
+    label: {circle:'Circles', filled:'Filled', rounded:'Rounded', rule:'Rule', icons:'Plain', letters:'Letters', labels:'Labels'}[m],
     swatch: swatchContactIcon(m),
   }));
   h += `<div class="opt-group">Contact details</div>`;
@@ -2461,7 +2479,10 @@ function buildSignatureBody() {
   // Divider rules. The old flat #DDDBE4 was invisible at 1px, and vanished
   // completely once a dark background panel was switched on.
   const ruleColor = onDark ? 'rgba(255,255,255,.22)' : '#C6C3D4';
-  const circleIcon = (svg, filled, colour, letter, hosted, exactUrl) => {
+  // `radius` is what makes this a circle or a rounded square — the same badge
+  // either way, since nothing else about it changes.
+  const circleIcon = (svg, filled, colour, letter, hosted, exactUrl, radius) => {
+    const rad = radius || '50%';
     const cc = colour || ic;
     const sz = S.contactIconSize || 22;
     const inner = Math.round(sz * 0.5);
@@ -2484,7 +2505,19 @@ function buildSignatureBody() {
          type: `color:${glyphColor};font-family:${ff};font-size:${Math.round(sz * 0.46)}px;font-weight:700;line-height:${sz - 3}px;`}
       : {content: svgToImgTag(svg, inner, inner, glyphColor, 'margin:0 auto;'),
          type: 'font-size:0;line-height:0;'};
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:1.5px solid ${cc};border-radius:50%;text-align:center;vertical-align:middle;${body.type}">${body.content}</td></tr></table>`;
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:1.5px solid ${cc};border-radius:${rad};text-align:center;vertical-align:middle;${body.type}">${body.content}</td></tr></table>`;
+  };
+
+  // The rule treatment: a bar in the theme colour, then the mark. Built as a
+  // table with a coloured cell rather than a bordered span, because that is
+  // the one way to draw a line that Word keeps — it throws away a border on a
+  // span and a rounded corner on anything, but a cell with a bgcolor it draws.
+  const ruleLead = (mark, markPx, colour, sz, forWord) => {
+    const barH = Math.max(12, Math.round(sz * 0.72));
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr>`
+      + `<td width="2" bgcolor="${colour}" style="width:2px;min-width:2px;background-color:${colour};font-size:1px;line-height:1px;">&nbsp;</td>`
+      + `<td style="padding-left:8px;height:${barH}px;vertical-align:middle;${forWord ? '' : 'font-size:0;line-height:0;'}">${mark}</td>`
+      + `</tr></table>`;
   };
 
   const activeContacts = pFields.filter(f => f.enabled && f.value);
@@ -2520,7 +2553,11 @@ function buildSignatureBody() {
         leadPad: '3px 10px 3px 0', val, valPad: '3px 0', align: 'middle',
       };
     }
-    const badged = mode === 'circle' || mode === 'filled';
+    // Rounded is a badge like the other two, only squarer; rule has no badge
+    // at all — a bar in the theme colour standing beside the glyph.
+    const badged = mode === 'circle' || mode === 'filled' || mode === 'rounded';
+    const solidBadge = mode === 'filled' || mode === 'rounded';
+    const radius = mode === 'rounded' ? '6px' : '50%';
     const letter = contactLetters[f.type] || '•';
     // Written for classic Outlook, the badge goes: Word squares it off, and a
     // row of squares looks like a fault rather than a choice. The letter alone
@@ -2528,7 +2565,7 @@ function buildSignatureBody() {
     if (EXPORT_TARGET === 'classic') {
       // The badge drawn into the picture, which is the only kind Word keeps.
       const sz = S.contactIconSize || 22;
-      const baked = badged ? hostedBadgeFor(f.type, badgeColor, mode === 'filled', sz, badgeGround()) : '';
+      const baked = badged ? hostedBadgeFor(f.type, badgeColor, solidBadge, sz, badgeGround(), mode === 'rounded' ? 'square' : 'round') : '';
       if (baked) {
         return {lead: iconImgTag(baked, sz), leadPad: '3px 10px 3px 0', val, valPad: '3px 0', align: 'middle'};
       }
@@ -2536,6 +2573,11 @@ function buildSignatureBody() {
       const flat = !badged && mode !== 'letters' && mode !== 'labels' ? hostedIconFor(f.type, badgeColor) : '';
       if (flat) {
         const gp = Math.round(sz * 0.64);
+        // The rule's bar is a table cell with a background, which Word draws —
+        // it is the rounded corner it throws away, and a bar has none.
+        if (mode === 'rule') {
+          return {lead: ruleLead(flat, gp, badgeColor, sz, true), leadPad: '1px 9px 1px 0', val, valPad: '3px 0', align: 'middle'};
+        }
         return {lead: iconImgTag(flat, gp, 'display:inline-block;vertical-align:middle;'),
                 leadPad: '1px 7px 1px 0', val, valPad: '3px 0', align: 'middle'};
       }
@@ -2553,17 +2595,27 @@ function buildSignatureBody() {
     // Without one, the badge is filled instead, so the colour is at least in
     // the ground and the white glyph reads against it.
     const exact = hosted ? hostedIconFor(hosted, badgeColor) : '';
+    // The glyph on its own, however this client can carry one.
+    const bareGlyph = exact
+      ? iconImgTag(exact, glyphPx, 'display:inline-block;vertical-align:middle;')
+      : EXPORT_TARGET ? '' : svgToImgTag(contactIcons[f.type], glyphPx, glyphPx, badgeColor, 'vertical-align:middle;');
+
+    if (mode === 'rule') {
+      // No badge: the colour goes into a bar beside the glyph. Where there is
+      // no glyph this client can draw, the bar keeps the letter company.
+      const mark = bareGlyph || `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1;">${esc(letter)}</span>`;
+      return {lead: ruleLead(mark, glyphPx, badgeColor, S.contactIconSize || 22, false),
+              leadPad: '1px 9px 1px 0', val, valPad: '3px 0', align: 'middle', raw: !EXPORT_TARGET};
+    }
+
     const lead = badged
-      ? circleIcon(contactIcons[f.type], mode === 'filled' || (!!hosted && !exact), badgeColor,
-                   EXPORT_TARGET ? letter : '', hosted, exact)
+      ? circleIcon(contactIcons[f.type], solidBadge || (!!hosted && !exact), badgeColor,
+                   EXPORT_TARGET ? letter : '', hosted, exact, radius)
       // A bare glyph has no ground to colour, so either it is the theme colour
       // or it is not an icon at all. The ink one was black against the ring's
       // blue, which read as a fault; the letter at least belongs to the design.
-      : (exact
-          ? iconImgTag(exact, glyphPx, 'display:inline-block;vertical-align:middle;')
-          : EXPORT_TARGET
-          ? `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(letter)}.</span>`
-          : svgToImgTag(contactIcons[f.type], glyphPx, glyphPx, badgeColor, 'vertical-align:middle;'));
+      : (bareGlyph
+          || `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(letter)}.</span>`);
     return {lead, leadPad: badged ? '3px 10px 3px 0' : '1px 7px 1px 0', val, valPad: '3px 0', align: 'middle', raw: !EXPORT_TARGET};
   }
 
