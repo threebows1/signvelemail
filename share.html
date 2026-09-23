@@ -6,16 +6,18 @@
   <title>A signature to copy — Sign Vel</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon.png" sizes="180x180">
-  <meta name="description" content="Someone shared an email signature with you. Copy it straight into Gmail, Outlook, or Apple Mail.">
+  <meta name="description" content="Someone shared an email signature with you. Pick your mail client and copy it straight in.">
   <meta name="robots" content="noindex">
-  <!-- Someone else's link, opened by someone with no account. Nothing here
-       talks to the cloud layer and nothing is stored: the signature arrives
-       in the fragment of the URL, which the browser never sends to a server,
-       so a shared name and phone number stay out of the logs. -->
+  <!-- Someone else's link, opened by someone with no account.
+       Nothing is stored and nothing is fetched: the signature's settings
+       arrive in the fragment of the URL, which the browser never sends to a
+       server, so a shared name, address and telephone number stay out of
+       every request log. app.js is loaded for its drawing only — the mode
+       below keeps the editor, its saved state and its sign-in gate out. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body class="share-page">
   <header class="share-head">
@@ -27,41 +29,43 @@
     <p class="share-kicker" id="shareKicker">A signature was shared with you</p>
     <h1 class="share-title" id="shareTitle">Loading…</h1>
 
-    <div class="share-card">
-      <div class="share-canvas" id="shareCanvas"></div>
+    <div id="shareBody" hidden>
+      <p class="share-lead-line">Pick the mail client you use — the signature is written differently for each, and the copy button gives you the one that client can render.</p>
+      <div class="install-grid share-clients" id="shareClients"></div>
+
+      <div class="share-stage">
+        <div class="email-mock" id="shareMock"></div>
+      </div>
+
+      <div class="share-actions" id="shareActions">
+        <button class="btn btn-accent" id="shareCopy">Copy signature</button>
+        <button class="btn" id="shareCopyHtml">Copy HTML</button>
+        <span class="share-feedback" id="shareFeedback"></span>
+      </div>
+
+      <div class="share-steps" id="shareSteps"></div>
     </div>
 
-    <div class="share-actions" id="shareActions">
-      <button class="btn btn-accent" id="shareCopy">Copy signature</button>
-      <button class="btn" id="shareCopyHtml">Copy HTML</button>
-      <span class="share-feedback" id="shareFeedback"></span>
-    </div>
-
-    <p class="share-note">
-      Paste it into your mail client's signature box with Ctrl+V, or Cmd+V on a Mac.
-      <a href="install.html">Step-by-step for each client</a>.
-    </p>
+    <div id="shareError" hidden><p class="share-empty" id="shareErrorText"></p></div>
   </main>
 
   <footer class="share-foot">
     <p>Made with <a href="index.html">Sign Vel</a> · <span class="footer-year"></span></p>
   </footer>
 
+  <script>window.SIGNVEL_MODE = 'share';</script>
+  <script src="app.js"></script>
   <script>
   (function () {
-    const canvas = document.getElementById('shareCanvas');
     const title = document.getElementById('shareTitle');
     const kicker = document.getElementById('shareKicker');
+    const body = document.getElementById('shareBody');
 
     function fail(msg) {
       kicker.textContent = '';
       title.textContent = 'That link does not carry a signature';
-      canvas.innerHTML = '';
-      const p = document.createElement('p');
-      p.className = 'share-empty';
-      p.textContent = msg;
-      canvas.appendChild(p);
-      document.getElementById('shareActions').hidden = true;
+      document.getElementById('shareErrorText').textContent = msg;
+      document.getElementById('shareError').hidden = false;
     }
 
     function fromBase64Url(s) {
@@ -72,56 +76,41 @@
       return out;
     }
 
-    // Anyone can write whatever they like after the #, so what comes out of a
-    // link is treated as hostile until it has been through here. A signature
-    // needs tables, text, links and images and nothing else; everything that
-    // could run — a script, a frame, an on-anything attribute, a javascript:
-    // address — is dropped rather than escaped, because escaping it would
-    // only mean rendering it wrongly rather than not at all.
-    const ALLOWED = new Set(['TABLE','THEAD','TBODY','TFOOT','TR','TD','TH','DIV','SPAN','P','A','IMG','BR','HR','STRONG','B','EM','I','U','SMALL','FONT','CENTER','UL','OL','LI','H1','H2','H3','H4','H5','H6']);
-    const ATTRS = new Set(['style','href','src','alt','title','width','height','align','valign','bgcolor','border','cellpadding','cellspacing','colspan','rowspan','role','target','rel','color','face','size','dir']);
-
-    function clean(html) {
-      const doc = new DOMParser().parseFromString('<div id="root">' + html + '</div>', 'text/html');
-      const root = doc.getElementById('root');
-      const walk = function (node) {
-        [].slice.call(node.children).forEach(function (el) {
-          if (!ALLOWED.has(el.tagName)) { el.remove(); return; }
-          [].slice.call(el.attributes).forEach(function (a) {
-            const name = a.name.toLowerCase();
-            const value = (a.value || '').trim();
-            if (name.indexOf('on') === 0 || !ATTRS.has(name)) { el.removeAttribute(a.name); return; }
-            if ((name === 'href' || name === 'src') && /^(javascript|vbscript)\s*:/i.test(value)) {
-              el.removeAttribute(a.name);
-            }
-            if (name === 'style' && /expression\s*\(|javascript:/i.test(value)) el.removeAttribute(a.name);
-          });
-          if (el.tagName === 'A') el.setAttribute('rel', 'noopener nofollow');
-          walk(el);
-        });
-      };
-      walk(root);
-      return root.innerHTML;
+    // What arrives is somebody's settings, and anyone can write whatever they
+    // like after the #. So only keys the editor already has are taken, and
+    // only where the incoming value is the same kind of thing as the one it
+    // replaces. Anything else is left at its default rather than trusted.
+    function adopt(incoming) {
+      if (!incoming || typeof incoming !== 'object') return 0;
+      let taken = 0;
+      Object.keys(incoming).forEach(function (k) {
+        if (!Object.prototype.hasOwnProperty.call(S, k)) return;
+        const now = S[k], next = incoming[k];
+        if (Array.isArray(now) !== Array.isArray(next)) return;
+        if (!Array.isArray(now) && typeof now !== typeof next) return;
+        S[k] = next;
+        taken++;
+      });
+      return taken;
     }
 
-    function load() {
+    function read() {
       const frag = (location.hash || '').replace(/^#/, '');
       if (!frag) {
         fail('The link has no signature in it. Ask whoever sent it for the whole link — everything after the # matters.');
-        return Promise.resolve();
+        return Promise.resolve(false);
       }
       const mark = frag.slice(0, 2);
-      const body = frag.slice(2);
-      if ((mark !== 'z:' && mark !== 'r:') || !body) {
+      const payload = frag.slice(2);
+      if ((mark !== 'z:' && mark !== 'r:') || !payload) {
         fail('This link is not in a form this page understands.');
-        return Promise.resolve();
+        return Promise.resolve(false);
       }
       let bytes;
-      try {
-        bytes = fromBase64Url(body);
-      } catch (e) {
+      try { bytes = fromBase64Url(payload); }
+      catch (e) {
         fail('The signature in this link could not be read. It may have been cut short when it was sent — these links are long, and some apps trim them.');
-        return Promise.resolve();
+        return Promise.resolve(false);
       }
       const text = (mark === 'r:')
         ? Promise.resolve(new TextDecoder().decode(bytes))
@@ -130,18 +119,70 @@
                 .arrayBuffer().then(function (buf) { return new TextDecoder().decode(buf); })
             : Promise.reject(new Error('no inflate')));
 
-      return text.then(function (html) {
-        const safe = clean(html);
-        if (!/<table|<div|<p/i.test(safe)) { fail('There was no signature inside this link.'); return; }
-        canvas.innerHTML = safe;
-        title.textContent = 'Ready to copy';
+      return text.then(function (json) {
+        const taken = adopt(JSON.parse(json));
+        if (!taken) { fail('There were no signature settings inside this link.'); return false; }
+        return true;
       }).catch(function () {
         fail('The signature in this link could not be read. It may have been cut short when it was sent — these links are long, and some apps trim them.');
+        return false;
       });
     }
 
-    load();
+    // ── Drawing it, for whichever client is chosen ──
+    let picked = 'apple';
 
+    function clientById(id) {
+      return previewClients.find(function (c) { return c.id === id; }) || previewClients[0];
+    }
+
+    function draw() {
+      const client = clientById(picked);
+      S.client = client.id;
+
+      document.getElementById('shareClients').innerHTML = previewClients.map(function (c) {
+        return '<button class="install-card' + (c.id === picked ? ' current' : '') + '" data-client="' + c.id + '">'
+          + '<span class="install-card-logo">' + (mailLogos[c.logo || c.id] || '') + '</span>'
+          + '<span class="install-card-name">' + c.label.replace(/[<>&]/g, '') + '</span></button>';
+      }).join('');
+
+      const ch = (CHROME[client.chrome] || CHROME.gmail);
+      const mock = document.getElementById('shareMock');
+      mock.className = 'email-mock';
+      mock.style.maxWidth = ch.width + 'px';
+      mock.style.fontFamily = ch.font;
+      mock.style.background = ch.bg;
+      mock.innerHTML = windowChrome(client)
+        + '<div class="email-mock-body"><div class="signature-container">'
+        + withExportTarget(currentTarget(), generateSignaturePreview)
+        + '</div></div>';
+
+      // The steps for that client, so the link ends where installing begins.
+      const t = installTargets.find(function (i) { return i.id === client.install; });
+      const steps = t ? t.steps : [
+        'Open your mail client and find its signature settings.',
+        'Create a signature, or edit the one you have.',
+        'Paste with Ctrl+V, or Cmd+V on a Mac.',
+        'Save, and send yourself a test message to check it.',
+      ];
+      document.getElementById('shareSteps').innerHTML =
+        '<h2 class="share-steps-title">Putting it in ' + client.label.replace(/[<>&]/g, '') + '</h2>'
+        + '<ol class="install-steps">' + steps.map(function (s) {
+            return '<li>' + s.replace(/[<>&]/g, '') + '</li>';
+          }).join('') + '</ol>';
+
+      document.getElementById('shareCopy').textContent =
+        (t && t.use === 'Export HTML') ? 'Copy HTML for ' + client.label.replace(/[<>&]/g, '') : 'Copy signature';
+    }
+
+    document.getElementById('shareClients').addEventListener('click', function (e) {
+      const card = e.target.closest('.install-card[data-client]');
+      if (!card) return;
+      picked = card.dataset.client;
+      draw();
+    });
+
+    // ── Taking it ──
     const feedback = document.getElementById('shareFeedback');
     let resetAt = 0;
     function said(text) {
@@ -150,12 +191,12 @@
       setTimeout(function () { if (resetAt === mine) feedback.textContent = ''; }, 2200);
     }
 
-    // Rich paste: the markup on the clipboard, which is what a signature box
-    // wants. The plain half is the same markup, so a box that only takes text
-    // still gets something usable.
+    function currentHtml() {
+      return withExportTarget(currentTarget(), generateSignaturePreview);
+    }
+
     document.getElementById('shareCopy').addEventListener('click', function () {
-      const html = canvas.innerHTML;
-      if (!html.trim()) { said('Nothing to copy'); return; }
+      const html = currentHtml();
       if (navigator.clipboard && window.ClipboardItem) {
         navigator.clipboard.write([new ClipboardItem({
           'text/html': new Blob([html], {type: 'text/html'}),
@@ -167,8 +208,7 @@
     });
 
     document.getElementById('shareCopyHtml').addEventListener('click', function () {
-      const html = canvas.innerHTML;
-      if (!html.trim()) { said('Nothing to copy'); return; }
+      const html = currentHtml();
       if (!navigator.clipboard || !navigator.clipboard.writeText) { said('Not available'); return; }
       navigator.clipboard.writeText(html).then(function () { said('HTML copied ✓'); })
         .catch(function () { said('Not available'); });
@@ -193,6 +233,18 @@
       el.remove();
       said(ok ? 'Copied ✓' : 'Not available');
     }
+
+    read().then(function (ok) {
+      if (!ok) return;
+      const who = (S.name || '').replace(/[<>&]/g, '').trim();
+      title.textContent = who ? who + '’s signature' : 'A signature for you';
+      body.hidden = false;
+      draw();
+      // What it actually adopted, so a check can see it from outside: a
+      // top-level const is not a property of window.
+      window.__shareReady = true;
+      window.__shareState = S;
+    });
   })();
   </script>
   <script>document.querySelectorAll(".footer-year").forEach(function (e) { e.textContent = new Date().getFullYear(); });</script>

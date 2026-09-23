@@ -970,38 +970,3 @@ body{margin:0}
   }
 }
 
-/* ═══════════════════════════════════════
-   A shared signature
-   ═══════════════════════════════════════
-   The page a shared link opens. Whoever follows it has no account and may
-   never have seen this site: one signature, two ways to take it, and a line
-   saying where to paste it. The signature arrives in the fragment of the URL
-   rather than from a database, so there is nothing to store and nothing that
-   expires — and nothing about the person reaches a server log. */
-.share-head{
-  display:flex;align-items:center;justify-content:space-between;gap:16px;
-  padding:16px 24px;background:#fff;border-bottom:1px solid #eae7f5;
-}
-.share-brand{font-weight:800;font-size:16px;color:#14121f;text-decoration:none;letter-spacing:-.01em}
-.share-main{width:100%;max-width:780px;margin:0 auto;padding:40px 20px 56px}
-.share-kicker{
-  margin:0 0 8px;font-size:11.5px;font-weight:700;letter-spacing:.1em;
-  text-transform:uppercase;color:#5b2eff;
-}
-.share-title{margin:0 0 22px;font-size:28px;font-weight:800;letter-spacing:-.025em;color:#14121f}
-.share-card{background:#fff;border:1px solid #eae7f5;border-radius:16px;padding:30px;overflow-x:auto}
-.share-canvas{min-height:80px}
-.share-empty{margin:0;font-size:13.5px;color:#6b6880;line-height:1.65}
-.share-actions{display:flex;align-items:center;gap:10px;margin:20px 0 0;flex-wrap:wrap}
-.share-actions[hidden]{display:none}
-.share-feedback{font-size:12px;font-weight:600;color:#5b2eff}
-.share-note{margin:20px 0 0;font-size:13px;line-height:1.65;color:#6b6880}
-.share-foot{padding:22px 24px;border-top:1px solid #eae7f5;background:#fff;margin-top:auto}
-.share-foot p{margin:0;font-size:12.5px;color:#6b6880}
-body.share-page{background:#f6f5fb;min-height:100vh;display:flex;flex-direction:column}
-
-@media (max-width:640px){
-  .share-main{padding:26px 14px 40px}
-  .share-card{padding:16px}
-  .share-title{font-size:22px}
-}

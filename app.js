@@ -3542,14 +3542,31 @@ function toBase64Url(bytes) {
   return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+// What travels in a shared link: the signature's own settings, not a picture
+// of it. The page at the other end draws it, which is what lets whoever opens
+// it pick their own client and get markup written for that one — a finished
+// drawing could only ever have been right for a single client.
+//
+// The editor's own furniture is left out: which tab was open, which client was
+// being previewed, whether the panel was collapsed. None of that is the
+// signature, and all of it would make the link longer.
+const SHARE_SKIP = new Set([
+  'openSection', 'panelCollapsed', 'client', 'device', 'darkMode', 'scope', 'scopeData',
+]);
+
+function shareState() {
+  const out = {};
+  Object.keys(S).forEach(k => {
+    if (SHARE_SKIP.has(k)) return;
+    const v = S[k];
+    if (v === undefined || v === null) return;
+    out[k] = v;
+  });
+  return out;
+}
+
 async function buildShareLink() {
-  // Written with hosted images rather than embedded ones. The ordinary copy
-  // carries each icon as a data: URI, which is a kilobyte or two apiece and
-  // pushed the link past thirteen thousand characters — long enough that
-  // messaging apps trim it and the signature arrives broken. The hosted form
-  // is the same design by reference, and brings the link under two thousand.
-  const html = withExportTarget('newoutlook', generateSignaturePreview);
-  const raw = new TextEncoder().encode(html);
+  const raw = new TextEncoder().encode(JSON.stringify(shareState()));
   let payload, mark;
   if (window.CompressionStream) {
     try {
@@ -4374,6 +4391,12 @@ function readFile(file, cb) {
 // Init
 // ═══════════════════════════════════════
 function init() {
+  // A page that only needs the drawing — the shared-link page — says so
+  // before loading this file. None of the editor exists there: no rail, no
+  // panel, no saved state of its own, and above all no sign-in gate, because
+  // the whole point of a shared link is that the person opening it has no
+  // account. It takes the render functions and nothing else.
+  if (window.SIGNVEL_MODE === 'share') return;
   loadState();
   if (!(S.openSection >= 0 && S.openSection < sections.length)) S.openSection = 0;
   // Locked before the first render, not after the session resolves — otherwise

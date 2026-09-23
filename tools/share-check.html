@@ -16,15 +16,14 @@
   <div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p class="export-note" id="exportNote"></p></div>
   <pre class="export-code"><code id="exportCode"></code></pre>
   <div class="export-actions"><button class="btn btn-accent" id="exportCopyBtn">C</button></div></div></div>
-<iframe id="f" style="width:900px;height:520px;border:1px solid #ccc"></iframe>
-<script>window.__err=[];window.addEventListener("error",function(e){window.__err.push(e.message+" @"+(e.filename||"").split("/").pop()+":"+e.lineno)});try { localStorage.clear(); } catch (e) {}</script>
+<iframe id="f" style="width:1000px;height:600px;border:1px solid #ccc"></iframe>
+<script>window.__err=[];window.addEventListener('error',function(e){window.__err.push(e.message+' @'+(e.filename||'').split('/').pop()+':'+e.lineno)});try{localStorage.clear()}catch(e){}</script>
 <script src="../config.js"></script>
 <script src="../cloud.js"></script>
 <script src="../app.js"></script>
 <script>
-// A shared link has to work for someone with no account, and it carries
-// markup from a stranger — so this checks both that a real link opens, and
-// that a hostile one cannot run anything.
+// A shared link has to open for someone with no account, carry the signature
+// rather than a picture of it, and let that person pick their own client.
 const out = document.getElementById('out');
 const lines = [];
 let fails = 0;
@@ -34,23 +33,26 @@ async function run() {
   // ── The editor end ──
   if (!document.getElementById('shareBtn')) fail('no Share button in the top bar');
   S.name = 'Daniel Reyes'; S.title = 'Head of Partnerships'; S.email = 'daniel@signvel.com';
-  S.template = 'corporate';
+  S.template = 'corporate'; S.accentColor = '#2B4C7E';
 
   const url = await buildShareLink();
-  if (url.indexOf('share.html#') < 0) fail('the link does not point at the share page: ' + url.slice(0, 60));
   const frag = url.split('#')[1] || '';
-  if (!/^[zr]:/.test(frag)) fail('the link carries no signature');
-  // The signature must ride in the fragment, which never reaches a server.
-  if (url.split('#')[0].indexOf('?') >= 0) fail('part of the signature is in the query, which is sent to the server');
+  if (url.indexOf('share.html#') < 0) fail('the link does not point at the share page');
+  if (!/^[zr]:/.test(frag)) fail('the link carries nothing');
+  // It must ride in the fragment, which never reaches a server.
+  if (url.split('#')[0].indexOf('?') >= 0) fail('part of it is in the query, which the browser does send');
   lines.push('link is ' + url.length.toLocaleString() + ' characters, ' + (frag[0] === 'z' ? 'compressed' : 'uncompressed'));
-  if (frag[0] === 'z' && url.length > 6000) fail('the compressed link is ' + url.length + ' characters, too long to send');
+  if (url.length > 6000) fail('the link is ' + url.length + ' characters, too long to send');
 
-  // The dialog shows it.
+  // The editor's own furniture has no business in it.
+  ['openSection', 'panelCollapsed', 'scopeData'].forEach(function (k) {
+    if (Object.prototype.hasOwnProperty.call(shareState(), k)) fail('the link carries ' + k + ', which is not the signature');
+  });
+
   showShare();
   await new Promise(r => setTimeout(r, 400));
-  if (document.getElementById('shareOverlay').classList.contains('hidden')) fail('the Share button did not open the dialog');
-  const shown = document.getElementById('shareUrl').value;
-  if (shown.indexOf('share.html#') < 0) fail('the dialog does not show the link: ' + shown.slice(0, 40));
+  if (document.getElementById('shareOverlay').classList.contains('hidden')) fail('Share did not open the dialog');
+  if (document.getElementById('shareUrl').value.indexOf('share.html#') < 0) fail('the dialog does not show the link');
   document.getElementById('shareOverlay').classList.add('hidden');
 
   // ── The visitor end ──
@@ -59,60 +61,80 @@ async function run() {
   // do not reload a frame, so onload never fires and the wait never ends.
   let seq = 0;
   const open = (hash) => new Promise(resolve => {
-    fr.onload = () => setTimeout(() => resolve(fr.contentDocument), 500);
+    fr.onload = () => setTimeout(() => resolve(fr.contentWindow), 900);
     fr.src = '../share.html?n=' + (++seq) + hash;
   });
 
-  let d = await open('#' + frag);
-  const canvas = d.getElementById('shareCanvas');
-  if (!canvas || !/<table/i.test(canvas.innerHTML)) fail('a real link rendered no signature');
-  if (canvas && canvas.innerHTML.indexOf('Daniel Reyes') < 0) fail('the signature that arrived is not the one shared');
-  if (d.getElementById('shareActions').hidden) fail('the copy buttons were hidden on a good link');
-  // Nothing on that page may need an account.
-  if (d.querySelector('script[src*="cloud"]')) fail('the share page pulls in the cloud layer');
+  let w = await open('#' + frag);
+  let d = w.document;
+  if (!w.__shareReady) fail('the shared page never finished reading the link');
+  // No sign-in gate may fire: the visitor has no account.
+  if (d.body.classList.contains('app-locked') || /signin/.test(w.location.href)) fail('the shared page tried to make the visitor sign in');
+  // The signature, drawn from the settings rather than shipped as markup.
+  const sig = d.querySelector('.signature-container');
+  if (!sig || !/<table/i.test(sig.innerHTML)) fail('no signature drawn');
+  if (sig && sig.textContent.indexOf('Daniel Reyes') < 0) fail('the signature that arrived is not the one shared');
+  if ((d.getElementById('shareTitle').textContent || '').indexOf('Daniel Reyes') < 0) fail('the page does not say whose signature it is');
+
+  // ── The whole client list, which is the point of this round ──
+  const cards = [].slice.call(d.querySelectorAll('.install-card[data-client]'));
+  if (cards.length !== previewClients.length) fail('clients offered: ' + cards.length + ' of ' + previewClients.length);
+  ['apple', 'outlook-new', 'outlook-classic', 'gmail'].forEach(function (id) {
+    if (!d.querySelector('.install-card[data-client="' + id + '"]')) fail('no card for ' + id);
+  });
+  if (!d.querySelector('.mock-chrome')) fail('the signature is not framed as a client');
+
+  // Picking a client has to change the markup, or the list means nothing.
+  const before = d.querySelector('.signature-container').innerHTML;
+  d.querySelector('.install-card[data-client="outlook-classic"]').click();
+  await new Promise(r => setTimeout(r, 200));
+  const after = d.querySelector('.signature-container').innerHTML;
+  if (before === after) fail('picking Outlook classic changed nothing');
+  if (/<svg|data:image/i.test(after)) fail('Outlook classic was given markup Word cannot show');
+  if (!d.querySelector('.install-steps li')) fail('no steps for the chosen client');
+  if ((d.getElementById('shareSteps').textContent || '').indexOf('Outlook classic') < 0) fail('the steps do not name the chosen client');
 
   // ── A hostile link ──
-  // The page renders markup out of a URL, so anyone can put anything there.
-  const nasty = '<img src=x onerror="window.top.__XSS=1"><script>window.top.__XSS=2<\/script>'
-    + '<iframe src="javascript:window.top.__XSS=3"></iframe>'
-    + '<a href="javascript:window.top.__XSS=4">link</a><table><tr><td>safe</td></tr></table>';
+  // Settings come out of a URL, so anyone can put anything in one.
+  const nasty = JSON.stringify({
+    name: '<img src=x onerror="window.top.__XSS=1">',
+    template: {evil: true},           // wrong kind of thing for this key
+    notAKey: 'ignored',
+    accentColor: '#2B4C7E',
+  });
   const bytes = new TextEncoder().encode(nasty);
-  let b = '';
-  bytes.forEach(x => { b += String.fromCharCode(x); });
+  let b = ''; bytes.forEach(function (x) { b += String.fromCharCode(x); });
   const payload = btoa(b).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   window.__XSS = 0;
-  d = await open('#r:' + payload);
-  const c2 = d.getElementById('shareCanvas');
-  const html2 = c2 ? c2.innerHTML : '';
+  w = await open('#r:' + payload);
+  d = w.document;
   if (window.__XSS) fail('a hostile link ran something (__XSS=' + window.__XSS + ')');
-  if (/<script|<iframe/i.test(html2)) fail('a script or frame survived the clean');
-  if (/onerror/i.test(html2)) fail('an on-handler survived the clean');
-  if (/javascript:/i.test(html2)) fail('a javascript: address survived the clean');
-  if (html2.indexOf('safe') < 0) fail('the clean threw away the ordinary markup too');
+  if (d.querySelector('.signature-container img[onerror]')) fail('an on-handler reached the page');
+  // A key given the wrong kind of value must be left alone, not adopted.
+  if (typeof w.__shareState.template !== 'string') fail('a template of the wrong type was adopted');
+  if (Object.prototype.hasOwnProperty.call(w.__shareState, 'notAKey')) fail('an unknown key was adopted');
 
   // ── Links that are wrong rather than hostile ──
-  d = await open('');
-  if (!d.querySelector('.share-empty')) fail('a link with no signature says nothing');
-  if (!d.getElementById('shareActions').hidden) fail('a link with no signature still offers copy buttons');
-  d = await open('#r:@@@not-base64@@@');
-  if (!d.querySelector('.share-empty')) fail('a damaged link says nothing');
+  w = await open('');
+  if (!w.document.querySelector('.share-empty')) fail('a link with no signature says nothing');
+  if (!w.document.getElementById('shareBody').hidden) fail('a link with no signature still shows the editor');
+  w = await open('#r:@@@not-base64@@@');
+  if (!w.document.querySelector('.share-empty')) fail('a damaged link says nothing');
 
-  lines.push(fails ? '' : 'a real link opens and copies; a hostile one runs nothing');
+  lines.push(fails ? '' : 'opens signed out, ' + cards.length + ' clients to choose, each drawing its own markup');
   out.textContent = lines.join('\n');
   document.title = fails ? 'FAIL ' + fails : 'PASS';
 }
 
-run().catch(e => {
+run().catch(function (e) {
   out.textContent = (window.__err.join('\n') || '') + '\nTHREW: ' + e.message
     + '\n' + (e.stack || '').split('\n').slice(0, 3).join('\n');
   document.title = 'FAIL threw';
 });
-</script></body></html>
-<script>
 setTimeout(function () {
-  if (!document.getElementById('out').textContent.trim()) {
-    document.getElementById('out').textContent = 'NOTHING RAN\n' + (window.__err || []).join('\n');
+  if (!out.textContent.trim()) {
+    out.textContent = 'NOTHING RAN\n' + (window.__err || []).join('\n');
     document.title = 'FAIL silent';
   }
-}, 20000);
-</script>
+}, 25000);
+</script></body></html>
