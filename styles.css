@@ -455,37 +455,21 @@ select.input{cursor:pointer;appearance:auto}
 }
 .uploader:hover{border-color:var(--accent)}
 .uploader.is-dragover{border-color:var(--accent);background:var(--accent-light)}
-.uploader:not(.is-loaded){flex-direction:column;justify-content:center;text-align:center;gap:4px}
+.uploader{flex-direction:column;justify-content:center;text-align:center;gap:4px}
 .uploader-icon{color:var(--muted);line-height:0}
 .uploader:hover .uploader-icon{color:var(--accent)}
 .uploader-text{font-size:11px;color:var(--ink)}
 .uploader-text u{text-decoration:underline;color:var(--accent)}
 .uploader-hint{font-size:10px;color:var(--muted);line-height:1.4}
-/* Filled or empty, it is one control in two states and says the same thing
-   in both: drop a file here. The only difference is what stands at the top —
-   the upload glyph when the slot is empty, the picture itself when it is not.
-   Remove sits under the zone rather than in it, because a click anywhere
-   inside a label reaches the file input. */
-.uploader.is-loaded{
-  flex-direction:column;justify-content:center;text-align:center;gap:6px;
-  padding:16px 14px;background:var(--canvas);
-}
-.uploader.is-loaded:hover{border-color:var(--accent);background:var(--accent-light)}
-.uploader.is-loaded .uploader-thumb{width:64px;height:64px;margin-bottom:2px}
-.uploader.is-loaded .uploader-text,
-.uploader.is-loaded .uploader-hint{max-width:34ch;margin:0 auto}
+/* One box, full or empty, saying the same thing either way. What the slot
+   holds is named underneath rather than shown: the signature beside it is
+   already showing the picture, at the size it will be sent. */
 .uploader-foot{
   display:flex;align-items:center;justify-content:center;gap:8px;
   flex-wrap:wrap;margin-top:8px;
 }
-/* Empty, it gets the room to read as an invitation rather than a thin strip. */
-.uploader:not(.is-loaded){padding:20px 14px}
-.uploader-thumb{
-  flex:0 0 auto;width:40px;height:40px;border-radius:var(--radius);
-  border:1px solid var(--border);background:#fff;
-  display:flex;align-items:center;justify-content:center;overflow:hidden;
-}
-.uploader-thumb img{max-width:100%;max-height:100%;object-fit:contain}
+/* Room to read as an invitation rather than a thin strip. */
+.uploader{padding:20px 14px}
 .uploader-name{
   font-size:11px;font-weight:500;color:var(--ink);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;

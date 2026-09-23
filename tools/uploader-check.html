@@ -17,7 +17,9 @@ renderPanel();
 const zones = [].slice.call(document.querySelectorAll('.uploader'));
 if (zones.length < 1) F.push('no uploader in the panel (section ' + idx + ')');
 zones.forEach(z => {
-  const loaded = z.classList.contains('is-loaded');
+  // Filled is now told by the foot beneath the box, since the box itself no
+  // longer changes: there is no is-loaded class to look for any more.
+  const loaded = !!z.closest('.uploader-wrap');
   const where = loaded ? 'filled' : 'empty';
   // Both states say the same thing and both take a drop.
   if (!z.getAttribute('data-drop')) F.push(where + ': not a drop target');
@@ -26,7 +28,9 @@ zones.forEach(z => {
   const text = (z.querySelector('.uploader-text') || {}).textContent || '';
   if (!/drop/i.test(text)) F.push(where + ': says "' + text + '" rather than inviting a drop');
   if (/replace/i.test(z.textContent)) F.push(where + ': still says Replace');
-  if (loaded && !z.querySelector('.uploader-thumb img')) F.push('filled: no picture shown');
+  // The box holds no picture in either state: the signature beside it is
+  // already showing the image, at the size it will be sent.
+  if (z.querySelector('img')) F.push(where + ': there is a picture inside the box');
 });
 // Remove has to sit outside the label, or clicking it opens the file dialog.
 const removes = [].slice.call(document.querySelectorAll('[data-action^="remove"]'));
@@ -46,14 +50,14 @@ renderPanel();
 const empties = [].slice.call(document.querySelectorAll('.uploader'));
 if (!empties.length) F.push('no uploader once the images are cleared');
 empties.forEach(function (z) {
-  if (z.classList.contains('is-loaded')) F.push('empty: still marked as loaded');
+  if (z.closest('.uploader-wrap')) F.push('empty: still carries the filled foot');
   if (z.tagName !== 'LABEL') F.push('empty: the zone is a ' + z.tagName);
   if (!z.querySelector('input[type=file]')) F.push('empty: no file input');
   if (!/drop/i.test((z.querySelector('.uploader-text') || {}).textContent || '')) F.push('empty: no invitation to drop');
-  if (z.querySelector('.uploader-thumb img')) F.push('empty: still showing a picture');
+  if (z.querySelector('img')) F.push('empty: there is a picture inside the box');
 });
 
 document.getElementById('out').textContent = F.length ? F.join('\n')
-  : zones.length + ' filled and ' + empties.length + ' empty zones, both read the same and both take a drop';
+  : zones.filter(function (z) { return z.closest('.uploader-wrap'); }).length + ' filled and ' + empties.length + ' empty zones, both read the same and both take a drop';
 document.title = F.length ? 'FAIL ' + F.length : 'PASS';
 </script></body></html>

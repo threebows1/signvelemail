@@ -1608,34 +1608,31 @@ function renderUploader(kind, hint) {
   const sample = kind === 'logo' ? DEFAULT_LOGO_URL : DEFAULT_HEADSHOT_URL;
   const named = url !== sample ? esc(S[kind + 'Name'] || 'Image loaded') : '';
   let h;
+  // One box, and it says one thing whether the slot is full or empty: drop a
+  // file here. It holds no picture of what is in the slot — the signature
+  // beside it is already showing that, at the size it will actually be sent,
+  // and a thumbnail was a second, smaller, worse copy of the same answer.
+  //
+  // What the slot holds is said in words underneath, next to Remove, which
+  // sits outside the label: a click anywhere inside a label reaches its file
+  // input, so Remove in there would open the file dialog on its way out.
+  const zone = `<label class="uploader" data-drop="${action}">
+    ${input}
+    <span class="uploader-icon">${icons.upload}</span>
+    <span class="uploader-text">Drag and drop an image here to upload, or <u>select a file</u></span>
+    <span class="uploader-hint">${hint}</span>
+  </label>`;
+
   if (url) {
-    // Filled, it says the same thing as empty: drop a file here. "Replace" was
-    // a button describing the mechanism; dropping a file on it always worked,
-    // and the word never said so. The picture stands where the icon stands
-    // when there is none, and the invitation underneath is word for word the
-    // one on an empty slot, so the two read as one control in two states.
-    //
-    // Remove sits outside the label. Inside it, every click on it would open
-    // the file dialog as well — a label passes its clicks to its input.
     h = `<div class="uploader-wrap">
-      <label class="uploader is-loaded" data-drop="${action}">
-        ${input}
-        <span class="uploader-thumb"><img src="${esc(url)}" alt=""></span>
-        <span class="uploader-text">Drag and drop an image here to upload, or <u>select a file</u></span>
-        <span class="uploader-hint">${hint}</span>
-      </label>
+      ${zone}
       <div class="uploader-foot">
-        ${named ? `<span class="uploader-name">${named}</span>` : ''}
+        <span class="uploader-name">${named || 'Image in place'}</span>
         <button class="btn uploader-action" data-action="remove${kind.charAt(0).toUpperCase()+kind.slice(1)}">Remove</button>
       </div>
     </div>`;
   } else {
-    h = `<label class="uploader" data-drop="${action}">
-      ${input}
-      <span class="uploader-icon">${icons.upload}</span>
-      <span class="uploader-text">Drop an image here, or <u>browse</u></span>
-      <span class="uploader-hint">${hint}</span>
-    </label>`;
+    h = zone;
   }
   // Only the bad news. A hosted image is the expected case and does not need
   // announcing — every upload is hosted now. A local copy is the one that
