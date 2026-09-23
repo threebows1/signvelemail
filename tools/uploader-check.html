@@ -43,6 +43,15 @@ zones.forEach(z => {
   const b = z.getBoundingClientRect();
   if (b.height < 60 || b.width < 120) F.push('a zone is only ' + Math.round(b.width) + 'x' + Math.round(b.height));
 });
+// And every box the same size as every other. The logo's note runs to two
+// lines and the headshot's to one, which left them different heights sitting
+// one above the other.
+const boxes = zones.map(z => z.getBoundingClientRect());
+const hs = boxes.map(b => Math.round(b.height));
+const ws = boxes.map(b => Math.round(b.width));
+if (new Set(hs).size > 1) F.push('boxes are different heights: ' + hs.join(', '));
+if (new Set(ws).size > 1) F.push('boxes are different widths: ' + ws.join(', '));
+const filledSize = hs[0] + 'x' + ws[0];
 // Both slots ship with a picture in them, so the empty state has to be asked
 // for — otherwise only half of this is ever checked.
 S.logoUrl = ''; S.headshotUrl = '';
@@ -56,8 +65,16 @@ empties.forEach(function (z) {
   if (!/drop/i.test((z.querySelector('.uploader-text') || {}).textContent || '')) F.push('empty: no invitation to drop');
   if (z.querySelector('img')) F.push('empty: there is a picture inside the box');
 });
+// Emptying a slot must not change the size of its box either.
+const emptySizes = empties.map(z => {
+  const b = z.getBoundingClientRect();
+  return Math.round(b.height) + 'x' + Math.round(b.width);
+});
+if (new Set(emptySizes).size > 1) F.push('empty boxes differ: ' + emptySizes.join(', '));
+if (emptySizes[0] && emptySizes[0] !== filledSize)
+  F.push('a box changes size when the slot empties: ' + filledSize + ' filled, ' + emptySizes[0] + ' empty');
 
 document.getElementById('out').textContent = F.length ? F.join('\n')
-  : zones.filter(function (z) { return z.closest('.uploader-wrap'); }).length + ' filled and ' + empties.length + ' empty zones, both read the same and both take a drop';
+  : 'every box ' + filledSize + ', filled and empty, both taking a drop';
 document.title = F.length ? 'FAIL ' + F.length : 'PASS';
 </script></body></html>
