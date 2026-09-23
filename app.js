@@ -3595,8 +3595,8 @@ function showShare() {
   buildShareLink().then(url => {
     field.value = url;
     field.select();
-    const size = document.getElementById('shareSize');
-    if (size) size.textContent = url.length.toLocaleString() + ' characters — the signature travels in the link, so nothing is stored and it never expires.';
+    const open = document.getElementById('shareOpen');
+    if (open) open.href = url;
   }).catch(() => { field.value = ''; });
 }
 
@@ -4029,8 +4029,6 @@ function setupEvents() {
     document.getElementById('shareClose').addEventListener('click', closeShare);
     shareOverlay.addEventListener('click', e => {
       if (e.target === shareOverlay) { closeShare(); return; }
-      const open = e.target.closest('#shareOpen');
-      if (open) { open.href = document.getElementById('shareUrl').value || '#'; return; }
       if (!e.target.closest('#shareCopyLink')) return;
       const btn = e.target.closest('#shareCopyLink');
       const url = document.getElementById('shareUrl').value;

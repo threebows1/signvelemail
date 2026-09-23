@@ -5,10 +5,8 @@
 <div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
 <div class="install-overlay hidden" id="shareOverlay"><div class="install-panel is-narrow">
   <div class="install-panel-header"><h2>S</h2><button class="btn" id="shareClose">Close</button></div>
-  <div class="install-body"><p class="share-lead">l</p>
-    <div class="share-row"><input type="text" id="shareUrl" class="share-url" readonly><button class="btn btn-accent" id="shareCopyLink">Copy link</button></div>
-    <p class="share-size" id="shareSize"></p>
-    <div class="install-actions"><a class="btn" id="shareOpen" href="#">Open it yourself</a></div>
+  <div class="install-body">
+    <div class="share-row"><input type="text" id="shareUrl" class="share-url" readonly><button class="btn btn-accent" id="shareCopyLink">Copy link</button><a class="btn" id="shareOpen" href="#">Open</a></div>
   </div></div></div>
 <div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button class="btn" id="installClose">Cancel</button></div><div class="install-body" id="installBody"></div></div></div>
 <div class="export-overlay hidden" id="exportOverlay"><div class="export-panel">
@@ -52,7 +50,12 @@ async function run() {
   showShare();
   await new Promise(r => setTimeout(r, 400));
   if (document.getElementById('shareOverlay').classList.contains('hidden')) fail('Share did not open the dialog');
-  if (document.getElementById('shareUrl').value.indexOf('share.html#') < 0) fail('the dialog does not show the link');
+  const shownUrl = document.getElementById("shareUrl").value;
+  if (shownUrl.indexOf("share.html#") < 0) fail("the dialog does not show the link");
+  // Open has to point at the same link the field shows.
+  if (document.getElementById("shareOpen").getAttribute("href") !== shownUrl) fail("Open points somewhere else than the link");
+  // Nothing but the link, the two buttons and the heading.
+  if (document.querySelector(".share-lead") || document.getElementById("shareSize")) fail("the dialog still carries explanatory lines");
   document.getElementById('shareOverlay').classList.add('hidden');
 
   // ── The visitor end ──
