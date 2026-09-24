@@ -2296,7 +2296,16 @@ function buildSignatureBody() {
   // On a dark panel the saved text colours would be unreadable, so they are
   // lifted to light values for the duration of the build. The user's own
   // settings are untouched — switch the background off and they return.
-  const onDark = S.bgEnabled && isDarkColor(S.bgColor);
+  // Dark ground, for either reason: the signature carries a dark panel of its
+  // own, or the preview is showing what a dark-mode client looks like. The
+  // second only applies on screen — the copy and the export keep the colours
+  // as designed, because a mail client does its own inverting and a signature
+  // written for one mode would then be wrong in the other.
+  const previewDark = SCREEN_RENDER && S.darkMode;
+  const onDark = (S.bgEnabled && isDarkColor(S.bgColor)) || previewDark;
+  // What the text is actually sitting on, which is the panel where there is
+  // one and the mock's own ground where there is not.
+  const darkGround = (S.bgEnabled && isDarkColor(S.bgColor)) ? S.bgColor : '#1E1E1E';
   const tc = onDark ? '#F2F1F7' : S.textColor;
   const ac = S.accentColor;
   const a2 = S.accent2Color || '#141220';
@@ -2397,7 +2406,7 @@ function buildSignatureBody() {
   // disclaimer set in it looked like. Mixed most of the way to white from
   // whatever the panel actually is, it stays quiet without going unreadable,
   // on any colour anybody picks.
-  const mutedColor = onDark ? mixHex(S.bgColor, '#FFFFFF', 0.82) : '#999';
+  const mutedColor = onDark ? mixHex(darkGround, '#FFFFFF', 0.82) : '#999';
   const mutedStyle = `font-family:${ff};font-size:${bs - 2}px;color:${mutedColor};line-height:1.4;`;
 
   // ── Role treatment ──
@@ -2553,8 +2562,11 @@ function buildSignatureBody() {
       // and the ink lockup vanishes into it. mono means that slot wants a mark
       // rather than a lockup.
       let src = logoSrc;
-      if (src === DEFAULT_LOGO_URL && opts && opts.colour === '#FFFFFF') {
-        src = opts.mono ? SAMPLE_MARK_WHITE_URL : SAMPLE_LOGO_WHITE_URL;
+      // Or simply because the ground is dark: the ink lockup is near-black
+      // lettering, and on a dark panel — or in a dark-mode preview — the word
+      // disappears and only the squiggle is left.
+      if (src === DEFAULT_LOGO_URL && ((opts && opts.colour === '#FFFFFF') || onDark)) {
+        src = (opts && opts.mono) ? SAMPLE_MARK_WHITE_URL : SAMPLE_LOGO_WHITE_URL;
       }
       return `<img src="${esc(src)}" height="${hh}" style="display:block;height:auto;max-height:${hh}px;width:auto;max-width:${mw}px;" alt="${esc(pCompany)} logo">`;
     }
@@ -3336,7 +3348,10 @@ function buildSignatureBody() {
   if (S.template === 'corporate') {
     // Full-width accent rule, reused above and below the logo/contact band.
     const rule = hairline(ac, S.dividerWidth);
-    const discStyle = `font-family:${ff};font-size:${Math.max(9, bs - 4)}px;color:${ac};line-height:1.5;margin:0;`;
+    // The small print is set in the theme colour, which on a dark ground is a
+    // brown-gold at nine pixels and hard to read. There it takes the muted
+    // light the rest of the dark text uses.
+    const discStyle = `font-family:${ff};font-size:${Math.max(9, bs - 4)}px;color:${onDark ? mutedColor : ac};line-height:1.5;margin:0;`;
     // Uses the shared width rather than its own copy of it, so the background
     // panel takes its padding out of this layout too instead of adding 48px
     // to it — this was the one place that still grew.

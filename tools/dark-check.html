@@ -1,0 +1,51 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>dark-check</title></head><body><pre id="out"></pre>
+<div class="app" id="app" style="position:absolute;left:-4000px"><aside class="rail" id="rail"></aside>
+<div class="workspace"><header class="topbar" id="header"></header>
+<div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// The Dark toggle is a preview of a dark-mode client. It has to change what
+// is on screen and nothing else: a signature is written once and the client
+// does its own inverting, so a copy taken with the toggle on must be the same
+// bytes as one taken with it off.
+const F = [];
+window.SIGNVEL_SHOW_IMAGES = true;
+S.template = 'corporate';
+
+S.darkMode = false;
+const lightScreen = onScreen(function () { return generateSignaturePreview(); });
+const lightCopy = withExportTarget('', generateSignaturePreview);
+
+S.darkMode = true;
+const darkScreen = onScreen(function () { return generateSignaturePreview(); });
+const darkCopy = withExportTarget('', generateSignaturePreview);
+
+// ── On screen, dark mode has to change things ──
+if (darkScreen === lightScreen) F.push('the Dark toggle changed nothing on screen');
+if (!/#F2F1F7|#FFFFFF/i.test(darkScreen)) F.push('dark preview: the text is not lightened');
+if (!/sample-logo-white/.test(darkScreen)) F.push('dark preview: the ink logo is still used, which vanishes on dark');
+if (/sample-logo\.png/.test(darkScreen)) F.push('dark preview: still carrying the ink logo');
+
+// ── What you copy must not move at all ──
+if (darkCopy !== lightCopy) F.push('the Dark toggle changed what gets copied');
+if (!/sample-logo\.png/.test(lightCopy)) F.push('the copy lost its logo');
+if (/sample-logo-white/.test(darkCopy)) F.push('the copy picked up the dark-mode logo');
+
+// ── And a signature with a dark panel of its own is unaffected by the toggle ──
+S.darkMode = false;
+S.bgEnabled = true; S.bgColor = '#14121F';
+const panelLight = withExportTarget('', generateSignaturePreview);
+S.darkMode = true;
+const panelDark = withExportTarget('', generateSignaturePreview);
+if (panelLight !== panelDark) F.push('a dark panel signature changed with the preview toggle');
+if (!/sample-logo-white/.test(panelLight)) F.push('a dark panel does not get the white logo');
+S.bgEnabled = false; S.darkMode = false;
+
+document.getElementById('out').textContent = F.length ? F.join('\n')
+  : 'dark preview lightens the screen only; the copy is byte for byte the same';
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>
