@@ -12,12 +12,13 @@
 // A signature that overflows the mock is a signature that will overflow a real
 // reading pane the same way, so this measures the frame and every box inside.
 window.SIGNVEL_SHOW_IMAGES = true;
+const DEVICE = (location.search.match(/d=([a-z]+)/) || [])[1] || 'desktop';
 const F = [], seen = [];
 let ran = 0;
 
 Object.keys(templateThemes).forEach(function (t) {
   [true, false].forEach(function (dark) {
-    S.device = 'desktop';
+    S.device = DEVICE;
     S.template = t; applyTemplateTheme(t); S.darkMode = dark; S.client = 'gmail';
     renderStage();
     const mock = document.querySelector('.email-mock');

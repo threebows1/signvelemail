@@ -2143,11 +2143,41 @@ function renderStage() {
   </div></div>`;
 
   $stage.innerHTML = h;
+  fitMobilePreview();
   // Only the Outlook variants need files, and each needs a different set —
   // glyphs for New Outlook, whole badges for classic — so nothing is drawn or
   // uploaded until one of those tabs is in use. It redraws when a set arrives.
   if (currentTarget()) syncIconAssets(currentTarget());
   scheduleAllSaves();
+}
+
+// A phone does not reflow a signature. A fixed-width table wider than the
+// screen is scaled down to fit it, which is what Gmail and Apple Mail both do,
+// and a signature built at 620px on a 333px screen is the ordinary case rather
+// than the exception. Without this the preview drew the card hanging out of
+// the frame, which is not what the recipient sees and not something any
+// layout change here could fix: the columns cannot compress past their own
+// content, so there is nothing to give.
+function fitMobilePreview() {
+  const box = $stage && $stage.querySelector(".signature-container");
+  if (!box) return;
+  box.style.transform = "";
+  box.style.height = "";
+  box.style.transformOrigin = "";
+  if (S.device !== "mobile") return;
+  const sig = box.firstElementChild;
+  const avail = box.clientWidth;
+  if (!sig || !avail) return;
+  // Measured before the transform, so these are the unscaled numbers.
+  const natural = Math.max(sig.scrollWidth, sig.getBoundingClientRect().width);
+  const naturalH = sig.getBoundingClientRect().height;
+  if (!natural || natural <= avail + 0.5) return;
+  const scale = avail / natural;
+  box.style.transformOrigin = "top left";
+  box.style.transform = "scale(" + scale + ")";
+  // The box would otherwise keep reserving its full height and leave a gap
+  // under the signature the size of everything the scale took off.
+  box.style.height = (naturalH * scale) + "px";
 }
 
 // ═══════════════════════════════════════
@@ -2407,13 +2437,19 @@ function buildSignatureBody() {
   // again. So the card layouts stayed 620 wide in a frame narrower than they
   // are, and hung out of it. Stating it the other way round — fill the frame,
   // stop at 620 — shrinks correctly and is identical wherever there is room.
-  // Screen only: the width attribute is what Outlook reads, the copy is a
-  // fixed-width table by design, and this is the preview being honest about a
-  // frame, not a change to the signature anybody sends.
+  //
+  // A phone is the exception. It does not reflow a fixed-width table, it scales
+  // the whole message, so there the natural width stands and fitMobilePreview
+  // does the fitting. Left free to reflow, the preview wrapped a phone number
+  // over three lines — tidy, inside the frame, and not what any recipient sees.
+  //
+  // Screen only either way: the width attribute is what Outlook reads and the
+  // copy is a fixed-width table by design, so the export keeps the old form.
   const widthCss = layoutW
-    ? (SCREEN_RENDER ? `width:100%;max-width:${layoutW}px;` : `width:${layoutW}px;max-width:100%;`)
-    : "";
-
+    ? (SCREEN_RENDER
+        ? (S.device === 'mobile' ? `width:${layoutW}px;` : `width:100%;max-width:${layoutW}px;`)
+        : `width:${layoutW}px;max-width:100%;`)
+    : '';
   // ── Identity ──
   // While nothing has been personalised, each layout previews with the identity
   // it is meant to carry: Corporate reproduces the real brand signature, and

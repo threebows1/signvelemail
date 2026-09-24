@@ -10,6 +10,7 @@
 window.SIGNVEL_SHOW_IMAGES = true;
 // Which layout to draw comes off the query, so one harness serves them all.
 S.darkMode = true; S.client = 'gmail';
+S.device = (location.search.match(/d=([a-z]+)/) || [])[1] || 'desktop';
 S.template = (location.search.match(/t=([a-z]+)/) || [])[1] || 'corporate';
 applyTemplateTheme(S.template);
 renderStage();
