@@ -374,6 +374,20 @@ const _pngIconCache = new Map();
 // SVG-in-img fallback that works in browsers for the live preview.
 // By the next renderStage() cycle the PNG is cached and the copy/export
 // path hands Outlook a real image.
+// One redraw after a batch of glyphs finishes rasterising, not one per glyph:
+// a signature asks for a dozen at once and they all land within a few frames
+// of each other. Guarded on the stage existing, because this file is loaded
+// by pages that have no preview to redraw.
+let _pngRedrawTimer = null;
+function schedulePngRedraw() {
+  if (typeof renderStage !== 'function' || !document.getElementById('stage')) return;
+  clearTimeout(_pngRedrawTimer);
+  _pngRedrawTimer = setTimeout(function () {
+    _pngRedrawTimer = null;
+    renderStage();
+  }, 60);
+}
+
 function svgToImgTag(svgStr, width, height, color, extraStyle) {
   if (!svgStr) return '';
   const w = Math.round(width);
@@ -382,6 +396,13 @@ function svgToImgTag(svgStr, width, height, color, extraStyle) {
 
   // Prepare a standalone SVG with explicit colour, size, and namespace.
   let svg = svgStr.replace(/currentColor/g, color || '#000000');
+  // These are drawn on a 24 grid with a 2px stroke. Inside a badge the glyph
+  // is about eleven pixels across, which puts that stroke under a single
+  // pixel: the solid parts survive and the thin ones fade, so an envelope
+  // becomes a heavy flap over a line you can barely see and the whole thing
+  // reads as sitting too high. Thicker at small sizes, which is what the
+  // panel's own miniatures already do.
+  if (w < 18) svg = svg.replace(/stroke-width="2"/, 'stroke-width="2.6"');
   svg = svg.replace(/width="14"/, 'width="' + w + '"').replace(/height="14"/, 'height="' + h + '"');
   svg = svg.replace(/width="16"/, 'width="' + w + '"').replace(/height="16"/, 'height="' + h + '"');
   if (!svg.includes('xmlns=')) svg = svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
@@ -400,7 +421,34 @@ function svgToImgTag(svgStr, width, height, color, extraStyle) {
     c.width = w * s; c.height = h * s;
     var ctx = c.getContext('2d');
     ctx.drawImage(img, 0, 0, w * s, h * s);
+
+    // Centre it on its own ink rather than trusting the artwork to be
+    // centred in its box. Drawn as they come, the glyphs sit at slightly
+    // different heights inside the same square — an envelope is wide and
+    // short, a map pin tall and narrow — and inside a round badge the
+    // difference reads as the icon having slipped. This is the same
+    // normalising the hosted icons get, so a badge looks the same whichever
+    // of the two it is showing.
+    // Moved, not resized: the SVG is what shows until this PNG is ready, and
+    // rescaling here would make the glyph change size the moment it swaps.
+    var box = inkBounds(ctx, c.width, c.height);
+    if (box) {
+      // Whole CSS pixels, so the offset stays sharp: this canvas is drawn at
+      // 2x and shown at 1x, and an odd number of device pixels lands the
+      // strokes on half a pixel and blurs the lot.
+      var dx = Math.round((c.width / 2 - (box.x + box.w / 2)) / s) * s;
+      var dy = Math.round((c.height / 2 - (box.y + box.h / 2)) / s) * s;
+      if (dx || dy) {
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, dx, dy, c.width, c.height);
+      }
+    }
     _pngIconCache.set(key, c.toDataURL('image/png'));
+    // The markup already on screen still points at the SVG that was handed
+    // back while this was rendering, and nothing would replace it until the
+    // next edit. One redraw, once the last of them has landed, swaps them
+    // all for the centred PNGs.
+    schedulePngRedraw();
   };
   img.src = svgUri;
 
