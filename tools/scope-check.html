@@ -1,0 +1,60 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="../styles.css"><title>scope-check</title>
+<style>body{height:auto;overflow:visible}.stage{height:auto}</style></head><body>
+<pre id="out" style="font:12px monospace;background:#fff;position:relative;z-index:9"></pre>
+<div class="app" id="app"><aside class="rail" id="rail" style="display:none"></aside><div class="workspace"><header class="topbar" id="header" style="display:none"></header><div class="body" id="appBody"><aside class="panel" id="panel" style="display:none"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// A scope is a departmental override, and it sets a layout without setting the
+// palette that layout was drawn for. Every scope is checked the way a real one
+// is chosen: switch to it, draw it, and see whether it stays in its frame.
+window.SIGNVEL_SHOW_IMAGES = true;
+const F = [], notes = [];
+let ran = 0;
+
+['default', 'sales', 'legal', 'engineering', 'executive'].forEach(function (scope) {
+  applyScope(scope);
+  S.client = 'gmail'; S.device = 'desktop'; S.darkMode = false;
+  renderStage();
+  const mock = document.querySelector('.email-mock');
+  const body = document.querySelector('.email-mock-body');
+  if (!mock || !body) { F.push(scope + ': nothing drawn'); return; }
+  ran++;
+  const lim = mock.getBoundingClientRect();
+  let worst = null;
+  [].slice.call(body.querySelectorAll('*')).forEach(function (el) {
+    const r = el.getBoundingClientRect();
+    if (!r.width && !r.height) return;
+    const over = Math.max(lim.left - r.left, r.right - lim.right);
+    if (over > 0.5 && (!worst || over > worst.over)) {
+      worst = {over: over, tag: el.tagName.toLowerCase(), w: Math.round(r.width),
+               alt: el.getAttribute && (el.getAttribute('alt') || '') || '',
+               txt: (el.textContent || '').trim().slice(0, 16)};
+    }
+  });
+  if (scope === 'executive') {
+    ['outline', 'circle', 'plain'].forEach(function (st) {
+      S.socialStyle = st; renderStage();
+      var m = document.querySelector('.email-mock'), b = document.querySelector('.email-mock-body');
+      var t = b.querySelector('table');
+      notes.push('   executive with ' + st + ' socials: table ' + Math.round(t.getBoundingClientRect().width)
+        + 'px vs frame ' + Math.round(m.getBoundingClientRect().width));
+    });
+    S.socialStyle = 'outline'; renderStage();
+  }
+  notes.push(scope + ': template ' + S.template + ', panel ' + (S.bgEnabled ? S.bgColor : 'off')
+    + ', accent ' + S.accentColor);
+  if (worst) {
+    F.push(scope + ': ' + worst.tag + ' ' + (worst.alt ? '"' + worst.alt + '"' : '"' + worst.txt + '"')
+      + ' ' + worst.w + 'px, ' + worst.over.toFixed(1) + 'px past the frame');
+  }
+});
+
+if (!ran) F.push('nothing was measured, so this check proves nothing');
+document.getElementById('out').textContent = (F.length ? F.join('\n') : ran + ' scopes, all inside the frame')
+  + '\n\n' + notes.join('\n');
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>

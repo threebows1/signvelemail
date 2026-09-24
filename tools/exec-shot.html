@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="../styles.css"><title>dark</title>
+<style>body{height:auto;overflow:visible}.stage{height:auto}</style></head><body>
+<div class="app" id="app"><aside class="rail" id="rail" style="display:none"></aside><div class="workspace"><header class="topbar" id="header" style="display:none"></header><div class="body" id="appBody"><aside class="panel" id="panel" style="display:none"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+window.SIGNVEL_SHOW_IMAGES = true;
+// After the boot settles, or init() lands on top of the scope and the shot
+// shows the brand default while claiming to show Executive.
+setTimeout(function () {
+  S.client = 'gmail'; S.device = 'desktop'; S.darkMode = false;
+  applyScope('executive');
+  renderStage();
+}, 300);
+</script></body></html>

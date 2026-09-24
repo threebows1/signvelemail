@@ -1162,8 +1162,27 @@ function applyScope(next) {
   S.scopeData[S.scope] = current;
 
   S.scope = next;
-  const source = S.scopeData[next] || Object.assign({}, brandDefaults, scopePresets[next] || {});
+  const saved = S.scopeData[next];
+  const preset = scopePresets[next] || {};
+  const source = saved || Object.assign({}, brandDefaults, preset);
   SCOPED_KEYS.forEach(k => { if (k in source) S[k] = source[k]; });
+
+  // A preset that names a layout has to bring that layout's palette with it,
+  // the same way picking it in the gallery does. Editorial is drawn on a navy
+  // panel: handed the brand's gold on white it was not merely off-brand, it
+  // was 140px wider than the reading pane, because a layout's width is
+  // measured with its own panel padding taken out of it.
+  //
+  // Only when the scope is being built from its preset. Once somebody has set
+  // that scope up themselves it is their design, and re-applying a theme over
+  // it would throw away the colours they chose.
+  if (!saved && preset.template) {
+    applyTemplateTheme(preset.template);
+    // The theme sets the layout's own social and icon treatments, so the
+    // preset's explicit choices go back on top of it — the executive scope
+    // asks for outline socials and means it.
+    Object.keys(preset).forEach(k => { S[k] = preset[k]; });
+  }
 }
 
 // ───────────── Rollout locks ─────────────
@@ -2940,7 +2959,15 @@ function buildSignatureBody() {
       if ((style === 'circle' || style === 'filled' || style === 'glyph') && !haveAll(activeSocials)) style = 'plain';
     }
     const iconSz = sz + 'px';
-    let out = `<table role="presentation" cellpadding="0" cellspacing="0" border="0"${al === 'center' ? ' align="center"' : ''}><tbody><tr>`;
+    // A named treatment sets the network's name in type; it is not a badge.
+    // Sized off the icon control it came out at 24px next to 14px body text,
+    // which is what made the Executive scope look shouted rather than set. It
+    // follows the body size instead, with the icon control still moving it in
+    // proportion, so that setting keeps working for the treatments it is for.
+    const nameSize = Math.max(11, Math.round(bs * (sz / 28)));
+    // Collected rather than concatenated, so a row too wide for the layout can
+    // be broken into several.
+    const cells = [];
     activeSocials.forEach((sl, idx) => {
       const gap = idx > 0 ? `padding-left:${o.gap != null ? o.gap : (style === 'plain' ? 10 : 6)}px;` : '';
       const svgIcon = socialIcons[sl.type] || '';
@@ -2954,7 +2981,7 @@ function buildSignatureBody() {
             : hostedBadgeFor(sl.type, colour, style === 'filled', sz, badgeGround());
           if (baked) {
             const px = style === 'glyph' ? iconScale : sz;
-            out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${iconImgTag(baked, px)}</a></td>`;
+            cells.push(`<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${iconImgTag(baked, px)}</a></td>`);
             return;
           }
         }
@@ -2966,16 +2993,16 @@ function buildSignatureBody() {
             // carry the colour, so an ink one would just be black.
             const img = exactMark ? iconImgTag(exactMark, iconScale, 'margin:0 auto;') : '';
             if (img) {
-              out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${img}</a></td>`;
+              cells.push(`<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${img}</a></td>`);
               return;
             }
           }
           if (EXPORT_TARGET) {
-            out += `<td style="${gap}vertical-align:middle;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-2}px;color:${colour};text-decoration:none;font-weight:600;">${esc(sl.label)}</a></td>`;
+            cells.push(`<td style="${gap}vertical-align:middle;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${nameSize}px;color:${colour};text-decoration:none;font-weight:600;">${esc(sl.label)}</a></td>`);
             return;
           }
           const glyphImg = svgToImgTag(svgIcon, iconScale, iconScale, colour, 'margin:0 auto;');
-          out += `<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${glyphImg}</a></td>`;
+          cells.push(`<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${glyphImg}</a></td>`);
           return;
         }
         // Filled only when there is no exactly coloured glyph to put in an
@@ -2994,16 +3021,44 @@ function buildSignatureBody() {
           : {mark: svgToImgTag(svgIcon, iconScale, iconScale, glyphColor, 'margin:0 auto;'), type: 'font-size:0;line-height:0;'};
         const bg = solid ? `background-color:${colour};` : '';
         const bgAttr = solid ? ` bgcolor="${colour}"` : '';
-        out += `<td style="${gap}vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:2px solid ${colour};border-radius:50%;text-align:center;vertical-align:middle;${inner.type}"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;color:${glyphColor};${inner.type}">${inner.mark}</a></td></tr></table></td>`;
+        cells.push(`<td style="${gap}vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:2px solid ${colour};border-radius:50%;text-align:center;vertical-align:middle;${inner.type}"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;color:${glyphColor};${inner.type}">${inner.mark}</a></td></tr></table></td>`);
       } else if (style === 'chip') {
-        out += `<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="${colour}" style="background-color:${colour};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-4}px;color:#fff;text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`;
+        cells.push(`<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="${colour}" style="background-color:${colour};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${nameSize}px;color:#fff;text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`);
       } else if (style === 'outline') {
-        out += `<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${colour};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-4}px;color:${colourText};text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`;
+        cells.push(`<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${colour};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${nameSize}px;color:${colourText};text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`);
       } else {
-        out += `<td style="${gap}"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-2}px;color:${colourText};text-decoration:none;font-weight:500;">${sl.label}</a></td>`;
+        cells.push(`<td style="${gap}"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${nameSize}px;color:${colourText};text-decoration:none;font-weight:500;">${sl.label}</a></td>`);
       }
     });
-    return out + `</tr></tbody></table>`;
+    // The named treatments set the network's name in type, and five of those
+    // in one row is far wider than any layout: Facebook, LinkedIn, Instagram,
+    // YouTube and TikTok as outline chips come to roughly 700px, which pushed
+    // the portrait clean out of the reading pane on the Executive scope.
+    //
+    // Packed the same way the contact row is — as many to a line as the width
+    // takes, then a new line. Estimated rather than measured, for the same
+    // reason: this markup is built once and has to hold up in a mail client
+    // where nothing can be measured. The badge treatments are small and round
+    // and stay on one row, which is how they are meant to read.
+    const named = style === 'plain' || style === 'outline' || style === 'chip';
+    const rowMax = layoutW || 560;
+    let lines = [cells];
+    if (named && cells.length > 1) {
+      const per = activeSocials.map(sl => String(sl.label || '').length * nameSize * 0.62 + 34);
+      lines = [];
+      let line = [], used = 0;
+      cells.forEach((c, i) => {
+        if (line.length && used + per[i] > rowMax) { lines.push(line); line = []; used = 0; }
+        line.push(c);
+        used += per[i];
+      });
+      if (line.length) lines.push(line);
+    }
+    // A cell carries its gap as left padding, so the first on a new line must
+    // not keep the one it was given while it was somewhere in the middle.
+    const rows = lines.map(ln => '<tr>' + ln.map((c, i) =>
+      i === 0 ? c.replace(/padding-left:\d+px;/, '') : c).join('') + '</tr>').join('');
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0"${al === 'center' ? ' align="center"' : ''}><tbody>${rows}</tbody></table>`;
   }
   const socialHTML = socialBlock();
 
