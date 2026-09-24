@@ -8,6 +8,9 @@
 <script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
 <script>
 window.SIGNVEL_SHOW_IMAGES = true;
-S.darkMode = true; S.client = 'gmail'; S.template = 'corporate';
+// Which layout to draw comes off the query, so one harness serves them all.
+S.darkMode = true; S.client = 'gmail';
+S.template = (location.search.match(/t=([a-z]+)/) || [])[1] || 'corporate';
+applyTemplateTheme(S.template);
 renderStage();
 </script></body></html>

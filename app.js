@@ -2172,6 +2172,45 @@ function mixHex(from, to, amount) {
   return '#' + mix.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
 }
 
+// A colour lifted toward white until it can be read on the ground it sits on.
+// Only for text: a theme colour chosen to look right on paper can land under
+// the readable threshold on a dark ground — the colour-block red comes out at
+// 3.9 against near-black at thirteen pixels, where 4.5 is the mark. Grounds,
+// rules and badges keep the colour exactly as chosen; it is only the letters
+// 4.5:1 is where text stops being unreadable, not where it starts looking
+// right. An accent lifted to exactly the minimum comes out dimmer than the
+// plain text beside it, so a link ends up quieter than the phone number it
+// sits next to. Text carrying the accent aims higher; the disclaimer keeps
+// the minimum, because it is meant to be quiet.
+const TEXT_ON_DARK = 6;
+// on top of them that have to clear.
+function readableOn(colour, ground, need) {
+  const lum = (h) => {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '').trim());
+    if (!m) return null;
+    const n = parseInt(m[1], 16);
+    const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(v => {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+  };
+  const contrast = (a, b) => {
+    const la = lum(a), lb = lum(b);
+    if (la === null || lb === null) return 21;
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  };
+  const want = need || 4.5;
+  if (contrast(colour, ground) >= want) return colour;
+  const toward = (lum(ground) || 0) < 0.2 ? '#FFFFFF' : '#000000';
+  // Twentieths, so the hue survives as far as it can before it is given up.
+  for (let i = 1; i <= 20; i++) {
+    const tried = mixHex(colour, toward, i / 20);
+    if (contrast(tried, ground) >= want) return tried;
+  }
+  return toward;
+}
+
 function isDarkColor(hex) {
   const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
   if (!m) return false;
@@ -2308,6 +2347,9 @@ function buildSignatureBody() {
   const darkGround = (S.bgEnabled && isDarkColor(S.bgColor)) ? S.bgColor : '#1E1E1E';
   const tc = onDark ? '#F2F1F7' : S.textColor;
   const ac = S.accentColor;
+  // The same colour, lifted where it has to be read rather than merely seen.
+  // Rules, badges and panels go on using `ac`; text uses this.
+  const acText = onDark ? readableOn(ac, darkGround, TEXT_ON_DARK) : ac;
   const a2 = S.accent2Color || '#141220';
   const sp = S.blockSpacing + 'px';
   const al = S.alignment;
@@ -2406,7 +2448,9 @@ function buildSignatureBody() {
   // disclaimer set in it looked like. Mixed most of the way to white from
   // whatever the panel actually is, it stays quiet without going unreadable,
   // on any colour anybody picks.
-  const mutedColor = onDark ? mixHex(darkGround, '#FFFFFF', 0.82) : '#999';
+  // Muted on dark still has to be read. On a mid-blue panel the 82% mix lands
+  // at 4.06:1 — close enough to look right and not close enough to be right.
+  const mutedColor = onDark ? readableOn(mixHex(darkGround, '#FFFFFF', 0.82), darkGround, 4.5) : '#999';
   const mutedStyle = `font-family:${ff};font-size:${bs - 2}px;color:${mutedColor};line-height:1.4;`;
 
   // ── Role treatment ──
@@ -2639,10 +2683,12 @@ function buildSignatureBody() {
     const o = opts || {};
     const valueColor = o.color || tc;
     const badgeColor = o.icon || ic;
+    // The same colour as the badge, but this one is read rather than seen.
+    const leadText = onDark ? readableOn(badgeColor, darkGround, TEXT_ON_DARK) : badgeColor;
     const vs = `font-family:${ff};font-size:${bs - 1}px;font-weight:${fw};color:${valueColor};line-height:1.6;margin:0;text-decoration:none;`;
     let val;
     if (f.type === 'email') val = `<a href="mailto:${esc(f.value)}" style="${vs}">${esc(f.value)}</a>`;
-    else if (f.type === 'website') val = `<a href="https://${esc(f.value.replace(/^https?:\/\//, ''))}" style="${vs}color:${o.linkColor || ac};font-weight:600;">${esc(f.value)}</a>`;
+    else if (f.type === 'website') val = `<a href="https://${esc(f.value.replace(/^https?:\/\//, ''))}" style="${vs}color:${onDark ? readableOn(o.linkColor || ac, darkGround, TEXT_ON_DARK) : (o.linkColor || ac)};font-weight:600;">${esc(f.value)}</a>`;
     else if (f.type === 'mobile' || f.type === 'phone') val = `<a href="tel:${esc(f.value.replace(/\s/g, ''))}" style="${vs}">${esc(f.value)}</a>`;
     else val = `<span style="${vs}">${esc(f.value)}</span>`;
 
@@ -2653,13 +2699,13 @@ function buildSignatureBody() {
       const lower = o.lowercase;
       const letter = (contactLetters[f.type] || '•');
       return {
-        lead: `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(lower ? letter.toLowerCase() : letter)}.</span>`,
+        lead: `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${leadText};line-height:1.6;">${esc(lower ? letter.toLowerCase() : letter)}.</span>`,
         leadPad: '3px 8px 3px 0', val, valPad: '3px 0', align: 'top',
       };
     }
     if (mode === 'labels') {
       return {
-        lead: `<span style="${mutedStyle}color:${o.labelColor || badgeColor};font-weight:600;white-space:nowrap;">${esc(f.label)}:</span>`,
+        lead: `<span style="${mutedStyle}color:${onDark ? readableOn(o.labelColor || badgeColor, darkGround, TEXT_ON_DARK) : (o.labelColor || badgeColor)};font-weight:600;white-space:nowrap;">${esc(f.label)}:</span>`,
         leadPad: '3px 10px 3px 0', val, valPad: '3px 0', align: 'middle',
       };
     }
@@ -2692,7 +2738,7 @@ function buildSignatureBody() {
                 leadPad: '1px 7px 1px 0', val, valPad: '3px 0', align: 'middle'};
       }
       return {
-        lead: `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(letter)}.</span>`,
+        lead: `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${leadText};line-height:1.6;">${esc(letter)}.</span>`,
         leadPad: '3px 8px 3px 0', val, valPad: '3px 0', align: 'top',
       };
     }
@@ -2713,7 +2759,7 @@ function buildSignatureBody() {
     if (mode === 'rule') {
       // No badge: the colour goes into a bar beside the glyph. Where there is
       // no glyph this client can draw, the bar keeps the letter company.
-      const mark = bareGlyph || `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1;">${esc(letter)}</span>`;
+      const mark = bareGlyph || `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${leadText};line-height:1;">${esc(letter)}</span>`;
       return {lead: ruleLead(mark, glyphPx, badgeColor, S.contactIconSize || 22, false),
               leadPad: '1px 9px 1px 0', val, valPad: '3px 0', align: 'middle', raw: !EXPORT_TARGET};
     }
@@ -2725,7 +2771,7 @@ function buildSignatureBody() {
       // or it is not an icon at all. The ink one was black against the ring's
       // blue, which read as a fault; the letter at least belongs to the design.
       : (bareGlyph
-          || `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${badgeColor};line-height:1.6;">${esc(letter)}.</span>`);
+          || `<span style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;color:${leadText};line-height:1.6;">${esc(letter)}.</span>`);
     return {lead, leadPad: badged ? '3px 10px 3px 0' : '1px 7px 1px 0', val, valPad: '3px 0', align: 'middle', raw: !EXPORT_TARGET};
   }
 
@@ -2825,6 +2871,9 @@ function buildSignatureBody() {
     // all; new Outlook keeps its ring and carries the platform's initial.
     let style = o.style || S.socialStyle;
     const colour = o.color || sc;
+    // Where the name is the link, the colour has to be read, not merely seen —
+    // a slate accent that is fine as a badge fill is 2.2:1 as text on dark.
+    const colourText = onDark ? readableOn(colour, darkGround, TEXT_ON_DARK) : colour;
     const sz = o.size || S.socialIconSize;
     // Word throws the CSS badge away, so a badged style only survives as a
     // picture with the badge drawn into it. Where there is no such picture
@@ -2895,9 +2944,9 @@ function buildSignatureBody() {
       } else if (style === 'chip') {
         out += `<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="${colour}" style="background-color:${colour};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-4}px;color:#fff;text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`;
       } else if (style === 'outline') {
-        out += `<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${colour};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-4}px;color:${colour};text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`;
+        out += `<td style="${gap}"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${colour};border-radius:4px;padding:3px 10px;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-4}px;color:${colourText};text-decoration:none;font-weight:500;white-space:nowrap;">${sl.label}</a></td></tr></table></td>`;
       } else {
-        out += `<td style="${gap}"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-2}px;color:${colour};text-decoration:none;font-weight:500;">${sl.label}</a></td>`;
+        out += `<td style="${gap}"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${parseInt(iconSz)-2}px;color:${colourText};text-decoration:none;font-weight:500;">${sl.label}</a></td>`;
       }
     });
     return out + `</tr></tbody></table>`;
@@ -2990,8 +3039,8 @@ function buildSignatureBody() {
     const inner = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;width:100%;"><tbody><tr>
         ${S.headshotUrl ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:26px;">${photoHTML({ring: S.photoRing || 5, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>` : ''}
         <td width="100%" style="width:100%;vertical-align:middle;">
-          <p style="${nameStyleAt(bs + 11, '#FFFFFF')}"><span style="font-weight:400;color:${ac};">${esc(firstWord)}</span>${restWords ? ' ' + esc(restWords) : ''}</p>
-          ${roleHTML({mb: 14, chipBg: solid ? '#33507F' : 'rgba(255,255,255,.16)', capsColor: ac, color: light})}
+          <p style="${nameStyleAt(bs + 11, '#FFFFFF')}"><span style="font-weight:400;color:${acText};">${esc(firstWord)}</span>${restWords ? ' ' + esc(restWords) : ''}</p>
+          ${roleHTML({mb: 14, chipBg: solid ? '#33507F' : 'rgba(255,255,255,.16)', capsColor: acText, color: light})}
           ${taglineHTML}
           ${contactTable({color: light, icon: ac, linkColor: ac, gap: 30})}
           ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialBlock({color: ac})}</div>` : ''}
@@ -3019,7 +3068,7 @@ function buildSignatureBody() {
           <p style="${nameStyle}">${eName}</p>
           ${roleHTML({mb: 4})}
           ${taglineHTML}
-          ${site ? `<p style="font-family:${ff};font-size:${fs};font-weight:700;margin:6px 0 0;"><a href="https://${esc(site.value.replace(/^https?:\/\//, ''))}" style="color:${ac};text-decoration:none;">${esc(site.value)}</a></p>` : ''}
+          ${site ? `<p style="font-family:${ff};font-size:${fs};font-weight:700;margin:6px 0 0;"><a href="https://${esc(site.value.replace(/^https?:\/\//, ''))}" style="color:${acText};text-decoration:none;">${esc(site.value)}</a></p>` : ''}
           ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 4}px;">${socialHTML}</div>` : ''}
         </td>
         ${rule}
@@ -3041,7 +3090,7 @@ function buildSignatureBody() {
           ${roleHTML({mb: 14})}
           ${logoHTML ? `<div style="padding-bottom:12px;">${logoAs({size: Math.max(38, S.logoHeight)})}</div>` : ''}
           ${taglineHTML}
-          ${site ? `<p style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;margin:0;"><a href="https://${esc(site.value.replace(/^https?:\/\//, ''))}" style="color:${ac};text-decoration:none;">${esc(site.value)}</a></p>` : ''}
+          ${site ? `<p style="font-family:${ff};font-size:${bs - 1}px;font-weight:700;margin:0;"><a href="https://${esc(site.value.replace(/^https?:\/\//, ''))}" style="color:${acText};text-decoration:none;">${esc(site.value)}</a></p>` : ''}
         </td>
         ${rule}
         <td style="vertical-align:middle;padding-left:30px;">
@@ -3128,7 +3177,7 @@ function buildSignatureBody() {
         <td valign="${pv}" style="vertical-align:${pv};padding:0 22px 0 0;">${headshotHTML}</td>
         <td width="100%" style="width:100%;vertical-align:top;">
           <p style="${nameStyleAt(bs + 4)}">${eName}</p>
-          ${roleHTML({mb: 12, capsColor: ac})}
+          ${roleHTML({mb: 12, capsColor: acText})}
           ${taglineHTML}
           ${contactTable()}
         </td>
@@ -3220,7 +3269,7 @@ function buildSignatureBody() {
   // explicit layout in the set, and the easiest to scan.
   if (S.template === 'labelled') {
     const followRow = socialHTML ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-        <td style="padding:3px 10px 3px 0;${mutedStyle}color:${ac};font-weight:600;white-space:nowrap;vertical-align:middle;">follow me:</td>
+        <td style="padding:3px 10px 3px 0;${mutedStyle}color:${acText};font-weight:600;white-space:nowrap;vertical-align:middle;">follow me:</td>
         <td style="vertical-align:middle;">${socialHTML}</td>
       </tr></table>` : '';
     return outer(`
@@ -3312,7 +3361,7 @@ function buildSignatureBody() {
     return outer(`
       <tr>
         <td width="100%" style="width:100%;vertical-align:top;">
-          ${roleHTML({size: bs - 1, mb: 6, capsColor: ac})}
+          ${roleHTML({size: bs - 1, mb: 6, capsColor: acText})}
           <p style="${nameStyleAt(bs + 18, onDark ? '#FFFFFF' : nameColor)}">${eName}</p>
           ${taglineHTML}
           <div style="padding-top:${parseInt(sp) + 8}px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tbody>${gridRows}</tbody></table></div>
@@ -3334,7 +3383,7 @@ function buildSignatureBody() {
         <td valign="${pv}" style="vertical-align:${pv};padding-right:28px;">${photoHTML({ring: S.photoRing || 4, ringColor: S.photoRing ? S.photoRingColor : '#FFFFFF'})}</td>
         <td width="100%" style="width:100%;vertical-align:middle;">
           <p style="${nameStyleAt(bs + 14, light)}">${eName}</p>
-          ${roleHTML({mb: 14, chipBg: onDark ? 'rgba(255,255,255,.18)' : a2, chipFg: '#FFFFFF', color: soft, capsColor: ac})}
+          ${roleHTML({mb: 14, chipBg: a2, chipFg: '#FFFFFF', color: soft, capsColor: acText})}
           ${taglineHTML}
           ${contactTable({color: soft, icon: onDark ? '#FFFFFF' : ic, linkColor: ac, gap: 28})}
           ${socialHTML ? `<div style="padding-top:${parseInt(sp) + 8}px;">${socialBlock({color: onDark ? '#FFFFFF' : sc, glyphColor: S.bgColor})}</div>` : ''}
@@ -3580,8 +3629,8 @@ function buildSignatureBody() {
     ${dividerHTML}
     <tr><td style="padding-top:${sp};">
       ${activeContacts.map(f => {
-        if (f.type === 'email') return `<a href="mailto:${esc(f.value)}" style="${fieldStyle}color:${ac};">${esc(f.value)}</a>`;
-        if (f.type === 'website') return `<a href="https://${esc(f.value.replace(/^https?:\/\//, ''))}" style="${fieldStyle}color:${ac};">${esc(f.value)}</a>`;
+        if (f.type === 'email') return `<a href="mailto:${esc(f.value)}" style="${fieldStyle}color:${acText};">${esc(f.value)}</a>`;
+        if (f.type === 'website') return `<a href="https://${esc(f.value.replace(/^https?:\/\//, ''))}" style="${fieldStyle}color:${acText};">${esc(f.value)}</a>`;
         return `<span style="${fieldStyle}">${esc(f.value)}</span>`;
       }).join(`<span style="color:${ruleColor};margin:0 6px;">·</span>`)}
     </td></tr>

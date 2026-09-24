@@ -1,0 +1,118 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>contrast-check</title></head><body><pre id="out"></pre>
+<div class="app" id="app" style="position:absolute;left:-4000px"><aside class="rail" id="rail"></aside>
+<div class="workspace"><header class="topbar" id="header"></header>
+<div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<div id="probe" style="position:absolute;left:-4000px;top:0"></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// Every run of text in every layout, measured against the colour actually
+// behind it, light and dark. A signature that reads on paper can go
+// unreadable the moment the ground changes, and only the ratio says which
+// pieces — the colour-block red came out at 3.9 against near-black, which no
+// amount of looking at it would have told me precisely.
+window.SIGNVEL_SHOW_IMAGES = true;
+
+function lum(c) {
+  const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]);
+}
+function ratio(a, b) {
+  const L1 = lum(a), L2 = lum(b);
+  return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+}
+function parse(s) {
+  const m = (s || '').match(/rgba?\(([^)]+)\)/);
+  if (!m) return null;
+  const p = m[1].split(',').map(Number);
+  if (p.length > 3 && p[3] === 0) return null;      // transparent: keep looking
+  return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+}
+function over(fg, bg) {                              // composite, alpha and all
+  const a = fg[3] == null ? 1 : fg[3];
+  return [0, 1, 2].map(function (i) { return Math.round(fg[i] * a + bg[i] * (1 - a)); });
+}
+// The first ancestor that actually paints something is what the text sits on.
+// A translucent panel is not that colour — an 18% white chip on a blue card is
+// a pale blue, and reading it as white was the whole of the "white on white"
+// the audit kept reporting against the feature layout.
+function groundOf(el, mockBg) {
+  let n = el, stack = [];
+  while (n && n.id !== 'probe') {
+    const c = parse(getComputedStyle(n).backgroundColor);
+    if (c) {
+      if (c[3] >= 1) { let g = [c[0], c[1], c[2]]; while (stack.length) g = over(stack.pop(), g); return g; }
+      stack.push(c);                                 // keep looking for what is under it
+    }
+    n = n.parentElement;
+  }
+  let g = mockBg;
+  while (stack.length) g = over(stack.pop(), g);
+  return g;
+}
+
+function audit(label, html, mockBg) {
+  const probe = document.getElementById('probe');
+  probe.style.background = 'rgb(' + mockBg.join(',') + ')';
+  probe.innerHTML = html;
+  const bad = [], all = [];
+  [].slice.call(probe.querySelectorAll('*')).forEach(function (el) {
+    // Only the text a node holds itself, so a wrapper is not judged on its
+    // children's colours.
+    const own = [].slice.call(el.childNodes)
+      .filter(function (n) { return n.nodeType === 3 && n.textContent.trim(); })
+      .map(function (n) { return n.textContent.trim(); }).join(' ');
+    if (!own) return;
+    const cs = getComputedStyle(el);
+    const fg = parse(cs.color);
+    if (!fg) return;
+    const bg = groundOf(el, mockBg);
+    const r = ratio(fg, bg);
+    const size = parseFloat(cs.fontSize) || 13;
+    const bold = (parseInt(cs.fontWeight, 10) || 400) >= 600;
+    const large = size >= 18.66 || (size >= 14 && bold);
+    const need = large ? 3 : 4.5;           // the usual marks for readable text
+    const line = r.toFixed(2) + ':1 ' + Math.round(size) + 'px "' + own.slice(0, 28) + '" '
+      + cs.color + ' on rgb(' + bg.join(',') + ')';
+    all.push({r: r, s: line});
+    if (r < need) bad.push('  needs ' + need + ': ' + line);
+  });
+  all.sort(function (a, b) { return a.r - b.r; });
+  return {label: label, bad: bad, lowest: all[0]};
+}
+
+const DARK = [30, 30, 30], LIGHT = [255, 255, 255];
+const darkFailed = [], lightWeak = [];
+let worstDark = {r: 99, s: ''};
+Object.keys(templateThemes).forEach(function (t) {
+  S.template = t;
+  applyTemplateTheme(t);            // each layout judged on its own palette
+  [['dark', true, DARK], ['light', false, LIGHT]].forEach(function (mode) {
+    S.darkMode = mode[1];
+    const res = audit(t + ' (' + mode[0] + ')',
+      onScreen(function () { return generateSignaturePreview(); }), mode[2]);
+    if (mode[1]) {
+      if (res.bad.length) darkFailed.push(res.label + '\n' + res.bad.join('\n'));
+      if (res.lowest && res.lowest.r < worstDark.r) worstDark = {r: res.lowest.r, s: res.label + '  ' + res.lowest.s};
+    } else if (res.bad.length) {
+      lightWeak.push(t + ': ' + res.bad.length + ' run' + (res.bad.length === 1 ? '' : 's')
+        + ', weakest ' + res.lowest.r.toFixed(2) + ':1');
+    }
+  });
+});
+
+// Dark is the gate. Light is reported and not failed: those colours are the
+// brand's own on white — a gold link, a grey disclaimer — and they are what
+// every signature already in use looks like. Changing them is a decision
+// about the product, not a bug to be fixed behind someone's back.
+const note = lightWeak.length
+  ? '\n\nlight mode, for information only (' + lightWeak.length + ' layouts):\n  ' + lightWeak.slice(0, 6).join('\n  ')
+  : '';
+document.getElementById('out').textContent = (darkFailed.length
+  ? darkFailed.slice(0, 6).join('\n') + '\n\n(' + darkFailed.length + ' layouts unreadable in dark)'
+  : Object.keys(templateThemes).length + ' layouts readable in dark; weakest ' + worstDark.s) + note;
+document.title = darkFailed.length ? 'FAIL ' + darkFailed.length : 'PASS';
+</script></body></html>
