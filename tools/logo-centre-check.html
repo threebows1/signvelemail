@@ -15,31 +15,32 @@ window.SIGNVEL_SHOW_IMAGES = true;
 const F = [];
 let ran = 0;
 
+['profile', 'aside'].forEach(function (tpl) {
 [[78, 34], [120, 26], [60, 58]].forEach(function (pair) {
   [true, false].forEach(function (dark) {
-    S.template = 'profile'; applyTemplateTheme('profile');
+    S.template = tpl; applyTemplateTheme(tpl);
     S.darkMode = dark; S.device = 'desktop';
     S.headshotSize = pair[0]; S.logoHeight = pair[1];
     S.headshotUrl = S.headshotUrl || 'sample-headshot.png';
     renderStage();
     const box = document.querySelector('.signature-container');
     const cell = box && box.querySelector('td');
-    
     const photo = cell && cell.querySelector('div[style*="border-radius:50%"] img');
     const logo = cell && cell.querySelector('img[alt*="logo"]');
-    if (!photo || !logo) { F.push(pair[0] + '/' + pair[1] + ': portrait or mark not drawn, so nothing was compared'); return; }
+    if (!photo || !logo) { F.push(tpl + ' ' + pair[0] + '/' + pair[1] + ': portrait or mark not drawn, so nothing was compared'); return; }
     ran++;
     const p = photo.getBoundingClientRect(), l = logo.getBoundingClientRect();
     const off = ((l.left + l.right) / 2) - ((p.left + p.right) / 2);
     if (Math.abs(off) > 1) {
-      F.push('photo ' + pair[0] + ' logo ' + pair[1] + (dark ? ' dark' : ' light')
+      F.push(tpl + ' photo ' + pair[0] + ' logo ' + pair[1] + (dark ? ' dark' : ' light')
         + ': mark centre is ' + off.toFixed(1) + 'px off the portrait centre');
     }
   });
 });
+});
 
 if (!ran) F.push('nothing was measured, so this check proves nothing');
 document.getElementById('out').textContent = F.length ? F.join('\n')
-  : ran + ' renders, the mark is centred under the portrait at every size';
+  : ran + ' renders across Profile and Aside, the mark is centred under the portrait at every size';
 document.title = F.length ? 'FAIL ' + F.length : 'PASS';
 </script></body></html>

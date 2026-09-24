@@ -3056,6 +3056,13 @@ function buildSignatureBody() {
     ? `<tr><td${span ? ` colspan="${span}"` : ''} style="padding:${pad || sp + ' 0 0'};"><p style="${mutedStyle}margin:0;">${esc(S.disclaimerText)}</p></td></tr>`
     : '';
   const hairline = (colour, w) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:${w || 1}px solid ${colour || ruleColor};font-size:1px;line-height:1px;">&nbsp;</td></tr></table>`;
+  // A mark that sits under a portrait is in a column the portrait's width, so
+  // left-aligned it reads off-centre against the circle above it. A table with
+  // align="center" is what centres it in Word as well as in a browser — auto
+  // margins do not, and text-align does not reach a block image or a nested
+  // table, which is what the mark is in its two forms. Centred rather than
+  // nudged, so it holds at whatever size either of them is set to.
+  const underPhoto = (html) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate;border-spacing:0;margin:0 auto;"><tr><td align="center" style="padding:0;">${html}</td></tr></table>`;
   const eName = esc(nameText);
   // Split for the layouts drawn with a two-weight name.
   const nameWords = pName.trim().split(/\s+/);
@@ -3513,13 +3520,6 @@ function buildSignatureBody() {
   // happen to be on the same row.
   if (S.template === 'profile') {
     const gap = parseInt(sp);
-    // The mark sits under the portrait in a column the portrait's width, so
-    // left-aligned it reads off-centre against the circle above it. A table
-    // with align="center" is what centres in Word as well as in a browser —
-    // auto margins do not, and text-align does not reach a block image or a
-    // nested table. Centred rather than nudged, so it stays centred whatever
-    // size either of them is set to.
-    const underPhoto = (html) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate;border-spacing:0;margin:0 auto;"><tr><td align="center" style="padding:0;">${html}</td></tr></table>`;
     const hasPhoto = S.headshotUrl && showImages;
     const media = `${hasPhoto ? photoHTML({shape: 'circle', size: S.headshotSize || 78, ring: S.photoRing, ringColor: S.photoRingColor}) : ''}${
       logoHTML ? `<div style="padding-top:${hasPhoto ? gap + 4 : 0}px;">${
@@ -3639,7 +3639,7 @@ function buildSignatureBody() {
     return outer(`
       <tr>
         ${S.headshotUrl && showImages ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:22px;">${photoHTML({shape: 'circle', size: S.headshotSize || 84, ring: S.photoRing, ringColor: S.photoRingColor})}${
-          logoHTML ? `<div style="padding-top:${gap + 4}px;">${logoAs({size: Math.max(26, S.logoHeight - 8)})}</div>` : ''}</td>`
+          logoHTML ? `<div style="padding-top:${gap + 4}px;">${underPhoto(logoAs({size: Math.max(26, S.logoHeight - 8)}))}</div>` : ''}</td>`
         : logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:22px;">${logoAs({size: Math.max(26, S.logoHeight - 8)})}</td>` : ''}
         ${S.dividerEnabled ? `<td width="${barW}" bgcolor="${ac}" style="width:${barW}px;background-color:${ac};font-size:1px;line-height:1px;">&nbsp;</td>` : ''}
         <td width="100%" style="width:100%;vertical-align:middle;padding-left:${S.dividerEnabled ? 22 : 0}px;">
