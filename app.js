@@ -1325,6 +1325,39 @@ function imagesUnlocked() {
   return !!(c.signedIn && c.entitled);
 }
 
+
+// Whether this signature carries the free-tier credit line. The reasoning is
+// the same as imagesUnlocked's, and deliberately so: one idea of what a free
+// signature is, not two that can drift apart.
+//
+// Same caveat too — the markup is assembled in the visitor's own browser, so
+// this is a product boundary rather than a security one. Anyone can delete the
+// line from what they paste. It is there to be the ordinary case, not a lock.
+//
+// A shared link is excluded. It carries settings, not an account, so the owner's
+// plan is not knowable from it, and a paid signature wearing a free badge is a
+// worse error than a free one shared without it.
+function freeTier() {
+  if (window.SIGNVEL_MODE === 'share') return false;
+  return !imagesUnlocked();
+}
+
+// The credit line itself. Outside the panel, because it is ours and not part of
+// anybody's design, and in a grey that reads on a white message without being
+// mistaken for one of their own contact lines.
+function signvelCreditHTML() {
+  if (!freeTier()) return '';
+  // No grey reads at 4.5:1 on both white and near-black, and the ground here
+  // belongs to the recipient's client, not to us. The copy takes the one that
+  // reads on white, which is the overwhelmingly common case; the dark preview
+  // lifts it on screen only, the same way every other dark adjustment does.
+  const grey = (SCREEN_RENDER && S.darkMode) ? '#A8A8A8' : '#767676';
+  const al = S.alignment === 'center' ? 'center' : (S.alignment === 'right' ? 'right' : 'left');
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0"${al === 'center' ? ' align="center"' : ''} style="border-collapse:separate;border-spacing:0;"><tbody><tr>`
+    + `<td style="padding:12px 0 0;text-align:${al};font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.4;color:${grey};">`
+    + `Designed by <a href="https://signvel.com" style="color:${grey};text-decoration:none;font-weight:600;">Sign Vel</a>`
+    + `</td></tr></tbody></table>`;
+}
 function renderRail() {
   let html = `<a class="rail-brand" href="index.html" title="Back to signvel.com home">${icons.logo}</a>
     <nav class="rail-nav">`;
@@ -2275,8 +2308,11 @@ function isDarkColor(hex) {
 // safe in email — it is background *images* that get stripped — so this is done
 // with bgcolor plus an inline background-color for the clients that ignore one.
 function generateSignaturePreview() {
+  // The credit goes after everything, panel included, so it reads as ours
+  // rather than as the last line of somebody else's card.
+  const credit = signvelCreditHTML();
   const body = buildSignatureBody();
-  if (!S.bgEnabled) return body;
+  if (!S.bgEnabled) return body + credit;
   const pad = S.bgPadding;
   const radius = S.bgRadius ? `border-radius:${S.bgRadius}px;` : '';
   // Every layout is kept inside the reading pane by a max-width on the table
@@ -2286,7 +2322,7 @@ function generateSignaturePreview() {
   // wider than the pane they sit in.
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;max-width:100%;"><tbody><tr>
     <td bgcolor="${S.bgColor}" style="background-color:${S.bgColor};padding:${pad}px;${radius}">${body}</td>
-  </tr></tbody></table>`;
+  </tr></tbody></table>` + credit;
 }
 
 // Built from nested tables rather than SVG, so the demo mark renders in Outlook

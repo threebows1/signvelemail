@@ -1,0 +1,55 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="../styles.css"><title>credit-check</title>
+<style>body{height:auto;overflow:visible}.stage{height:auto}</style></head><body>
+<pre id="out" style="font:12px monospace;background:#fff;position:relative;z-index:9"></pre>
+<div class="app" id="app"><aside class="rail" id="rail" style="display:none"></aside><div class="workspace"><header class="topbar" id="header" style="display:none"></header><div class="body" id="appBody"><aside class="panel" id="panel" style="display:none"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// The credit line is the free tier's, and it only does its job if it is in the
+// thing the user actually pastes — not merely on screen.
+const F = [];
+const CREDIT = /Designed by <a[^>]*>Sign Vel<\/a>/;
+let ran = 0;
+
+function has(html) { return CREDIT.test(html); }
+
+// ── Free: present in the preview, the copy and every export target ──
+window.SIGNVEL_SHOW_IMAGES = false;
+['corporate', 'editorial', 'minimal', 'grid'].forEach(function (t) {
+  S.template = t; applyTemplateTheme(t);
+  ran++;
+  if (!has(onScreen(function () { return generateSignaturePreview(); }))) F.push(t + ': no credit on screen');
+  if (!has(generateSignaturePreview())) F.push(t + ': no credit in the copy');
+  ['', 'newoutlook', 'classic'].forEach(function (target) {
+    if (!has(generateExportHTML(target))) F.push(t + ': no credit in the ' + (target || 'standard') + ' export');
+  });
+});
+
+// It belongs after the signature, not inside a layout's own panel: the last
+// thing in the markup, and outside the coloured card where there is one.
+S.template = 'editorial'; applyTemplateTheme('editorial');
+const withPanel = generateSignaturePreview();
+if (!/<\/table>\s*$/.test(withPanel.trim())) F.push('the credit is not the last thing in the markup');
+const panelEnd = withPanel.lastIndexOf(S.bgColor);
+if (panelEnd > -1 && withPanel.search(CREDIT) < panelEnd) F.push('the credit sits inside the panel rather than under it');
+
+// ── Paid: gone, everywhere ──
+window.SIGNVEL_SHOW_IMAGES = true;
+S.template = 'corporate'; applyTemplateTheme('corporate');
+if (has(generateSignaturePreview())) F.push('a paid signature still carries the credit');
+if (has(generateExportHTML('classic'))) F.push('a paid classic export still carries the credit');
+
+// ── A shared link: the owner's plan is not knowable from it ──
+window.SIGNVEL_SHOW_IMAGES = false;
+window.SIGNVEL_MODE = 'share';
+if (has(generateSignaturePreview())) F.push('a shared link carries the credit, but it cannot know whose plan it is');
+window.SIGNVEL_MODE = '';
+
+if (!ran) F.push('nothing was measured, so this check proves nothing');
+document.getElementById('out').textContent = F.length ? F.join('\n')
+  : ran + ' layouts: the credit is in the preview, the copy and all three exports on free, gone on paid, and absent from a shared link';
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>
