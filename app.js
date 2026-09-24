@@ -1148,7 +1148,7 @@ const scopePresets = {
     template:'minimal', contactIconMode:'labels', socialStyle:'plain', bannerEnabled:false,
   },
   executive: {
-    template:'editorial', fontWeight:'semibold', socialStyle:'outline', bannerEnabled:false,
+    template:'editorial', fontWeight:'regular', socialStyle:'outline', bannerEnabled:false,
   },
 };
 
