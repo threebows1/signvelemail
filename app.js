@@ -2230,7 +2230,12 @@ function generateSignaturePreview() {
   if (!S.bgEnabled) return body;
   const pad = S.bgPadding;
   const radius = S.bgRadius ? `border-radius:${S.bgRadius}px;` : '';
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tbody><tr>
+  // Every layout is kept inside the reading pane by a max-width on the table
+  // outer() builds. A panel wraps another table around that one, and without
+  // the same cap the card is the one box in the signature nothing constrains —
+  // so the three layouts that carry their own card, and only those, were drawn
+  // wider than the pane they sit in.
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;max-width:100%;"><tbody><tr>
     <td bgcolor="${S.bgColor}" style="background-color:${S.bgColor};padding:${pad}px;${radius}">${body}</td>
   </tr></tbody></table>`;
 }
@@ -2397,7 +2402,17 @@ function buildSignatureBody() {
     ? Math.max(Math.round(baseW / 2), baseW - (S.bgEnabled ? S.bgPadding * 2 : 0))
     : 0;
   const widthAttr = layoutW ? ` width="${layoutW}"` : '';
-  const widthCss = layoutW ? `width:${layoutW}px;max-width:100%;` : '';
+  // `width:620px` is a floor for a table, not a ceiling: max-width:100% cannot
+  // pull it below its stated width, and a panel adds its padding outside that
+  // again. So the card layouts stayed 620 wide in a frame narrower than they
+  // are, and hung out of it. Stating it the other way round — fill the frame,
+  // stop at 620 — shrinks correctly and is identical wherever there is room.
+  // Screen only: the width attribute is what Outlook reads, the copy is a
+  // fixed-width table by design, and this is the preview being honest about a
+  // frame, not a change to the signature anybody sends.
+  const widthCss = layoutW
+    ? (SCREEN_RENDER ? `width:100%;max-width:${layoutW}px;` : `width:${layoutW}px;max-width:100%;`)
+    : "";
 
   // ── Identity ──
   // While nothing has been personalised, each layout previews with the identity

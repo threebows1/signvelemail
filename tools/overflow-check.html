@@ -1,0 +1,63 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="../styles.css"><title>overflow-check</title>
+<style>body{height:auto;overflow:visible}.stage{height:auto}</style></head><body>
+<pre id="out" style="font:12px monospace;background:#fff;position:relative;z-index:9"></pre>
+<div class="app" id="app"><aside class="rail" id="rail" style="display:none"></aside><div class="workspace"><header class="topbar" id="header" style="display:none"></header><div class="body" id="appBody"><aside class="panel" id="panel" style="display:none"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// Nothing a layout draws may reach past the mail-client frame it is drawn in.
+// A signature that overflows the mock is a signature that will overflow a real
+// reading pane the same way, so this measures the frame and every box inside.
+window.SIGNVEL_SHOW_IMAGES = true;
+const F = [], seen = [];
+let ran = 0;
+
+Object.keys(templateThemes).forEach(function (t) {
+  [true, false].forEach(function (dark) {
+    S.device = 'desktop';
+    S.template = t; applyTemplateTheme(t); S.darkMode = dark; S.client = 'gmail';
+    renderStage();
+    const mock = document.querySelector('.email-mock');
+    const body = document.querySelector('.email-mock-body');
+    if (!mock || !body) { F.push(t + ': no mock drawn at all'); return; }
+    ran++;
+    const host = body.getBoundingClientRect();
+    // The frame's own padding is the allowance; anything past the mock's edge
+    // is over the line.
+    const lim = mock.getBoundingClientRect();
+    let worst = null;
+    [].slice.call(body.querySelectorAll('*')).forEach(function (el) {
+      const r = el.getBoundingClientRect();
+      if (!r.width && !r.height) return;
+      const over = Math.max(lim.left - r.left, r.right - lim.right);
+      if (over > 0.5 && (!worst || over > worst.over)) {
+        worst = {over: over, tag: el.tagName.toLowerCase(),
+                 cls: (el.className || '').toString().slice(0, 18),
+                 w: Math.round(r.width), txt: (el.textContent || '').trim().slice(0, 18)};
+      }
+    });
+    
+    if (worst) {
+      F.push(t + (dark ? ' (dark)' : ' (light)') + ': ' + worst.tag
+        + (worst.cls ? '.' + worst.cls : '') + ' "' + worst.txt + '" '
+        + worst.w + 'px wide vs frame ' + Math.round(lim.width) + ' outer / ' + Math.round(host.width - 40) + ' usable, ' + worst.over.toFixed(1) + 'px past');
+    }
+    seen.push(Math.round(lim.width));
+  });
+});
+
+// The copy is a fixed-width table by design and Outlook reads the width
+// attribute, so the shrinking form must never reach the export.
+S.template = 'grid'; applyTemplateTheme('grid');
+const sent = generateExportHTML('');
+if (/width:100%;max-width:[0-9]+px/.test(sent)) F.push('the screen-only width form leaked into the export');
+if (!/width:[0-9]+px;max-width:100%/.test(sent)) F.push('the export lost its fixed width');
+if (!ran) F.push('nothing was measured, so this check proves nothing');
+document.getElementById('out').textContent = F.length
+  ? F.slice(0, 12).join('\n') + (F.length > 12 ? '\n... ' + F.length + ' in total' : '')
+  : ran + ' renders, every box inside its frame (frame ' + seen[0] + 'px)';
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>
