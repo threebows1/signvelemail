@@ -593,7 +593,12 @@ select.input{cursor:pointer;appearance:auto}
    down on the other, the content box shifts half a pixel, and the glyph sits
    visibly off-centre. A shadow is painted over the box instead of taking
    room out of it, so nothing it does can move what it surrounds. */
+/* The glyph sits a pixel left and two down inside the miniature, by eye
+   rather than by measurement: centred exactly, it read high and right in the
+   ring. Padding rather than a transform, so it moves what is centred instead
+   of what is drawn and nothing can be clipped. */
 .sw-ring{
+  padding:4px 2px 0 0;
   display:inline-flex;align-items:center;justify-content:center;
   /* 22 against a 12px glyph leaves a whole 5px each side. At 21 the gap was
      4.5, and half a pixel is the one that rounds unevenly on a scaled
