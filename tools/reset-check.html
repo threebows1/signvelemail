@@ -22,10 +22,14 @@ const OLD = 'A name from the account';
 
 // Stand in for the cloud layer: signed in, holding an older signature.
 let saved = 0, loads = 0;
+// Entitlement arrives with the profile, a request after the session resolves,
+// and that gap is where the logo was going missing.
+let entitled = true;
+let cloudChanged = null;
 window.Cloud = {
   isReady: true,
-  state: function () { return {signedIn: true, plan: 'team', email: 'daniel@signvel.com'}; },
-  onChange: function () {},
+  state: function () { return {signedIn: true, entitled: entitled, plan: 'team', email: 'daniel@signvel.com'}; },
+  onChange: function (fn) { cloudChanged = fn; },
   init: function () { return Promise.resolve({signedIn: true}); },
   loadSignature: function () { loads++; return Promise.resolve({state: {name: OLD}}); },
   saveSignature: function () { saved++; return Promise.resolve({ok: true}); },
@@ -59,6 +63,28 @@ function boot() {
   await boot();
   await new Promise(function (r) { setTimeout(r, 400); });
   if (S.name !== OLD) F.push('the boot after a reset stopped loading the account');
+
+  // ── The signature must show the real logo, not the locked-image stand-in ──
+  // Whether images are allowed arrives with the profile, a request after the
+  // first render. Until it does the signature draws a generated mark, and
+  // after a reset nothing was redrawing it once the answer came — so a paid
+  // account was left looking at the stand-in.
+  // Locked before the boot, as it is for real: the handler is registered
+  // while the entitlement is still unknown, and it is the change from that
+  // to known-good that has to redraw.
+  entitled = false;
+  await boot();
+  renderStage();
+  const locked = (document.querySelector('.signature-container') || {}).innerHTML || '';
+  // If this is not the stand-in, the rest of the test proves nothing.
+  if (!/>SV</.test(locked)) F.push('the locked state is not drawing the generated mark, so this check is empty');
+
+  entitled = true;                        // the profile lands, a request later
+  if (typeof cloudChanged === 'function') cloudChanged();
+  await new Promise(function (r) { setTimeout(r, 400); });
+  const after = (document.querySelector('.signature-container') || {}).innerHTML || '';
+  if (/>SV</.test(after)) F.push('the signature kept the generated mark after the account was confirmed');
+  if (!/sample-logo/i.test(after)) F.push('the signature has no logo image once the account is confirmed');
 
   // A silent throw in the boot chain would leave the assertions above passing
   // for the wrong reason — nothing ran, so nothing disagreed. It counts as a

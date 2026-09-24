@@ -4350,8 +4350,20 @@ function startCloud() {
   // did not, so the Admin entry appeared while the admin portrait in Media
   // silently did not, and clicking away and back was the only cure.
   let lastAdmin = isAdmin();
+  // Whether photographs and uploaded logos are allowed is not known at boot:
+  // the entitlement arrives with the profile, a request later. Until it does,
+  // images are locked and the signature draws the generated mark instead of
+  // the logo — so the answer changing has to redraw the signature, or the
+  // stand-in stays on screen for an account that is perfectly entitled to
+  // the real thing.
+  let lastUnlocked = imagesUnlocked();
   Cloud.onChange(() => {
     const c = Cloud.state();
+    const nowUnlocked = imagesUnlocked();
+    if (nowUnlocked !== lastUnlocked) {
+      lastUnlocked = nowUnlocked;
+      renderStage();
+    }
     // Signing out has to close the editor behind you, not leave it open.
     if (!c.signedIn) { lockEditor(); }
     else if (authRequired) { unlockEditor(); }
@@ -4380,6 +4392,11 @@ function startCloud() {
     return Cloud.loadSignature().then(row => {
       if (afterReset) {
         scheduleCloudSave();
+        // Drawn again now the session is known: the first pass ran before the
+        // entitlement arrived, so the signature was showing the locked-image
+        // stand-in rather than the logo.
+        renderPanel();
+        renderStage();
         showCopyFeedback('Reset to defaults');
         return;
       }
