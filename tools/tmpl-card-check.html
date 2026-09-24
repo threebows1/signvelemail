@@ -1,0 +1,55 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="../styles.css"><title>tmpl-card-check</title>
+<style>body{height:auto;overflow:visible}</style></head><body>
+<pre id="out" style="font:12px monospace;background:#fff;position:relative;z-index:9"></pre>
+<div class="app" id="app"><aside class="rail" id="rail" style="display:none"></aside><div class="workspace"><header class="topbar" id="header" style="display:none"></header><div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage" style="display:none"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// The miniature sits in a fixed-height box above its name. A miniature taller
+// than the box overflows it, and what the eye sees is the drawing crowding the
+// word under it — so the gap that matters is from the lowest ink actually
+// drawn to the top of the label, not the box's own margin.
+const MIN_GAP = 4;
+const F = [], tight = [];
+let ran = 0;
+
+// Open the panel on the section that holds the gallery.
+// The gallery lives in one of the panel sections; find it rather than assume.
+let cards = [];
+for (let i = 0; i < 12 && !cards.length; i++) {
+  S.openSection = i;
+  try { renderPanel(); } catch (e) { F.push('renderPanel threw at section ' + i + ': ' + e.message); break; }
+  cards = [].slice.call(document.querySelectorAll('.template-card'));
+}
+
+
+if (!cards.length) F.push('no template cards were drawn, so this check proves nothing');
+
+cards.forEach(function (card) {
+  const prev = card.querySelector('.tmpl-preview');
+  const label = card.querySelector('.tmpl-label');
+  if (!prev || !label) { F.push('a card is missing its miniature or its name'); return; }
+  ran++;
+  // The lowest point anything is actually painted at, which is not the box's
+  // own bottom when the drawing runs past it.
+  let low = prev.getBoundingClientRect().top;
+  [].slice.call(prev.querySelectorAll('*')).forEach(function (el) {
+    const r = el.getBoundingClientRect();
+    if (r.width && r.height && r.bottom > low) low = r.bottom;
+  });
+  const gap = label.getBoundingClientRect().top - low;
+  tight.push({name: label.textContent.trim(), gap: gap});
+  if (gap < MIN_GAP) F.push('  ' + label.textContent.trim() + ': ' + gap.toFixed(1) + 'px between the drawing and its name');
+});
+
+tight.sort(function (a, b) { return a.gap - b.gap; });
+if (!ran) F.push('nothing was measured, so this check proves nothing');
+document.getElementById('out').textContent = (F.length
+  ? F.length + ' cards crowd their name (needs ' + MIN_GAP + 'px):\n' + F.join('\n')
+  : ran + ' cards, every name clear of its drawing')
+  + '\n\ntightest: ' + tight.slice(0, 6).map(function (t) { return t.name + ' ' + t.gap.toFixed(1); }).join(', ');
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>

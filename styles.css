@@ -236,7 +236,7 @@ textarea.input{resize:vertical;min-height:60px}
 .template-card:hover{border-color:var(--muted)}
 .template-card.active{border-color:var(--accent);background:var(--accent-light)}
 .template-card .tmpl-preview{
-  height:40px;margin-bottom:5px;display:flex;align-items:center;justify-content:center;gap:4px;
+  min-height:40px;margin-bottom:5px;display:flex;align-items:center;justify-content:center;gap:4px;
 }
 .template-card .tmpl-label{font-size:10px;font-weight:500;color:var(--muted)}
 .template-card.active .tmpl-label{color:var(--accent)}
@@ -761,7 +761,11 @@ select.input{cursor:pointer;appearance:auto}
    use for "text", the one part of a preview that is not a brand colour. */
 :root{--tmpl-ink:#B9B6C9}
 .template-grid{grid-template-columns:1fr 1fr}
-.template-card .tmpl-preview{height:44px}
+/* A fixed height clips nothing — it lets a taller miniature hang out of the box
+   and sit on the name below it. Bulletin overran by 9px, which read as the
+   drawing touching the word. The height stays as a floor so the grid keeps its
+   rhythm, and grows for the few drawings that need the room. */
+.template-card .tmpl-preview{min-height:44px}
 .template-card .tmpl-label{font-size:9.5px;letter-spacing:.01em}
 
 /* A second line under a control label, for the ones that need a sentence of
