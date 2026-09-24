@@ -2445,12 +2445,15 @@ function buildSignatureBody() {
   // Quiet text — the disclaimer, mostly. On a light ground a grey is right. On
   // a coloured one it cannot be a fixed grey: #8F8CA3 was picked against a
   // near-black panel and turns to mud on a saturated blue, which is what a
-  // disclaimer set in it looked like. Mixed most of the way to white from
-  // whatever the panel actually is, it stays quiet without going unreadable,
-  // on any colour anybody picks.
-  // Muted on dark still has to be read. On a mid-blue panel the 82% mix lands
-  // at 4.06:1 — close enough to look right and not close enough to be right.
-  const mutedColor = onDark ? readableOn(mixHex(darkGround, '#FFFFFF', 0.82), darkGround, 4.5) : '#999';
+  // disclaimer set in it looked like. Mixed toward white from whatever the
+  // panel actually is, it stays quiet without going unreadable, on any colour
+  // anybody picks.
+  // Light runs body #333, title #666, muted #999 — each step quieter than the
+  // last. Dark had muted at 82% white, brighter than the title above it, so a
+  // disclaimer came out louder than the contacts it sits under. 60% puts the
+  // ladder back; readableOn still lifts it where the panel is light enough to
+  // need it, so a pale mix on a mid-blue card does not go quiet and unreadable.
+  const mutedColor = onDark ? readableOn(mixHex(darkGround, '#FFFFFF', 0.60), darkGround, 4.5) : '#999';
   const mutedStyle = `font-family:${ff};font-size:${bs - 2}px;color:${mutedColor};line-height:1.4;`;
 
   // ── Role treatment ──
