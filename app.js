@@ -2563,7 +2563,7 @@ function buildSignatureBody() {
          type: `color:${glyphColor};font-family:${ff};font-size:${Math.round(sz * 0.46)}px;font-weight:700;line-height:${sz - 3}px;`}
       : {content: svgToImgTag(svg, inner, inner, glyphColor, 'margin:0 auto;'),
          type: 'font-size:0;line-height:0;'};
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0 2px 0 0;${bg}border:1.5px solid ${cc};border-radius:${rad};text-align:center;vertical-align:middle;${body.type}">${body.content}</td></tr></table>`;
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:4px 2px 0 0;${bg}border:1.5px solid ${cc};border-radius:${rad};text-align:center;vertical-align:middle;${body.type}">${body.content}</td></tr></table>`;
   };
 
   // The rule treatment: a bar in the theme colour, then the mark. Built as a
