@@ -3513,8 +3513,18 @@ function buildSignatureBody() {
   // happen to be on the same row.
   if (S.template === 'profile') {
     const gap = parseInt(sp);
-    const media = `${S.headshotUrl && showImages ? photoHTML({shape: 'circle', size: S.headshotSize || 78, ring: S.photoRing, ringColor: S.photoRingColor}) : ''}${
-      logoHTML ? `<div style="padding-top:${S.headshotUrl && showImages ? gap + 4 : 0}px;">${logoAs({size: Math.max(26, S.logoHeight - 8)})}</div>` : ''}`;
+    // The mark sits under the portrait in a column the portrait's width, so
+    // left-aligned it reads off-centre against the circle above it. A table
+    // with align="center" is what centres in Word as well as in a browser —
+    // auto margins do not, and text-align does not reach a block image or a
+    // nested table. Centred rather than nudged, so it stays centred whatever
+    // size either of them is set to.
+    const underPhoto = (html) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:separate;border-spacing:0;margin:0 auto;"><tr><td align="center" style="padding:0;">${html}</td></tr></table>`;
+    const hasPhoto = S.headshotUrl && showImages;
+    const media = `${hasPhoto ? photoHTML({shape: 'circle', size: S.headshotSize || 78, ring: S.photoRing, ringColor: S.photoRingColor}) : ''}${
+      logoHTML ? `<div style="padding-top:${hasPhoto ? gap + 4 : 0}px;">${
+        hasPhoto ? underPhoto(logoAs({size: Math.max(26, S.logoHeight - 8)})) : logoAs({size: Math.max(26, S.logoHeight - 8)})
+      }</div>` : ''}`;
     return outer(`
       <tr>
         ${media.trim() ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:26px;">${media}</td>` : ''}

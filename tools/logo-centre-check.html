@@ -1,0 +1,45 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="../styles.css"><title>logo-centre-check</title>
+<style>body{height:auto;overflow:visible}.stage{height:auto}</style></head><body>
+<pre id="out" style="font:12px monospace;background:#fff;position:relative;z-index:9"></pre>
+<div class="app" id="app"><aside class="rail" id="rail" style="display:none"></aside><div class="workspace"><header class="topbar" id="header" style="display:none"></header><div class="body" id="appBody"><aside class="panel" id="panel" style="display:none"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// The mark under the portrait has to sit on the portrait's own centre line,
+// at whatever size either of them is set to — a fixed nudge would only be
+// right for the one pair of sizes it was measured against.
+window.SIGNVEL_SHOW_IMAGES = true;
+const F = [];
+let ran = 0;
+
+[[78, 34], [120, 26], [60, 58]].forEach(function (pair) {
+  [true, false].forEach(function (dark) {
+    S.template = 'profile'; applyTemplateTheme('profile');
+    S.darkMode = dark; S.device = 'desktop';
+    S.headshotSize = pair[0]; S.logoHeight = pair[1];
+    S.headshotUrl = S.headshotUrl || 'sample-headshot.png';
+    renderStage();
+    const box = document.querySelector('.signature-container');
+    const cell = box && box.querySelector('td');
+    
+    const photo = cell && cell.querySelector('div[style*="border-radius:50%"] img');
+    const logo = cell && cell.querySelector('img[alt*="logo"]');
+    if (!photo || !logo) { F.push(pair[0] + '/' + pair[1] + ': portrait or mark not drawn, so nothing was compared'); return; }
+    ran++;
+    const p = photo.getBoundingClientRect(), l = logo.getBoundingClientRect();
+    const off = ((l.left + l.right) / 2) - ((p.left + p.right) / 2);
+    if (Math.abs(off) > 1) {
+      F.push('photo ' + pair[0] + ' logo ' + pair[1] + (dark ? ' dark' : ' light')
+        + ': mark centre is ' + off.toFixed(1) + 'px off the portrait centre');
+    }
+  });
+});
+
+if (!ran) F.push('nothing was measured, so this check proves nothing');
+document.getElementById('out').textContent = F.length ? F.join('\n')
+  : ran + ' renders, the mark is centred under the portrait at every size';
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>
