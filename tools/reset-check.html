@@ -1,0 +1,74 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>reset-check</title></head><body>
+<pre id="out"></pre>
+<div class="app" id="app" style="position:absolute;left:-4000px"><aside class="rail" id="rail"></aside>
+<div class="workspace"><header class="topbar" id="header"></header>
+<div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>window.__err=[];
+window.addEventListener('error',function(e){window.__err.push('error: '+e.message)});
+window.addEventListener('unhandledrejection',function(e){window.__err.push('rejected: '+(e.reason && e.reason.message || e.reason))});
+try{localStorage.clear();sessionStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script>
+<script src="../cloud.js"></script>
+<script src="../app.js"></script>
+<script>
+// Reset clears what this browser holds and reloads. The account holds a copy
+// too, and reading that back over the defaults is what made a reset undo
+// itself — the defaults for a moment, then the old signature again.
+const F = [];
+const OLD = 'A name from the account';
+
+// Stand in for the cloud layer: signed in, holding an older signature.
+let saved = 0, loads = 0;
+window.Cloud = {
+  isReady: true,
+  state: function () { return {signedIn: true, plan: 'team', email: 'daniel@signvel.com'}; },
+  onChange: function () {},
+  init: function () { return Promise.resolve({signedIn: true}); },
+  loadSignature: function () { loads++; return Promise.resolve({state: {name: OLD}}); },
+  saveSignature: function () { saved++; return Promise.resolve({ok: true}); },
+};
+
+function boot() {
+  S.name = 'Daniel Reyes';            // what the defaults give
+  return startCloud() || new Promise(function (r) { setTimeout(r, 400); });
+}
+
+(async function () {
+  // ── An ordinary boot still loads the account's signature ──
+  await boot();
+  await new Promise(function (r) { setTimeout(r, 400); });
+  if (S.name !== OLD) F.push('an ordinary boot did not load the account: name is "' + S.name + '"');
+
+  // ── After a reset it must not ──
+  try { sessionStorage.setItem('signvel:reset', '1'); } catch (e) {}
+  S.name = 'Daniel Reyes';
+  saved = 0;
+  await boot();
+  await new Promise(function (r) { setTimeout(r, 2200); });   // the save is debounced 1.5s
+  if (S.name === OLD) F.push('after a reset the account wrote the old signature back');
+  if (!saved) F.push('after a reset the defaults were not saved over the account');
+
+  // ── The mark is spent, so the next boot behaves normally ──
+  let left = null;
+  try { left = sessionStorage.getItem('signvel:reset'); } catch (e) {}
+  if (left) F.push('the reset mark outlived the boot it was for');
+  S.name = 'Daniel Reyes';
+  await boot();
+  await new Promise(function (r) { setTimeout(r, 400); });
+  if (S.name !== OLD) F.push('the boot after a reset stopped loading the account');
+
+  // A silent throw in the boot chain would leave the assertions above passing
+  // for the wrong reason — nothing ran, so nothing disagreed. It counts as a
+  // failure of its own. This check found one: the account panel reads an
+  // email off the session, and a stand-in without one rejected the whole
+  // chain without a word.
+  if ((window.__err || []).length) F.push('the boot threw: ' + window.__err.slice(0, 2).join(' | '));
+  if (!loads) F.push('the account was never asked for its signature at all');
+  document.getElementById('out').textContent = F.length ? F.join('\n')
+    : 'reset ignores the account and writes the defaults over it (' + loads + ' loads, ' + saved + ' save); every other boot loads it';
+  document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+})();
+</script></body></html>

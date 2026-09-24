@@ -4373,7 +4373,16 @@ function startCloud() {
     renderHeader();
     if (!c.signedIn) { lockEditor(); return; }
     unlockEditor();
+    // A reset ignores what the account holds and writes the defaults over it,
+    // so the thing you reset stays reset on every device rather than coming
+    // back the moment this one asks the server what it remembers.
+    const afterReset = wasJustReset();
     return Cloud.loadSignature().then(row => {
+      if (afterReset) {
+        scheduleCloudSave();
+        showCopyFeedback('Reset to defaults');
+        return;
+      }
       if (adoptCloudState(row)) {
         if (!(S.openSection >= 0 && S.openSection < sections.length)) S.openSection = 0;
         renderPanel();
@@ -4473,9 +4482,30 @@ function loadState() {
   ensureDefaultBanner();
 }
 
+// Clearing the copy in this browser is only half of it: the account holds one
+// too, and on the way back up it was read straight over the defaults. What
+// you saw was the reset working and then being undone — the defaults for a
+// moment, then the old signature back again, and nothing actually reset.
+//
+// The mark says what the reload is for. It lives in sessionStorage so it
+// cannot outlive the tab: a reset that fails halfway must not leave the
+// account's signature ignored for good.
+const RESET_MARK = 'signvel:reset';
+
 function resetState() {
   try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  try { sessionStorage.setItem(RESET_MARK, '1'); } catch (e) {}
   location.reload();
+}
+
+// Read once, and cleared as it is read, so only the boot it was meant for
+// sees it.
+function wasJustReset() {
+  try {
+    if (!sessionStorage.getItem(RESET_MARK)) return false;
+    sessionStorage.removeItem(RESET_MARK);
+    return true;
+  } catch (e) { return false; }
 }
 
 // ═══════════════════════════════════════
