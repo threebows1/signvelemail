@@ -1,5 +1,5 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="../styles.css"><title>badge</title>
-<style>body{background:#fff;margin:0;padding:12px;height:auto;overflow:visible}.big{zoom:8;display:inline-block}</style></head><body>
+<style>body{background:#fff;margin:0;padding:12px;height:auto;overflow:visible}.big{display:inline-block}</style></head><body>
 <div class="app" id="app" style="display:none"><aside class="rail" id="rail"></aside><div class="workspace"><header class="topbar" id="header"></header><div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
 <div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
 <div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
@@ -15,7 +15,7 @@ S.template = 'corporate';
 // editor does for real, one redraw once the batch has landed.
 generateSignaturePreview();
 setTimeout(function () {
-const html = generateSignaturePreview();
+const html = onScreen(function () { return generateSignaturePreview(); });
 // Keep only the first contact badge — the table the icon sits in.
 const d = document.createElement('div');
 d.innerHTML = html;

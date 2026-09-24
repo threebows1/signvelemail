@@ -392,6 +392,14 @@ function schedulePngRedraw() {
 // displayed pixels — negative is left. It is part of the cache key, so a
 // nudged glyph and a plain one are different pictures rather than whichever
 // was asked for first.
+// True only while the preview on screen is being drawn. A browser draws an
+// SVG at whatever resolution the display asks for, so on screen the vector is
+// simply better than any raster of it — sharp at 100 per cent, at 150, and
+// under any zoom. The PNG exists for mail clients, which will not take an
+// inline SVG, and it is made when the signature is copied or exported rather
+// than for every keystroke in the editor.
+let SCREEN_RENDER = false;
+
 function svgToImgTag(svgStr, width, height, color, extraStyle, nudgeX) {
   if (!svgStr) return '';
   const w = Math.round(width);
@@ -408,9 +416,30 @@ function svgToImgTag(svgStr, width, height, color, extraStyle, nudgeX) {
   // reads as sitting too high. Thicker at small sizes, which is what the
   // panel's own miniatures already do.
   if (w < 18) svg = svg.replace(/stroke-width="2"/, 'stroke-width="2.6"');
-  svg = svg.replace(/width="14"/, 'width="' + w + '"').replace(/height="14"/, 'height="' + h + '"');
-  svg = svg.replace(/width="16"/, 'width="' + w + '"').replace(/height="16"/, 'height="' + h + '"');
+  // Authored at the size it will be rasterised at, not at the size it will be
+  // shown. An SVG drawn into a canvas is rasterised at its own width first
+  // and scaled from there, so asking a 11px drawing to fill a 44px canvas
+  // gave a 11px picture blown up four times — which is exactly the softness
+  // the bigger canvas was meant to cure.
+  const s = 4;
+  // Only the opening <svg> tag. Matching width="14" and height="16" anywhere
+  // rewrote the children too: the envelope is a rect of height 16, and it was
+  // being given the glyph's own height — 11, or 44 once this canvas grew —
+  // inside a 24 viewBox, so its bottom edge fell outside the picture. Every
+  // odd measurement of the last hour came from that: the ink was short, it
+  // sat high, and it was never the layout.
+  svg = svg.replace(/<svg\b([^>]*)>/, function (all, attrs) {
+    const rest = attrs.replace(/\swidth="[^"]*"/g, '').replace(/\sheight="[^"]*"/g, '');
+    return '<svg' + rest + ' width="' + (w * s) + '" height="' + (h * s) + '">';
+  });
   if (!svg.includes('xmlns=')) svg = svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+
+  // On screen: the vector itself, and nothing rasterised at all.
+  if (SCREEN_RENDER) {
+    const screenUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    return '<img src="' + screenUri + '" width="' + w + '" height="' + h + '" alt=""'
+      + ' style="display:block;' + (extraStyle || '') + '">';
+  }
 
   const cached = _pngIconCache.get(key);
   if (cached) {
@@ -421,10 +450,16 @@ function svgToImgTag(svgStr, width, height, color, extraStyle, nudgeX) {
   const svgUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   const img = new Image();
   img.onload = function () {
-    var s = 2;  // 2× for retina sharpness
+    // 4x, not 2x. A badge glyph is about eleven pixels across; at 2x that is
+    // a 22px picture, and a display running at 125 or 150 per cent asks for
+    // 13.75 or 16.5 of them — a fractional downscale, which is what made the
+    // icons look soft. 4x divides cleanly into far more of the sizes a screen
+    // actually asks for, and a glyph this small costs little either way.
     var c = document.createElement('canvas');
     c.width = w * s; c.height = h * s;
     var ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, w * s, h * s);
 
     // Centre it on its own ink rather than trusting the artwork to be
@@ -443,6 +478,11 @@ function svgToImgTag(svgStr, width, height, color, extraStyle, nudgeX) {
       // strokes on half a pixel and blurs the lot.
       var dx = Math.round((c.width / 2 - (box.x + box.w / 2)) / s) * s + nx * s;
       var dy = Math.round((c.height / 2 - (box.y + box.h / 2)) / s) * s;
+      // Never far enough to push the drawing off its own canvas: a glyph that
+      // already fills the square has nowhere to move, and shifting it anyway
+      // cuts the edge off — an envelope came back with no bottom to it.
+      dx = Math.max(-box.x, Math.min(dx, c.width - (box.x + box.w)));
+      dy = Math.max(-box.y, Math.min(dy, c.height - (box.y + box.h)));
       if (dx || dy) {
         ctx.clearRect(0, 0, c.width, c.height);
         ctx.drawImage(img, dx, dy, c.width, c.height);
@@ -2098,7 +2138,7 @@ function renderStage() {
   h += `<div class="preview-wrapper"><div class="email-mock${S.darkMode?' dark':''}${S.device==='mobile'?' mobile-view':''}" style="${mockStyle}">
     ${windowChrome(current)}
     <div class="email-mock-body">
-      <div class="signature-container">${withExportTarget(currentTarget(), generateSignaturePreview)}</div>
+      <div class="signature-container">${onScreen(() => withExportTarget(currentTarget(), generateSignaturePreview))}</div>
     </div>
   </div></div>`;
 
@@ -3538,6 +3578,15 @@ function buildSignatureBody() {
 // ═══════════════════════════════════════
 // Export HTML (fully inlined, table-based)
 // ═══════════════════════════════════════
+// Draws for the screen rather than for a mail client: the glyphs stay vector
+// and nothing is rasterised. Put back afterwards, so a copy taken straight
+// after a redraw still gets the PNGs a mail client needs.
+function onScreen(fn) {
+  const before = SCREEN_RENDER;
+  SCREEN_RENDER = true;
+  try { return fn(); } finally { SCREEN_RENDER = before; }
+}
+
 // Renders with a target set, and puts it back afterwards, so the live preview
 // beside the dialog is never left showing a client's variant.
 function withExportTarget(target, fn) {
