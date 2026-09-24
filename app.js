@@ -388,11 +388,16 @@ function schedulePngRedraw() {
   }, 60);
 }
 
-function svgToImgTag(svgStr, width, height, color, extraStyle) {
+// `nudgeX` shifts the drawing sideways inside its own square, in whole
+// displayed pixels — negative is left. It is part of the cache key, so a
+// nudged glyph and a plain one are different pictures rather than whichever
+// was asked for first.
+function svgToImgTag(svgStr, width, height, color, extraStyle, nudgeX) {
   if (!svgStr) return '';
   const w = Math.round(width);
   const h = Math.round(height);
-  const key = svgStr + '|' + w + '|' + h + '|' + color;
+  const nx = Math.round(nudgeX || 0);
+  const key = svgStr + '|' + w + '|' + h + '|' + color + '|' + nx;
 
   // Prepare a standalone SVG with explicit colour, size, and namespace.
   let svg = svgStr.replace(/currentColor/g, color || '#000000');
@@ -436,7 +441,7 @@ function svgToImgTag(svgStr, width, height, color, extraStyle) {
       // Whole CSS pixels, so the offset stays sharp: this canvas is drawn at
       // 2x and shown at 1x, and an odd number of device pixels lands the
       // strokes on half a pixel and blurs the lot.
-      var dx = Math.round((c.width / 2 - (box.x + box.w / 2)) / s) * s;
+      var dx = Math.round((c.width / 2 - (box.x + box.w / 2)) / s) * s + nx * s;
       var dy = Math.round((c.height / 2 - (box.y + box.h / 2)) / s) * s;
       if (dx || dy) {
         ctx.clearRect(0, 0, c.width, c.height);
@@ -2558,7 +2563,7 @@ function buildSignatureBody() {
          type: `color:${glyphColor};font-family:${ff};font-size:${Math.round(sz * 0.46)}px;font-weight:700;line-height:${sz - 3}px;`}
       : {content: svgToImgTag(svg, inner, inner, glyphColor, 'margin:0 auto;'),
          type: 'font-size:0;line-height:0;'};
-    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0;${bg}border:1.5px solid ${cc};border-radius:${rad};text-align:center;vertical-align:middle;${body.type}">${body.content}</td></tr></table>`;
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0;"><tr><td width="${sz}" height="${sz}"${bgAttr} style="box-sizing:border-box;width:${sz}px;min-width:${sz}px;max-width:${sz}px;height:${sz}px;padding:0 2px 0 0;${bg}border:1.5px solid ${cc};border-radius:${rad};text-align:center;vertical-align:middle;${body.type}">${body.content}</td></tr></table>`;
   };
 
   // The rule treatment: a bar in the theme colour, then the mark. Built as a
