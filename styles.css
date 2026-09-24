@@ -593,11 +593,12 @@ select.input{cursor:pointer;appearance:auto}
    down on the other, the content box shifts half a pixel, and the glyph sits
    visibly off-centre. A shadow is painted over the box instead of taking
    room out of it, so nothing it does can move what it surrounds. */
-/* No nudge. It carried a pixel left and two down for a while, to correct a
-   glyph that looked high and right — which turned out to be the resizer
-   stretching the drawing past its own picture. With that fixed the drawing
-   is centred, and the nudge was moving a thing that was already in place. */
+/* A pixel right and a pixel down inside the ring, by eye. Padding rather
+   than a transform: it moves what is centred instead of what is drawn, so
+   nothing can be clipped — two pixels of padding on a side shifts the
+   contents one, since what is left of the box is what gets centred. */
 .sw-ring{
+  padding:2px 0 0 2px;
   display:inline-flex;align-items:center;justify-content:center;
   /* 22 against a 12px glyph leaves a whole 5px each side. At 21 the gap was
      4.5, and half a pixel is the one that rounds unevenly on a scaled
