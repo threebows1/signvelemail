@@ -597,13 +597,7 @@ select.input{cursor:pointer;appearance:auto}
    than a transform: it moves what is centred instead of what is drawn, so
    nothing can be clipped — two pixels of padding on a side shifts the
    contents one, since what is left of the box is what gets centred. */
-/* A pixel down, and nothing sideways. Dead centre by measurement, the
-   envelope reads high in the ring: its flap is a solid V near the top and
-   its foot is a single thin line, so the weight of the drawing sits above
-   its middle. Two pixels of padding on top moves the contents one down,
-   since what is left of the box is what gets centred. */
 .sw-ring{
-  padding:2px 0 0 0;
   display:inline-flex;align-items:center;justify-content:center;
   /* 22 against a 12px glyph leaves a whole 5px each side. At 21 the gap was
      4.5, and half a pixel is the one that rounds unevenly on a scaled
