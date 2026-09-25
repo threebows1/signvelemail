@@ -292,6 +292,14 @@ textarea.input{resize:vertical;min-height:60px}
   border-bottom:1px solid var(--border);background:var(--white);flex-shrink:0;
 }
 .stage-toolbar-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+/* The device tabs sit in the middle of the row with the client on one side and
+   Install on the other. Both sides take an equal share of what is left, so the
+   tabs are centred on the row itself rather than on whatever the two labels
+   happen to measure — Gmail (web) and Outlook classic are not the same width,
+   and a middle that moved when you changed client would read as a wobble. */
+.stage-toolbar-row.is-split > .stage-client,
+.stage-toolbar-row.is-split > .stage-row-end{flex:1 1 0;min-width:0}
+.stage-toolbar-row.is-split > .stage-row-end{display:flex;justify-content:flex-end}
 
 .preview-wrapper{
   flex:1;display:flex;align-items:flex-start;justify-content:center;

@@ -2165,13 +2165,13 @@ function renderStage() {
   // landed in a different place on every screen.
   const current = clients.find(c => c.id === S.client) || clients[0];
   let h = `<div class="stage-toolbar">
-    <div class="stage-toolbar-row">
-    <button class="btn btn-accent" id="installBtn">Install signature</button>
+    <div class="stage-toolbar-row is-split">
     <span class="stage-client"><span class="stage-client-logo">${mailLogos[current.logo || current.id] || ''}</span>${esc(current.label)}</span>
   <div class="toggle-group" id="deviceTabs">
     <button class="${S.device==='desktop'?'active':''}" data-device="desktop">Desktop</button>
     <button class="${S.device==='mobile'?'active':''}" data-device="mobile">Mobile</button>
   </div>
+    <span class="stage-row-end"><button class="btn btn-accent" id="installBtn">Install signature</button></span>
   </div>
   <div class="stage-toolbar-row">
     <div class="toggle-row gap-6"><label class="field-label" style="margin:0;font-size:11px">Dark</label><div class="toggle-switch${S.darkMode?' on':''}" data-action="toggleDark"></div></div>

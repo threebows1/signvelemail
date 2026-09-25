@@ -1,0 +1,42 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="../styles.css"><title>toolbar-check</title>
+<style>body{height:auto;overflow:visible}.stage{height:auto}</style></head><body>
+<pre id="out" style="font:12px monospace;background:#fff;position:relative;z-index:9"></pre>
+<div class="app" id="app"><aside class="rail" id="rail" style="display:none"></aside><div class="workspace"><header class="topbar" id="header" style="display:none"></header><div class="body" id="appBody"><aside class="panel" id="panel" style="display:none"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// Install on the right, the device tabs in the middle of the row — and the
+// middle has to be the row's middle, not whatever is left over once the client
+// name has taken its share. Client names differ in width, so a middle measured
+// from them moves every time you change client.
+const F = [];
+let ran = 0;
+
+['gmail', 'outlook-classic', 'outlook-new', 'yahoo'].forEach(function (id) {
+  S.client = id;
+  renderStage();
+  const row = document.querySelector('.stage-toolbar-row.is-split');
+  const tabs = document.getElementById('deviceTabs');
+  const btn = document.getElementById('installBtn');
+  const name = document.querySelector('.stage-client');
+  if (!row || !tabs || !btn || !name) { F.push(id + ': the row is missing one of its three parts'); return; }
+  ran++;
+  const r = row.getBoundingClientRect(), t = tabs.getBoundingClientRect(), b = btn.getBoundingClientRect();
+  // Centred: the tabs' middle on the row's middle.
+  const off = ((t.left + t.right) / 2) - ((r.left + r.right) / 2);
+  if (Math.abs(off) > 2) F.push(id + ': the device tabs are ' + off.toFixed(1) + 'px off the middle of the row');
+  // Install is the last thing, hard right.
+  if (r.right - b.right > 2) F.push(id + ': Install is ' + (r.right - b.right).toFixed(1) + 'px short of the right edge');
+  // And it really is to the right of the tabs, not merely last in the markup.
+  if (b.left < t.right) F.push(id + ': Install overlaps or precedes the device tabs');
+  if (name.getBoundingClientRect().left > t.left) F.push(id + ': the client name is not to the left of the tabs');
+});
+
+if (!ran) F.push('nothing was measured, so this check proves nothing');
+document.getElementById('out').textContent = F.length ? F.join('\n')
+  : ran + ' clients: tabs centred on the row, Install hard right, name left';
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>
