@@ -532,11 +532,11 @@
 
     h += '<div class="adm-card"><div class="adm-card-head"><h2 class="adm-card-h">Gaps between what is sold and what is enforced</h2>' +
       '<span class="adm-spacer"></span><p class="adm-card-note">Read from the schema, not opinion</p></div>' +
-      '<div class="adm-note">The pricing page sells three paid tiers — one signature at $1.99, five at $4.99, ' +
+      '<div class="adm-note">The pricing page sells three paid tiers — one signature at $1.99, ten at $4.99, ' +
       'twenty or more at $16.99 — and the <code>plan</code> column accepts only <code>free</code>, ' +
       '<code>team</code> and <code>org</code>. There is no value for the one-signature tier.</div>' +
       '<div class="adm-note">The database caps a free account at one signature and caps nothing above that, ' +
-      'so the five and twenty in those plans are not enforced anywhere.</div>' +
+      'so the ten and twenty in those plans are not enforced anywhere.</div>' +
       '<div class="adm-note">Until a webhook writes the table above, the way to give somebody paid access is the ' +
       'grant in a row’s Details — it moves the trial date, which is what entitlement is actually checked against.</div>' +
       '</div>';
