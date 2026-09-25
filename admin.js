@@ -615,7 +615,14 @@
   // ── The drawer ──────────────────────────────────────────
   function renderDetail() {
     if (A.detailLoading) return '<div class="adm-empty"><strong>Loading…</strong></div>';
-    if (A.detailError) return '<div class="adm-note is-error">' + esc(A.detailError) + '</div>';
+    // The drawer is where a stale deploy is most likely to be met — Details is
+    // one of the newer actions — and it was the one place the explanation was
+    // never shown. A bare "Unknown action." in a panel that already knows what
+    // that means, and knows the command to fix it, is a wasted error.
+    if (A.detailError) {
+      return '<div class="adm-note is-error">' + esc(A.detailError) + '</div>' +
+        (A.needsDeploy ? deployNote() : '');
+    }
     if (!A.detail) return '';
 
     const d = A.detail;

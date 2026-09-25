@@ -510,5 +510,10 @@ Deno.serve(async (req) => {
   if (action === 'setTrial') return setTrial(admin, body, uid, origin);
   if (action === 'setSignatureLimit') return setSignatureLimit(admin, body, uid, origin);
   if (action === 'stats') return stats(admin, origin);
-  return json({ error: 'Unknown action.' }, 400, origin);
+  // Naming the action matters: "Unknown action." alone says nothing about
+  // which one, and the usual cause is a deployment older than the page that
+  // called it rather than a typo.
+  return json({
+    error: `Unknown action "${String(action).slice(0, 40)}". This deployment of admin-stats is older than the panel calling it — redeploy it.`,
+  }, 400, origin);
 });
