@@ -34,6 +34,9 @@ const PIXEL = Uint8Array.from(atob(
 // How long an entitlement answer is reused. The trade the whole design turns
 // on: longer means fewer lookups, and a lapse that takes longer to bite.
 const ENTITLEMENT_TTL = 300;         // 5 minutes
+// Shorter: a campaign has an end somebody has picked, and overrunning it by an
+// hour is worse than asking again a little more often.
+const BANNER_TTL = 120;              // 2 minutes
 
 // The bytes never change — every upload is written under its own timestamped
 // name — so they are cached hard. Access is re-decided per request regardless,
@@ -85,6 +88,47 @@ async function entitled(uid, env, ctx) {
   return ok;
 }
 
+
+// Whether this account's campaign is still running. Same shape as entitled()
+// above, and separate on purpose: a banner that has finished is not an account
+// that has lapsed, and the two answers expire at different rates.
+//
+// This is the half of an expiry that actually ends a campaign. The editor can
+// stop putting the banner in new copies, but every signature already sitting
+// in somebody's mail client is static HTML that will go on asking for the
+// picture forever. A pixel is the only way to answer "that campaign is over".
+async function bannerActive(uid, env, ctx) {
+  const cache = caches.default;
+  const key = new Request('https://cdn.signvel.internal/banner/' + uid);
+
+  const hit = await cache.match(key);
+  if (hit) return (await hit.text()) === 'true';
+
+  let ok = true;                      // a campaign runs unless it is told not to
+  try {
+    const r = await fetch(env.SUPABASE_URL + '/rest/v1/rpc/banner_active', {
+      method: 'POST',
+      headers: {
+        'apikey': env.SUPABASE_SERVICE_KEY,
+        'authorization': 'Bearer ' + env.SUPABASE_SERVICE_KEY,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ uid }),
+    });
+    // A lookup that fails leaves the banner running and is not cached. The
+    // opposite default would take every customer's campaign down the moment
+    // this call had a bad minute.
+    if (!r.ok) return true;
+    ok = (await r.json()) !== false;
+  } catch (e) {
+    return true;
+  }
+
+  ctx.waitUntil(cache.put(key, new Response(String(ok), {
+    headers: { 'cache-control': 'max-age=' + BANNER_TTL },
+  })));
+  return ok;
+}
 export default {
   async fetch(request, env, ctx) {
     if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -120,6 +164,11 @@ export default {
     const [, uid, file] = m;
 
     if (!(await entitled(uid, env, ctx))) return pixel();
+
+    // Uploads are named <kind>-<timestamp>.<ext>, so the banner is the one
+    // asset an expiry can apply to. A logo and a portrait are identity; they
+    // do not finish on a date.
+    if (file.startsWith('banner-') && !(await bannerActive(uid, env, ctx))) return pixel();
 
     const cache = caches.default;
     const cacheKey = new Request(url.toString(), { method: 'GET' });

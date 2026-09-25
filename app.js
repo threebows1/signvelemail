@@ -1096,6 +1096,8 @@ const S = {
   socialLinks: DEFAULT_SOCIAL_LINKS.map(sl => Object.assign({}, sl)),
 
   bannerEnabled: false,
+  // When the campaign stops. Empty means it runs until somebody says otherwise.
+  bannerExpiresAt: '',
   bannerMessage: '',
   bannerSubtext: '',
   // The slot arrives filled, so switching the banner on shows the shape and
@@ -1131,7 +1133,7 @@ const SCOPED_KEYS = [
   'template','alignment','font','headingFont','bodySize','fontWeight','textColor','accentColor',
   'accent2Color','nameScale','nameUppercase','nameTracking','roleStyle','contactColumns','panelWidth',
   'contactIconMode','socialStyle','bannerEnabled','bannerMessage','ctaLabel','ctaUrl',
-  'ctaStyle','bannerSubtext','bgEnabled','bgColor','bgPadding','bgRadius','disclaimerEnabled','disclaimerPreset','disclaimerText',
+  'ctaStyle','bannerSubtext','bannerExpiresAt','bgEnabled','bgColor','bgPadding','bgRadius','disclaimerEnabled','disclaimerPreset','disclaimerText',
 ];
 
 const scopePresets = {
@@ -2083,6 +2085,12 @@ function renderBanner() {
     h += `</div></div>`;
     if (S.bannerImage) h += `<div class="field-row"><label class="field-label">Image width</label><div class="slider-row"><input type="range" min="80" max="520" step="10" value="${S.bannerWidth}" data-bind="bannerWidth"><span class="slider-val">${S.bannerWidth}px</span></div></div>`;
     if (S.bannerImage) h += `<div class="inline-note">An image replaces the text banner. Host it publicly — an uploaded copy will be stripped in transit.</div>`;
+    // Inclusive: the campaign runs through the day named. Empty runs on until
+    // somebody sets one.
+    const expired = S.bannerExpiresAt && !bannerRunning();
+    h += `<div class="field-row"><label class="field-label">Runs until<span class="field-hint">Leave empty to run until you switch it off. The banner stops after this day, in new copies and in signatures already sent.</span></label>
+      <input class="input" type="date" value="${esc(S.bannerExpiresAt || '')}" data-bind="bannerExpiresAt"></div>`;
+    if (expired) h += `<div class="inline-note is-locked">This campaign ended on ${esc(S.bannerExpiresAt)}. It is out of the signature, and the hosted image now answers as blank for anyone who already has it.</div>`;
     h += `<div class="field-row"><label class="field-label">Button label</label><input class="input" value="${esc(S.ctaLabel)}" data-bind="ctaLabel"></div>`;
     h += `<div class="field-row"><label class="field-label">Button URL</label><input class="input" value="${esc(S.ctaUrl)}" data-bind="ctaUrl"></div>`;
     h += `<div class="field-row"><label class="field-label">Button style</label><div class="toggle-group" data-action="ctaStyle"><button class="${S.ctaStyle==='solid'?'active':''}" data-val="solid">Solid</button><button class="${S.ctaStyle==='outline'?'active':''}" data-val="outline">Outline</button><button class="${S.ctaStyle==='pill'?'active':''}" data-val="pill">Pill</button></div></div>`;
@@ -2307,6 +2315,21 @@ function isDarkColor(hex) {
 // Wraps whatever the template produced in a background panel. Solid colours are
 // safe in email — it is background *images* that get stripped — so this is done
 // with bgcolor plus an inline background-color for the clients that ignore one.
+
+// Whether the campaign is still running. An expiry date is inclusive — "ends
+// 30 June" runs through the 30th — so it is measured to the end of that day.
+//
+// This is only half of an expiry, and the smaller half. It stops the banner
+// going out in anything copied from here after the date. Every signature
+// already sitting in somebody's mail client is static HTML that will go on
+// asking the CDN for the picture; the worker answering with a transparent
+// pixel is what actually ends a campaign. Both halves read the same date.
+function bannerRunning() {
+  if (!S.bannerEnabled) return false;
+  if (!S.bannerExpiresAt) return true;
+  const t = Date.parse(S.bannerExpiresAt + 'T23:59:59');
+  return !Number.isFinite(t) || t > Date.now();
+}
 function generateSignaturePreview() {
   // The credit goes after everything, panel included, so it reads as ours
   // rather than as the last line of somebody else's card.
@@ -3104,7 +3127,7 @@ function buildSignatureBody() {
   // Banner & CTA
   let bannerHTML = '';
   let bannerInner = '';
-  if (S.bannerEnabled && (S.bannerMessage || S.bannerSubtext || S.ctaLabel)) {
+  if (bannerRunning() && (S.bannerMessage || S.bannerSubtext || S.ctaLabel)) {
     let btnHTML = '';
     if (S.ctaLabel) {
       const btnRadius = S.ctaStyle === 'pill' ? '20px' : '4px';
@@ -3135,7 +3158,7 @@ function buildSignatureBody() {
   // A hosted campaign image, used in place of the text banner where a template
   // supports it. Width is capped so it cannot blow out a narrow reading pane.
   const bannerW = S.bannerWidth || 140;
-  const bannerImgHTML = (S.bannerEnabled && S.bannerImage && showImages)
+  const bannerImgHTML = (bannerRunning() && S.bannerImage && showImages)
     ? `<img src="${esc(S.bannerImage)}" width="${bannerW}" style="display:block;width:100%;max-width:${bannerW}px;height:auto;border-radius:6px;" alt="${esc(S.bannerMessage || 'Campaign')}">`
     : '';
 
@@ -3270,7 +3293,7 @@ function buildSignatureBody() {
         </td>
         ${logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding:2px 0 0 28px;">${logoAs({stack: true, size: Math.max(44, S.logoHeight)})}</td>` : ''}
       </tr>
-      ${(S.bannerEnabled && (S.bannerMessage || S.ctaLabel)) ? `<tr><td colspan="3" style="padding-top:${parseInt(sp) + 8}px;">
+      ${(bannerRunning() && (S.bannerMessage || S.ctaLabel)) ? `<tr><td colspan="3" style="padding-top:${parseInt(sp) + 8}px;">
         <p style="font-family:${ff};font-size:${fs};color:${tc};line-height:1.5;margin:0;">${esc(S.bannerMessage)}${S.ctaLabel ? ` <a href="${esc(S.ctaUrl)}" style="color:${ac};text-decoration:underline;font-weight:600;">${esc(S.ctaLabel)}</a>` : ''}</p>
       </td></tr>` : ''}
       ${bannerImgHTML ? `<tr><td colspan="3" style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : ''}
@@ -3286,14 +3309,14 @@ function buildSignatureBody() {
     const stacked = activeContacts.filter(f => f.type !== 'website');
     const site = activeContacts.find(f => f.type === 'website');
     let lines = stacked.map(f => `<div style="${lineStyle}">${esc(f.value)}</div>`).join('');
-    if (site || (S.bannerEnabled && S.ctaLabel)) {
+    if (site || (bannerRunning() && S.ctaLabel)) {
       const parts = [];
       if (site) parts.push(`<a href="https://${esc(site.value.replace(/^https?:\/\//, ''))}" style="${lineStyle}color:${tc};text-decoration:underline;">${esc(site.value)}</a>`);
-      if (S.bannerEnabled && S.ctaLabel) parts.push(`<a href="${esc(S.ctaUrl)}" style="${lineStyle}color:${tc};text-decoration:underline;">${esc(S.ctaLabel)}</a>`);
+      if (bannerRunning() && S.ctaLabel) parts.push(`<a href="${esc(S.ctaUrl)}" style="${lineStyle}color:${tc};text-decoration:underline;">${esc(S.ctaLabel)}</a>`);
       lines += `<div style="${lineStyle}">${parts.join(`<span style="color:${ruleColor};padding:0 9px;">|</span>`)}</div>`;
     }
 
-    const bannerCard = (S.bannerEnabled && (S.bannerMessage || S.bannerSubtext || S.ctaLabel)) ? `
+    const bannerCard = (bannerRunning() && (S.bannerMessage || S.bannerSubtext || S.ctaLabel)) ? `
       <tr><td colspan="3" style="padding-top:${parseInt(sp) + 12}px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;">
           <tr><td bgcolor="${a2}" style="background-color:${a2};border-radius:12px;padding:24px 26px;">
@@ -4255,6 +4278,19 @@ function setupEvents() {
         // update char count
         const cc = e.target.parentElement.querySelector('.char-count');
         if (cc) cc.textContent = e.target.value.length + ' chars';
+      } else if (bind === 'bannerExpiresAt') {
+        S[bind] = e.target.value;
+        // The date has to reach the profile as well as the signature: the
+        // signature's copy stops it going out again, the profile's copy is
+        // what the CDN worker reads to stop serving the picture to mail that
+        // has already gone. Failing to save is said out loud rather than
+        // leaving an expiry that only half exists.
+        if (window.Cloud && Cloud.isReady && Cloud.saveBannerExpiry) {
+          Cloud.saveBannerExpiry(e.target.value).then(r => {
+            if (!r.ok) showCopyFeedback(r.error);
+          });
+        }
+        renderPanel();
       } else if (bind === 'accentColor') {
         setAccent(e.target.value);
       } else {

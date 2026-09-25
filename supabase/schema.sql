@@ -454,3 +454,39 @@ end $$;
 drop trigger if exists signatures_quota on public.signatures;
 create trigger signatures_quota before insert on public.signatures
   for each row execute function public.enforce_signature_quota();
+
+-- ── Campaign expiry ───────────────────────────────────────
+-- When the banner stops running. Null is what every account starts as and
+-- means "until I say otherwise".
+--
+-- On the profile rather than in the signature's state, because the thing that
+-- has to read it is the CDN worker, and the worker knows an account id and a
+-- file name — not the editor's JSON. A campaign is an account-wide thing in
+-- any case: "run this until the end of June", not "until the end of June on
+-- my third signature".
+--
+-- Unlike plan and team_id this is the account's own to set, so it is left out
+-- of protect_billing_columns deliberately. Nothing is bought or granted by it.
+alter table public.profiles
+  add column if not exists banner_expires_at timestamptz;
+
+-- The question the worker asks before serving a banner image. Written like
+-- has_paid_access — same shape, same reason — so the worker's two checks read
+-- the same way.
+--
+-- This is what makes an expiry mean anything. The editor can stop putting the
+-- banner in new copies, but the signatures already sitting in people's mail
+-- clients are static HTML that will go on requesting the picture forever. The
+-- worker answering with a transparent pixel is the only thing that actually
+-- ends a campaign.
+create or replace function public.banner_active(uid uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select not exists (
+    select 1 from public.profiles
+    where id = uid
+      and banner_expires_at is not null
+      and banner_expires_at <= now()
+  );
+$$;
+
+grant execute on function public.banner_active(uuid) to service_role;

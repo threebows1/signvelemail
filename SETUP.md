@@ -297,6 +297,40 @@ where that would go if it is ever wanted.
 The editor's own Rollout & install locks still work, for the account that sets
 them. They were never team-wide.
 
+
+## Campaign expiry
+
+The banner has a **Runs until** date in the editor's Banner section. Empty runs
+until you switch it off. The date is inclusive: "ends 30 June" runs through the
+30th.
+
+It is enforced in two places, because one is not enough:
+
+- **The editor** leaves the banner out of anything copied or exported after the
+  date. That stops it going out again.
+- **The CDN worker** answers a banner image with a transparent pixel once the
+  date has passed. This is the half that matters: every signature already in
+  somebody's mail client is static HTML that will go on asking for the picture
+  forever, and a pixel is the only way to tell it the campaign is over.
+
+The worker recognises a banner by its file name — uploads are
+`<uid>/<kind>-<timestamp>.<ext>`, so a banner is `banner-…`. A logo or a
+portrait is identity and does not finish on a date, so neither is touched.
+
+The date lives on `profiles.banner_expires_at`, not in the signature's state,
+because the worker knows an account id and a file name rather than the editor's
+JSON. It is the account's own to set — unlike `plan` or `team_id` it is left
+out of `protect_billing_columns`, since nothing is bought or granted by it.
+
+A campaign is account-wide, which suits "run this until the end of June" rather
+than "until June on my third signature".
+
+If the lookup fails the banner keeps running and the answer is not cached. The
+opposite default would take every customer's campaign down over one bad minute.
+
+**Three steps:** re-run `supabase/schema.sql` (or
+`Downloads/signvel-banner.sql`), deploy the CDN worker from `cdn/`, and the
+editor is already live.
 ### What the panel deliberately cannot do
 
 - **Grant administrator rights.** That stays the SQL statement above. A button

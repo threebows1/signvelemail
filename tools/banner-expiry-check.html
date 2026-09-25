@@ -1,0 +1,88 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>banner-expiry-check</title></head><body>
+<pre id="out" style="font:12px monospace"></pre>
+<div class="app" id="app" style="position:absolute;left:-4000px"><aside class="rail" id="rail"></aside><div class="workspace"><header class="topbar" id="header"></header><div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// A campaign with an end date has to stop — in the preview, and in the thing
+// people actually paste. An expiry that only held on screen would be worse
+// than none at all.
+//
+// The text banner and the banner image are separate markup and separate code
+// paths, and an image replaces the text rather than joining it, so each is
+// driven on its own. Tested with one regex matching either, a leak in one
+// hides behind the other — which it did: breaking the image path left an
+// earlier version of this check passing on the text alone.
+window.SIGNVEL_SHOW_IMAGES = true;
+const F = [];
+const day = ms => new Date(Date.now() + ms).toISOString().slice(0, 10);
+let ran = 0;
+
+// Layouts differ in which banner they have a slot for, so each case is run on
+// one that draws it: corporate has no place for a banner image at all, and
+// profile does not draw the text banner. Run on the wrong one, a case passes
+// by drawing nothing, which is what the first two attempts at this did.
+S.bannerEnabled = true;
+S.bannerMessage = 'Book a 15-minute intro call';
+S.ctaLabel = 'Book time';
+
+// `kind` is 'image' or 'text'; each is the only banner in play for that run.
+function setup(kind) {
+  const tpl = kind === 'image' ? 'profile' : 'corporate';
+  S.template = tpl; applyTemplateTheme(tpl);
+  S.bannerEnabled = true;
+  S.bannerMessage = 'Book a 15-minute intro call';
+  S.ctaLabel = 'Book time';
+  S.bannerImage = kind === 'image' ? 'https://signvel.com/sample-banner.png' : '';
+}
+function seen(kind) {
+  const re = kind === 'image' ? /sample-banner/ : /Book a 15-minute intro call/;
+  return {
+    screen: re.test(onScreen(() => generateSignaturePreview())),
+    copy: re.test(generateSignaturePreview()),
+    exp: re.test(generateExportHTML('classic')),
+  };
+}
+
+['image', 'text'].forEach(function (kind) {
+  setup(kind);
+
+  // No end date: it runs.
+  S.bannerExpiresAt = '';
+  ran++;
+  let d = seen(kind);
+  if (!d.copy) F.push(kind + ': a campaign with no end date is not drawn at all — this run proves nothing');
+  if (!d.screen || !d.exp) F.push(kind + ': a running campaign is missing from the preview or the export');
+
+  // A date ahead: still running.
+  S.bannerExpiresAt = day(5 * 864e5);
+  ran++;
+  if (!seen(kind).copy) F.push(kind + ': a campaign still running was dropped early');
+
+  // Today is the last day. Inclusive, so it must still run.
+  S.bannerExpiresAt = day(0);
+  ran++;
+  if (!seen(kind).copy) F.push(kind + ': the last day is exclusive — a campaign ending today was already gone');
+
+  // Over.
+  S.bannerExpiresAt = day(-2 * 864e5);
+  ran++;
+  d = seen(kind);
+  if (d.screen) F.push(kind + ': an ended campaign is still in the preview');
+  if (d.copy) F.push(kind + ': an ended campaign is still in the copy — the part people paste');
+  if (d.exp) F.push(kind + ': an ended campaign is still in the Outlook export');
+
+  // Nonsense in the field must not silently take a live campaign down.
+  S.bannerExpiresAt = 'not-a-date';
+  ran++;
+  if (!seen(kind).copy) F.push(kind + ': an unparseable date switched the banner off');
+});
+
+if (!ran) F.push('nothing was measured, so this check proves nothing');
+document.getElementById('out').textContent = F.length ? F.join('\n')
+  : ran + ' cases across the image and text banners: each runs through its last day, and is gone from the preview, the copy and the export after it';
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>

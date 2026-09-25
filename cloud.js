@@ -197,6 +197,28 @@ window.Cloud = (function () {
   //
   // Empty is the fallback rather than an error so this file works before the
   // worker exists, and keeps working if it is ever taken away.
+
+  // The campaign's end date, on the profile where the CDN worker can see it.
+  // The editor keeps its own copy in the signature's state — that is what stops
+  // the banner going out in new copies — but the worker knows only an account
+  // id and a file name, so the date has to exist somewhere it can ask about.
+  // Not billing, so the account writes its own: RLS allows it and
+  // protect_billing_columns leaves it alone.
+  async function saveBannerExpiry(date) {
+    if (!ready || !session) return { ok: false, error: 'Sign in first.' };
+    const value = date ? new Date(date + 'T23:59:59').toISOString() : null;
+    const { error } = await db.from('profiles')
+      .update({ banner_expires_at: value }).eq('id', session.user.id);
+    if (error) {
+      // The column arrives with a migration; until it is run this is the one
+      // thing that does not work, and saying which is better than a raw error.
+      if (/banner_expires_at|column/i.test(error.message || '')) {
+        return { ok: false, error: 'Campaign expiry needs schema.sql re-run.' };
+      }
+      return { ok: false, error: error.message };
+    }
+    return { ok: true };
+  }
   async function uploadAsset(file, kind) {
     if (!ready || !session) return { ok: false, error: 'Sign in to host images.' };
     const host = (cfg.assetHost || '').replace(/\/+$/, '');
@@ -292,7 +314,7 @@ window.Cloud = (function () {
 
   return {
     init, signIn, signInPassword, signUp, resetPassword, updatePassword, signOut,
-    loadSignature, saveSignature, uploadAsset,
+    loadSignature, saveSignature, uploadAsset, saveBannerExpiry,
     adminStats, adminUsers, adminUser, adminSetPlan, adminSetTrial, adminSetSignatureLimit, adminSetTeam,
     state,
     onChange(fn) { listeners.push(fn); },
