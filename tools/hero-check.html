@@ -1,0 +1,35 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>hero-check</title></head><body>
+<pre id="out" style="font:12px monospace"></pre>
+<iframe id="f" src="../index.html" style="width:390px;height:700px;border:0"></iframe>
+<script>
+// Nothing in the hero may reach past the viewport at phone width. The claims
+// under the buttons are set nowrap so each stays whole, which only works if
+// the row itself is free to wrap.
+const F = [];
+document.getElementById('f').onload = function () {
+  const d = this.contentDocument, w = this.contentWindow;
+  const vw = d.documentElement.clientWidth;
+  const over = [];
+  [].slice.call(d.querySelectorAll('.mast *, .nav *')).forEach(function (el) {
+    const r = el.getBoundingClientRect();
+    if (!r.width) return;
+    const past = r.right - vw;
+    if (past > 1) over.push({t: el.className || el.tagName, past: past});
+  });
+  over.sort(function (a, b) { return b.past - a.past; });
+  const claims = [].slice.call(d.querySelectorAll('.mast-claim'));
+  const tops = claims.map(function (c) { return Math.round(c.getBoundingClientRect().top); });
+  const rows = new Set(tops).size;
+  if (!claims.length) F.push('the claims are not drawn at all');
+  claims.forEach(function (c) {
+    const r = c.getBoundingClientRect();
+    if (r.right > vw + 1) F.push('claim "' + c.textContent.trim() + '" is ' + (r.right - vw).toFixed(0) + 'px past the viewport');
+  });
+  document.getElementById('out').textContent =
+    'viewport ' + vw + 'px, scrollWidth ' + d.documentElement.scrollWidth + '\n' +
+    'claims: ' + claims.length + ' in ' + rows + ' row(s)\n' +
+    'widest overflows: ' + (over.slice(0, 5).map(function (o) { return o.t + ' +' + o.past.toFixed(0); }).join(', ') || 'none') +
+    '\n\n' + (F.length ? F.join('\n') : 'every claim inside the viewport');
+  document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+};
+</script></body></html>
