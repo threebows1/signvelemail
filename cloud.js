@@ -279,10 +279,15 @@ window.Cloud = (function () {
   const adminSetTrial = (userId, days) =>
     adminCall('setTrial', { userId, days }).then(r => r.ok ? { ok: true, user: r.data.user } : r);
 
+  // How many signatures one account may keep, regardless of its plan. null
+  // clears the allowance and puts the account back on what its plan gives.
+  const adminSetSignatureLimit = (userId, limit) =>
+    adminCall('setSignatureLimit', { userId, limit }).then(r => r.ok ? { ok: true, user: r.data.user } : r);
+
   return {
     init, signIn, signInPassword, signUp, resetPassword, updatePassword, signOut,
     loadSignature, saveSignature, uploadAsset,
-    adminStats, adminUsers, adminUser, adminSetPlan, adminSetTrial,
+    adminStats, adminUsers, adminUser, adminSetPlan, adminSetTrial, adminSetSignatureLimit,
     state,
     onChange(fn) { listeners.push(fn); },
     get isReady() { return ready; },

@@ -227,6 +227,20 @@
     });
   }
 
+  // An allowance, in signatures, for one account. Empty clears it.
+  function setSignatureLimit(userId, limit) {
+    if (!userId || A.busy) return;
+    A.busy = userId;
+    A.rowError = '';
+    paint();
+    Cloud.adminSetSignatureLimit(userId, limit).then(function (r) {
+      A.busy = '';
+      if (r.ok) { applyUser(r.user); } else { A.rowError = r.error; noteDeploy(r.error); }
+      paint();
+      paintDrawer();
+    });
+  }
+
   // ── Rows on show ────────────────────────────────────────
   // Filtering happens in the browser over the page the function returned, so
   // typing is instant. The search box also re-asks the server on Enter, which
@@ -536,7 +550,9 @@
       'twenty or more at $16.99 — and the <code>plan</code> column accepts only <code>free</code>, ' +
       '<code>team</code> and <code>org</code>. There is no value for the one-signature tier.</div>' +
       '<div class="adm-note">The database caps a free account at one signature and caps nothing above that, ' +
-      'so the ten and twenty in those plans are not enforced anywhere.</div>' +
+      'so the ten and twenty in those plans are still not enforced by the plan alone. What is enforced is the ' +
+      'per-account allowance in each drawer: set one and the database holds the account to it on every insert, ' +
+      'whatever the plan says.</div>' +
       '<div class="adm-note">Until a webhook writes the table above, the way to give somebody paid access is the ' +
       'grant in a row’s Details — it moves the trial date, which is what entitlement is actually checked against.</div>' +
       '</div>';
@@ -644,6 +660,35 @@
       });
       h += '</div>';
       if (A.rowError) h += '<div class="adm-note is-error" style="margin-top:12px">' + esc(A.rowError) + '</div>';
+    }
+    h += '</div>';
+
+    // ── Signature allowance ──
+    // Deliberately its own section rather than another grant button: a grant is
+    // a date and this is a number, and reading them as one control is how you
+    // end up giving somebody thirty days when you meant a hundred signatures.
+    h += '<div class="adm-sec"><h3 class="adm-sec-h">Signature allowance</h3>';
+    if (self) {
+      h += '<div class="adm-note">Your own account. Set this from the SQL editor.</div>';
+    } else {
+      var lim = u.signature_limit;
+      h += '<div class="adm-note">How many signatures this one account may keep, whatever its plan says. ' +
+        'Leave it empty for the plan default — one on free, no ceiling on a paid plan. ' +
+        'The database enforces this on every insert, so it holds even against the API.</div>' +
+        '<div class="adm-grantrow">' +
+        '<input class="adm-input adm-limit" id="admLimit" type="number" min="1" max="100000" ' +
+        'placeholder="plan default" value="' + (lim == null ? '' : esc(String(lim))) + '"' +
+        (A.busy === u.id ? ' disabled' : '') + '>' +
+        '<button class="adm-mini" data-act="limit" data-user="' + esc(u.id) + '"' +
+        (A.busy === u.id ? ' disabled' : '') + '>Set</button>' +
+        '<button class="adm-mini is-danger" data-act="limit" data-user="' + esc(u.id) + '" data-clear="1"' +
+        (A.busy === u.id || lim == null ? ' disabled' : '') + '>Clear</button>' +
+        '</div>' +
+        '<p class="adm-card-note" style="margin-top:8px">' +
+        (lim == null
+          ? 'No allowance set — this account follows its plan.'
+          : 'Allowance: ' + esc(String(lim)) + ' signature' + (lim === 1 ? '' : 's') + '.') +
+        '</p>';
     }
     h += '</div>';
 
@@ -815,6 +860,14 @@
     if (act === 'filter') { A.filter = btn.dataset.filter; paint(); return; }
     if (act === 'setPlan') { setPlan(btn.dataset.user, btn.dataset.plan); return; }
     if (act === 'grant') { setTrial(btn.dataset.user, Number(btn.dataset.days)); return; }
+    // Cleared, or whatever is in the box. An empty box is a clear too, so the
+    // Set button cannot quietly do nothing when somebody has emptied it.
+    if (act === 'limit') {
+      var box = document.getElementById('admLimit');
+      var raw = btn.dataset.clear ? '' : (box ? box.value.trim() : '');
+      setSignatureLimit(btn.dataset.user, raw === '' ? null : Number(raw));
+      return;
+    }
     if (act === 'detail') { openDrawer(btn.dataset.user); return; }
     if (act === 'exportCsv') { exportCsv(); return; }
   }

@@ -170,6 +170,42 @@ The column is trigger-protected against the browser, which is why the grant
 goes through the function: `protect_billing_columns` strips `trial_ends_at`,
 `plan` and `is_admin` from any update made with the authenticated role.
 
+
+## Giving one account more signatures
+
+A **Signature allowance** sits in each account's drawer in the admin panel.
+Type a number and press **Set**; **Clear** removes it. Empty means the plan
+default — one on free, no ceiling on a paid plan.
+
+It is enforced by the database, on every insert, by `enforce_signature_quota`
+in `supabase/schema.sql`. That is the point of doing it there rather than in
+the panel: it holds even if somebody calls the API directly.
+
+The allowance is deliberately not a fourth plan value. `plan` says what was
+bought and every figure in the panel is derived from it; an allowance is a
+number somebody set by hand, so it lives in its own column and leaves the
+billing state alone. Same reasoning as the complimentary grant above, which
+moves a date rather than the plan.
+
+It overrides the plan **in both directions**. Setting 100 on an organisation
+account does not only raise a limit — it replaces "no ceiling" with a hundred.
+Clear it to go back to uncapped.
+
+**This needs two steps before the control works:**
+
+1. **Re-run `supabase/schema.sql`** (SQL Editor → paste → Run). Safe to re-run;
+   it adds the `signature_limit` column, protects it from the browser, and
+   replaces the quota trigger.
+2. **Redeploy the function:** `supabase functions deploy admin-stats` — it
+   serves the new `setSignatureLimit` action. Until it is deployed the panel
+   shows the control and the Set button reports an unknown action.
+
+To set one without the panel:
+
+```sql
+update public.profiles set signature_limit = 100
+where email = 'hashir@example.com';   -- their real address
+```
 ### What the panel deliberately cannot do
 
 - **Grant administrator rights.** That stays the SQL statement above. A button

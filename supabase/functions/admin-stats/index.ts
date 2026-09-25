@@ -88,7 +88,7 @@ const PLANS = ['free', 'team', 'org'];
 // What the panel is shown about an account. Listed once, so a row that comes
 // back from a write has the same shape as a row that came from the list.
 const USER_COLUMNS =
-  'id, email, full_name, plan, is_admin, created_at, updated_at, trial_ends_at, stripe_customer_id';
+  'id, email, full_name, plan, is_admin, created_at, updated_at, trial_ends_at, stripe_customer_id, signature_limit';
 
 const MAX_USERS = 500;        // one page of the account table
 const MAX_SIGNATURES = 20000; // the user_id column, tallied in one pass
@@ -248,6 +248,41 @@ async function setPlan(admin: any, body: any, callerId: string, origin: string |
 // columns strips it for the authenticated role — and the service-role
 // connection here is not that role, which is why this has to live in a
 // function rather than in a PATCH from the panel.
+
+// An allowance for one account, in signatures. Null clears it and puts the
+// account back on whatever its plan gives.
+//
+// Separate from setPlan for the reason setTrial is separate: writing a plan
+// onto an account to change what it may do makes the plan column lie, and the
+// figures in this panel are derived from that column. An allowance says what
+// it is — a number somebody set by hand — and leaves the billing state alone.
+async function setSignatureLimit(admin: any, body: any, callerId: string, origin: string | null) {
+  const userId = String(body?.userId ?? '');
+  const raw = body?.limit;
+
+  if (!UUID.test(userId)) return json({ error: 'Which account?' }, 400, origin);
+  if (userId === callerId) {
+    return json({ error: 'Change your own allowance from the SQL editor, not here.' }, 400, origin);
+  }
+
+  // Null is a real value here — it is how an allowance is taken back — so an
+  // absent field and a zero are rejected rather than quietly read as one.
+  let limit: number | null = null;
+  if (raw !== null && raw !== undefined && raw !== '') {
+    limit = Number(raw);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100000) {
+      return json({ error: 'An allowance is a whole number of at least 1.' }, 400, origin);
+    }
+  }
+
+  const { data, error } = await admin
+    .from('profiles').update({ signature_limit: limit })
+    .eq('id', userId).select(USER_COLUMNS).single();
+
+  if (error) return json({ error: error.message }, 500, origin);
+  if (!data) return json({ error: 'No such account.' }, 404, origin);
+  return json({ user: data }, 200, origin);
+}
 async function setTrial(admin: any, body: any, callerId: string, origin: string | null) {
   const userId = String(body?.userId ?? '');
   const days = Number(body?.days);
@@ -435,6 +470,7 @@ Deno.serve(async (req) => {
   if (action === 'user') return userDetail(admin, body, origin);
   if (action === 'setPlan') return setPlan(admin, body, uid, origin);
   if (action === 'setTrial') return setTrial(admin, body, uid, origin);
+  if (action === 'setSignatureLimit') return setSignatureLimit(admin, body, uid, origin);
   if (action === 'stats') return stats(admin, origin);
   return json({ error: 'Unknown action.' }, 400, origin);
 });

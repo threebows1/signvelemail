@@ -262,6 +262,13 @@
 }
 .adm-list .adm-when{flex:none}
 .adm-grantrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+/* The allowance box sits in a grant row beside its two buttons. Narrow on
+   purpose: it holds a count, and a wide field invites a sentence. */
+.adm-input{
+  font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--line);
+  border-radius:7px;background:#fff;color:inherit;
+}
+.adm-limit{width:130px}
 
 /* ── Responsive ── */
 @media (max-width:1040px){

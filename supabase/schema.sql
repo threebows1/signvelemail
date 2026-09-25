@@ -40,6 +40,20 @@ create table if not exists public.profiles (
 alter table public.profiles
   add column if not exists is_admin boolean not null default false;
 
+-- ── A signature allowance for one account ─────────────────
+-- Null means "whatever the plan gives", which is what every account starts as.
+-- A number is an allowance set by hand for that one account, and it overrides
+-- the plan in both directions: it is how somebody on the free tier is given
+-- ten without being marked as having paid for them, and how an organisation is
+-- given a hundred.
+--
+-- Deliberately not a fourth plan value, for the same reason the trial is a date
+-- rather than a tier: the plan column says what was bought, and every figure in
+-- the admin panel is derived from it. An allowance is not a purchase.
+alter table public.profiles
+  add column if not exists signature_limit integer
+  check (signature_limit is null or signature_limit > 0);
+
 -- Every account starts on a 30-day trial with the paid features switched on.
 -- Kept separate from `plan` rather than added to it as a fourth value: a trial
 -- is a date, not a tier, and someone can be on a paid plan and still have an
@@ -149,6 +163,9 @@ begin
     new.is_admin := old.is_admin;
     -- Otherwise the trial is extended with one PATCH from the browser.
     new.trial_ends_at := old.trial_ends_at;
+    -- An allowance decides how many signatures an account may have, so it is
+    -- held to the same rule: not a column the client gets to write.
+    new.signature_limit := old.signature_limit;
   end if;
   return new;
 end $$;
@@ -186,17 +203,36 @@ create policy "read own subscription" on public.subscriptions for select using (
 -- lift this: thirty days is for trying the product, and the cap is one of the
 -- things being tried. Doing it here rather than in JavaScript means it holds
 -- even if someone calls the API directly.
+--
+-- signature_limit overrides the plan when it is set. It is the one number that
+-- decides, so an allowance can be given to a free account and an organisation
+-- can be held to a hundred; leave it null and nothing about an account changes.
 create or replace function public.enforce_signature_quota()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare
-  user_plan text;
-  existing  integer;
+  user_plan  text;
+  allowance  integer;
+  existing   integer;
+  cap        integer;
 begin
-  select plan into user_plan from public.profiles where id = new.user_id;
-  if coalesce(user_plan, 'free') = 'free' then
+  select plan, signature_limit into user_plan, allowance
+    from public.profiles where id = new.user_id;
+
+  -- Null allowance falls back to the plan: one on free, no ceiling on a paid
+  -- one. Null cap here means unlimited, which is why this is not simply a
+  -- number with a large default.
+  if allowance is not null then
+    cap := allowance;
+  elsif coalesce(user_plan, 'free') = 'free' then
+    cap := 1;
+  else
+    cap := null;
+  end if;
+
+  if cap is not null then
     select count(*) into existing from public.signatures where user_id = new.user_id;
-    if existing >= 1 then
-      raise exception 'One signature per account until you are on a plan.'
+    if existing >= cap then
+      raise exception 'This account is limited to % signature(s).', cap
         using errcode = 'check_violation';
     end if;
   end if;
