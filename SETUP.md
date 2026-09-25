@@ -175,7 +175,8 @@ goes through the function: `protect_billing_columns` strips `trial_ends_at`,
 
 A **Signature allowance** sits in each account's drawer in the admin panel.
 Type a number and press **Set**; **Clear** removes it. Empty means the plan
-default — five on a live trial, one on free, no ceiling on a paid plan.
+default — one on Solo, ten across a Team, no ceiling on Business, five on a
+live trial, one on free.
 
 It is enforced by the database, on every insert, by `enforce_signature_quota`
 in `supabase/schema.sql`. That is the point of doing it there rather than in
@@ -227,6 +228,23 @@ Applied by re-running `supabase/schema.sql`, or the extract in
 `Downloads/signvel-trial-five.sql`. Safe to run more than once. Nothing else
 changes: existing rows are untouched, since the rule runs on insert.
 
+
+### The four tiers, and what enforces each
+
+| Plan | Signatures | Hosted images |
+|---|---|---|
+| `free`, trial over | 1 | no |
+| `free`, trial live | 5 | yes |
+| `solo` | 1 | yes |
+| `team` | 10, shared across the team | yes |
+| `org` | no ceiling | yes |
+
+The count is `enforce_signature_quota`; the images are `has_paid_access`, which
+is `plan <> 'free' or trial_ends_at > now()` — so Solo gets them by being a
+plan at all, which is what the card promises.
+
+`solo` is caught before the "any paid plan has no ceiling" branch. Out of
+order it would be Business at a fifth of the price, and nothing would say so.
 ## Teams
 
 The Team plan sells three things that all needed the same missing piece:

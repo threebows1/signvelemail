@@ -83,7 +83,7 @@ function json(body: unknown, status: number, origin: string | null) {
 // The only values the plan column accepts. Checked here as well as by the
 // column's own constraint, so a bad value is a clear 400 rather than a
 // database error surfacing through the interface.
-const PLANS = ['free', 'team', 'org'];
+const PLANS = ['free', 'solo', 'team', 'org'];
 
 // What the panel is shown about an account. Listed once, so a row that comes
 // back from a write has the same shape as a row that came from the list.

@@ -22,7 +22,7 @@ create table if not exists public.profiles (
   email              text,
   full_name          text,
   plan               text not null default 'free'
-                     check (plan in ('free','team','org')),
+                     check (plan in ('free','solo','team','org')),
   stripe_customer_id text unique,
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
@@ -39,6 +39,15 @@ create table if not exists public.profiles (
 --   update public.profiles set is_admin = true where email = 'you@example.com';
 alter table public.profiles
   add column if not exists is_admin boolean not null default false;
+
+-- The plan set, as a constraint that can change. `create table if not exists`
+-- leaves an existing table's constraints alone, so adding a tier to the column
+-- definition above does nothing on a database that already has the table —
+-- which is every database that matters. Stated again here so re-running this
+-- file actually applies it.
+alter table public.profiles drop constraint if exists profiles_plan_check;
+alter table public.profiles add constraint profiles_plan_check
+  check (plan in ('free','solo','team','org'));
 
 -- ── A signature allowance for one account ─────────────────
 -- Null means "whatever the plan gives", which is what every account starts as.
@@ -402,6 +411,10 @@ begin
 
   if allowance is not null then
     cap := allowance;
+  elsif coalesce(user_plan, 'free') = 'solo' then
+    -- One, as sold. Caught before the "any paid plan is uncapped" branch
+    -- below, or Solo would quietly be the same as Business.
+    cap := 1;
   elsif coalesce(user_plan, 'free') = 'team' then
     cap := 10;
   elsif coalesce(user_plan, 'free') <> 'free' then

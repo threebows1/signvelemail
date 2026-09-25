@@ -56,7 +56,7 @@
     needsDeploy: false,
   };
 
-  const PLANS = ['free', 'team', 'org'];
+  const PLANS = ['free', 'solo', 'team', 'org'];
 
   // Grants offered in the drawer. Days, because trial_ends_at is a date —
   // see the setTrial comment in the function for why this is not a plan.
@@ -561,14 +561,18 @@
     h += '<div class="adm-card"><div class="adm-card-head"><h2 class="adm-card-h">Gaps between what is sold and what is enforced</h2>' +
       '<span class="adm-spacer"></span><p class="adm-card-note">Read from the schema, not opinion</p></div>' +
       '<div class="adm-note">The pricing page sells three paid tiers — one signature at $1.99, ten at $4.99, ' +
-      'twenty or more at $16.99 — and the <code>plan</code> column accepts only <code>free</code>, ' +
-      '<code>team</code> and <code>org</code>. There is no value for the one-signature tier.</div>' +
-      '<div class="adm-note">The database gives a live trial five signatures, a free account one, and a paid ' +
-      'plan no ceiling — so the ten and twenty in those plans are still not enforced by the plan alone. What is ' +
-      'enforced exactly is the per-account allowance in each drawer: set one and the database holds the account ' +
-      'to it on every insert, whatever the plan says.</div>' +
-      '<div class="adm-note">Until a webhook writes the table above, the way to give somebody paid access is the ' +
-      'grant in a row’s Details — it moves the trial date, which is what entitlement is actually checked against.</div>' +
+      'twenty or more at $16.99 — and the <code>plan</code> column now has a value for each: <code>solo</code>, ' +
+      '<code>team</code> and <code>org</code>, beside <code>free</code>.</div>' +
+      '<div class="adm-note">What the database gives, in order: an allowance if one is set, then one on ' +
+      '<code>solo</code>, ten on <code>team</code>, no ceiling on <code>org</code>, five on a live trial, and ' +
+      'one otherwise. A team spends one budget between its members rather than one each. So the numbers on the ' +
+      'page are enforced now, not merely printed.</div>' +
+      '<div class="adm-note">Still sold and not built: campaign banner expiry, directory sync, and Microsoft 365 ' +
+      'transport rules. Shared brand defaults and section locks have a home on the team but the editor does not ' +
+      'read them yet.</div>' +
+      '<div class="adm-note">Nobody can buy any of it either: <code>stripeKey</code> is empty and every plan ' +
+      'button goes to signup. Until a webhook writes the table above, the way to give somebody paid access is ' +
+      'the grant in a row’s Details — it moves the trial date, which is what entitlement is checked against.</div>' +
       '</div>';
 
     return h;
@@ -720,7 +724,7 @@
     } else {
       var lim = u.signature_limit;
       h += '<div class="adm-note">How many signatures this one account may keep, whatever its plan says. ' +
-        'Leave it empty for the plan default — five on a live trial, one on free, no ceiling on a paid plan. ' +
+        'Leave it empty for the plan default — one on Solo, ten across a Team, no ceiling on Business, five on a live trial, one on free. ' +
         'The database enforces this on every insert, so it holds even against the API.</div>' +
         '<div class="adm-grantrow">' +
         '<input class="adm-input adm-limit" id="admLimit" type="number" min="1" max="100000" ' +
