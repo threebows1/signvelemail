@@ -200,6 +200,12 @@ Clear it to go back to uncapped.
    serves the new `setSignatureLimit` action. Until it is deployed the panel
    shows the control and the Set button reports an unknown action.
 
+
+If **Details** reports an error on every account, the function has been
+deployed but `schema.sql` has not been re-run. The panel now works either way
+— it asks for the allowance and drops it if the column is not there — but the
+allowance itself cannot be set until step 1 above is done, and saying so is
+what the Set button will tell you.
 To set one without the panel:
 
 ```sql

@@ -87,8 +87,30 @@ const PLANS = ['free', 'team', 'org'];
 
 // What the panel is shown about an account. Listed once, so a row that comes
 // back from a write has the same shape as a row that came from the list.
-const USER_COLUMNS =
-  'id, email, full_name, plan, is_admin, created_at, updated_at, trial_ends_at, stripe_customer_id, signature_limit';
+//
+// signature_limit is kept apart from the rest because it arrives with a
+// migration, and this function is deployed separately from the SQL. Asking
+// Postgres for a column it does not have fails the whole select, so deploying
+// the function first turned a pending migration into "every account's Details
+// is broken" rather than "one new field is missing". Asked for, and dropped
+// on the one error that means it is not there yet.
+const USER_COLUMNS_BASE =
+  'id, email, full_name, plan, is_admin, created_at, updated_at, trial_ends_at, stripe_customer_id';
+const USER_COLUMNS = USER_COLUMNS_BASE + ', signature_limit';
+
+// 42703 is undefined_column. Matched on the code rather than the message so a
+// wording change in Postgres does not quietly turn this back into a hard fail.
+function missingAllowanceColumn(error: any) {
+  return !!error && (error.code === '42703' || /signature_limit/i.test(String(error.message || '')));
+}
+
+// Runs a select twice at most: once asking for the allowance, and once without
+// it if the database has not got there yet.
+async function withUserColumns(run: (cols: string) => any) {
+  const first = await run(USER_COLUMNS);
+  if (first.error && missingAllowanceColumn(first.error)) return await run(USER_COLUMNS_BASE);
+  return first;
+}
 
 const MAX_USERS = 500;        // one page of the account table
 const MAX_SIGNATURES = 20000; // the user_id column, tallied in one pass
@@ -149,14 +171,19 @@ async function listUsers(admin: any, body: any, origin: string | null) {
   // expression, so nothing that could end it early is allowed through.
   const q = String(body?.q ?? '').replace(/[^A-Za-z0-9._@+ -]/g, '').trim().slice(0, 120);
 
-  let sel = admin
-    .from('profiles')
-    .select(USER_COLUMNS)
-    .order('created_at', { ascending: false })
-    .limit(MAX_USERS);
-  if (q) sel = sel.ilike('email', `%${q}%`);
+  const runList = (cols: string) => {
+    let sel = admin
+      .from('profiles')
+      .select(cols)
+      .order('created_at', { ascending: false })
+      .limit(MAX_USERS);
+    if (q) sel = sel.ilike('email', `%${q}%`);
+    return sel;
+  };
 
-  const [listed, counts, auth] = await Promise.all([sel, signatureCounts(admin), authIndex(admin)]);
+  const [listed, counts, auth] = await Promise.all([
+    withUserColumns(runList), signatureCounts(admin), authIndex(admin),
+  ]);
   if (listed.error) return json({ error: listed.error.message }, 500, origin);
 
   const users = (listed.data ?? []).map((u: any) => {
@@ -187,7 +214,7 @@ async function userDetail(admin: any, body: any, origin: string | null) {
   if (!UUID.test(userId)) return json({ error: 'Which account?' }, 400, origin);
 
   const [prof, sigs, subs, authRes] = await Promise.all([
-    admin.from('profiles').select(USER_COLUMNS).eq('id', userId).single(),
+    withUserColumns((cols: string) => admin.from('profiles').select(cols).eq('id', userId).single()),
     admin.from('signatures').select('id, name, is_default, created_at, updated_at')
       .eq('user_id', userId).order('updated_at', { ascending: false }).limit(50),
     admin.from('subscriptions').select('*')
@@ -195,7 +222,11 @@ async function userDetail(admin: any, body: any, origin: string | null) {
     admin.auth.admin.getUserById(userId),
   ]);
 
-  if (prof.error || !prof.data) return json({ error: 'No such account.' }, 404, origin);
+  // A failed query and a missing account are not the same thing, and reporting
+  // both as "No such account." is how a broken column reads as a deleted user
+  // — on every account at once, with the actual reason nowhere on screen.
+  if (prof.error) return json({ error: 'Could not read that account: ' + prof.error.message }, 500, origin);
+  if (!prof.data) return json({ error: 'No such account.' }, 404, origin);
   const au = authRes?.data?.user;
 
   return json({
@@ -227,7 +258,7 @@ async function setPlan(admin: any, body: any, callerId: string, origin: string |
   }
 
   const { data, error } = await admin
-    .from('profiles').update({ plan }).eq('id', userId).select(USER_COLUMNS).single();
+    .from('profiles').update({ plan }).eq('id', userId).select(USER_COLUMNS_BASE).single();
 
   if (error) return json({ error: error.message }, 500, origin);
   if (!data) return json({ error: 'No such account.' }, 404, origin);
@@ -248,6 +279,27 @@ async function setPlan(admin: any, body: any, callerId: string, origin: string |
 // columns strips it for the authenticated role — and the service-role
 // connection here is not that role, which is why this has to live in a
 // function rather than in a PATCH from the panel.
+
+async function setTrial(admin: any, body: any, callerId: string, origin: string | null) {
+  const userId = String(body?.userId ?? '');
+  const days = Number(body?.days);
+
+  if (!UUID.test(userId)) return json({ error: 'Which account?' }, 400, origin);
+  if (!Number.isFinite(days) || days < 0 || days > MAX_TRIAL_DAYS) {
+    return json({ error: `Give a number of days between 0 and ${MAX_TRIAL_DAYS}.` }, 400, origin);
+  }
+  if (userId === callerId) {
+    return json({ error: 'Grant access to someone else; change your own from the SQL editor.' }, 400, origin);
+  }
+
+  const until = new Date(Date.now() + days * 864e5).toISOString();
+  const { data, error } = await admin
+    .from('profiles').update({ trial_ends_at: until }).eq('id', userId).select(USER_COLUMNS_BASE).single();
+
+  if (error) return json({ error: error.message }, 500, origin);
+  if (!data) return json({ error: 'No such account.' }, 404, origin);
+  return json({ user: data }, 200, origin);
+}
 
 // An allowance for one account, in signatures. Null clears it and puts the
 // account back on whatever its plan gives.
@@ -279,26 +331,12 @@ async function setSignatureLimit(admin: any, body: any, callerId: string, origin
     .from('profiles').update({ signature_limit: limit })
     .eq('id', userId).select(USER_COLUMNS).single();
 
-  if (error) return json({ error: error.message }, 500, origin);
-  if (!data) return json({ error: 'No such account.' }, 404, origin);
-  return json({ user: data }, 200, origin);
-}
-async function setTrial(admin: any, body: any, callerId: string, origin: string | null) {
-  const userId = String(body?.userId ?? '');
-  const days = Number(body?.days);
-
-  if (!UUID.test(userId)) return json({ error: 'Which account?' }, 400, origin);
-  if (!Number.isFinite(days) || days < 0 || days > MAX_TRIAL_DAYS) {
-    return json({ error: `Give a number of days between 0 and ${MAX_TRIAL_DAYS}.` }, 400, origin);
+  // This one cannot fall back — writing the allowance is the whole point of
+  // the call. Say which step is missing instead of passing on a bare Postgres
+  // message about an unknown column.
+  if (error && missingAllowanceColumn(error)) {
+    return json({ error: 'Allowances need schema.sql re-run first — the signature_limit column is not there yet.' }, 409, origin);
   }
-  if (userId === callerId) {
-    return json({ error: 'Grant access to someone else; change your own from the SQL editor.' }, 400, origin);
-  }
-
-  const until = new Date(Date.now() + days * 864e5).toISOString();
-  const { data, error } = await admin
-    .from('profiles').update({ trial_ends_at: until }).eq('id', userId).select(USER_COLUMNS).single();
-
   if (error) return json({ error: error.message }, 500, origin);
   if (!data) return json({ error: 'No such account.' }, 404, origin);
   return json({ user: data }, 200, origin);
