@@ -85,6 +85,13 @@ const HOSTED_ICONS = {
   linkedin: 's-linkedin', x: 's-x', instagram: 's-instagram', youtube: 's-youtube',
   facebook: 's-facebook', tiktok: 's-tiktok', pinterest: 's-pinterest',
 };
+
+// The URL of a shipped glyph, without wrapping it in a tag. hostedIcon returns
+// the <img>; the callers that already know how to place one need the address.
+function hostedIconUrl(name, tone) {
+  const file = HOSTED_ICONS[name];
+  return file ? `${ICON_HOST}${file}-${tone}.png` : '';
+}
 function hostedIcon(name, tone, size, extraStyle) {
   const file = HOSTED_ICONS[name];
   if (!file) return '';
@@ -270,6 +277,22 @@ function inkBounds(ctx, w, h) {
 
 // Which glyphs the signature is actually using, and in which colour. Only the
 // ones drawn in a colour need a file: a filled badge already has the white one.
+
+// Whether this account can actually put an icon somewhere a mail client will
+// fetch it from. The same conditions syncIconAssets works under, asked before
+// the markup is built rather than after.
+//
+// Standard uses it to decide between a hosted picture and an inline drawing.
+// Where an upload will happen, hosted is right: the inline form is the one
+// Gmail strips. Where none will — signed out, no cloud configured, the
+// showcase on the marketing pages — the inline drawing is both correct and
+// the only thing there is, and nobody is emailing those anyway.
+function canHostIcons() {
+  if (!imagesUnlocked()) return false;
+  if (!(window.Cloud && Cloud.isReady)) return false;
+  const c = Cloud.state();
+  return !!(c && c.signedIn);
+}
 function neededIconAssets(target) {
   const want = [];
   const mode = S.contactIconMode || 'circle';
@@ -2204,10 +2227,13 @@ function renderStage() {
 
   $stage.innerHTML = h;
   fitMobilePreview();
-  // Only the Outlook variants need files, and each needs a different set —
-  // glyphs for New Outlook, whole badges for classic — so nothing is drawn or
-  // uploaded until one of those tabs is in use. It redraws when a set arrives.
-  if (currentTarget()) syncIconAssets(currentTarget());
+  // Every target needs files now, not only the Outlook pair. Standard used to
+  // draw its glyphs inline as data: URIs, which Gmail and Outlook strip from
+  // incoming mail — so the default tab, pasted into the most common client,
+  // was the one arriving with its icons missing. Standard and New Outlook want
+  // the same set, a glyph apiece; classic wants whole badges. It redraws when
+  // a set arrives.
+  syncIconAssets(currentTarget());
   scheduleAllSaves();
 }
 
@@ -2878,16 +2904,32 @@ function buildSignatureBody() {
         leadPad: '3px 8px 3px 0', val, valPad: '3px 0', align: 'top',
       };
     }
-    // New Outlook gets the drawing, served from signvel.com — the design is
-    // the same as Standard's, only the glyph arrives as an image.
-    const hosted = EXPORT_TARGET === 'newoutlook' ? f.type : '';
+    // Standard and New Outlook draw the badge themselves and take the glyph as
+    // a picture served from signvel.com. Standard used to draw it inline as a
+    // data: URI instead, which Gmail and Outlook strip from incoming mail — so
+    // the client most people paste into was the one losing every icon.
+    // Standard asks for a hosted picture in the copy, not on screen: the preview
+    // keeps its vectors, which are sharper and cost no network. Gmail is the one
+    // that needs a real address, and Gmail never sees the preview.
+    const hosted = EXPORT_TARGET === 'classic' ? ''
+      : (EXPORT_TARGET || (!SCREEN_RENDER && canHostIcons())) ? f.type : '';
     const glyphPx = Math.round(S.contactIconSize * 0.64);
     // A glyph drawn in the theme colour and uploaded to the account keeps the
     // design exactly: an open badge stays open, with the colour in the glyph.
     // Without one, the badge is filled instead, so the colour is at least in
     // the ground and the white glyph reads against it.
-    const exact = hosted ? hostedIconFor(hosted, badgeColor) : '';
+    // A glyph the layout draws in white — the ones set on a coloured panel —
+    // needs no upload at all: the white set is shipped and already hosted.
+    const white = /^#?(fff|ffffff)$/i.test(String(badgeColor || '').trim());
+    const exact = !hosted ? ''
+      : white ? hostedIconUrl(f.type, 'white')
+      : hostedIconFor(hosted, badgeColor);
     // The glyph on its own, however this client can carry one.
+    // The account's own coloured glyph where it exists. Where it does not yet —
+    // the upload is a round trip, and the first draw happens before it lands —
+    // Standard still draws inline rather than dropping to a letter mid-session.
+    // That inline form is the one Gmail strips, so it is a last resort and a
+    // brief one: the upload redraws the signature when it arrives.
     const bareGlyph = exact
       ? iconImgTag(exact, glyphPx, 'display:inline-block;vertical-align:middle;')
       : EXPORT_TARGET ? '' : svgToImgTag(contactIcons[f.type], glyphPx, glyphPx, badgeColor, 'vertical-align:middle;');
@@ -2901,6 +2943,9 @@ function buildSignatureBody() {
     }
 
     const lead = badged
+      // The letter only where there is no drawing to be had. Passed always, it
+      // short-circuits the inline glyph below it and a badge that should hold a
+      // picture holds an initial instead.
       ? circleIcon(contactIcons[f.type], solidBadge || (!!hosted && !exact), badgeColor,
                    EXPORT_TARGET ? letter : '', hosted, exact, radius)
       // A bare glyph has no ground to colour, so either it is the theme colour
@@ -3050,7 +3095,10 @@ function buildSignatureBody() {
             return;
           }
         }
-        const hostedMark = EXPORT_TARGET === 'newoutlook' ? sl.type : '';
+        // Standard takes a hosted glyph too. It drew one inline before, and a
+        // data: URI does not survive being emailed.
+        const hostedMark = EXPORT_TARGET === 'classic' ? ''
+          : (EXPORT_TARGET || (!SCREEN_RENDER && canHostIcons())) ? sl.type : '';
         const exactMark = hostedMark ? hostedIconFor(hostedMark, colour) : '';
         if (style === 'glyph') {
           if (hostedMark) {
@@ -3062,8 +3110,10 @@ function buildSignatureBody() {
               return;
             }
           }
+          // No hosted picture. Standard draws inline until its upload lands;
+          // the other targets take the name, which every client draws.
           if (EXPORT_TARGET) {
-            cells.push(`<td style="${gap}vertical-align:middle;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${nameSize}px;color:${colour};text-decoration:none;font-weight:600;">${esc(sl.label)}</a></td>`);
+            cells.push(`<td style="${gap}vertical-align:middle;"><a href="${socialHref(sl)}" style="font-family:${ff};font-size:${nameSize}px;color:${colourText};text-decoration:none;font-weight:600;">${esc(sl.label)}</a></td>`);
             return;
           }
           const glyphImg = svgToImgTag(svgIcon, iconScale, iconScale, colour, 'margin:0 auto;');

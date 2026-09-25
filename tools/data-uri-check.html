@@ -1,0 +1,72 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>data-uri-check</title></head><body><pre id="out" style="font:12px monospace"></pre>
+<div class="app" id="app" style="position:absolute;left:-4000px"><aside class="rail" id="rail"></aside><div class="workspace"><header class="topbar" id="header"></header><div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// Gmail and Outlook strip data: URIs from incoming mail, so an inline drawing
+// is not a plainer icon at the far end — it is a broken image. What a paying
+// customer pastes must not contain one.
+//
+// Which means standing in for an account that can host: signed in, entitled,
+// with its glyphs already uploaded. Run without that, the app is right to draw
+// inline — there is nowhere to put a picture — and a check that did not say so
+// passed for the wrong reason on a page with no session at all.
+const F = [];
+let ran = 0;
+
+window.SIGNVEL_SHOW_IMAGES = true;
+window.Cloud = {
+  isReady: true,
+  state: function () { return {signedIn: true, entitled: true, plan: 'team', email: 'daniel@signvel.com'}; },
+  onChange: function () {},
+  init: function () { return Promise.resolve({signedIn: true}); },
+  loadSignature: function () { return Promise.resolve(null); },
+  saveSignature: function () { return Promise.resolve({ok: true}); },
+  uploadAsset: function () { return Promise.resolve({ok: false}); },
+};
+
+// The uploads have landed: every glyph this account needs, already hosted.
+// Filled in from the app's own list so the two cannot drift apart.
+function stockAssets() {
+  S.iconAssets = {};
+  ['', 'newoutlook', 'classic'].forEach(function (t) {
+    neededIconAssets(t).forEach(function (w) {
+      S.iconAssets[w.key] = 'https://cdn.signvel.com/stub/' + w.key + '.png';
+    });
+  });
+}
+
+['corporate', 'connect', 'band', 'grid', 'feature', 'split', 'minimal'].forEach(function (id) {
+  S.template = id; applyTemplateTheme(id);
+  stockAssets();
+  ['', 'newoutlook', 'classic'].forEach(function (target) {
+    ran++;
+    const h = withExportTarget(target, generateSignaturePreview);
+    const imgs = h.match(/<img[^>]*>/gi) || [];
+    const data = imgs.filter(function (x) { return /src="data:/.test(x); });
+    if (data.length) {
+      F.push(id + ', ' + (target || 'standard') + ': ' + data.length + ' of ' + imgs.length +
+             ' images are data: URIs — those arrive broken');
+    }
+  });
+});
+
+// If the signature drew no images at all this would pass on nothing.
+S.template = 'corporate'; applyTemplateTheme('corporate'); stockAssets();
+const std = withExportTarget('', generateSignaturePreview);
+const n = (std.match(/<img[^>]*>/gi) || []).length;
+if (n < 4) F.push('the Standard copy has only ' + n + ' images, so this check proves little');
+
+// The preview may use data: freely — it is never emailed — and it is what
+// keeps the editor sharp. Guard it, so a later fix does not take it away.
+const screen = onScreen(function () { return generateSignaturePreview(); });
+if (!/src="data:/.test(screen)) F.push('the preview stopped drawing vectors; it is allowed data: URIs and needs them');
+
+if (!ran) F.push('nothing was measured, so this check proves nothing');
+document.getElementById('out').textContent = F.length ? F.join('\n')
+  : ran + ' copies across 7 layouts and 3 targets, on an account that can host: not one data: URI, ' + n + ' hosted images on Standard';
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>
