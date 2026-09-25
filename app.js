@@ -947,7 +947,7 @@ const previewClients = [
   {id:'gmail-ios',       label:'Gmail (iOS)',          logo:'gmail',       install:'gmail',     chrome:'gmail'},
   {id:'yahoo',           label:'Yahoo (web)',          logo:'yahoo',       install:'yahoo',     chrome:'yahoo'},
   // The three renderers, kept together: a browser, Word, and a WebView.
-  {id:'outlook-new',     label:'Outlook modern',       logo:'outlook', target:'newoutlook', install:'outlook365', chrome:'segoe'},
+  {id:'outlook-new',     label:'New Outlook',          logo:'outlook', target:'newoutlook', install:'outlook365', chrome:'segoe'},
   {id:'outlook-classic', label:'Outlook classic',      logo:'outlook', target:'classic', install:'outlook365', chrome:'word'},
   {id:'outlook',         label:'Outlook (iOS)',        logo:'outlook', target:'', install:'outlook365', chrome:'segoe'},
   {id:'windows-mail',    label:'Mail (Windows)',       logo:'windowsmail', chrome:'segoe'},
