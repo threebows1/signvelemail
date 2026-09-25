@@ -226,6 +226,41 @@ wall in the middle of the trial with nothing warning about it.
 Applied by re-running `supabase/schema.sql`, or the extract in
 `Downloads/signvel-trial-five.sql`. Safe to run more than once. Nothing else
 changes: existing rows are untouched, since the rule runs on insert.
+
+## Teams
+
+The Team plan sells three things that all needed the same missing piece:
+shared brand defaults, section locks that reach other people, and ten
+signatures across a company rather than ten each. None of them mean anything
+without somewhere to say who is in the company. `public.teams` is that.
+
+A team has an owner, a name, and two jsonb columns — `brand_defaults` and
+`rollout_locks` — that mirror the editor's own state, for the same reason
+signatures store state that way: the shape changes often.
+
+**Membership is not self-service.** `team_id` decides whose brand you inherit
+and whose budget you spend, so `protect_billing_columns` strips it from
+anything the browser writes, exactly as it does `plan` and `is_admin`. It
+moves through the admin panel or it does not move.
+
+**The budget is the team's.** `enforce_signature_quota` follows the team where
+there is one: the cap comes from the owner's plan, and the tally counts every
+member's signatures. Ten each was the whole company's budget multiplied by its
+headcount. An allowance set on one person still overrides both, and is then
+counted against that person alone — which is how somebody is given room
+without moving the company.
+
+In the admin drawer: **Start a team** makes one owned by that account, **Join**
+takes a team id, **Remove** takes them out.
+
+Needs `supabase/schema.sql` re-run, or `Downloads/signvel-teams.sql`, and
+`supabase functions deploy admin-stats` for the `setTeam` action.
+
+### Still to build
+
+Shared brand defaults and section locks now have somewhere to live, but the
+editor does not read them yet: it starts every account from the shipped
+defaults and keeps `rolloutLocks` in its own state. That is the next piece.
 ### What the panel deliberately cannot do
 
 - **Grant administrator rights.** That stays the SQL statement above. A button

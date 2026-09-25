@@ -228,6 +228,20 @@
   }
 
   // An allowance, in signatures, for one account. Empty clears it.
+  // Join the id in the box, start a fresh team, or take them out of one.
+  function setTeam(userId, teamId) {
+    if (!userId || A.busy) return;
+    A.busy = userId;
+    A.rowError = '';
+    paint();
+    Cloud.adminSetTeam(userId, teamId, null).then(function (r) {
+      A.busy = '';
+      if (r.ok) { applyUser(r.user); } else { A.rowError = r.error; noteDeploy(r.error); }
+      paint();
+      paintDrawer();
+    });
+  }
+
   function setSignatureLimit(userId, limit) {
     if (!userId || A.busy) return;
     A.busy = userId;
@@ -670,6 +684,32 @@
     }
     h += '</div>';
 
+    // ── Team ──
+    // A team is what the Team plan actually sells: one brand and one budget of
+    // ten signatures shared by the people in it, rather than ten each.
+    h += '<div class="adm-sec"><h3 class="adm-sec-h">Team</h3>';
+    if (self) {
+      h += '<div class="adm-note">Your own account. Move yourself from the SQL editor.</div>';
+    } else {
+      var team = u.team_id;
+      h += '<div class="adm-note">Everyone in a team draws on one budget of ten signatures and, once the ' +
+        'editor reads it, one set of brand defaults. The owner’s plan is what decides for all of them.</div>' +
+        '<div class="adm-grantrow">' +
+        '<input class="adm-input adm-team" id="admTeam" type="text" placeholder="team id" ' +
+        'value="' + (team ? esc(String(team)) : '') + '"' + (A.busy === u.id ? ' disabled' : '') + '>' +
+        '<button class="adm-mini" data-act="team" data-user="' + esc(u.id) + '"' +
+        (A.busy === u.id ? ' disabled' : '') + '>Join</button>' +
+        '<button class="adm-mini" data-act="team" data-user="' + esc(u.id) + '" data-new="1"' +
+        (A.busy === u.id ? ' disabled' : '') + '>Start a team</button>' +
+        '<button class="adm-mini is-danger" data-act="team" data-user="' + esc(u.id) + '" data-leave="1"' +
+        (A.busy === u.id || !team ? ' disabled' : '') + '>Remove</button>' +
+        '</div>' +
+        '<p class="adm-card-note" style="margin-top:8px">' +
+        (team ? 'In team ' + esc(String(team).slice(0, 8)) + '…' : 'Not in a team — this account has its own budget.') +
+        '</p>';
+    }
+    h += '</div>';
+
     // ── Signature allowance ──
     // Deliberately its own section rather than another grant button: a grant is
     // a date and this is a number, and reading them as one control is how you
@@ -869,6 +909,14 @@
     if (act === 'grant') { setTrial(btn.dataset.user, Number(btn.dataset.days)); return; }
     // Cleared, or whatever is in the box. An empty box is a clear too, so the
     // Set button cannot quietly do nothing when somebody has emptied it.
+    if (act === 'team') {
+      var tbox = document.getElementById('admTeam');
+      var val = btn.dataset.new ? 'new'
+        : btn.dataset.leave ? null
+        : (tbox ? tbox.value.trim() : '');
+      setTeam(btn.dataset.user, val === '' ? null : val);
+      return;
+    }
     if (act === 'limit') {
       var box = document.getElementById('admLimit');
       var raw = btn.dataset.clear ? '' : (box ? box.value.trim() : '');

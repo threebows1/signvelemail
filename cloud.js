@@ -284,10 +284,16 @@ window.Cloud = (function () {
   const adminSetSignatureLimit = (userId, limit) =>
     adminCall('setSignatureLimit', { userId, limit }).then(r => r.ok ? { ok: true, user: r.data.user } : r);
 
+  // Which team an account belongs to. 'new' starts one owned by them, null
+  // takes them out of one. Membership never moves from the browser — the
+  // column is trigger-protected — so it moves here or not at all.
+  const adminSetTeam = (userId, teamId, name) =>
+    adminCall('setTeam', { userId, teamId, name }).then(r => r.ok ? { ok: true, user: r.data.user } : r);
+
   return {
     init, signIn, signInPassword, signUp, resetPassword, updatePassword, signOut,
     loadSignature, saveSignature, uploadAsset,
-    adminStats, adminUsers, adminUser, adminSetPlan, adminSetTrial, adminSetSignatureLimit,
+    adminStats, adminUsers, adminUser, adminSetPlan, adminSetTrial, adminSetSignatureLimit, adminSetTeam,
     state,
     onChange(fn) { listeners.push(fn); },
     get isReady() { return ready; },

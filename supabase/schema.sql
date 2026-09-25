@@ -148,31 +148,6 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
--- ── Stop the browser editing its own plan or granting itself admin ────
--- Users may update their profile (name, etc.) but plan and customer id are
--- billing state and must only move via the webhook's service-role connection.
--- is_admin and trial_ends_at are held to the same rule for the same reason: a
--- column that decides what someone may see, or for how long, is not one the
--- client gets to write.
-create or replace function public.protect_billing_columns()
-returns trigger language plpgsql as $$
-begin
-  if auth.role() = 'authenticated' then
-    new.plan := old.plan;
-    new.stripe_customer_id := old.stripe_customer_id;
-    new.is_admin := old.is_admin;
-    -- Otherwise the trial is extended with one PATCH from the browser.
-    new.trial_ends_at := old.trial_ends_at;
-    -- An allowance decides how many signatures an account may have, so it is
-    -- held to the same rule: not a column the client gets to write.
-    new.signature_limit := old.signature_limit;
-  end if;
-  return new;
-end $$;
-
-drop trigger if exists profiles_protect_billing on public.profiles;
-create trigger profiles_protect_billing before update on public.profiles
-  for each row execute function public.protect_billing_columns();
 
 -- ── Row Level Security ────────────────────────────────────
 alter table public.profiles      enable row level security;
@@ -198,62 +173,6 @@ create policy "delete own signatures" on public.signatures for delete using (aut
 drop policy if exists "read own subscription" on public.subscriptions;
 create policy "read own subscription" on public.subscriptions for select using (auth.uid() = user_id);
 
--- ── Plan limits, enforced in the database ─────────────────
--- What an account may keep, in one place. Doing it here rather than in
--- JavaScript means it holds even if someone calls the API directly.
---
---   an allowance   whatever it says
---   a paid plan    no ceiling
---   on trial       five, which is what the site offers for the thirty days
---   free           one
---
--- The trial used to be held to one alongside every other free account, on the
--- reasoning that the cap was one of the things being tried. The site has said
--- "five signatures" on the home page, the pricing page and both auth pages the
--- whole time, so what that actually bought was a wall in the middle of the
--- trial with no warning attached. Five here is the site's own promise, kept.
---
--- signature_limit overrides all of it when set. It is the one number that
--- decides, so an allowance can be given to a free account and an organisation
--- can be held to a hundred; leave it null and nothing about an account changes.
-create or replace function public.enforce_signature_quota()
-returns trigger language plpgsql security definer set search_path = public as $$
-declare
-  user_plan  text;
-  allowance  integer;
-  trial_end  timestamptz;
-  existing   integer;
-  cap        integer;
-begin
-  select plan, signature_limit, trial_ends_at
-    into user_plan, allowance, trial_end
-    from public.profiles where id = new.user_id;
-
-  -- Null cap means unlimited, which is why this is not simply a number with a
-  -- large default.
-  if allowance is not null then
-    cap := allowance;
-  elsif coalesce(user_plan, 'free') <> 'free' then
-    cap := null;
-  elsif trial_end is not null and trial_end > now() then
-    cap := 5;
-  else
-    cap := 1;
-  end if;
-
-  if cap is not null then
-    select count(*) into existing from public.signatures where user_id = new.user_id;
-    if existing >= cap then
-      raise exception 'This account is limited to % signature(s).', cap
-        using errcode = 'check_violation';
-    end if;
-  end if;
-  return new;
-end $$;
-
-drop trigger if exists signatures_quota on public.signatures;
-create trigger signatures_quota before insert on public.signatures
-  for each row execute function public.enforce_signature_quota();
 
 -- ── Storage: brand assets ─────────────────────────────────
 -- Public-read bucket. This is what fixes broken logos in sent mail: uploads
@@ -354,3 +273,164 @@ create policy "assets owner delete" on storage.objects
 -- The worker asks this over PostgREST rather than reading profiles itself, so
 -- entitlement has one definition and it is the one the policies already use.
 grant execute on function public.has_paid_access(uuid) to service_role;
+
+-- ── Teams ─────────────────────────────────────────────────
+-- The Team plan sells three things that all need the same missing piece:
+-- shared brand defaults, section locks that reach other people, and ten
+-- signatures across a company rather than ten each. None of them mean anything
+-- without somewhere to say who is in the company, which is what this is.
+--
+-- A team owns its brand: the defaults every member's editor starts from, and
+-- which sections they may change. Both are jsonb because they mirror the
+-- editor's own state, which changes shape often — the same reason signatures
+-- store their state that way rather than in columns.
+create table if not exists public.teams (
+  id             uuid primary key default gen_random_uuid(),
+  name           text not null default 'My team',
+  owner_id       uuid not null references auth.users(id) on delete cascade,
+  -- The keys the editor calls SCOPED_KEYS, as the owner set them.
+  brand_defaults jsonb not null default '{}'::jsonb,
+  -- {"typography":"locked","disclaimer":"editable", ...}
+  rollout_locks  jsonb not null default '{}'::jsonb,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now()
+);
+
+create index if not exists teams_owner_idx on public.teams(owner_id);
+
+-- Membership. One team per person: a signature belongs to one company, and
+-- "which of my teams is this for" is a question the editor would then have to
+-- ask on every screen.
+alter table public.profiles
+  add column if not exists team_id uuid references public.teams(id) on delete set null;
+
+create index if not exists profiles_team_idx on public.profiles(team_id);
+
+drop trigger if exists teams_touch on public.teams;
+create trigger teams_touch before update on public.teams
+  for each row execute function public.touch_updated_at();
+
+-- ── Who may see and change a team ─────────────────────────
+-- Written as security-definer helpers because the policies below need to read
+-- profiles, and a policy that reads the table it protects recurses.
+create or replace function public.team_of(uid uuid)
+returns uuid language sql stable security definer set search_path = public as $$
+  select team_id from public.profiles where id = uid;
+$$;
+
+create or replace function public.owns_team(uid uuid, tid uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.teams where id = tid and owner_id = uid);
+$$;
+
+alter table public.teams enable row level security;
+
+-- A member reads their own team, because their editor starts from its brand.
+drop policy if exists "read own team" on public.teams;
+create policy "read own team" on public.teams for select
+  using (id = public.team_of(auth.uid()) or owner_id = auth.uid());
+
+-- Only the owner writes the brand. A member changing the shared defaults would
+-- be the opposite of what the plan sells.
+drop policy if exists "owner updates team" on public.teams;
+create policy "owner updates team" on public.teams for update
+  using (owner_id = auth.uid()) with check (owner_id = auth.uid());
+
+drop policy if exists "owner creates team" on public.teams;
+create policy "owner creates team" on public.teams for insert
+  with check (owner_id = auth.uid());
+
+-- ── Membership is not self-service ────────────────────────
+-- team_id decides whose brand somebody inherits and whose signature budget
+-- they spend, so it is held to the same rule as plan and is_admin: not a
+-- column the browser gets to write. Someone could otherwise join a paying
+-- company's team with one PATCH.
+create or replace function public.protect_billing_columns()
+returns trigger language plpgsql as $$
+begin
+  if auth.role() = 'authenticated' then
+    new.plan := old.plan;
+    new.stripe_customer_id := old.stripe_customer_id;
+    new.is_admin := old.is_admin;
+    -- Otherwise the trial is extended with one PATCH from the browser.
+    new.trial_ends_at := old.trial_ends_at;
+    -- An allowance decides how many signatures an account may have, so it is
+    -- held to the same rule: not a column the client gets to write.
+    new.signature_limit := old.signature_limit;
+    -- Nor is the team they belong to.
+    new.team_id := old.team_id;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists profiles_protect_billing on public.profiles;
+create trigger profiles_protect_billing before update on public.profiles
+  for each row execute function public.protect_billing_columns();
+
+-- ── Ten signatures across the team, not ten each ──────────
+-- The cap and the tally now both follow the team where there is one. A Team
+-- plan sold as ten signatures meant ten each while everybody was their own
+-- island, which is the whole company's budget multiplied by its headcount.
+--
+-- The cap comes from the team owner's plan, because the owner is who pays.
+create or replace function public.enforce_signature_quota()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  team       uuid;
+  payer      uuid;
+  user_plan  text;
+  allowance  integer;
+  trial_end  timestamptz;
+  existing   integer;
+  cap        integer;
+begin
+  select team_id into team from public.profiles where id = new.user_id;
+
+  -- In a team, the owner's standing decides for everyone in it; alone, your
+  -- own does. An allowance set on the individual still overrides both, which
+  -- is how one person in a team can be given room without moving the company.
+  select signature_limit into allowance from public.profiles where id = new.user_id;
+
+  if team is not null then
+    select owner_id into payer from public.teams where id = team;
+  else
+    payer := new.user_id;
+  end if;
+
+  select plan, trial_ends_at into user_plan, trial_end
+    from public.profiles where id = payer;
+
+  if allowance is not null then
+    cap := allowance;
+  elsif coalesce(user_plan, 'free') = 'team' then
+    cap := 10;
+  elsif coalesce(user_plan, 'free') <> 'free' then
+    cap := null;                       -- org and anything above: no ceiling
+  elsif trial_end is not null and trial_end > now() then
+    cap := 5;
+  else
+    cap := 1;
+  end if;
+
+  if cap is not null then
+    if team is not null and allowance is null then
+      -- The team's whole budget, spent by whoever spends it first.
+      select count(*) into existing
+        from public.signatures s
+        join public.profiles p on p.id = s.user_id
+       where p.team_id = team;
+    else
+      select count(*) into existing from public.signatures where user_id = new.user_id;
+    end if;
+
+    if existing >= cap then
+      raise exception 'This account is limited to % signature(s).', cap
+        using errcode = 'check_violation';
+    end if;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists signatures_quota on public.signatures;
+create trigger signatures_quota before insert on public.signatures
+  for each row execute function public.enforce_signature_quota();

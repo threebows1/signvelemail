@@ -96,10 +96,16 @@ const PLANS = ['free', 'team', 'org'];
 // on the one error that means it is not there yet.
 const USER_COLUMNS_BASE =
   'id, email, full_name, plan, is_admin, created_at, updated_at, trial_ends_at, stripe_customer_id';
-const USER_COLUMNS = USER_COLUMNS_BASE + ', signature_limit';
+const USER_COLUMNS = USER_COLUMNS_BASE + ', signature_limit, team_id';
 
 // 42703 is undefined_column. Matched on the code rather than the message so a
 // wording change in Postgres does not quietly turn this back into a hard fail.
+// 42P01 is undefined_table, 42703 undefined_column — either means the teams
+// half of schema.sql has not been run yet.
+function missingTeamsTable(error: any) {
+  return !!error && (error.code === '42P01' || error.code === '42703' || /teams|team_id/i.test(String(error.message || '')));
+}
+
 function missingAllowanceColumn(error: any) {
   return !!error && (error.code === '42703' || /signature_limit/i.test(String(error.message || '')));
 }
@@ -108,7 +114,7 @@ function missingAllowanceColumn(error: any) {
 // it if the database has not got there yet.
 async function withUserColumns(run: (cols: string) => any) {
   const first = await run(USER_COLUMNS);
-  if (first.error && missingAllowanceColumn(first.error)) return await run(USER_COLUMNS_BASE);
+  if (first.error && (missingAllowanceColumn(first.error) || missingTeamsTable(first.error))) return await run(USER_COLUMNS_BASE);
   return first;
 }
 
@@ -344,6 +350,54 @@ async function setSignatureLimit(admin: any, body: any, callerId: string, origin
 
 // The overview. Everything here is counted server-side and the panel only
 // draws it, so two people looking at the same moment see the same figures.
+
+// Which team an account belongs to. "new" starts one owned by that account;
+// null takes them out of whatever they were in.
+//
+// Membership is not self-service — protect_billing_columns strips team_id from
+// anything the browser writes — because belonging to a team decides whose brand
+// you inherit and whose signature budget you spend. It moves here, or it does
+// not move.
+async function setTeam(admin: any, body: any, origin: string | null) {
+  const userId = String(body?.userId ?? '');
+  const raw = body?.teamId;
+
+  if (!UUID.test(userId)) return json({ error: 'Which account?' }, 400, origin);
+
+  let teamId: string | null = null;
+
+  if (raw === 'new') {
+    const name = String(body?.name ?? '').trim().slice(0, 80) || 'My team';
+    const { data: made, error: makeErr } = await admin
+      .from('teams').insert({ name, owner_id: userId }).select('id').single();
+    if (makeErr && missingTeamsTable(makeErr)) {
+      return json({ error: 'Teams need schema.sql re-run first — the teams table is not there yet.' }, 409, origin);
+    }
+    if (makeErr) return json({ error: makeErr.message }, 500, origin);
+    teamId = made.id;
+  } else if (raw !== null && raw !== undefined && raw !== '') {
+    teamId = String(raw);
+    if (!UUID.test(teamId)) return json({ error: 'A team id, or "new", or empty to remove them.' }, 400, origin);
+    const { data: found, error: findErr } = await admin
+      .from('teams').select('id').eq('id', teamId).maybeSingle();
+    if (findErr && missingTeamsTable(findErr)) {
+      return json({ error: 'Teams need schema.sql re-run first — the teams table is not there yet.' }, 409, origin);
+    }
+    if (findErr) return json({ error: findErr.message }, 500, origin);
+    if (!found) return json({ error: 'No team with that id.' }, 404, origin);
+  }
+
+  const { data, error } = await admin
+    .from('profiles').update({ team_id: teamId })
+    .eq('id', userId).select(USER_COLUMNS).single();
+
+  if (error && missingTeamsTable(error)) {
+    return json({ error: 'Teams need schema.sql re-run first — the team_id column is not there yet.' }, 409, origin);
+  }
+  if (error) return json({ error: error.message }, 500, origin);
+  if (!data) return json({ error: 'No such account.' }, 404, origin);
+  return json({ user: data }, 200, origin);
+}
 async function stats(admin: any, origin: string | null) {
   // listUsers is paged; the total comes back regardless of perPage, so ask for
   // the smallest page that still returns it rather than pulling every row.
@@ -509,6 +563,7 @@ Deno.serve(async (req) => {
   if (action === 'setPlan') return setPlan(admin, body, uid, origin);
   if (action === 'setTrial') return setTrial(admin, body, uid, origin);
   if (action === 'setSignatureLimit') return setSignatureLimit(admin, body, uid, origin);
+  if (action === 'setTeam') return setTeam(admin, body, origin);
   if (action === 'stats') return stats(admin, origin);
   // Naming the action matters: "Unknown action." alone says nothing about
   // which one, and the usual cause is a deployment older than the page that

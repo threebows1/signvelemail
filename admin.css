@@ -269,6 +269,7 @@
   border-radius:7px;background:#fff;color:inherit;
 }
 .adm-limit{width:130px}
+.adm-team{width:230px;font-family:"IBM Plex Mono",monospace;font-size:12px}
 
 /* ── Responsive ── */
 @media (max-width:1040px){
