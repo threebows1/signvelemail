@@ -561,12 +561,13 @@
     h += '<div class="adm-card"><div class="adm-card-head"><h2 class="adm-card-h">Gaps between what is sold and what is enforced</h2>' +
       '<span class="adm-spacer"></span><p class="adm-card-note">Read from the schema, not opinion</p></div>' +
       '<div class="adm-note">The pricing page sells three paid tiers — one signature at $1.99, ten at $4.99, ' +
-      'twenty or more at $16.99 — and the <code>plan</code> column now has a value for each: <code>solo</code>, ' +
+      'twenty at $16.99 — and the <code>plan</code> column now has a value for each: <code>solo</code>, ' +
       '<code>team</code> and <code>org</code>, beside <code>free</code>.</div>' +
       '<div class="adm-note">What the database gives, in order: an allowance if one is set, then one on ' +
-      '<code>solo</code>, ten on <code>team</code>, no ceiling on <code>org</code>, five on a live trial, and ' +
+      '<code>solo</code>, ten on <code>team</code>, twenty on <code>org</code>, five on a live trial, and ' +
       'one otherwise. A team spends one budget between its members rather than one each. So the numbers on the ' +
-      'page are enforced now, not merely printed.</div>' +
+      'page are enforced now, not merely printed. No plan is uncapped: more than the tier gives is an allowance ' +
+      'set by hand in the drawer.</div>' +
       '<div class="adm-note">Still sold and not built: campaign banner expiry, directory sync, and Microsoft 365 ' +
       'transport rules. Shared brand defaults and section locks have a home on the team but the editor does not ' +
       'read them yet.</div>' +
@@ -724,7 +725,7 @@
     } else {
       var lim = u.signature_limit;
       h += '<div class="adm-note">How many signatures this one account may keep, whatever its plan says. ' +
-        'Leave it empty for the plan default — one on Solo, ten across a Team, no ceiling on Business, five on a live trial, one on free. ' +
+        'Leave it empty for the plan default — one on Solo, ten across a Team, twenty on Business, five on a live trial, one on free. ' +
         'The database enforces this on every insert, so it holds even against the API.</div>' +
         '<div class="adm-grantrow">' +
         '<input class="adm-input adm-limit" id="admLimit" type="number" min="1" max="100000" ' +

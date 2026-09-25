@@ -175,7 +175,7 @@ goes through the function: `protect_billing_columns` strips `trial_ends_at`,
 
 A **Signature allowance** sits in each account's drawer in the admin panel.
 Type a number and press **Set**; **Clear** removes it. Empty means the plan
-default — one on Solo, ten across a Team, no ceiling on Business, five on a
+default — one on Solo, ten across a Team, twenty on Business, five on a
 live trial, one on free.
 
 It is enforced by the database, on every insert, by `enforce_signature_quota`
@@ -237,14 +237,21 @@ changes: existing rows are untouched, since the rule runs on insert.
 | `free`, trial live | 5 | yes |
 | `solo` | 1 | yes |
 | `team` | 10, shared across the team | yes |
-| `org` | no ceiling | yes |
+| `org` | 20 | yes |
 
 The count is `enforce_signature_quota`; the images are `has_paid_access`, which
 is `plan <> 'free' or trial_ends_at > now()` — so Solo gets them by being a
 plan at all, which is what the card promises.
 
-`solo` is caught before the "any paid plan has no ceiling" branch. Out of
-order it would be Business at a fifth of the price, and nothing would say so.
+
+No plan is uncapped. A subscription buys a fixed number, and anything past it
+is a decision made by hand: set a **Signature allowance** on that one account
+in the admin drawer and it overrides the plan, for that account only. The
+subscription tiers do not move.
+
+A plan the rule has not been taught about falls to 1 rather than to no
+ceiling, so a tier added to the constraint and forgotten here is visibly too
+small instead of silently unlimited.
 ## Teams
 
 The Team plan sells three things that all needed the same missing piece:

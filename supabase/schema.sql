@@ -412,13 +412,21 @@ begin
   if allowance is not null then
     cap := allowance;
   elsif coalesce(user_plan, 'free') = 'solo' then
-    -- One, as sold. Caught before the "any paid plan is uncapped" branch
-    -- below, or Solo would quietly be the same as Business.
+    -- One, as sold. Caught before the branches below it, or Solo would
+    -- quietly be the same as Business.
     cap := 1;
   elsif coalesce(user_plan, 'free') = 'team' then
     cap := 10;
+  elsif coalesce(user_plan, 'free') = 'org' then
+    -- Twenty, as sold. No plan is uncapped any more: a subscription buys a
+    -- fixed number, and anything past it is a decision somebody makes by hand
+    -- in the admin panel, which is what the allowance above is for.
+    cap := 20;
   elsif coalesce(user_plan, 'free') <> 'free' then
-    cap := null;                       -- org and anything above: no ceiling
+    -- A plan nobody has taught this rule about. One, rather than no ceiling:
+    -- a tier added to the constraint and forgotten here should be visibly too
+    -- small, not silently unlimited.
+    cap := 1;
   elsif trial_end is not null and trial_end > now() then
     cap := 5;
   else
