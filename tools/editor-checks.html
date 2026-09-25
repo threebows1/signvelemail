@@ -67,6 +67,13 @@
     if (!$('#panel [data-bind="panelWidth"]')) E.push('missing control: panelWidth');
 
     // Theme matching: switching with it on must change the accent, off must not.
+    //
+    // Feature's theme brings a dark blue panel with it, and switching away with
+    // matching off leaves that panel behind — which is correct for a person who
+    // chose it, and wrong for every check after this one. It leaked as far as
+    // the colour picker, where a typed accent stopped appearing verbatim
+    // because the signature was lifting it to stay readable on blue. Put back.
+    const keepPanel = {on: S.bgEnabled, colour: S.bgColor};
     S.matchTemplateTheme = true;
     click(document.querySelector('#panel [data-tmpl="feature"]'));
     if (S.accentColor !== templateThemes.feature.accent) E.push('theme not applied on switch');
@@ -75,6 +82,7 @@
     click(document.querySelector('#panel [data-tmpl="grid"]'));
     if (S.accentColor !== '#123456') E.push('theme applied while matching is off');
     S.matchTemplateTheme = true;
+    S.bgEnabled = keepPanel.on; S.bgColor = keepPanel.colour;
 
     // Design section: the new controls must be present and must bind.
     click(document.querySelector('#rail [data-goto="1"]'));

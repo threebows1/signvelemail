@@ -24,8 +24,8 @@ window.onerror = (m, s, l, c) => { E.push('JS: ' + m + ' @' + l + ':' + c); };
 // The monthly price of each paid tier, and how many signatures it covers.
 const TIERS = [
   {name:'Solo',     monthly:1.99,  seats:'1 signature'},
-  {name:'Team',     monthly:4.99,  seats:'5 signatures'},
-  {name:'Business', monthly:16.99, seats:'20+ signatures'},
+  {name:'Team',     monthly:4.99,  seats:'10 signatures'},
+  {name:'Business', monthly:16.99, seats:'20 signatures'},
 ];
 const DISCOUNT = 0.25;
 
@@ -86,10 +86,19 @@ function run(d) {
     if (el.dataset.monthly !== want) E.push(TIERS[i].name + ': data-monthly is ' + el.dataset.monthly + ', expected ' + want);
   });
 
-  // Every tier names how many signatures it covers
+  // Every tier names how many signatures it covers — on its own card.
+  //
+  // Searched across all the labels, a tier passed on somebody else's number:
+  // Team asked for "5 signatures" and matched the trial card, so the number
+  // Team actually sells was never checked and stayed wrong through two
+  // changes. The trial is the first label; the paid tiers follow it in order.
   const seats = [].slice.call(d.querySelectorAll('.price-seats')).map(function (e) { return e.textContent.trim(); });
-  TIERS.forEach(function (t) {
-    if (seats.indexOf(t.seats) === -1) E.push(t.name + ': no tier is labelled "' + t.seats + '"');
+  if (seats.length !== TIERS.length + 1) {
+    E.push('expected ' + (TIERS.length + 1) + ' seat labels (trial plus each paid tier), found ' + seats.length);
+  }
+  TIERS.forEach(function (t, i) {
+    const got = seats[i + 1];
+    if (got !== t.seats) E.push(t.name + ': its card says "' + got + '", expected "' + t.seats + '"');
   });
 
   // Flip to yearly
