@@ -56,27 +56,28 @@
       <details class="faq-item" open>
         <summary>My logo shows in the editor but arrives broken. Why?</summary>
         <div class="faq-answer">
-          <p class="body-text">This is the single most common problem, and it is not a bug in your signature. When you upload an image, the browser converts it into a <span class="inline-code">data:</span> URI — the picture is embedded directly in the HTML as text. That previews perfectly, because your browser already has the data.</p>
-          <p class="body-text">Gmail and Outlook both strip <span class="inline-code">data:</span> URIs from incoming mail as a security measure. The image tag survives, the image does not, and your recipient sees a broken placeholder.</p>
-          <p class="body-text"><strong>The fix:</strong> upload your logo somewhere public — your own website is ideal — and paste the address into the <strong>image URL</strong> field under the uploader. Uploading is for designing; a hosted URL is for sending.</p>
+          <p class="body-text">It should not, while a trial or a plan is running. An image you upload is stored and served from <span class="inline-code">cdn.signvel.com</span>, so what goes out is an ordinary web address — the thing every mail client is willing to fetch.</p>
+          <p class="body-text">This used to be the most common problem here, and the cause is worth knowing because it still bites elsewhere. A browser can turn an uploaded picture into a <span class="inline-code">data:</span> URI, with the image embedded in the HTML as text. It previews perfectly, because your browser already holds the data. Gmail and Outlook then strip it from incoming mail as a security measure: the image tag survives, the picture does not, and your recipient sees a broken placeholder.</p>
+          <p class="body-text">Two cases still land there. An upload that fails falls back to a local copy so you can carry on designing, and the editor says so at the time rather than leaving you to hear it from a recipient. And without a trial or a plan, images are not sent at all — the layouts use a generated mark and your initials instead, which is a complete signature rather than a broken one.</p>
+          <p class="body-text">The <strong>image URL</strong> field under the uploader is still there if you would rather host the file yourself.</p>
         </div>
       </details>
 
       <details class="faq-item">
         <summary>Why are my circular icons square in Outlook?</summary>
         <div class="faq-answer">
-          <p class="body-text">Outlook on Windows renders email through Microsoft Word rather than a browser engine. Word does not implement <span class="inline-code">border-radius</span>, so the rounded corners are simply dropped and the badge falls back to its underlying square.</p>
-          <p class="body-text">There is no CSS workaround — no combination of markup produces a real circle in that renderer. The only reliable route is serving the badge as a pre-rendered image, where the circle is baked into the picture itself.</p>
-          <p class="body-text">If you need Outlook fidelity today, switch the contact display to <strong>Icons</strong> or <strong>Labels</strong>, which have nothing to round.</p>
+          <p class="body-text">They should not be any more, if you copy from the <strong>Outlook classic</strong> tab. Word does not implement <span class="inline-code">border-radius</span> and no combination of markup produces a real circle in that renderer, so the only reliable route is a picture with the circle baked into it — and that is now what the classic copy contains. The badges are drawn in your own colours, once per account, and referenced as images.</p>
+          <p class="body-text">The tab matters. The standard copy is built for clients that draw shapes properly, and Word will square its badges off exactly as it always did. Pick the client you are pasting into and the markup changes with it.</p>
+          <p class="body-text">Without a trial or a plan there is nowhere to host those pictures, so the classic copy falls back to letters and plain text — square corners are not the problem there, because there are no badges to round.</p>
         </div>
       </details>
 
       <details class="faq-item">
         <summary>My icons vanish completely in Outlook. Is that the same issue?</summary>
         <div class="faq-answer">
-          <p class="body-text">No, that is a separate limitation. The icons are inline SVG, and Outlook's Word renderer does not display SVG at all — so instead of an unstyled icon you get nothing.</p>
-          <p class="body-text">Gmail is inconsistent here too. Apple Mail handles SVG correctly.</p>
-          <p class="body-text">As with the circles, hosted PNG images are the durable answer. Until then, <strong>Labels</strong> mode replaces each icon with a short text label, which every client on earth can render.</p>
+          <p class="body-text">It was a separate limitation, and it is handled the same way. The icons are inline SVG, which Word does not display at all — so rather than an unstyled icon you got nothing. Gmail is inconsistent here too; Apple Mail handles SVG correctly.</p>
+          <p class="body-text">Both Outlook tabs now send pictures instead of SVG: <strong>New Outlook</strong> gets the glyphs in your exact colours, <strong>Outlook classic</strong> gets the whole badge baked into the image. Copy from the tab that matches where you are pasting.</p>
+          <p class="body-text">Where those pictures cannot be made — no trial, no plan — each tab falls back on its own terms: classic drops to letters and plain text, New Outlook to a plain white glyph. <strong>Labels</strong> mode replaces every icon with a short word instead, which every client on earth can render.</p>
         </div>
       </details>
 
