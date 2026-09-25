@@ -568,9 +568,9 @@
       'one otherwise. A team spends one budget between its members rather than one each. So the numbers on the ' +
       'page are enforced now, not merely printed. No plan is uncapped: more than the tier gives is an allowance ' +
       'set by hand in the drawer.</div>' +
-      '<div class="adm-note">Still sold and not built: campaign banner expiry, directory sync, and Microsoft 365 ' +
-      'transport rules. Shared brand defaults and team-wide section locks were dropped from the page rather than ' +
-      'built — a team is one shared budget and one set of scopes, not a shared editor.</div>' +
+      '<div class="adm-note">Taken off the page rather than built: directory sync, Microsoft 365 transport ' +
+      'rules, Google Workspace footer rollout, and a shared editor with team-wide brand defaults and locks. ' +
+      'Campaign banner expiry was built. A team is one shared budget and one set of scopes.</div>' +
       '<div class="adm-note">Nobody can buy any of it either: <code>stripeKey</code> is empty and every plan ' +
       'button goes to signup. Until a webhook writes the table above, the way to give somebody paid access is ' +
       'the grant in a row’s Details — it moves the trial date, which is what entitlement is checked against.</div>' +
