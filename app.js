@@ -981,9 +981,9 @@ const installTargets = [
   {id:'icloud',      logo:'icloud',      label:'iCloud Mail',  time:'1 min', use:'Copy signature',
    steps:['iCloud Mail → Settings (gear) → Preferences.','Open Composing and tick the signature box.','Paste with Cmd+V.'],
    note:'Web iCloud Mail accepts a rich paste but strips some spacing — check a test send.'},
-  {id:'workspace',   logo:'gmail',       label:'Workspace push', time:'Admin', use:'Export HTML',
-   steps:['Admin console → Apps → Google Workspace → Gmail.','Open Compliance, find Append footer.','Choose the organisational unit.','Paste the exported HTML and save.'],
-   note:'Server-side footers append once per thread and staff cannot edit them, so personal details still need per-user signatures.'},
+  {id:'workspace',   logo:'gmail',       label:'Workspace footer', time:'Admin', use:'Plain text',
+   steps:['Admin console → Apps → Google Workspace → Gmail.','Open Compliance, find Append footer.','Choose the organisational unit.','Type the footer — plain text, up to 10,000 characters.'],
+   note:'Google\u2019s footer editor does not accept HTML, so a signature cannot go here. It is for one company-wide line — a legal disclaimer — and it is the same for everyone in the unit, so names and numbers still need per-user signatures.'},
 ];
 
 // ───────────── State ─────────────
