@@ -2847,10 +2847,14 @@ function buildSignatureBody() {
     const solidBadge = mode === 'filled' || mode === 'rounded';
     const radius = mode === 'rounded' ? '6px' : '50%';
     const letter = contactLetters[f.type] || '•';
-    // Written for classic Outlook, the badge goes: Word squares it off, and a
-    // row of squares looks like a fault rather than a choice. The letter alone
-    // carries it, which is what the Letters treatment already does.
-    if (EXPORT_TARGET === 'classic') {
+    // Word cannot draw a badge, and an account with no plan has nowhere to host
+    // a picture of one. Both arrive at the same place: no picture available, so
+    // the letter carries it — which is what the Letters treatment already does.
+    //
+    // A data: URI is not a third option. Gmail and Outlook strip those from
+    // incoming mail, so an inline drawing is not a smaller icon at the far end,
+    // it is a broken image. Better to send a letter that survives.
+    if (EXPORT_TARGET === 'classic' || !imagesUnlocked()) {
       // The badge drawn into the picture, which is the only kind Word keeps.
       const sz = S.contactIconSize || 22;
       const baked = badged ? hostedBadgeFor(f.type, badgeColor, solidBadge, sz, badgeGround(), mode === 'rounded' ? 'square' : 'round') : '';
@@ -3008,9 +3012,11 @@ function buildSignatureBody() {
     const colourText = onDark ? readableOn(colour, darkGround, TEXT_ON_DARK) : colour;
     const sz = o.size || S.socialIconSize;
     // Word throws the CSS badge away, so a badged style only survives as a
-    // picture with the badge drawn into it. Where there is no such picture
-    // there is nothing to show but the name, which is the plain treatment.
-    if (EXPORT_TARGET === 'classic') {
+    // picture with the badge drawn into it. An account with no plan has nowhere
+    // to host such a picture. Where there is none, there is nothing to show but
+    // the name, which is the plain treatment — and a name survives every client
+    // there is, which an inline data: drawing does not.
+    if (EXPORT_TARGET === 'classic' || !imagesUnlocked()) {
       const ground = badgeGround();
       const haveAll = (list) => list.every(sl => (style === 'glyph')
         ? hostedIconFor(sl.type, colour)
