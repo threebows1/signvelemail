@@ -175,7 +175,7 @@ goes through the function: `protect_billing_columns` strips `trial_ends_at`,
 
 A **Signature allowance** sits in each account's drawer in the admin panel.
 Type a number and press **Set**; **Clear** removes it. Empty means the plan
-default — one on free, no ceiling on a paid plan.
+default — five on a live trial, one on free, no ceiling on a paid plan.
 
 It is enforced by the database, on every insert, by `enforce_signature_quota`
 in `supabase/schema.sql`. That is the point of doing it there rather than in
@@ -212,6 +212,20 @@ To set one without the panel:
 update public.profiles set signature_limit = 100
 where email = 'hashir@example.com';   -- their real address
 ```
+
+## The trial gets five signatures
+
+`enforce_signature_quota` gives a live trial five, a free account one, and a
+paid plan no ceiling. An allowance overrides all three.
+
+Five because that is what the site offers — the home page, the pricing page and
+both auth pages have said "five signatures" throughout. The trial was held to
+one alongside every other free account, so what the offer actually bought was a
+wall in the middle of the trial with nothing warning about it.
+
+Applied by re-running `supabase/schema.sql`, or the extract in
+`Downloads/signvel-trial-five.sql`. Safe to run more than once. Nothing else
+changes: existing rows are untouched, since the rule runs on insert.
 ### What the panel deliberately cannot do
 
 - **Grant administrator rights.** That stays the SQL statement above. A button

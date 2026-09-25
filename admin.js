@@ -549,10 +549,10 @@
       '<div class="adm-note">The pricing page sells three paid tiers — one signature at $1.99, ten at $4.99, ' +
       'twenty or more at $16.99 — and the <code>plan</code> column accepts only <code>free</code>, ' +
       '<code>team</code> and <code>org</code>. There is no value for the one-signature tier.</div>' +
-      '<div class="adm-note">The database caps a free account at one signature and caps nothing above that, ' +
-      'so the ten and twenty in those plans are still not enforced by the plan alone. What is enforced is the ' +
-      'per-account allowance in each drawer: set one and the database holds the account to it on every insert, ' +
-      'whatever the plan says.</div>' +
+      '<div class="adm-note">The database gives a live trial five signatures, a free account one, and a paid ' +
+      'plan no ceiling — so the ten and twenty in those plans are still not enforced by the plan alone. What is ' +
+      'enforced exactly is the per-account allowance in each drawer: set one and the database holds the account ' +
+      'to it on every insert, whatever the plan says.</div>' +
       '<div class="adm-note">Until a webhook writes the table above, the way to give somebody paid access is the ' +
       'grant in a row’s Details — it moves the trial date, which is what entitlement is actually checked against.</div>' +
       '</div>';
@@ -680,7 +680,7 @@
     } else {
       var lim = u.signature_limit;
       h += '<div class="adm-note">How many signatures this one account may keep, whatever its plan says. ' +
-        'Leave it empty for the plan default — one on free, no ceiling on a paid plan. ' +
+        'Leave it empty for the plan default — five on a live trial, one on free, no ceiling on a paid plan. ' +
         'The database enforces this on every insert, so it holds even against the API.</div>' +
         '<div class="adm-grantrow">' +
         '<input class="adm-input adm-limit" id="admLimit" type="number" min="1" max="100000" ' +

@@ -199,12 +199,21 @@ drop policy if exists "read own subscription" on public.subscriptions;
 create policy "read own subscription" on public.subscriptions for select using (auth.uid() = user_id);
 
 -- ── Plan limits, enforced in the database ─────────────────
--- One signature unless there is a paid plan. The trial deliberately does not
--- lift this: thirty days is for trying the product, and the cap is one of the
--- things being tried. Doing it here rather than in JavaScript means it holds
--- even if someone calls the API directly.
+-- What an account may keep, in one place. Doing it here rather than in
+-- JavaScript means it holds even if someone calls the API directly.
 --
--- signature_limit overrides the plan when it is set. It is the one number that
+--   an allowance   whatever it says
+--   a paid plan    no ceiling
+--   on trial       five, which is what the site offers for the thirty days
+--   free           one
+--
+-- The trial used to be held to one alongside every other free account, on the
+-- reasoning that the cap was one of the things being tried. The site has said
+-- "five signatures" on the home page, the pricing page and both auth pages the
+-- whole time, so what that actually bought was a wall in the middle of the
+-- trial with no warning attached. Five here is the site's own promise, kept.
+--
+-- signature_limit overrides all of it when set. It is the one number that
 -- decides, so an allowance can be given to a free account and an organisation
 -- can be held to a hundred; leave it null and nothing about an account changes.
 create or replace function public.enforce_signature_quota()
@@ -212,21 +221,24 @@ returns trigger language plpgsql security definer set search_path = public as $$
 declare
   user_plan  text;
   allowance  integer;
+  trial_end  timestamptz;
   existing   integer;
   cap        integer;
 begin
-  select plan, signature_limit into user_plan, allowance
+  select plan, signature_limit, trial_ends_at
+    into user_plan, allowance, trial_end
     from public.profiles where id = new.user_id;
 
-  -- Null allowance falls back to the plan: one on free, no ceiling on a paid
-  -- one. Null cap here means unlimited, which is why this is not simply a
-  -- number with a large default.
+  -- Null cap means unlimited, which is why this is not simply a number with a
+  -- large default.
   if allowance is not null then
     cap := allowance;
-  elsif coalesce(user_plan, 'free') = 'free' then
-    cap := 1;
-  else
+  elsif coalesce(user_plan, 'free') <> 'free' then
     cap := null;
+  elsif trial_end is not null and trial_end > now() then
+    cap := 5;
+  else
+    cap := 1;
   end if;
 
   if cap is not null then
