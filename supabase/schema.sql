@@ -284,15 +284,14 @@ create policy "assets owner delete" on storage.objects
 grant execute on function public.has_paid_access(uuid) to service_role;
 
 -- ── Teams ─────────────────────────────────────────────────
--- The Team plan sells three things that all need the same missing piece:
--- shared brand defaults, section locks that reach other people, and ten
--- signatures across a company rather than ten each. None of them mean anything
--- without somewhere to say who is in the company, which is what this is.
+-- The Team plan sells ten signatures across a company rather than ten each,
+-- which means nothing without somewhere to say who is in the company. This is
+-- that.
 --
--- A team owns its brand: the defaults every member's editor starts from, and
--- which sections they may change. Both are jsonb because they mirror the
--- editor's own state, which changes shape often — the same reason signatures
--- store their state that way rather than in columns.
+-- A team is a shared budget and an owner whose plan decides for everyone in it.
+-- brand_defaults and rollout_locks are unused: a shared editor was taken off
+-- the pricing page rather than built. They are jsonb, and empty, and are where
+-- that would go if it is ever wanted.
 create table if not exists public.teams (
   id             uuid primary key default gen_random_uuid(),
   name           text not null default 'My team',

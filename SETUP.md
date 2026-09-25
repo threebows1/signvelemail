@@ -281,11 +281,22 @@ takes a team id, **Remove** takes them out.
 Needs `supabase/schema.sql` re-run, or `Downloads/signvel-teams.sql`, and
 `supabase functions deploy admin-stats` for the `setTeam` action.
 
-### Still to build
+### What a team is, and is not
 
-Shared brand defaults and section locks now have somewhere to live, but the
-editor does not read them yet: it starts every account from the shipped
-defaults and keeps `rolloutLocks` in its own state. That is the next piece.
+A team is one shared budget of ten signatures and one owner whose plan decides
+for everyone in it. That is all.
+
+Shared brand defaults and team-wide section locks were on the pricing page and
+are not: they were taken off it rather than built, because a shared editor is a
+much larger thing than a shared budget — every member's settings would have to
+know which of them came from the team, what happens when the owner changes one,
+and what a member may override. The columns `brand_defaults` and
+`rollout_locks` exist on the table and nothing reads or writes them; they are
+where that would go if it is ever wanted.
+
+The editor's own Rollout & install locks still work, for the account that sets
+them. They were never team-wide.
+
 ### What the panel deliberately cannot do
 
 - **Grant administrator rights.** That stays the SQL statement above. A button
