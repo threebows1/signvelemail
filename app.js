@@ -542,7 +542,7 @@ function ensureDefaultLogo() {
 // treatments, and reads as a different design because of both. Switching
 // template loads the whole record when "Match template design" is on, which is
 // what makes the gallery look like the set it was drawn from rather than
-// seventeen variations on one colour.
+// twenty-four variations on one colour.
 //
 // Everything here is a starting point, never a constraint: every field maps to
 // a control in the Design panel, so a loaded theme can be overridden field by
@@ -705,8 +705,8 @@ function ensureDefaultBanner() {
 }
 
 // ───────────── Identities ─────────────
-// The editor ships with sample details, so the gallery reads as seventeen
-// layouts rather than as one person's signature repeated seventeen times —
+// The editor ships with sample details, so the gallery reads as twenty-four
+// layouts rather than as one person's signature repeated twenty-four times —
 // and so nobody's real address and phone number are the first thing a new
 // user sees.
 //
@@ -1425,7 +1425,7 @@ function renderSectionContent(i) {
 
 // ── Section 0: Templates & layout ──
 // Each card is a miniature of the layout drawn in its own theme colour, so the
-// grid reads as a set of designs rather than seventeen grey wireframes.
+// grid reads as a set of designs rather than twenty-four grey wireframes.
 function tmplPreviews() {
   const A = id => themeOf(id).accent;
   const B = id => themeOf(id).accent2;
@@ -2024,8 +2024,8 @@ function renderContacts() {
     // A saved state carrying the old Al Riyady details is the one that needs
     // a word: the fields say one thing and every preview says another.
     h += matchesIdentity(CORPORATE_IDENTITY)
-      ? `<div class="inline-note" id="stockNote">These are the Al&nbsp;Riyady details from an earlier version. Every layout previews on Sign Vel branding instead, so the gallery reads as a set of designs rather than the same signature seventeen times. Type over any field above and yours are used on all of them.</div>`
-      : `<div class="inline-note" id="stockNote">Every layout previews on Sign Vel branding with a stand-in name, so the gallery reads as a set of designs rather than as one person's signature. Type over any field above and your own details are used on all seventeen.</div>`;
+      ? `<div class="inline-note" id="stockNote">These are the Al&nbsp;Riyady details from an earlier version. Every layout previews on Sign Vel branding instead, so the gallery reads as a set of designs rather than the same signature twenty-four times. Type over any field above and yours are used on all of them.</div>`
+      : `<div class="inline-note" id="stockNote">Every layout previews on Sign Vel branding with a stand-in name, so the gallery reads as a set of designs rather than as one person's signature. Type over any field above and your own details are used on all twenty-four.</div>`;
   }
 
   h += `<div class="opt-group">Contact details</div>`;
@@ -2524,7 +2524,7 @@ function buildSignatureBody() {
   //
   // Nothing is lost by dropping it. The substitution only ever applied while
   // the details were untouched, so anyone who types their own details sees
-  // theirs on all seventeen layouts exactly as before.
+  // theirs on all twenty-four layouts exactly as before.
   const who = identityIsStock() ? SAMPLE_IDENTITY : null;
   const pName = who ? who.name : S.name;
   const pTitle = who ? who.title : S.title;
