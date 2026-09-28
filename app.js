@@ -1306,25 +1306,36 @@ function renderAccount() {
   } else {
     badge = `<a class="account-plan is-ended" href="pricing.html">trial ended</a>`;
   }
-  // The same menu the dashboard and the account page carry: who is signed
-  // in, and the three places an account goes. The picture where there is
-  // one, initials where there is not.
+  // The same menu account-menu.js draws on the dashboard and the profile
+  // page: a profile card, the plan with the way to a bigger one, the places
+  // an account goes, and Help beside Sign out.
   const name = c.fullName || '';
   const parts = name.trim().split(/\s+/).filter(Boolean);
   const ini = parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0]
     : parts.length ? parts[0].slice(0, 2)
     : String(c.email || '?').split('@')[0].slice(0, 2);
   const face = c.avatarUrl ? `<img src="${esc(c.avatarUrl)}" alt="">` : esc(ini.toUpperCase());
+  const planNames = {solo: 'Solo plan', team: 'Team plan', org: 'Business plan'};
+  const planLine = planNames[c.plan]
+    || (c.trialActive ? `Free trial · ${c.trialDaysLeft} day${c.trialDaysLeft === 1 ? '' : 's'} left` : 'Free plan');
   return `${badge}
     <div class="ed-account">
       <button class="ed-avatar${c.avatarUrl ? ' has-photo' : ''}" id="edAvatar" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu for ${esc(c.email)}">${face}</button>
       <div class="ed-menu" id="edAccountMenu" role="menu" hidden>
-        <p class="ed-menu-who"><strong>${esc(name || c.email)}</strong>${name ? `<span>${esc(c.email)}</span>` : ''}</p>
-        <a role="menuitem" href="signatures.html"><strong>Dashboard</strong><small>Your signatures</small></a>
-        <a role="menuitem" href="account.html"><strong>Account</strong><small>Profile and password</small></a>
-        ${c.isAdmin ? '<a role="menuitem" href="admin.html"><strong>Admin</strong><small>Accounts and plans</small></a>' : ''}
-        <hr>
-        <button role="menuitem" type="button" id="signOutBtn" class="is-out"><strong>Sign out</strong></button>
+        <div class="am-head">
+          <span class="am-face${c.avatarUrl ? ' has-photo' : ''}" aria-hidden="true">${face}</span>
+          <span class="am-id"><strong>${esc(name || c.email)}</strong>${name ? `<span>${esc(c.email)}</span>` : ''}</span>
+        </div>
+        <a class="am-plan" href="pricing.html" role="menuitem"><span>${esc(planLine)}</span><em>${c.plan === 'org' ? 'Plans' : 'Upgrade'}</em></a>
+        <div class="am-links">
+          <a role="menuitem" href="signatures.html">My signatures</a>
+          <a role="menuitem" href="account.html">Profile settings</a>
+          ${c.isAdmin ? '<a role="menuitem" href="admin.html">Admin panel</a>' : ''}
+        </div>
+        <div class="am-foot">
+          <a role="menuitem" href="help.html">Help</a>
+          <button role="menuitem" type="button" id="signOutBtn">Sign out</button>
+        </div>
       </div>
     </div>`;
 }

@@ -188,32 +188,60 @@ button,input{font:inherit;color:inherit}
   .db-limit{min-height:0}
 }
 
-/* ── Account menu (account-menu.js) ── */
+/* ── Account menu (account-menu.js) ──
+   A profile card on top, the plan in a strip under it, then plain links and
+   a footer row. */
 .db-avatar{padding:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .db-avatar.has-photo{background:var(--card)}
 .db-avatar img{width:100%;height:100%;object-fit:cover;display:block}
-.db-account-menu{min-width:248px}
-.db-menu-who{margin:0 0 4px;padding:10px 12px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px;min-width:0}
-.db-menu-who strong{font-size:14px;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.db-menu-who span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.db-menu .db-menu-item{height:auto;min-height:48px;padding:8px 10px;gap:12px}
-.db-menu-item > span:last-child{display:flex;flex-direction:column;gap:1px}
-.db-menu-item strong{font-size:14px;font-weight:700;color:var(--ink)}
-.db-menu-item small{font-size:12px;font-weight:500;color:var(--muted)}
-.db-menu-icon{width:30px;height:30px;flex-shrink:0;border-radius:8px;background:var(--accent-soft);color:var(--accent-ink);display:flex;align-items:center;justify-content:center}
-.db-menu-item.is-out .db-menu-icon{background:#FDECEA;color:var(--danger)}
-.db-menu-item[aria-current="page"]{background:var(--bg)}
+.db-account-menu{width:272px;padding:0;overflow:hidden}
+.am-head{display:flex;align-items:center;gap:12px;padding:16px 16px 14px;background:linear-gradient(180deg,#F7F4FF,#FFFFFF)}
+.am-face{width:44px;height:44px;flex-shrink:0;border-radius:50%;overflow:hidden;background:var(--accent);color:#FFFFFF;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.am-face.has-photo{background:var(--card);box-shadow:0 0 0 2px #FFFFFF,0 0 0 3px var(--line)}
+.am-face img{width:100%;height:100%;object-fit:cover;display:block}
+.am-id{display:flex;flex-direction:column;gap:2px;min-width:0}
+.am-id strong{font-size:15px;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.am-id span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.db-menu .am-plan{height:auto;margin:0 12px 8px;padding:9px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;font-weight:600;color:var(--ink-soft)}
+.db-menu .am-plan em{font-style:normal;font-weight:800;color:var(--accent-ink)}
+.db-menu .am-plan:hover{border-color:#D3CFE3;background:var(--bg)}
+.am-links{display:flex;flex-direction:column;padding:4px 6px;border-top:1px solid var(--line)}
+.db-menu .am-links a{height:44px;padding:0 10px;gap:12px;font-weight:700;color:var(--ink)}
+.am-links a svg{color:var(--muted);flex-shrink:0}
+.db-menu .am-links a[aria-current="page"]{background:var(--accent-soft);color:var(--accent-ink)}
+.am-links a[aria-current="page"] svg{color:var(--accent-ink)}
+.am-foot{display:flex;align-items:center;justify-content:space-between;padding:6px 6px 6px 16px;border-top:1px solid var(--line);background:#FBFAFE}
+.db-menu .am-foot a{height:40px;padding:0;font-size:13px;font-weight:600;color:var(--muted)}
+.db-menu .am-foot a:hover{background:transparent;color:var(--ink)}
+.db-menu .am-foot button{height:40px;padding:0 12px;font-size:13px;font-weight:700;color:var(--danger)}
+.db-menu .am-foot button:hover{background:#FDECEA}
 
-/* ── Account page ── */
-.ac-main{max-width:760px}
-.ac-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 26px;display:flex;flex-direction:column;gap:18px}
-.ac-card h2{margin:0;font-size:18px;font-weight:800}
-.ac-photo-row{display:flex;align-items:center;gap:20px}
-.ac-photo{width:96px;height:96px;flex-shrink:0;border-radius:50%;overflow:hidden;background:var(--accent-soft);color:var(--accent-ink);font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center}
+/* ── Profile settings page ──
+   A summary card beside the forms: who the account is on the left, what can
+   be changed on the right. One column on a phone. */
+.ac-main{max-width:1040px}
+.ac-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:24px;align-items:start}
+.ac-side{position:sticky;top:88px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px 22px 22px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.ac-photo{width:112px;height:112px;flex-shrink:0;border-radius:50%;overflow:hidden;background:var(--accent);color:#FFFFFF;font-size:36px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:8px;box-shadow:0 0 0 4px #FFFFFF,0 0 0 5px var(--line)}
+.ac-photo.has-photo{background:var(--card)}
 .ac-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.ac-side-name{margin:0;font-size:18px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac-side-email{margin:0;font-size:13px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac-side-email:empty{display:none}
+.ac-side-plan{margin-top:14px;width:100%;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.ac-plan-name{margin:0;font-size:15px;font-weight:800}
+.ac-side .db-usage-main{width:100%;margin-top:10px;text-align:left;gap:8px}
+.ac-side .db-usage-line{font-size:13px}
+.ac-side .db-usage-line strong{font-size:15px}
+.ac-side-btn{width:100%;margin-top:14px}
+.ac-forms{display:flex;flex-direction:column;gap:20px;min-width:0}
+.ac-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 26px;display:flex;flex-direction:column;gap:18px}
+.ac-card-head{display:flex;flex-direction:column;gap:4px}
+.ac-card-head h2{margin:0;font-size:17px;font-weight:800}
+.ac-card-head p{margin:0;font-size:13px;color:var(--muted)}
 .ac-photo-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 .ac-photo-actions label.db-btn{cursor:pointer}
-.ac-photo-actions input:focus-visible + .db-btn,.ac-photo-actions label.db-btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.ac-photo-actions label.db-btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
 .ac-hint{margin:0;flex-basis:100%;font-size:13px;color:var(--muted)}
 .ac-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .ac-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -221,10 +249,11 @@ button,input{font:inherit;color:inherit}
 .ac-msg:empty{display:none}
 .ac-msg.is-error{color:var(--danger)}
 .ac-msg.is-ok{color:var(--ok-ink)}
-.ac-plan{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.ac-plan-name{margin:0;font-size:20px;font-weight:800}
+@media (max-width:860px){
+  .ac-layout{grid-template-columns:minmax(0,1fr)}
+  .ac-side{position:static}
+}
 @media (max-width:640px){
   .ac-card{padding:18px}
   .ac-two{grid-template-columns:minmax(0,1fr)}
-  .ac-photo-row{flex-direction:column;align-items:flex-start}
 }

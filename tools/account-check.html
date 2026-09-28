@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>account-check</title>
+  <title>Profile settings - Sign Vel</title>
   <meta name="robots" content="noindex, nofollow">
 
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -31,95 +31,87 @@
     <span class="db-spacer"></span>
     <div class="db-account">
       <button class="db-avatar" id="dbAvatar" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu"></button>
-      <div class="db-menu db-account-menu" id="dbAccountMenu" role="menu" hidden>
-        <p class="db-menu-who" id="dbWho"></p>
-        <a role="menuitem" class="db-menu-item" href="signatures.html">
-          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></span>
-          <span><strong>Dashboard</strong><small>Your signatures</small></span>
-        </a>
-        <a role="menuitem" class="db-menu-item" href="account.html" aria-current="page">
-          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
-          <span><strong>Account</strong><small>Profile and password</small></span>
-        </a>
-        <a role="menuitem" class="db-menu-item" href="admin.html" id="dbAdmin" hidden>
-          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span>
-          <span><strong>Admin</strong><small>Accounts and plans</small></span>
-        </a>
-        <hr>
-        <button role="menuitem" type="button" class="db-menu-item is-out" id="dbSignOut">
-          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg></span>
-          <span><strong>Sign out</strong></span>
-        </button>
-      </div>
+      <!-- Drawn by account-menu.js, so it is the same on every page that has it. -->
+      <div class="db-menu db-account-menu" id="dbAccountMenu" role="menu" hidden></div>
     </div>
   </header>
 
   <main class="db-main ac-main">
-    <div class="db-head"><h1>Account</h1></div>
+    <div class="db-head"><h1>Profile settings</h1></div>
 
-    <!-- Profile: the picture and the name the account menu shows. -->
-    <section class="ac-card" aria-labelledby="acProfileH">
-      <h2 id="acProfileH">Profile</h2>
-      <div class="ac-photo-row">
+    <div class="ac-layout">
+      <!-- Who this account is, at a glance: the card the rest of the page edits. -->
+      <aside class="ac-side" aria-label="Your account">
         <div class="ac-photo" id="acPhoto" aria-hidden="true"></div>
-        <div class="ac-photo-actions">
-          <label class="db-btn" for="acFile">Upload photo</label>
-          <input type="file" id="acFile" accept="image/png,image/jpeg,image/webp,image/gif" class="db-sr">
-          <button type="button" class="db-btn" id="acRemove">Remove</button>
-          <p class="ac-hint">JPG, PNG or WebP. Cropped to a square.</p>
-        </div>
-      </div>
-      <label class="db-field">
-        <span>Name</span>
-        <input type="text" id="acName" maxlength="120" autocomplete="name">
-      </label>
-      <div class="ac-actions">
-        <button type="button" class="db-btn db-btn-primary" id="acSaveProfile">Save profile</button>
-        <p class="ac-msg" id="acProfileMsg" role="status" aria-live="polite"></p>
-      </div>
-    </section>
-
-    <section class="ac-card" aria-labelledby="acEmailH">
-      <h2 id="acEmailH">Email</h2>
-      <label class="db-field">
-        <span>Email address</span>
-        <input type="email" id="acEmail" autocomplete="email">
-      </label>
-      <div class="ac-actions">
-        <button type="button" class="db-btn" id="acSaveEmail">Change email</button>
-        <p class="ac-msg" id="acEmailMsg" role="status" aria-live="polite"></p>
-      </div>
-    </section>
-
-    <section class="ac-card" aria-labelledby="acPassH">
-      <h2 id="acPassH">Password</h2>
-      <div class="ac-two">
-        <label class="db-field">
-          <span>New password</span>
-          <input type="password" id="acPass" autocomplete="new-password" minlength="8">
-        </label>
-        <label class="db-field">
-          <span>Repeat it</span>
-          <input type="password" id="acPass2" autocomplete="new-password" minlength="8">
-        </label>
-      </div>
-      <div class="ac-actions">
-        <button type="button" class="db-btn" id="acSavePass">Change password</button>
-        <p class="ac-msg" id="acPassMsg" role="status" aria-live="polite"></p>
-      </div>
-    </section>
-
-    <section class="ac-card" aria-labelledby="acPlanH">
-      <h2 id="acPlanH">Plan</h2>
-      <div class="ac-plan">
-        <div>
+        <p class="ac-side-name" id="acSideName"></p>
+        <p class="ac-side-email" id="acSideEmail"></p>
+        <div class="ac-side-plan">
           <p class="ac-plan-name" id="acPlanName"></p>
           <p class="ac-hint" id="acPlanNote"></p>
         </div>
-        <a class="db-btn" href="pricing.html">See plans</a>
+        <div class="db-usage-main" id="acUsage"></div>
+        <a class="db-btn ac-side-btn" href="pricing.html">Compare plans</a>
+      </aside>
+
+      <div class="ac-forms">
+        <section class="ac-card" aria-labelledby="acProfileH">
+          <div class="ac-card-head">
+            <h2 id="acProfileH">Photo and name</h2>
+            <p>Shown in your account menu.</p>
+          </div>
+          <div class="ac-photo-actions">
+            <label class="db-btn" for="acFile">Choose a photo</label>
+            <input type="file" id="acFile" accept="image/png,image/jpeg,image/webp,image/gif" class="db-sr">
+            <button type="button" class="db-btn" id="acRemove">Remove photo</button>
+            <p class="ac-hint">JPG, PNG or WebP, cropped to a square.</p>
+          </div>
+          <label class="db-field">
+            <span>Display name</span>
+            <input type="text" id="acName" maxlength="120" autocomplete="name">
+          </label>
+          <div class="ac-actions">
+            <button type="button" class="db-btn db-btn-primary" id="acSaveProfile">Save changes</button>
+            <p class="ac-msg" id="acProfileMsg" role="status" aria-live="polite"></p>
+          </div>
+        </section>
+
+        <section class="ac-card" aria-labelledby="acEmailH">
+          <div class="ac-card-head">
+            <h2 id="acEmailH">Sign-in email</h2>
+            <p>A new address is confirmed by email before it replaces this one.</p>
+          </div>
+          <label class="db-field">
+            <span>Email address</span>
+            <input type="email" id="acEmail" autocomplete="email">
+          </label>
+          <div class="ac-actions">
+            <button type="button" class="db-btn" id="acSaveEmail">Update email</button>
+            <p class="ac-msg" id="acEmailMsg" role="status" aria-live="polite"></p>
+          </div>
+        </section>
+
+        <section class="ac-card" aria-labelledby="acPassH">
+          <div class="ac-card-head">
+            <h2 id="acPassH">Password</h2>
+            <p>At least 8 characters.</p>
+          </div>
+          <div class="ac-two">
+            <label class="db-field">
+              <span>New password</span>
+              <input type="password" id="acPass" autocomplete="new-password" minlength="8">
+            </label>
+            <label class="db-field">
+              <span>Confirm new password</span>
+              <input type="password" id="acPass2" autocomplete="new-password" minlength="8">
+            </label>
+          </div>
+          <div class="ac-actions">
+            <button type="button" class="db-btn" id="acSavePass">Update password</button>
+            <p class="ac-msg" id="acPassMsg" role="status" aria-live="polite"></p>
+          </div>
+        </section>
       </div>
-      <div class="db-usage-main" id="acUsage"></div>
-    </section>
+    </div>
   </main>
 
   <p class="db-toast" id="dbToast" role="status" aria-live="polite" hidden></p>

@@ -94,7 +94,7 @@
       el('acSaveProfile').disabled = false;
       pendingPhoto = url;
       paintPhoto(url);
-      say('acProfileMsg', 'Save profile to keep it.');
+      say('acProfileMsg', 'Save changes to keep it.');
     }, (err) => {
       el('acSaveProfile').disabled = false;
       say('acProfileMsg', err.message, 'error');
@@ -104,10 +104,14 @@
   el('acRemove').addEventListener('click', () => {
     pendingPhoto = null;
     paintPhoto('');
-    say('acProfileMsg', 'Save profile to keep it.');
+    say('acProfileMsg', 'Save changes to keep it.');
   });
 
+  // The summary card follows the name as it is typed, so the change is seen
+  // where it will show before it is saved.
   el('acName').addEventListener('input', () => {
+    const c = Cloud.state() || {};
+    el('acSideName').textContent = el('acName').value.trim() || c.email || '';
     if (!el('acPhoto').classList.contains('has-photo')) paintPhoto('');
   });
 
@@ -121,7 +125,7 @@
       if (!r.ok) { say('acProfileMsg', r.error, 'error'); return; }
       pendingPhoto = undefined;
       say('acProfileMsg', '');
-      toast('Profile saved');
+      toast('Changes saved');
     });
   });
 
@@ -182,6 +186,8 @@
     const c = Cloud.state() || {};
     if (document.activeElement !== el('acName')) el('acName').value = c.fullName || '';
     if (document.activeElement !== el('acEmail')) el('acEmail').value = c.email || '';
+    el('acSideName').textContent = c.fullName || c.email || '';
+    el('acSideEmail').textContent = c.fullName ? (c.email || '') : '';
     if (pendingPhoto === undefined) paintPhoto(c.avatarUrl || '');
     AccountMenu.paint();
     paintPlan();
