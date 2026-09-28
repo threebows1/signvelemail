@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>dashboard-check</title>
+<link rel="stylesheet" href="../dashboard.css">
+</head>
+<body class="db db-loading">
+<pre id="out" style="font:12px monospace;background:#fff;position:relative;z-index:99;margin:0;padding:8px"></pre>
+
+<!-- The page's own markup, as signatures.html has it. -->
+<header class="db-top">
+  <a class="db-brand" href="#"><span class="db-word">Sign <em>Vel</em></span></a>
+  <nav class="db-nav"><a href="#" aria-current="page">Signatures</a></nav>
+  <span class="db-spacer"></span>
+  <span class="db-plan" id="dbPlan"></span>
+  <button class="db-btn db-btn-primary" id="dbNew" type="button"><span class="db-new-label">New signature</span></button>
+  <div class="db-account">
+    <button class="db-avatar" id="dbAvatar" type="button" aria-expanded="false"></button>
+    <div class="db-menu db-account-menu" id="dbAccountMenu" role="menu" hidden>
+      <p class="db-menu-note" id="dbEmail"></p>
+      <a role="menuitem" href="#" id="dbAdmin" hidden>Admin</a>
+      <button role="menuitem" type="button" id="dbSignOut">Sign out</button>
+    </div>
+  </div>
+</header>
+<div class="db-banner" id="dbBanner" hidden></div>
+<main class="db-main">
+  <div class="db-head">
+    <h1>Signatures</h1><span class="db-spacer"></span>
+    <label class="db-search"><input type="search" id="dbSearch"></label>
+    <div class="db-views" id="dbViews">
+      <button type="button" data-view="grid" aria-pressed="true">G</button>
+      <button type="button" data-view="list" aria-pressed="false">L</button>
+    </div>
+  </div>
+  <div class="db-usage db-usage-top" id="dbUsageTop" hidden></div>
+  <div class="db-status" id="dbStatus"></div>
+  <div id="dbList"></div>
+  <section class="db-usage db-usage-bottom" id="dbUsage" hidden></section>
+</main>
+<div class="db-scrim" id="dbScrim" hidden></div>
+<div class="db-dialog" id="dbDialog" hidden>
+  <h2 id="dbDialogTitle"></h2><div id="dbDialogBody"></div>
+  <div class="db-dialog-actions"><button type="button" id="dbDialogCancel">Cancel</button><button type="button" id="dbDialogOk">OK</button></div>
+</div>
+<p class="db-toast" id="dbToast" hidden></p>
+
+<script>
+try { localStorage.clear(); if (/list/.test(location.search)) localStorage.setItem('signvel:dbview', 'list'); } catch (e) {}
+// A phone run: the page reads matchMedia once, at load, to decide on rows.
+const PHONE = /phone/.test(location.search);
+if (PHONE) {
+  const real = window.matchMedia.bind(window);
+  window.matchMedia = (q) => /max-width:\s*640px/.test(q)
+    ? {matches: true, addEventListener() {}, removeEventListener() {}}
+    : real(q);
+}
+
+// An account held in memory, with the same rules the database applies: one
+// default, the limit refusing an insert past it, a deleted default handing
+// the role on.
+const NOW = Date.now();
+const store = {
+  cap: 5, n: 0, calls: [],
+  sigs: [
+    {id: 'a', name: 'Daniel Reyes — main', is_default: true,  updated_at: new Date(NOW - 2 * 3600e3).toISOString(), state: {name: 'Daniel Reyes', template: 'corporate', scope: 'default'}},
+    {id: 'b', name: 'Q4 webinar campaign', is_default: false, updated_at: new Date(NOW - 26 * 3600e3).toISOString(), state: {name: 'Sara Malik', template: 'connect', scope: 'sales'}},
+    {id: 'c', name: 'Legal replies',       is_default: false, updated_at: new Date(NOW - 16 * 864e5).toISOString(), state: {name: 'Lena Fischer', template: 'profile', scope: 'legal', darkMode: true}},
+  ],
+};
+const clone = (x) => JSON.parse(JSON.stringify(x));
+const sorted = () => store.sigs.slice().sort((x, y) => (y.is_default - x.is_default) || (y.updated_at < x.updated_at ? -1 : 1));
+let navigatedTo = null;
+window.__navigate = (u) => { navigatedTo = u; };
+
+window.Cloud = {
+  isReady: true,
+  state: () => ({signedIn: true, entitled: true, plan: 'free', trialActive: true, trialDaysLeft: 18,
+                 trialEndsAt: '2026-10-20T12:00:00Z', email: 'daniel@signvel.com', isAdmin: false}),
+  init: () => Promise.resolve({signedIn: true}),
+  onChange() {},
+  signOut: () => Promise.resolve(),
+  listSignatures: () => Promise.resolve({ok: true, list: clone(sorted())}),
+  signatureUsage: () => Promise.resolve({ok: true, used: store.sigs.length, cap: store.cap}),
+  createSignature(name, state) {
+    store.calls.push('create');
+    if (store.sigs.length >= store.cap) return Promise.resolve({ok: false, error: 'This account is limited to ' + store.cap + ' signature(s).'});
+    const id = 'n' + (++store.n);
+    store.sigs.push({id, name, is_default: !store.sigs.length, updated_at: new Date().toISOString(), state: clone(state || {})});
+    return Promise.resolve({ok: true, id});
+  },
+  duplicateSignature(id) {
+    const s = store.sigs.find((x) => x.id === id);
+    return this.createSignature(s.name + ' copy', s.state);
+  },
+  renameSignature(id, name) {
+    store.calls.push('rename');
+    store.sigs.find((x) => x.id === id).name = name.trim();
+    return Promise.resolve({ok: true});
+  },
+  setDefaultSignature(id) {
+    store.calls.push('default');
+    store.sigs.forEach((x) => { x.is_default = x.id === id; });
+    return Promise.resolve({ok: true});
+  },
+  deleteSignature(id) {
+    store.calls.push('delete');
+    const was = store.sigs.find((x) => x.id === id);
+    store.sigs = store.sigs.filter((x) => x.id !== id);
+    if (was && was.is_default && store.sigs.length) sorted()[0].is_default = true;
+    return Promise.resolve({ok: true});
+  },
+};
+window.SIGNVEL_MODE = 'dashboard';
+</script>
+<script src="../app.js"></script>
+<script src="../dashboard.js"></script>
+<script>
+const F = [];
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => [].slice.call(document.querySelectorAll(s));
+const tick = (ms) => new Promise((r) => setTimeout(r, ms || 60));
+const cards = () => $$('.db-card');
+const titleOf = (c) => (c.querySelector('h2') || {}).textContent;
+
+(async function () {
+  await tick(300);
+  if (document.body.classList.contains('db-loading')) F.push('the page stayed hidden after a signed-in boot');
+
+  if (PHONE) {
+    // ── Phone: rows, whatever view was chosen ──
+    const rows = $$('.db-row');
+    if (rows.length !== 3) F.push('phone: expected 3 rows, got ' + rows.length);
+    if ($$('.db-card').length || $('.db-table')) F.push('phone: drew cards or a table instead of rows');
+    if (!rows[0] || !rows[0].classList.contains('is-default')) F.push('phone: the default is not the first row');
+    if (!$('.db-add-row.is-card')) F.push('phone: no create row');
+    done('phone: 3 rows, default first, a create row');
+    return;
+  }
+
+  // ── The grid ──
+  if (cards().length !== 3) F.push('expected 3 cards, got ' + cards().length);
+  const first = cards()[0];
+  if (!first || !first.classList.contains('is-default')) F.push('the default is not the first card, outlined');
+  if (!first || !first.querySelector('.db-badge.is-default')) F.push('the default card has no Default badge');
+  if (!first || !first.querySelector('[data-act="copy"]')) F.push('the default card offers no Copy signature');
+  if (cards()[1] && !cards()[1].querySelector('[data-act="default"]')) F.push('a non-default card offers no Make default');
+  if (!/Edited 2 hours ago/.test(first ? first.textContent : '')) F.push('the default card does not say when it was edited');
+  const edit = first && first.querySelector('a[href^="editor.html?sig="]');
+  if (!edit || edit.getAttribute('href') !== 'editor.html?sig=a') F.push('Edit does not open that signature in the editor');
+
+  // Thumbnails are the real signature: each shows its own person, and none
+  // carries the one drawn before it.
+  const names = ['Daniel Reyes', 'Sara Malik', 'Lena Fischer'];
+  cards().forEach((c, i) => {
+    const t = c.querySelector('.db-thumb').innerHTML;
+    if (t.indexOf(names[i]) === -1) F.push('card ' + (i + 1) + ': its thumbnail does not show ' + names[i]);
+    names.forEach((other, j) => { if (j !== i && t.indexOf(other) !== -1) F.push('card ' + (i + 1) + ': its thumbnail carries ' + other + ' from another signature'); });
+  });
+  // Saved with the dark preview on, drawn on white: the dark-mode ink must not come along.
+  const legal = cards()[2] && cards()[2].querySelector('.db-thumb').innerHTML;
+  if (legal && /#F2F1F7/i.test(legal)) F.push('a signature saved in dark preview is drawn in its dark-mode colours');
+  // Shrunk to fit its frame.
+  const inner = $('.db-card .db-thumb-inner');
+  if (!inner || !/scale\(/.test(inner.style.transform)) F.push('thumbnails are not scaled to their frame');
+
+  // The allowance: create card and usage bar.
+  const create = $('.db-create');
+  if (!create || !/2 left/.test(create.textContent)) F.push('the create card does not say 2 left');
+  if (!/3/.test($('#dbUsage').textContent) || !/of 5/.test($('#dbUsage').textContent)) F.push('the usage bar does not read 3 of 5');
+  if (!/Free trial · 18 days left/.test($('#dbPlan').textContent)) F.push('the plan chip does not show the trial');
+  if ($('#dbBanner').hidden) F.push('no trial banner');
+
+  // ── Make default ──
+  cards()[1].querySelector('[data-act="default"]').click();
+  await tick(200);
+  if (titleOf(cards()[0]) !== 'Q4 webinar campaign') F.push('Make default did not move the default to the front');
+  if (store.sigs.filter((s) => s.is_default).length !== 1) F.push('there is not exactly one default');
+
+  // ── Rename through the menu ──
+  const btn = cards()[1].querySelector('[data-act="menu"]');
+  btn.click();
+  await tick();
+  const menu = $('.db-card-menu');
+  if (!menu || menu.hidden) F.push('the … menu did not open');
+  if (btn.getAttribute('aria-expanded') !== 'true') F.push('the … button does not say it is open');
+  const items = menu ? [].map.call(menu.querySelectorAll('button'), (b) => b.textContent) : [];
+  ['Duplicate', 'Rename', 'Delete'].forEach((w) => { if (items.indexOf(w) === -1) F.push('the menu has no ' + w); });
+  menu.querySelector('[data-act="rename"]').click();
+  await tick();
+  if ($('#dbDialog').hidden) F.push('Rename did not open its dialog');
+  $('#dbDialogBody input').value = 'Main signature';
+  $('#dbDialogOk').click();
+  await tick(200);
+  if (!store.sigs.some((s) => s.name === 'Main signature')) F.push('Rename did not reach the account');
+
+  // ── Create, and the editor it opens ──
+  $('#dbNew').click();
+  await tick(200);
+  if (!navigatedTo || !/^editor\.html\?sig=n1$/.test(navigatedTo)) F.push('New signature did not open the new one in the editor: ' + navigatedTo);
+  const made = store.sigs.find((s) => s.id === 'n1');
+  if (made && made.is_default) F.push('a second signature quietly became the default');
+  if (made && made.state.template !== 'connect') F.push('a new signature did not start from the default’s design');
+
+  // ── The limit ──
+  store.cap = store.sigs.length;
+  await window.__dashboard.load();
+  await tick(100);
+  if ($('.db-create')) F.push('the create card is still offered at the limit');
+  if (!$('.db-limit') || !/Limit reached/.test($('.db-limit').textContent)) F.push('no limit block at the limit');
+  if (!$('#dbNew').disabled) F.push('New signature is still enabled at the limit');
+  const before = store.calls.length;
+  $('#dbNew').click();
+  await tick(100);
+  if (store.calls.length !== before) F.push('New signature still asked the account at the limit');
+
+  // ── List view ──
+  $('#dbViews [data-view="list"]').click();
+  await tick(100);
+  const rows = $$('.db-table > tbody > tr');
+  if (rows.length !== store.sigs.length) F.push('list view: expected ' + store.sigs.length + ' rows, got ' + rows.length);
+  if (!rows.some((r) => /Lena Fischer/.test(r.cells[1].textContent))) F.push('list view: the Person column does not show the signature’s own name');
+  if (!rows.some((r) => /Legal/.test(r.cells[2].textContent))) F.push('list view: no scope chip');
+  if ($('#dbUsageTop').hidden) F.push('list view: the usage bar is not beside the title');
+  if (!$('.db-add-row.is-limit')) F.push('list view: the limit is not shown at the foot of the table');
+
+  // ── Search ──
+  $('#dbSearch').value = 'legal';
+  $('#dbSearch').dispatchEvent(new Event('input', {bubbles: true}));
+  await tick();
+  if ($$('.db-table > tbody > tr').length !== 1) F.push('searching "legal" did not narrow to one row');
+  $('#dbSearch').value = 'zzz';
+  $('#dbSearch').dispatchEvent(new Event('input', {bubbles: true}));
+  await tick();
+  if (!/Nothing matches/.test($('#dbStatus').textContent)) F.push('an empty search says nothing');
+  $('#dbSearch').value = '';
+  $('#dbSearch').dispatchEvent(new Event('input', {bubbles: true}));
+  $('#dbViews [data-view="grid"]').click();
+  await tick(100);
+
+  // ── Delete the default ──
+  const def = store.sigs.find((s) => s.is_default);
+  cards()[0].querySelector('[data-act="menu"]').click();
+  await tick();
+  $('.db-card-menu [data-act="delete"]').click();
+  await tick();
+  if (!/becomes the default/.test($('#dbDialogBody').textContent)) F.push('deleting the default does not say what happens to it');
+  $('#dbDialogOk').click();
+  await tick(200);
+  if (store.sigs.some((s) => s.id === def.id)) F.push('Delete did not remove it');
+  if (store.sigs.filter((s) => s.is_default).length !== 1) F.push('after deleting the default there is not exactly one');
+
+  done('3 cards drawn from each signature’s own state, default first; make default, rename, create, delete; the limit; list view; search');
+})().catch((e) => { F.push('the check threw: ' + e.message); done(''); });
+
+function done(ok) {
+  document.getElementById('out').textContent = F.length ? F.join('\n') : ok;
+  document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+}
+</script>
+</body>
+</html>

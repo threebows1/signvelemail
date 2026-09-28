@@ -331,6 +331,27 @@ opposite default would take every customer's campaign down over one bad minute.
 **Three steps:** re-run `supabase/schema.sql` (or
 `Downloads/signvel-banner.sql`), deploy the CDN worker from `cdn/`, and the
 editor is already live.
+
+## Signatures dashboard
+
+`signatures.html` lists every signature an account keeps, marks the default,
+and shows how many more the plan allows. Signing in lands here; the editor
+opens a chosen one with `editor.html?sig=<id>` and saves back to it. With no
+`?sig=` the editor opens the default, so old bookmarks still work.
+
+Thumbnails are the real signature, drawn by the editor's own renderer with its
+boot switched off (`SIGNVEL_MODE = 'dashboard'`), the way the shared-link page
+uses it.
+
+The usage bar and the insert rule both read `signature_budget()`, so "3 of 5"
+and the point where a save is refused cannot drift apart. The browser reaches
+it only through `signature_usage()`, which asks about the caller alone.
+Moving the default goes through `set_default_signature()`, because one default
+per account is a unique index and two separate updates can land out of order.
+
+**Needs `supabase/schema.sql` re-run** (or `Downloads/signvel-dashboard.sql`).
+Until then the page still lists, creates, renames and deletes, but the bar
+shows a count without a limit and Make default says the step is missing.
 ### What the panel deliberately cannot do
 
 - **Grant administrator rights.** That stays the SQL statement above. A button

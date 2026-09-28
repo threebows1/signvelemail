@@ -31,7 +31,10 @@
   function destination() {
     const next = new URLSearchParams(location.search).get('next');
     if (next && /^[A-Za-z0-9._-]+\.html$/.test(next)) return next;
-    return 'editor.html';
+    // The dashboard, now that an account keeps more than one signature: it is
+    // where you choose which one to open. The editor with none chosen still
+    // opens the default, so an old bookmark lands where it always did.
+    return 'signatures.html';
   }
 
   // Same seam as app.js uses for the editor lock, and for the same reason:

@@ -1264,6 +1264,7 @@ function renderHeader() {
   const collapseTitle = S.panelCollapsed ? 'Show panel' : 'Hide panel';
   $header.innerHTML = `
     <button class="panel-collapse-btn${S.panelCollapsed?' collapsed':''}" id="panelCollapseBtn" title="${collapseTitle}">${collapseIcon}</button>
+    <a class="btn topbar-back" href="signatures.html" title="All your signatures">All signatures</a>
     <span class="topbar-title">Signature editor</span>
     <div class="scope-wrap">
       <select class="scope-select" id="scopeSelect">
@@ -1485,15 +1486,19 @@ function tmplPreviews() {
   };
 }
 
+// Each layout's name as the gallery shows it. Shared, so the signatures
+// dashboard names a layout the same way the editor does.
+const TEMPLATE_LABELS = {
+  corporate:'Corporate', spotlight:'Spotlight', split:'Split', directory:'Directory',
+  accentbar:'Accent bar', colorblock:'Colour block', darkcard:'Dark card', connect:'Connect bar',
+  ribbon:'Ribbon', brandmark:'Brandmark', inline:'Inline', labelled:'Labelled',
+  band:'Banner band', editorial:'Editorial', grid:'Grid', feature:'Feature', minimal:'Minimal',
+  stacked:'Stacked', profile:'Profile', letterhead:'Letterhead', masthead:'Masthead', bulletin:'Bulletin', aside:'Aside', triptych:'Triptych',
+};
+
 function renderTemplates() {
   const P = tmplPreviews();
-  const labels = {
-    corporate:'Corporate', spotlight:'Spotlight', split:'Split', directory:'Directory',
-    accentbar:'Accent bar', colorblock:'Colour block', darkcard:'Dark card', connect:'Connect bar',
-    ribbon:'Ribbon', brandmark:'Brandmark', inline:'Inline', labelled:'Labelled',
-    band:'Banner band', editorial:'Editorial', grid:'Grid', feature:'Feature', minimal:'Minimal',
-    stacked:'Stacked', profile:'Profile', letterhead:'Letterhead', masthead:'Masthead', bulletin:'Bulletin', aside:'Aside', triptych:'Triptych',
-  };
+  const labels = TEMPLATE_LABELS;
   const order = ['corporate','spotlight','stacked','profile','letterhead','masthead','bulletin','aside','triptych','split','directory','accentbar','colorblock','darkcard',
                  'connect','ribbon','brandmark','inline','labelled','band','editorial','grid','feature','minimal'];
 
@@ -4588,13 +4593,22 @@ function syncBodyClass() {
 // Push the local state up. Debounced separately from the localStorage save so
 // typing does not fire a request per keystroke.
 let cloudTimer = null;
+// Which signature the editor has open. ?sig= from the dashboard names one;
+// without it the editor opens the default, as it always has, and learns its
+// id from the first load or save so every later save goes to the same row.
+let currentSigId = (function () {
+  try { return new URLSearchParams(location.search).get('sig') || null; } catch (e) { return null; }
+})();
 function scheduleCloudSave() {
   if (!window.Cloud || !Cloud.isReady || !Cloud.state().signedIn) return;
   clearTimeout(cloudTimer);
   cloudTimer = setTimeout(() => {
     const persist = {};
     Object.keys(S).forEach(k => { if (!TRANSIENT_KEYS.includes(k)) persist[k] = S[k]; });
-    Cloud.saveSignature(persist, S.name);
+    Cloud.saveSignature(persist, S.name, currentSigId).then(r => {
+      if (r && r.ok && r.id) currentSigId = r.id;
+      else if (r && !r.ok && r.error) showCopyFeedback(r.error);
+    });
   }, 1500);
 }
 
@@ -4700,7 +4714,16 @@ function startCloud() {
     // so the thing you reset stays reset on every device rather than coming
     // back the moment this one asks the server what it remembers.
     const afterReset = wasJustReset();
-    return Cloud.loadSignature().then(row => {
+    return Cloud.loadSignature(currentSigId).then(row => {
+      // A ?sig= that is not this account's, or no longer exists, falls back to
+      // the default rather than to a blank editor that would save a new row.
+      if (!row && currentSigId) {
+        currentSigId = null;
+        return Cloud.loadSignature();
+      }
+      return row;
+    }).then(row => {
+      if (row && row.id) currentSigId = row.id;
       if (afterReset) {
         scheduleCloudSave();
         // Drawn again now the session is known: the first pass ran before the
@@ -4914,7 +4937,9 @@ function init() {
   // panel, no saved state of its own, and above all no sign-in gate, because
   // the whole point of a shared link is that the person opening it has no
   // account. It takes the render functions and nothing else.
-  if (window.SIGNVEL_MODE === 'share') return;
+  // The shared-link page and the signatures dashboard both borrow the
+  // renderer to draw signatures, and want none of the editor around it.
+  if (window.SIGNVEL_MODE === 'share' || window.SIGNVEL_MODE === 'dashboard') return;
   loadState();
   if (!(S.openSection >= 0 && S.openSection < sections.length)) S.openSection = 0;
   // Locked before the first render, not after the session resolves — otherwise

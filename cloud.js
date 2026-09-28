@@ -149,37 +149,128 @@ window.Cloud = (function () {
     return { ok: true };
   }
 
-  // ── Signature persistence ────────────────────────────────
-  // One default signature per user for now; the schema already supports
-  // several, and the free plan is capped at one by a database trigger.
-  async function loadSignature() {
-    if (!ready || !session) return null;
+  // ── Signatures ─────────────────────────────────────────
+  // An account keeps several signatures — one on Solo, five on a trial, ten
+  // across a Team, twenty on Business, more by allowance — and one of them is
+  // the default. These used to be a single "load the default, save over it"
+  // pair, which is how the editor had no way to open any other.
+
+  // Every signature the account keeps, the default first, then newest.
+  async function listSignatures() {
+    if (!ready || !session) return { ok: false, error: 'Not signed in.' };
     const { data, error } = await db
       .from('signatures')
-      .select('id, name, state')
+      .select('id, name, is_default, created_at, updated_at, state')
       .eq('user_id', session.user.id)
       .order('is_default', { ascending: false })
-      .order('updated_at', { ascending: false })
-      .limit(1);
+      .order('updated_at', { ascending: false });
+    return error ? { ok: false, error: error.message } : { ok: true, list: data || [] };
+  }
+
+  // One signature: the one asked for, or the default when none is named — so
+  // opening the editor with no ?sig= still lands where it always did.
+  async function loadSignature(id) {
+    if (!ready || !session) return null;
+    let q = db.from('signatures').select('id, name, state, is_default').eq('user_id', session.user.id);
+    q = id
+      ? q.eq('id', id)
+      : q.order('is_default', { ascending: false }).order('updated_at', { ascending: false });
+    const { data, error } = await q.limit(1);
     if (error || !data || !data.length) return null;
     return data[0];
   }
 
-  async function saveSignature(stateObj, name) {
+  // Saves what the editor has open over the signature it came from. Only the
+  // state is written — the name is the dashboard's to set, and overwriting it
+  // on every keystroke would undo a rename. An account with nothing saved yet
+  // gets its first signature here, and that one is the default.
+  async function saveSignature(stateObj, name, id) {
     if (!ready || !session) return { ok: false, error: 'Not signed in.' };
-    const existing = await loadSignature();
-    const row = {
-      user_id: session.user.id,
-      name: name || 'My signature',
-      state: stateObj,
-      is_default: true,
-    };
-    const q = existing
-      ? db.from('signatures').update(row).eq('id', existing.id)
-      : db.from('signatures').insert(row);
-    const { error } = await q;
+    const target = id ? { id } : await loadSignature();
+    if (target && target.id) {
+      const { error } = await db.from('signatures')
+        .update({ state: stateObj })
+        .eq('id', target.id).eq('user_id', session.user.id);
+      return error ? { ok: false, error: error.message } : { ok: true, id: target.id };
+    }
+    const { data, error } = await db.from('signatures')
+      .insert({ user_id: session.user.id, name: name || 'My signature', state: stateObj, is_default: true })
+      .select('id').single();
+    return error ? { ok: false, error: quotaMessage(error) } : { ok: true, id: data.id };
+  }
+
+  // The database refuses a signature past the limit with a check_violation
+  // that already says the number. Passed through as it is; anything else keeps
+  // its own message.
+  function quotaMessage(error) {
+    return (error && error.code === '23514') ? error.message : (error && error.message) || 'Could not save.';
+  }
+
+  // A new signature. The default only when it is the account's first — adding
+  // a second must not quietly move which one everything else uses.
+  async function createSignature(name, stateObj) {
+    if (!ready || !session) return { ok: false, error: 'Not signed in.' };
+    const { count } = await db.from('signatures')
+      .select('id', { count: 'exact', head: true }).eq('user_id', session.user.id);
+    const { data, error } = await db.from('signatures')
+      .insert({ user_id: session.user.id, name: name || 'New signature', state: stateObj || {}, is_default: !count })
+      .select('id').single();
+    return error ? { ok: false, error: quotaMessage(error) } : { ok: true, id: data.id };
+  }
+
+  async function duplicateSignature(id) {
+    const src = await loadSignature(id);
+    if (!src) return { ok: false, error: 'That signature is not there any more.' };
+    return createSignature((src.name || 'Signature') + ' copy', src.state);
+  }
+
+  async function renameSignature(id, name) {
+    if (!ready || !session) return { ok: false, error: 'Not signed in.' };
+    const clean = String(name || '').trim().slice(0, 80);
+    if (!clean) return { ok: false, error: 'Give it a name.' };
+    const { error } = await db.from('signatures')
+      .update({ name: clean }).eq('id', id).eq('user_id', session.user.id);
     return error ? { ok: false, error: error.message } : { ok: true };
   }
+
+  // Deleting the default hands the role to the newest one left, so there is
+  // always a default while there is anything at all.
+  async function deleteSignature(id) {
+    if (!ready || !session) return { ok: false, error: 'Not signed in.' };
+    const gone = await loadSignature(id);
+    const { error } = await db.from('signatures').delete().eq('id', id).eq('user_id', session.user.id);
+    if (error) return { ok: false, error: error.message };
+    if (gone && gone.is_default) {
+      const next = await loadSignature();
+      if (next) await setDefaultSignature(next.id);
+    }
+    return { ok: true };
+  }
+
+  // Through the database, not two updates from here: one default per account
+  // is a unique index, and clearing the old and setting the new as separate
+  // requests can arrive in the wrong order and trip it.
+  async function setDefaultSignature(id) {
+    if (!ready || !session) return { ok: false, error: 'Not signed in.' };
+    const { error } = await db.rpc('set_default_signature', { sig: id });
+    if (error && /set_default_signature|function/i.test(error.message || '')) {
+      return { ok: false, error: 'Making a default needs schema.sql re-run first.' };
+    }
+    return error ? { ok: false, error: error.message } : { ok: true };
+  }
+
+  // How many the account has used and of how many — the same answer the
+  // insert rule works from, so the bar and the limit cannot disagree. Without
+  // the function yet, the count is still honest and the limit is left unsaid.
+  async function signatureUsage() {
+    if (!ready || !session) return { ok: false, error: 'Not signed in.' };
+    const { data, error } = await db.rpc('signature_usage');
+    if (!error && data) return { ok: true, used: data.used, cap: data.cap };
+    const { count } = await db.from('signatures')
+      .select('id', { count: 'exact', head: true }).eq('user_id', session.user.id);
+    return { ok: true, used: count || 0, cap: null, stale: true };
+  }
+
 
   // ── Storage ──────────────────────────────────────────────
   // This is the fix for logos breaking in sent mail. An upload here becomes
@@ -315,6 +406,8 @@ window.Cloud = (function () {
   return {
     init, signIn, signInPassword, signUp, resetPassword, updatePassword, signOut,
     loadSignature, saveSignature, uploadAsset, saveBannerExpiry,
+    listSignatures, createSignature, duplicateSignature, renameSignature,
+    deleteSignature, setDefaultSignature, signatureUsage,
     adminStats, adminUsers, adminUser, adminSetPlan, adminSetTrial, adminSetSignatureLimit, adminSetTeam,
     state,
     onChange(fn) { listeners.push(fn); },

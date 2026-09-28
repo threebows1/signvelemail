@@ -1,0 +1,55 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>reset-check</title></head><body>
+<pre id="out"></pre>
+<div class="app" id="app" style="position:absolute;left:-4000px"><aside class="rail" id="rail"></aside>
+<div class="workspace"><header class="topbar" id="header"></header>
+<div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>window.__err=[];
+window.addEventListener('error',function(e){window.__err.push('error: '+e.message)});
+window.addEventListener('unhandledrejection',function(e){window.__err.push('rejected: '+(e.reason && e.reason.message || e.reason))});
+try{localStorage.clear();sessionStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script>
+<script src="../cloud.js"></script>
+<script>
+// The editor opens the signature the dashboard names in ?sig= and saves back
+// to that one — not to the default, and not as a new row. An unknown id falls
+// back to the default rather than to a blank editor that would create one.
+const ROWS = {
+  a: {id: 'a', is_default: true,  state: {name: 'Daniel Reyes'}},
+  b: {id: 'b', is_default: false, state: {name: 'Sara Malik'}},
+};
+const saves = [];
+window.Cloud = {
+  isReady: true,
+  state: function () { return {signedIn: true, entitled: true, plan: 'team', email: 'daniel@signvelemail.com'}; },
+  onChange: function () {},
+  init: function () { return Promise.resolve({signedIn: true}); },
+  loadSignature: function (id) { return Promise.resolve(id ? (ROWS[id] || null) : ROWS.a); },
+  saveSignature: function (state, name, id) { saves.push({id: id, name: state.name}); return Promise.resolve({ok: true, id: id || 'a'}); },
+};
+</script>
+<script src="../app.js"></script>
+<script>
+(async function () {
+  const F = [];
+  const want = (new URLSearchParams(location.search).get('sig')) || '';
+  await new Promise(function (r) { setTimeout(r, 500); });
+  const expectName = want === 'b' ? 'Sara Malik' : 'Daniel Reyes';
+  const expectId = want === 'b' ? 'b' : 'a';
+  if (S.name !== expectName) F.push('?sig=' + want + ' opened "' + S.name + '", expected ' + expectName);
+
+  S.company = 'Changed';
+  scheduleCloudSave();
+  await new Promise(function (r) { setTimeout(r, 1800); });
+  const last = saves[saves.length - 1];
+  if (!last) F.push('nothing was saved');
+  else if (last.id !== expectId) F.push('the save went to "' + last.id + '", expected "' + expectId + '"');
+  if ((window.__err || []).length) F.push('the boot threw: ' + window.__err.slice(0, 2).join(' | '));
+
+  document.getElementById('out').textContent = F.length ? F.join('\n')
+    : '?sig=' + (want || '(none)') + ' opened ' + expectName + ' and saved back to ' + expectId;
+  document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+})();
+</script></body></html>

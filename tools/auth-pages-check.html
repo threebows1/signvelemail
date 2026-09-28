@@ -144,7 +144,9 @@ async function run() {
   val('authEmail', 'a@b.com'); val('authPassword', 'longenough1');
   submit();
   await settle();
-  if (window.__wentTo !== 'editor.html') E.push('signin: did not land in the editor, got: ' + window.__wentTo);
+  // Signing in lands on the dashboard: an account keeps several signatures
+  // now, and that is where you choose which to open.
+  if (window.__wentTo !== 'signatures.html') E.push('signin: did not land on the dashboard, got: ' + window.__wentTo);
 
   // An error from Cloud is shown, not swallowed
   nextResult = {ok:false, error:'Invalid login credentials'};
@@ -170,7 +172,7 @@ async function run() {
     val('authEmail', 'a@b.com'); val('authPassword', 'longenough1');
     submit();
     await settle();
-    if (window.__wentTo !== 'editor.html') {
+    if (window.__wentTo !== 'signatures.html') {
       E.push('open redirect: ?next=' + bad + ' sent someone to ' + window.__wentTo);
     }
   }

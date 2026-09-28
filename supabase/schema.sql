@@ -375,35 +375,45 @@ drop trigger if exists profiles_protect_billing on public.profiles;
 create trigger profiles_protect_billing before update on public.profiles
   for each row execute function public.protect_billing_columns();
 
--- ── Ten signatures across the team, not ten each ──────────
--- The cap and the tally now both follow the team where there is one. A Team
--- plan sold as ten signatures meant ten each while everybody was their own
--- island, which is the whole company's budget multiplied by its headcount.
+-- ── What an account may keep, and how much of it is spent ──
+-- One function answers both questions, because two things ask them and they
+-- must never disagree: the insert rule below, which refuses a signature past
+-- the limit, and the dashboard, which draws "3 of 5 used". Written twice, the
+-- bar would one day say there is room and the save would say there is not.
 --
--- The cap comes from the team owner's plan, because the owner is who pays.
-create or replace function public.enforce_signature_quota()
-returns trigger language plpgsql security definer set search_path = public as $$
+--   an allowance   whatever it says, counted against that person alone
+--   solo           one
+--   team           ten, shared by everyone in the team
+--   org            twenty, shared the same way
+--   a plan not taught to this function   one — visibly too small rather
+--                                        than silently unlimited
+--   free, trial live   five
+--   free               one
+--
+-- In a team the owner's plan decides for everyone, because the owner is who
+-- pays, and the tally counts every member's signatures. An allowance set on
+-- one person overrides both and is counted against that person only, which is
+-- how somebody is given room without moving the company.
+--
+-- Not callable from the browser: it takes any account id, and how many
+-- signatures somebody else has is not the caller's business. signature_usage()
+-- below is the browser's door, and it only ever asks about the caller.
+create or replace function public.signature_budget(uid uuid, out used integer, out cap integer)
+language plpgsql stable security definer set search_path = public as $$
 declare
   team       uuid;
   payer      uuid;
   user_plan  text;
   allowance  integer;
   trial_end  timestamptz;
-  existing   integer;
-  cap        integer;
 begin
-  select team_id into team from public.profiles where id = new.user_id;
-
-  -- In a team, the owner's standing decides for everyone in it; alone, your
-  -- own does. An allowance set on the individual still overrides both, which
-  -- is how one person in a team can be given room without moving the company.
-  select signature_limit into allowance from public.profiles where id = new.user_id;
+  select team_id, signature_limit into team, allowance
+    from public.profiles where id = uid;
 
   if team is not null then
     select owner_id into payer from public.teams where id = team;
-  else
-    payer := new.user_id;
   end if;
+  payer := coalesce(payer, uid);
 
   select plan, trial_ends_at into user_plan, trial_end
     from public.profiles where id = payer;
@@ -411,20 +421,12 @@ begin
   if allowance is not null then
     cap := allowance;
   elsif coalesce(user_plan, 'free') = 'solo' then
-    -- One, as sold. Caught before the branches below it, or Solo would
-    -- quietly be the same as Business.
     cap := 1;
   elsif coalesce(user_plan, 'free') = 'team' then
     cap := 10;
   elsif coalesce(user_plan, 'free') = 'org' then
-    -- Twenty, as sold. No plan is uncapped any more: a subscription buys a
-    -- fixed number, and anything past it is a decision somebody makes by hand
-    -- in the admin panel, which is what the allowance above is for.
     cap := 20;
   elsif coalesce(user_plan, 'free') <> 'free' then
-    -- A plan nobody has taught this rule about. One, rather than no ceiling:
-    -- a tier added to the constraint and forgotten here should be visibly too
-    -- small, not silently unlimited.
     cap := 1;
   elsif trial_end is not null and trial_end > now() then
     cap := 5;
@@ -432,21 +434,37 @@ begin
     cap := 1;
   end if;
 
-  if cap is not null then
-    if team is not null and allowance is null then
-      -- The team's whole budget, spent by whoever spends it first.
-      select count(*) into existing
-        from public.signatures s
-        join public.profiles p on p.id = s.user_id
-       where p.team_id = team;
-    else
-      select count(*) into existing from public.signatures where user_id = new.user_id;
-    end if;
+  if team is not null and allowance is null then
+    select count(*) into used
+      from public.signatures s
+      join public.profiles p on p.id = s.user_id
+     where p.team_id = team;
+  else
+    select count(*) into used from public.signatures where user_id = uid;
+  end if;
+end $$;
 
-    if existing >= cap then
-      raise exception 'This account is limited to % signature(s).', cap
-        using errcode = 'check_violation';
-    end if;
+revoke execute on function public.signature_budget(uuid) from public, anon, authenticated;
+
+-- The dashboard's question: how many has the caller used, and of how many.
+create or replace function public.signature_usage()
+returns json language sql stable security definer set search_path = public as $$
+  select json_build_object('used', b.used, 'cap', b.cap)
+    from public.signature_budget(auth.uid()) b;
+$$;
+
+grant execute on function public.signature_usage() to authenticated;
+
+-- The insert rule, now a caller of the budget rather than a second copy of it.
+create or replace function public.enforce_signature_quota()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  b record;
+begin
+  select * into b from public.signature_budget(new.user_id);
+  if b.cap is not null and b.used >= b.cap then
+    raise exception 'This account is limited to % signature(s).', b.cap
+      using errcode = 'check_violation';
   end if;
   return new;
 end $$;
@@ -454,6 +472,30 @@ end $$;
 drop trigger if exists signatures_quota on public.signatures;
 create trigger signatures_quota before insert on public.signatures
   for each row execute function public.enforce_signature_quota();
+
+-- ── Which signature is the default ────────────────────────
+-- One per account, held by a unique index. Moving it from one signature to
+-- another from the browser takes two updates — clear the old, set the new —
+-- and in that order through the API the second can land before the first and
+-- trip the index. Here they run in order, as one call.
+--
+-- Checks the signature is the caller's before touching anything: this runs
+-- with the definer's rights, so without the check it would move anybody's.
+create or replace function public.set_default_signature(sig uuid)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  owner uuid;
+begin
+  select user_id into owner from public.signatures where id = sig;
+  if owner is null or owner <> auth.uid() then
+    raise exception 'No such signature.' using errcode = 'P0002';
+  end if;
+  update public.signatures set is_default = false
+   where user_id = owner and is_default and id <> sig;
+  update public.signatures set is_default = true where id = sig;
+end $$;
+
+grant execute on function public.set_default_signature(uuid) to authenticated;
 
 -- ── Campaign expiry ───────────────────────────────────────
 -- When the banner stops running. Null is what every account starts as and

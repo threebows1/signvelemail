@@ -1,0 +1,185 @@
+/* ═══════════════════════════════════════════════════════════
+   Signatures dashboard. The tokens are the site's own (site.css), repeated
+   rather than imported so this page does not pull in the marketing layout.
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --bg:#F6F5FB; --card:#FFFFFF; --ink:#100E1B; --ink-soft:#3D3A52; --muted:#6E6B85;
+  --line:#E8E6F0; --line-soft:#F1EFF7; --accent:#5B2EFF; --accent-ink:#4A22DB;
+  --accent-soft:#EFEAFF; --mint:#00B383; --ok-ground:#E3FBF2; --ok-ink:#06734F;
+  --danger:#B42318;
+  --sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body.db{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;-webkit-font-smoothing:antialiased}
+/* Held back until the session is known, so nobody sees an empty dashboard
+   before being sent to sign in. */
+body.db-loading .db-main,body.db-loading .db-top > :not(.db-brand){visibility:hidden}
+a{color:var(--accent-ink)}a:hover{color:#3A18B8}
+button,input{font:inherit;color:inherit}
+.db-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.db-spacer{flex-grow:1}
+.db-muted{color:var(--muted)}
+.db-muted-ink{color:var(--ink-soft)}
+
+/* ── Top bar ── */
+.db-top{height:64px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:32px;padding:0 40px;position:sticky;top:0;z-index:5}
+.db-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.db-word{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.db-word em{font-style:normal;color:var(--mint)}
+.db-nav{display:flex;gap:4px}
+.db-nav a{height:40px;padding:0 14px;display:flex;align-items:center;border-radius:10px;color:var(--ink-soft);font-size:14px;font-weight:600;text-decoration:none}
+.db-nav a:hover{background:var(--bg)}
+.db-nav a[aria-current="page"]{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
+.db-plan{height:30px;padding:0 12px;display:flex;align-items:center;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+.db-plan:empty{display:none}
+.db-account{position:relative}
+.db-avatar{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--accent-soft);color:var(--accent-ink);font-size:14px;font-weight:800;cursor:pointer}
+
+/* ── Buttons ── */
+.db-btn{height:40px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;white-space:nowrap}
+.db-btn:hover{border-color:#D3CFE3;color:var(--ink)}
+.db-btn-primary{background:var(--accent);border-color:var(--accent);color:#FFFFFF}
+.db-btn-primary:hover{background:var(--accent-ink);border-color:var(--accent-ink);color:#FFFFFF}
+.db-btn:disabled{opacity:.5;cursor:not-allowed}
+.db-btn.is-danger{background:var(--danger);border-color:var(--danger);color:#FFFFFF}
+.db-top .db-btn{height:44px;padding:0 18px;border-radius:12px}
+.db-btn-sm{height:36px;padding:0 14px;border-radius:9px;font-size:13px}
+.db-icon-btn{width:40px;height:40px;flex-shrink:0;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.db-icon-btn[aria-expanded="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+
+/* ── Banner ── */
+.db-banner{background:var(--accent-soft);border-bottom:1px solid #E2DAFF;padding:12px 40px;font-size:14px}
+.db-banner a{font-weight:700;margin-left:6px}
+
+/* ── Main ── */
+.db-main{max-width:1120px;margin:0 auto;padding:40px 40px 64px;display:flex;flex-direction:column;gap:24px}
+.db-head{display:flex;align-items:center;gap:16px}
+.db-head h1{margin:0;font-size:34px;font-weight:800;letter-spacing:-.025em}
+.db-search{position:relative;height:44px;width:260px;padding:0 14px;display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--muted)}
+.db-search input{border:0;outline:0;background:transparent;font-size:14px;color:var(--ink);flex-grow:1;min-width:0}
+.db-search:focus-within{border-color:var(--accent)}
+.db-views{height:44px;display:flex;padding:3px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.db-views button{width:44px;height:36px;border:0;border-radius:9px;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.db-views button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink)}
+.db-status:empty{display:none}
+.db-status{font-size:15px;color:var(--muted)}
+
+/* ── Badges ── */
+.db-badge{height:24px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.db-badge.is-default{background:var(--ok-ground);color:var(--ok-ink)}
+.db-badge.is-default i{width:7px;height:7px;border-radius:50%;background:var(--mint)}
+
+/* ── Thumbnails: the real signature, shrunk to its frame by dashboard.js ── */
+.db-thumb{position:relative;overflow:hidden;background:#FFFFFF;pointer-events:none;user-select:none}
+.db-thumb-inner{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);transform-origin:center;width:max-content}
+.db-thumb.is-small{width:64px;height:44px;flex-shrink:0;border-radius:8px;border:1px solid var(--line)}
+
+/* ── Grid ── */
+.db-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.db-card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.db-card.is-default{border:2px solid var(--accent)}
+.db-card .db-thumb{height:176px;border-bottom:1px solid var(--line)}
+.db-card-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px}
+.db-card-title{display:flex;align-items:center;gap:8px;min-width:0}
+.db-card-title h2{margin:0;flex-grow:1;min-width:0;font-size:16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.db-meta{margin:0;font-size:13px;color:var(--muted)}
+.db-actions{display:flex;gap:8px;align-items:center}
+.db-create{min-height:318px;border:2px dashed #C9C2EC;border-radius:16px;background:#FBFAFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--accent-ink);cursor:pointer}
+.db-create:hover{border-color:var(--accent);background:var(--accent-soft)}
+.db-create strong{font-size:16px;font-weight:800}
+.db-create span:not(.db-create-plus){font-size:13px;color:var(--muted)}
+.db-create-plus{width:52px;height:52px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center}
+
+.db-limit{min-height:318px;border:2px dashed #D6D3E2;border-radius:16px;background:var(--card);padding:28px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:12px}
+.db-limit-icon{width:48px;height:48px;border-radius:50%;background:var(--bg);color:var(--ink-soft);display:flex;align-items:center;justify-content:center}
+.db-limit h2{margin:0;font-size:18px;font-weight:800}
+.db-limit p{margin:0;font-size:14px;color:var(--ink-soft)}
+
+/* ── List ──
+   Child selectors throughout: every thumbnail is a real signature, which is
+   tables inside tables, and a plain ".db-table td" restyles every cell in it. */
+.db-table-wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.db-table{width:100%;border-collapse:collapse;font-size:14px}
+.db-table > thead > tr > th{padding:14px 16px;text-align:left;background:#FBFAFE;border-bottom:1px solid var(--line);color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.db-table > thead > tr > th:first-child,.db-table > tbody > tr > td:first-child{padding-left:20px}
+.db-table > tbody > tr > td{padding:12px 16px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+.db-table > tbody > tr:last-child > td{border-bottom:0}
+.db-cell-sig{display:flex;align-items:center;gap:14px}
+.db-name{font-weight:700}
+.db-cell-actions{text-align:right;white-space:nowrap;padding-right:20px}
+.db-cell-actions > *{vertical-align:middle;margin-left:8px}
+.db-cell-actions .db-icon-btn{width:36px;height:36px;border-radius:9px}
+.db-add-row{width:100%;height:60px;border:0;border-top:1px dashed #C9C2EC;background:#FBFAFF;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--accent-ink);font-size:14px;font-weight:800;cursor:pointer}
+.db-add-row:hover{background:var(--accent-soft)}
+.db-add-row.is-limit{cursor:default;color:var(--ink-soft)}
+.db-add-row.is-limit:hover{background:#FBFAFF}
+.db-add-row.is-card{border:2px dashed #C9C2EC;border-radius:14px;height:56px}
+
+/* ── Usage ── */
+.db-usage{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 26px;display:flex;align-items:center;gap:40px}
+.db-usage[hidden]{display:none}
+.db-usage-top{padding:16px 20px}
+.db-usage-main{flex-grow:1;display:flex;flex-direction:column;gap:12px}
+.db-usage-line{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;color:var(--ink-soft)}
+.db-usage-line strong{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--ink)}
+.db-bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.db-bar i{display:block;height:8px;border-radius:999px;background:var(--accent)}
+.db-usage-link{font-size:14px;font-weight:700}
+
+/* ── Menus ── */
+.db-menu{position:absolute;z-index:20;min-width:208px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 40px rgba(16,14,27,.16);display:flex;flex-direction:column}
+.db-menu[hidden]{display:none}
+.db-menu button,.db-menu a{height:44px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:14px;font-weight:600;text-align:left;display:flex;align-items:center;text-decoration:none;cursor:pointer}
+.db-menu button:hover,.db-menu a:hover,.db-menu button:focus-visible{background:var(--bg)}
+.db-menu button:disabled{opacity:.45;cursor:not-allowed}
+.db-menu .is-danger{color:var(--danger);font-weight:700}
+.db-menu hr{border:0;height:1px;background:var(--line);margin:4px 6px}
+.db-account-menu{right:0;top:52px}
+.db-menu-note{margin:0;padding:8px 12px 10px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis}
+
+/* ── Dialog ── */
+.db-scrim{position:fixed;inset:0;background:rgba(16,14,27,.36);z-index:30}
+.db-scrim[hidden],.db-dialog[hidden]{display:none}
+.db-dialog{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:31;width:min(420px,calc(100% - 32px));background:var(--card);border-radius:16px;padding:24px;box-shadow:0 24px 60px rgba(16,14,27,.24);display:flex;flex-direction:column;gap:16px}
+.db-dialog h2{margin:0;font-size:18px;font-weight:800}
+.db-dialog p{margin:0;font-size:14px;line-height:1.5;color:var(--ink-soft)}
+.db-dialog-actions{display:flex;justify-content:flex-end;gap:10px}
+.db-field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:var(--ink-soft)}
+.db-field input{height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;font-size:15px;font-weight:500;color:var(--ink)}
+.db-field input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+
+.db-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:40;margin:0;padding:12px 18px;border-radius:12px;background:var(--ink);color:#FFFFFF;font-size:14px;font-weight:600;box-shadow:0 12px 30px rgba(16,14,27,.24)}
+.db-toast[hidden]{display:none}
+
+/* ── Narrower screens ── */
+@media (max-width:1000px){
+  .db-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .db-nav{display:none}
+  .db-top{gap:16px;padding:0 24px}
+  .db-main{padding:32px 24px 56px}
+}
+/* A phone: stacked rows, whichever view was chosen (dashboard.js draws them). */
+@media (max-width:640px){
+  .db-top{height:60px;padding:0 16px;gap:10px}
+  .db-word{font-size:18px}
+  .db-plan{display:none}
+  .db-top .db-btn{width:44px;padding:0}
+  .db-new-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .db-banner{padding:10px 16px;font-size:13px}
+  .db-main{padding:20px 16px 40px;gap:16px}
+  .db-head{flex-wrap:wrap}
+  .db-head h1{font-size:26px;flex-basis:100%}
+  .db-head .db-spacer,.db-views{display:none}
+  .db-search{width:100%}
+  .db-usage{padding:14px 16px}
+  .db-rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  .db-row{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;align-items:center;gap:12px}
+  .db-row.is-default{border:2px solid var(--accent)}
+  .db-row .db-thumb.is-small{height:48px}
+  .db-row-main{flex-grow:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--ink)}
+  .db-row-main .db-name{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .db-row-meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+  .db-row .db-icon-btn{border:0;width:44px;height:44px}
+  .db-limit{min-height:0}
+}
