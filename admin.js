@@ -977,16 +977,18 @@
     A.me = st.userId;
     A.email = st.email || '';
 
+    // Somebody who is not an administrator is sent to their own signatures,
+    // not shown an admin screen that says they may not use it. That told them
+    // the panel exists and how access to it is decided; there is nothing on
+    // this page for them, so they leave it before any of it is drawn.
     if (!st.isAdmin) {
       showTabs(false);
-      gate('<div class="adm-card"><div class="adm-empty"><strong>Not an administrator</strong>' +
-        'This account cannot see the panel. If that is wrong, the <code>is_admin</code> column on your profile ' +
-        'is what decides it.</div></div>');
-      const who = el('admWho');
-      if (who) who.textContent = A.email;
+      gate('');
+      navigate('signatures.html');
       return;
     }
 
+    document.body.classList.remove('adm-pending');
     gate('');
     showTabs(true);
     paint();

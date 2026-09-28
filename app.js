@@ -2174,7 +2174,10 @@ function renderDisclaimer() {
 // signature. What is left is the door.
 function renderAdmin() {
   if (!isAdmin()) {
-    return `<div class="inline-note">This section is only available to an administrator.</div>`;
+    // Unreachable for anyone else — the rail leaves the section out and a
+    // remembered open section is reset — and if it ever were reached, it
+    // shows nothing rather than announcing that an admin area exists.
+    return '';
   }
   return `<div class="inline-note">Accounts, figures, complimentary access and the state of billing
     live in the admin panel, which has room for them.</div>

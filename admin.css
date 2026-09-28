@@ -291,3 +291,8 @@
 /* [hidden] is a user-agent rule, and any class here that sets display beats
    it. Restated so a hidden panel stays hidden. */
 [hidden]{display:none !important}
+
+/* Blank until the account is confirmed as an administrator (admin.js takes
+   the class off). Anybody else is sent away before seeing any of it — the
+   header and its Admin tag included. */
+body.adm-pending > *{visibility:hidden}

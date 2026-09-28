@@ -23,7 +23,9 @@
   <!-- No analytics on this page on purpose: it would send customer addresses
        and account ids to Google in the page path and the drawer title. -->
 </head>
-<body class="adm">
+<!-- adm-pending keeps the whole page blank until the account is confirmed as an
+     administrator: nobody else should see even the header of it. -->
+<body class="adm adm-pending">
 
   <header class="adm-top">
     <div class="adm-top-inner">

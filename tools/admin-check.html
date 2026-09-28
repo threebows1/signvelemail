@@ -205,7 +205,12 @@ async function run() {
   window.ADMIN.start(ST);
   await settle();
   if (!$('#admTabs').hidden) E.push('a non-admin was shown the tabs');
-  if (!/Not an administrator/i.test(text('#admGate'))) E.push('a non-admin was not told why the panel is empty');
+  // Sent to their own signatures, with nothing of the admin page on screen
+  // first — not the header, not a card explaining they may not use it.
+  if (window.__wentTo !== 'signatures.html') E.push('a non-admin was not sent to their signatures, got: ' + window.__wentTo);
+  if (!document.body.classList.contains('adm-pending')) E.push('the admin page was uncovered for a non-admin');
+  if (getComputedStyle(document.querySelector('.adm-top')).visibility !== 'hidden') E.push('the admin header is on screen for a non-admin');
+  if (/administrator|is_admin/i.test(text('#admGate'))) E.push('a non-admin was told about the admin panel');
   if (CALLS.length) E.push('a non-admin triggered admin calls: ' + CALLS.join(', '));
   // innerHTML, not innerText: a hidden element reports no text whatever it
   // contains, so innerText here would pass even with the table in place.
