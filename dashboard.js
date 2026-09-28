@@ -58,12 +58,21 @@
     S.client = 'gmail';
   }
 
+  // A thumbnail is the signature, not its small print. The disclaimer is a
+  // paragraph of type too small to read at this size, and it shrank the rest
+  // of the drawing to make room for itself; the free-plan credit line the same.
+  // Both are left out of the picture only — Copy signature loads the state
+  // afresh, so what is copied from here still carries them.
   function drawn(sig) {
     try {
       loadInto(sig.state);
+      S.disclaimerEnabled = false;
+      window.SIGNVEL_THUMBNAIL = true;
       return onScreen(() => withExportTarget('', generateSignaturePreview));
     } catch (e) {
       return '';
+    } finally {
+      window.SIGNVEL_THUMBNAIL = false;
     }
   }
 

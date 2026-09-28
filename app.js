@@ -1392,6 +1392,9 @@ function imagesUnlocked() {
 // worse error than a free one shared without it.
 function freeTier() {
   if (window.SIGNVEL_MODE === 'share') return false;
+  // The dashboard's thumbnails, drawn one at a time. Only while one is being
+  // drawn: a copy taken from the same page is a real signature and keeps it.
+  if (window.SIGNVEL_THUMBNAIL) return false;
   return !imagesUnlocked();
 }
 

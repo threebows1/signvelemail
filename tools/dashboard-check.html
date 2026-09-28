@@ -115,9 +115,14 @@ window.Cloud = {
 window.SIGNVEL_MODE = 'dashboard';
 </script>
 <script src="../app.js"></script>
+<!-- Before dashboard.js: once it runs, the first cards are drawn before the
+     next script here, and drawing switches the disclaimer off. -->
+<script>window.__BASE_DISCLAIMER = S.disclaimerEnabled;</script>
 <script src="../dashboard.js"></script>
 <script>
 const F = [];
+// What a signature carries when nothing has switched its disclaimer off.
+const BASE_DISCLAIMER = window.__BASE_DISCLAIMER;
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [].slice.call(document.querySelectorAll(s));
 const tick = (ms) => new Promise((r) => setTimeout(r, ms || 60));
@@ -161,6 +166,17 @@ const titleOf = (c) => (c.querySelector('h2') || {}).textContent;
   // Saved with the dark preview on, drawn on white: the dark-mode ink must not come along.
   const legal = cards()[2] && cards()[2].querySelector('.db-thumb').innerHTML;
   if (legal && /#F2F1F7/i.test(legal)) F.push('a signature saved in dark preview is drawn in its dark-mode colours');
+  // The small print is left out of the picture, and only out of the picture:
+  // a copy taken from this page loads the state afresh and keeps it.
+  cards().forEach((c, i) => {
+    if (/confidential/i.test(c.querySelector('.db-thumb').innerHTML)) F.push('card ' + (i + 1) + ': its thumbnail still carries the disclaimer');
+    if (/Designed by/i.test(c.querySelector('.db-thumb').innerHTML)) F.push('card ' + (i + 1) + ': its thumbnail carries the credit line');
+  });
+  window.__dashboard.loadInto(store.sigs[0].state);
+  if (BASE_DISCLAIMER !== true) F.push('the default signature has no disclaimer, so the restore check below proves nothing');
+  if (S.disclaimerEnabled !== BASE_DISCLAIMER) F.push('loading a signature to copy it did not restore its disclaimer');
+  if (window.SIGNVEL_THUMBNAIL) F.push('the thumbnail flag was left on after drawing, so a copy would lose its credit line');
+
   // Shrunk to fit its frame.
   const inner = $('.db-card .db-thumb-inner');
   if (!inner || !/scale\(/.test(inner.style.transform)) F.push('thumbnails are not scaled to their frame');
