@@ -266,11 +266,8 @@
       banner.innerHTML = `<strong>Trial ends ${esc(when)}.</strong> <a href="pricing.html">See plans</a>`;
     }
 
-    const email = c.email || '';
-    el('dbAvatar').textContent = (email.split('@')[0] || '?').slice(0, 2).toUpperCase();
-    el('dbAvatar').setAttribute('aria-label', 'Account menu' + (email ? ' for ' + email : ''));
-    el('dbEmail').textContent = email;
-    el('dbAdmin').hidden = !c.isAdmin;
+    // The avatar and its menu are account-menu.js's, shared with the account page.
+    if (window.AccountMenu) AccountMenu.paint();
   }
 
   function load() {
@@ -363,8 +360,7 @@
   function closeMenus() {
     if (menuFor) { menuFor.setAttribute('aria-expanded', 'false'); menuFor = null; }
     menu.hidden = true;
-    el('dbAccountMenu').hidden = true;
-    el('dbAvatar').setAttribute('aria-expanded', 'false');
+    if (window.AccountMenu) AccountMenu.close();
   }
 
   // ── Rename and delete ask first ──────────────────────────
@@ -419,7 +415,7 @@
   document.addEventListener('click', (e) => {
     const t = e.target.closest('[data-act]');
     if (!t) {
-      if (!e.target.closest('.db-menu') && !e.target.closest('#dbAvatar')) closeMenus();
+      if (!e.target.closest('.db-menu') && !e.target.closest('.db-account')) closeMenus();
       return;
     }
     const sig = byId(t.dataset.id);
@@ -434,7 +430,7 @@
     else if (a === 'delete' && sig) deleteOne(sig);
   });
 
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && (menuFor || !el('dbAccountMenu').hidden)) closeMenus(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menuFor) closeMenus(); });
 
   el('dbNew').addEventListener('click', createNew);
   el('dbSearch').addEventListener('input', (e) => { D.q = e.target.value; render(); });
@@ -444,16 +440,6 @@
     D.view = b.dataset.view;
     try { localStorage.setItem('signvel:dbview', D.view); } catch (err) {}
     render();
-  });
-  el('dbAvatar').addEventListener('click', () => {
-    const m = el('dbAccountMenu');
-    const open = m.hidden;
-    closeMenus();
-    m.hidden = !open;
-    el('dbAvatar').setAttribute('aria-expanded', String(open));
-  });
-  el('dbSignOut').addEventListener('click', () => {
-    Cloud.signOut().then(() => go('signin.html', true));
   });
   phone.addEventListener('change', render);
   window.addEventListener('resize', () => requestAnimationFrame(fitThumbs));

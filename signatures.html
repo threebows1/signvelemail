@@ -39,9 +39,24 @@
     <div class="db-account">
       <button class="db-avatar" id="dbAvatar" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu"></button>
       <div class="db-menu db-account-menu" id="dbAccountMenu" role="menu" hidden>
-        <p class="db-menu-note" id="dbEmail"></p>
-        <a role="menuitem" href="admin.html" id="dbAdmin" hidden>Admin</a>
-        <button role="menuitem" type="button" id="dbSignOut">Sign out</button>
+        <p class="db-menu-who" id="dbWho"></p>
+        <a role="menuitem" class="db-menu-item" href="signatures.html">
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></span>
+          <span><strong>Dashboard</strong><small>Your signatures</small></span>
+        </a>
+        <a role="menuitem" class="db-menu-item" href="account.html">
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+          <span><strong>Account</strong><small>Profile and password</small></span>
+        </a>
+        <a role="menuitem" class="db-menu-item" href="admin.html" id="dbAdmin" hidden>
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span>
+          <span><strong>Admin</strong><small>Accounts and plans</small></span>
+        </a>
+        <hr>
+        <button role="menuitem" type="button" class="db-menu-item is-out" id="dbSignOut">
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg></span>
+          <span><strong>Sign out</strong></span>
+        </button>
       </div>
     </div>
   </header>
@@ -95,6 +110,7 @@
   <script src="cloud.js"></script>
   <script>window.SIGNVEL_MODE = 'dashboard';</script>
   <script src="app.js"></script>
+  <script src="account-menu.js"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>

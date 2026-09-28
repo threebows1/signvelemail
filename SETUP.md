@@ -352,6 +352,29 @@ per account is a unique index and two separate updates can land out of order.
 **Needs `supabase/schema.sql` re-run** (or `Downloads/signvel-dashboard.sql`).
 Until then the page still lists, creates, renames and deletes, but the bar
 shows a count without a limit and Make default says the step is missing.
+
+## Account page and menu
+
+`account.html` is where a person changes their picture, name, email and
+password, and sees their plan and how many signatures they have used. The
+account menu — the avatar at the top right of the dashboard, the account page
+and the editor — shows who is signed in and links to the dashboard, the
+account page and, for admins, the admin panel, with Sign out below.
+`account-menu.js` drives it on the two dashboard-style pages; the editor draws
+the same menu in `renderAccount()`.
+
+The picture is shrunk to a 192 px square in the browser and stored as a small
+image on `profiles.avatar_url`, not in storage. Storage uploads are refused on
+the free plan and a profile picture is not a paid feature; it is only ever
+shown inside Sign Vel, so the reason signature images must be hosted — Gmail
+strips inline images from mail — does not apply to it.
+
+A changed email has to be confirmed from the new inbox before it takes over;
+Supabase sends the link and sign-in stays on the old address until then.
+
+**Needs `supabase/schema.sql` re-run** (or `Downloads/signvel-profile.sql`) for
+the `avatar_url` column. Until then everything on the page works except saving
+a picture, which says the step is missing.
 ### What the panel deliberately cannot do
 
 - **Grant administrator rights.** That stays the SQL statement above. A button

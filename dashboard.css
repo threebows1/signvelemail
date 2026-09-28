@@ -17,6 +17,10 @@ body.db{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);f
 body.db-loading .db-main,body.db-loading .db-top > :not(.db-brand){visibility:hidden}
 a{color:var(--accent-ink)}a:hover{color:#3A18B8}
 button,input{font:inherit;color:inherit}
+/* hidden has to mean hidden. Any class here that sets display — every button
+   does — outranks the browser's own [hidden] rule, so an element marked hidden
+   went on showing. The account page's Remove button was the one that gave it away. */
+[hidden]{display:none !important}
 .db-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .db-spacer{flex-grow:1}
 .db-muted{color:var(--muted)}
@@ -182,4 +186,45 @@ button,input{font:inherit;color:inherit}
   .db-row-meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
   .db-row .db-icon-btn{border:0;width:44px;height:44px}
   .db-limit{min-height:0}
+}
+
+/* ── Account menu (account-menu.js) ── */
+.db-avatar{padding:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.db-avatar.has-photo{background:var(--card)}
+.db-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.db-account-menu{min-width:248px}
+.db-menu-who{margin:0 0 4px;padding:10px 12px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px;min-width:0}
+.db-menu-who strong{font-size:14px;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.db-menu-who span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.db-menu .db-menu-item{height:auto;min-height:48px;padding:8px 10px;gap:12px}
+.db-menu-item > span:last-child{display:flex;flex-direction:column;gap:1px}
+.db-menu-item strong{font-size:14px;font-weight:700;color:var(--ink)}
+.db-menu-item small{font-size:12px;font-weight:500;color:var(--muted)}
+.db-menu-icon{width:30px;height:30px;flex-shrink:0;border-radius:8px;background:var(--accent-soft);color:var(--accent-ink);display:flex;align-items:center;justify-content:center}
+.db-menu-item.is-out .db-menu-icon{background:#FDECEA;color:var(--danger)}
+.db-menu-item[aria-current="page"]{background:var(--bg)}
+
+/* ── Account page ── */
+.ac-main{max-width:760px}
+.ac-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 26px;display:flex;flex-direction:column;gap:18px}
+.ac-card h2{margin:0;font-size:18px;font-weight:800}
+.ac-photo-row{display:flex;align-items:center;gap:20px}
+.ac-photo{width:96px;height:96px;flex-shrink:0;border-radius:50%;overflow:hidden;background:var(--accent-soft);color:var(--accent-ink);font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.ac-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.ac-photo-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.ac-photo-actions label.db-btn{cursor:pointer}
+.ac-photo-actions input:focus-visible + .db-btn,.ac-photo-actions label.db-btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.ac-hint{margin:0;flex-basis:100%;font-size:13px;color:var(--muted)}
+.ac-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ac-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ac-msg{margin:0;font-size:14px;color:var(--muted)}
+.ac-msg:empty{display:none}
+.ac-msg.is-error{color:var(--danger)}
+.ac-msg.is-ok{color:var(--ok-ink)}
+.ac-plan{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.ac-plan-name{margin:0;font-size:20px;font-weight:800}
+@media (max-width:640px){
+  .ac-card{padding:18px}
+  .ac-two{grid-template-columns:minmax(0,1fr)}
+  .ac-photo-row{flex-direction:column;align-items:flex-start}
 }

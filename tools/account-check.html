@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>account-check</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" sizes="180x180">
+  <link rel="apple-touch-icon" href="/favicon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../dashboard.css">
+</head>
+<body class="db db-loading">
+<!-- Built from account.html with its scripts swapped for a stand-in account. -->
+
+  <header class="db-top">
+    <a class="db-brand" href="index.html" aria-label="Sign Vel home">
+      <svg width="40" height="17" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="acLogo" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#acLogo)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg>
+      <span class="db-word">Sign <em>Vel</em></span>
+    </a>
+    <nav class="db-nav" aria-label="Main">
+      <a href="signatures.html">Signatures</a>
+      <a href="install.html">Install guides</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <span class="db-spacer"></span>
+    <div class="db-account">
+      <button class="db-avatar" id="dbAvatar" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu"></button>
+      <div class="db-menu db-account-menu" id="dbAccountMenu" role="menu" hidden>
+        <p class="db-menu-who" id="dbWho"></p>
+        <a role="menuitem" class="db-menu-item" href="signatures.html">
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></span>
+          <span><strong>Dashboard</strong><small>Your signatures</small></span>
+        </a>
+        <a role="menuitem" class="db-menu-item" href="account.html" aria-current="page">
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+          <span><strong>Account</strong><small>Profile and password</small></span>
+        </a>
+        <a role="menuitem" class="db-menu-item" href="admin.html" id="dbAdmin" hidden>
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span>
+          <span><strong>Admin</strong><small>Accounts and plans</small></span>
+        </a>
+        <hr>
+        <button role="menuitem" type="button" class="db-menu-item is-out" id="dbSignOut">
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg></span>
+          <span><strong>Sign out</strong></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="db-main ac-main">
+    <div class="db-head"><h1>Account</h1></div>
+
+    <!-- Profile: the picture and the name the account menu shows. -->
+    <section class="ac-card" aria-labelledby="acProfileH">
+      <h2 id="acProfileH">Profile</h2>
+      <div class="ac-photo-row">
+        <div class="ac-photo" id="acPhoto" aria-hidden="true"></div>
+        <div class="ac-photo-actions">
+          <label class="db-btn" for="acFile">Upload photo</label>
+          <input type="file" id="acFile" accept="image/png,image/jpeg,image/webp,image/gif" class="db-sr">
+          <button type="button" class="db-btn" id="acRemove">Remove</button>
+          <p class="ac-hint">JPG, PNG or WebP. Cropped to a square.</p>
+        </div>
+      </div>
+      <label class="db-field">
+        <span>Name</span>
+        <input type="text" id="acName" maxlength="120" autocomplete="name">
+      </label>
+      <div class="ac-actions">
+        <button type="button" class="db-btn db-btn-primary" id="acSaveProfile">Save profile</button>
+        <p class="ac-msg" id="acProfileMsg" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="ac-card" aria-labelledby="acEmailH">
+      <h2 id="acEmailH">Email</h2>
+      <label class="db-field">
+        <span>Email address</span>
+        <input type="email" id="acEmail" autocomplete="email">
+      </label>
+      <div class="ac-actions">
+        <button type="button" class="db-btn" id="acSaveEmail">Change email</button>
+        <p class="ac-msg" id="acEmailMsg" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="ac-card" aria-labelledby="acPassH">
+      <h2 id="acPassH">Password</h2>
+      <div class="ac-two">
+        <label class="db-field">
+          <span>New password</span>
+          <input type="password" id="acPass" autocomplete="new-password" minlength="8">
+        </label>
+        <label class="db-field">
+          <span>Repeat it</span>
+          <input type="password" id="acPass2" autocomplete="new-password" minlength="8">
+        </label>
+      </div>
+      <div class="ac-actions">
+        <button type="button" class="db-btn" id="acSavePass">Change password</button>
+        <p class="ac-msg" id="acPassMsg" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="ac-card" aria-labelledby="acPlanH">
+      <h2 id="acPlanH">Plan</h2>
+      <div class="ac-plan">
+        <div>
+          <p class="ac-plan-name" id="acPlanName"></p>
+          <p class="ac-hint" id="acPlanNote"></p>
+        </div>
+        <a class="db-btn" href="pricing.html">See plans</a>
+      </div>
+      <div class="db-usage-main" id="acUsage"></div>
+    </section>
+  </main>
+
+  <p class="db-toast" id="dbToast" role="status" aria-live="polite" hidden></p>
+
+<script>
+// A stand-in account: signed in, on a trial, with the same calls the real
+// cloud layer offers. ?out runs the page signed out instead.
+try { localStorage.clear(); } catch (e) {}
+const OUT = /out/.test(location.search);
+const calls = {profile: [], email: [], password: []};
+let listeners = [];
+const acct = {signedIn: !OUT, email: 'daniel@signvel.com', fullName: 'Daniel Reyes', avatarUrl: '',
+              plan: 'free', trialActive: true, trialDaysLeft: 18, trialEndsAt: '2026-10-20T12:00:00Z', isAdmin: false};
+let navigatedTo = null;
+window.__navigate = (u) => { navigatedTo = u; };
+window.Cloud = {
+  isReady: true,
+  state: () => Object.assign({}, acct),
+  init: () => Promise.resolve({signedIn: acct.signedIn}),
+  onChange: (fn) => { listeners.push(fn); },
+  signOut: () => Promise.resolve(),
+  signatureUsage: () => Promise.resolve({ok: true, used: 3, cap: 5}),
+  updateProfile: (f) => {
+    calls.profile.push(f);
+    if ('fullName' in f) acct.fullName = f.fullName;
+    if ('avatarUrl' in f) acct.avatarUrl = f.avatarUrl || '';
+    listeners.forEach((fn) => fn(Object.assign({}, acct)));
+    return Promise.resolve({ok: true});
+  },
+  changeEmail: (e) => { calls.email.push(e); return Promise.resolve({ok: true}); },
+  updatePassword: (p) => { calls.password.push(p); return Promise.resolve({ok: true}); },
+};
+</script>
+<script src="../account-menu.js"></script>
+<script src="../account.js"></script>
+<script>
+const F = [];
+const $ = (s) => document.querySelector(s);
+const tick = (ms) => new Promise((r) => setTimeout(r, ms || 60));
+const click = (s) => $(s).click();
+// What a person sees, not what the attribute says: a display rule can override hidden.
+const shown = (s) => getComputedStyle($(s)).display !== 'none';
+const type = (s, v) => { $(s).value = v; $(s).dispatchEvent(new Event('input', {bubbles: true})); };
+
+// A real image to feed the uploader: 600 x 400 with transparency, so the
+// crop and the white ground both get exercised.
+function samplePNG() {
+  const c = document.createElement('canvas'); c.width = 600; c.height = 400;
+  const g = c.getContext('2d'); g.fillStyle = '#5B2EFF'; g.fillRect(100, 0, 400, 400);
+  return new Promise((r) => c.toBlob((b) => r(new File([b], 'me.png', {type: 'image/png'})), 'image/png'));
+}
+
+(async function () {
+  await tick(200);
+  if (OUT) {
+    if (navigatedTo !== 'signin.html?next=account.html') F.push('signed out did not go to sign-in and back: ' + navigatedTo);
+    return done('signed out: sent to sign-in, and back here after');
+  }
+  if (document.body.classList.contains('db-loading')) F.push('the page stayed hidden when signed in');
+
+  if ($('#acName').value !== 'Daniel Reyes') F.push('the name field is not filled');
+  if ($('#acEmail').value !== 'daniel@signvel.com') F.push('the email field is not filled');
+  if ($('#acPhoto').textContent.trim() !== 'DR') F.push('no photo should show initials, got "' + $('#acPhoto').textContent + '"');
+  if (shown('#acRemove')) F.push('Remove is on screen with no photo to remove');
+  if (!/Daniel Reyes/.test($('#dbWho').textContent) || !/daniel@signvel\.com/.test($('#dbWho').textContent)) F.push('the account menu does not show the name and email');
+  if ($('#dbAvatar').textContent.trim() !== 'DR') F.push('the menu avatar does not show initials');
+  if (!/Free trial/.test($('#acPlanName').textContent)) F.push('the plan does not say free trial');
+  if (!/Ends/.test($('#acPlanNote').textContent)) F.push('the trial end date is missing');
+  await tick(100);
+  if (!/3/.test($('#acUsage').textContent) || !/of 5/.test($('#acUsage').textContent)) F.push('signature usage does not read 3 of 5');
+
+  // Upload: shrunk, cropped square, saved small.
+  const url = await window.__account.shrink(await samplePNG());
+  if (!/^data:image\/jpeg/.test(url)) F.push('the saved picture is not a JPEG');
+  if (url.length > 120000) F.push('the saved picture is ' + url.length + ' characters, over the database cap');
+  const probe = new Image(); probe.src = url; await new Promise((r) => { probe.onload = r; });
+  if (probe.naturalWidth !== 192 || probe.naturalHeight !== 192) F.push('the picture is ' + probe.naturalWidth + 'x' + probe.naturalHeight + ', not a 192 square');
+
+  // Through the file input as a person would.
+  const dt = new DataTransfer(); dt.items.add(await samplePNG());
+  $('#acFile').files = dt.files;
+  $('#acFile').dispatchEvent(new Event('change', {bubbles: true}));
+  if (!$('#acSaveProfile').disabled) F.push('Save stays live while the picture is still being prepared');
+  for (let i = 0; i < 40 && !$('#acPhoto img'); i++) await tick(50);
+  if (!$('#acPhoto img')) F.push('choosing a file did not show it');
+  if (calls.profile.length) F.push('choosing a file saved without Save being pressed');
+  type('#acName', 'Daniel R. Reyes');
+  click('#acSaveProfile');
+  await tick(150);
+  const saved = calls.profile[calls.profile.length - 1] || {};
+  if (saved.fullName !== 'Daniel R. Reyes') F.push('Save did not send the new name');
+  if (!/^data:image\/jpeg/.test(saved.avatarUrl || '')) F.push('Save did not send the picture');
+  if (!$('#dbAvatar img')) F.push('the menu avatar did not pick up the new picture');
+  if (!shown('#acRemove')) F.push('Remove is not on screen once there is a photo');
+
+  // Saving the name alone leaves the picture where it is.
+  type('#acName', 'Daniel Reyes');
+  click('#acSaveProfile');
+  await tick(150);
+  if ('avatarUrl' in (calls.profile[calls.profile.length - 1] || {})) F.push('saving the name alone also rewrote the picture');
+
+  click('#acRemove');
+  click('#acSaveProfile');
+  await tick(150);
+  if ((calls.profile[calls.profile.length - 1] || {}).avatarUrl !== null) F.push('Remove did not clear the picture');
+  if ($('#dbAvatar img')) F.push('the menu still shows the removed picture');
+
+  type('#acEmail', 'not-an-email'); click('#acSaveEmail'); await tick();
+  if (calls.email.length) F.push('a malformed address was sent');
+  type('#acEmail', 'daniel@signvel.com'); click('#acSaveEmail'); await tick();
+  if (calls.email.length) F.push('the unchanged address was sent');
+  type('#acEmail', 'dan@example.com'); click('#acSaveEmail'); await tick(120);
+  if (calls.email[0] !== 'dan@example.com') F.push('a new address was not sent');
+  if (!/confirmation link/.test($('#acEmailMsg').textContent)) F.push('changing email does not say a confirmation is on its way');
+
+  type('#acPass', 'short'); type('#acPass2', 'short'); click('#acSavePass'); await tick();
+  if (calls.password.length || !/8 characters/.test($('#acPassMsg').textContent)) F.push('a short password was not refused');
+  type('#acPass', 'longenough1'); type('#acPass2', 'longenough2'); click('#acSavePass'); await tick();
+  if (calls.password.length || !/do not match/.test($('#acPassMsg').textContent)) F.push('mismatched passwords were not refused');
+  type('#acPass2', 'longenough1'); click('#acSavePass'); await tick(120);
+  if (calls.password[0] !== 'longenough1') F.push('a valid password was not sent');
+  if ($('#acPass').value) F.push('the password fields were not cleared after saving');
+
+  const links = [].map.call(document.querySelectorAll('#dbAccountMenu a:not([hidden])'), (a) => a.getAttribute('href'));
+  ['signatures.html', 'account.html'].forEach((h) => { if (links.indexOf(h) === -1) F.push('the menu has no link to ' + h); });
+
+  done('filled from the account; picture cropped to a 192 square, shown, saved, removed; name saved without touching the picture; email and password checked before sending');
+})().catch((e) => { F.push('the check threw: ' + e.message); done(''); });
+
+function done(ok) {
+  let o = document.getElementById('out');
+  if (!o) { o = document.createElement('pre'); o.id = 'out'; document.body.prepend(o); }
+  o.textContent = F.length ? F.join('\n') : ok;
+  document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+}
+</script>
+</body>
+</html>

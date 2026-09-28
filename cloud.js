@@ -44,6 +44,10 @@ window.Cloud = (function () {
       trialEndsAt: profile ? profile.trial_ends_at : null,
       trialActive: trialActive(),
       trialDaysLeft: trialDaysLeft(),
+      // What the person calls themselves and looks like, for the account menu
+      // and the profile page. Theirs to change; neither is billing state.
+      fullName: profile ? (profile.full_name || '') : '',
+      avatarUrl: profile ? (profile.avatar_url || '') : '',
       // What the interface actually asks. The same question is asked again by
       // the storage policies, which is where it is enforced.
       entitled: !!(profile && (profile.plan !== 'free' || trialActive())),
@@ -138,6 +142,32 @@ window.Cloud = (function () {
   async function updatePassword(password) {
     if (!ready) return { ok: false, error: 'Cloud is not configured.' };
     const { error } = await db.auth.updateUser({ password });
+    return error ? { ok: false, error: error.message } : { ok: true };
+  }
+
+  // The person's own details. Only these two columns, whatever is passed —
+  // plan, admin and the rest are trigger-protected anyway, but a function
+  // that forwarded any field would invite somebody to try.
+  async function updateProfile(fields) {
+    if (!ready || !session) return { ok: false, error: 'Not signed in.' };
+    const row = {};
+    if (fields && 'fullName' in fields) row.full_name = String(fields.fullName || '').trim().slice(0, 120);
+    if (fields && 'avatarUrl' in fields) row.avatar_url = fields.avatarUrl || null;
+    const { error } = await db.from('profiles').update(row).eq('id', session.user.id);
+    if (error) {
+      if (/avatar_url/i.test(error.message || '')) return { ok: false, error: 'Profile pictures need schema.sql re-run first.' };
+      return { ok: false, error: error.message };
+    }
+    await loadProfile();
+    emit();
+    return { ok: true };
+  }
+
+  // A new address has to be confirmed from that inbox before it takes over;
+  // until then sign-in stays on the old one. Supabase sends the link.
+  async function changeEmail(email) {
+    if (!ready || !session) return { ok: false, error: 'Not signed in.' };
+    const { error } = await db.auth.updateUser({ email: String(email || '').trim() });
     return error ? { ok: false, error: error.message } : { ok: true };
   }
 
@@ -405,6 +435,7 @@ window.Cloud = (function () {
 
   return {
     init, signIn, signInPassword, signUp, resetPassword, updatePassword, signOut,
+    updateProfile, changeEmail,
     loadSignature, saveSignature, uploadAsset, saveBannerExpiry,
     listSignatures, createSignature, duplicateSignature, renameSignature,
     deleteSignature, setDefaultSignature, signatureUsage,

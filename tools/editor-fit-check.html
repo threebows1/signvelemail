@@ -100,6 +100,10 @@
     if (bar) {
       const right = bar.getBoundingClientRect().right;
       bar.querySelectorAll('button, select').forEach(function (b) {
+        // Inside the closed account menu a control has no size because it is
+        // not showing yet, not because the bar squeezed it; the avatar that
+        // opens the menu is what has to fit, and it is measured like the rest.
+        if (b.closest('[hidden]')) return;
         const r = b.getBoundingClientRect();
         if (r.right > right + 1) {
           E.push('"' + (b.textContent || b.id).trim().slice(0, 24) + '" sits past the right edge at ' + vw + 'px');

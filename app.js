@@ -1306,11 +1306,27 @@ function renderAccount() {
   } else {
     badge = `<a class="account-plan is-ended" href="pricing.html">trial ended</a>`;
   }
-  return `<span class="account-chip" title="${esc(c.email)}">
-      <span class="account-dot"></span>${esc(c.email.split('@')[0])}
-      ${badge}
-    </span>
-    <button class="btn" id="signOutBtn">Sign out</button>`;
+  // The same menu the dashboard and the account page carry: who is signed
+  // in, and the three places an account goes. The picture where there is
+  // one, initials where there is not.
+  const name = c.fullName || '';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const ini = parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0]
+    : parts.length ? parts[0].slice(0, 2)
+    : String(c.email || '?').split('@')[0].slice(0, 2);
+  const face = c.avatarUrl ? `<img src="${esc(c.avatarUrl)}" alt="">` : esc(ini.toUpperCase());
+  return `${badge}
+    <div class="ed-account">
+      <button class="ed-avatar${c.avatarUrl ? ' has-photo' : ''}" id="edAvatar" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu for ${esc(c.email)}">${face}</button>
+      <div class="ed-menu" id="edAccountMenu" role="menu" hidden>
+        <p class="ed-menu-who"><strong>${esc(name || c.email)}</strong>${name ? `<span>${esc(c.email)}</span>` : ''}</p>
+        <a role="menuitem" href="signatures.html"><strong>Dashboard</strong><small>Your signatures</small></a>
+        <a role="menuitem" href="account.html"><strong>Account</strong><small>Profile and password</small></a>
+        ${c.isAdmin ? '<a role="menuitem" href="admin.html"><strong>Admin</strong><small>Accounts and plans</small></a>' : ''}
+        <hr>
+        <button role="menuitem" type="button" id="signOutBtn" class="is-out"><strong>Sign out</strong></button>
+      </div>
+    </div>`;
 }
 
 // ═══════════════════════════════════════
@@ -4143,6 +4159,12 @@ function setupEvents() {
       if (confirm('Clear your saved signature settings and start over from the defaults?')) resetState();
       return;
     }
+    if (e.target.closest('#edAvatar')) {
+      const m = document.getElementById('edAccountMenu');
+      const btn = document.getElementById('edAvatar');
+      if (m) { m.hidden = !m.hidden; btn.setAttribute('aria-expanded', String(!m.hidden)); }
+      return;
+    }
     if (e.target.closest('#signInBtn')) { location.href = 'signin.html'; return; }
     if (e.target.closest('#signOutBtn')) {
       Cloud.signOut().then(() => { renderHeader(); showCopyFeedback('Signed out'); });
@@ -4151,6 +4173,17 @@ function setupEvents() {
     if (e.target.closest('#shareBtn')) { showShare(); return; }
     if (e.target.closest('#copyBtn')) { copySignature(); return; }
     if (e.target.closest('#exportBtn')) { showExport(); return; }
+  });
+
+  // The account menu closes when anything outside it is clicked.
+  document.addEventListener('click', e => {
+    if (e.target.closest('.ed-account')) return;
+    const m = document.getElementById('edAccountMenu');
+    if (m && !m.hidden) {
+      m.hidden = true;
+      const b = document.getElementById('edAvatar');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    }
   });
 
   $header.addEventListener('change', e => {

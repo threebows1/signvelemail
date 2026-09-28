@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account - Sign Vel</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.png" sizes="180x180">
+  <link rel="apple-touch-icon" href="/favicon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="db db-loading">
+
+  <header class="db-top">
+    <a class="db-brand" href="index.html" aria-label="Sign Vel home">
+      <svg width="40" height="17" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="acLogo" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#acLogo)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg>
+      <span class="db-word">Sign <em>Vel</em></span>
+    </a>
+    <nav class="db-nav" aria-label="Main">
+      <a href="signatures.html">Signatures</a>
+      <a href="install.html">Install guides</a>
+      <a href="help.html">Help</a>
+    </nav>
+    <span class="db-spacer"></span>
+    <div class="db-account">
+      <button class="db-avatar" id="dbAvatar" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu"></button>
+      <div class="db-menu db-account-menu" id="dbAccountMenu" role="menu" hidden>
+        <p class="db-menu-who" id="dbWho"></p>
+        <a role="menuitem" class="db-menu-item" href="signatures.html">
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></span>
+          <span><strong>Dashboard</strong><small>Your signatures</small></span>
+        </a>
+        <a role="menuitem" class="db-menu-item" href="account.html" aria-current="page">
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+          <span><strong>Account</strong><small>Profile and password</small></span>
+        </a>
+        <a role="menuitem" class="db-menu-item" href="admin.html" id="dbAdmin" hidden>
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span>
+          <span><strong>Admin</strong><small>Accounts and plans</small></span>
+        </a>
+        <hr>
+        <button role="menuitem" type="button" class="db-menu-item is-out" id="dbSignOut">
+          <span class="db-menu-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg></span>
+          <span><strong>Sign out</strong></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="db-main ac-main">
+    <div class="db-head"><h1>Account</h1></div>
+
+    <!-- Profile: the picture and the name the account menu shows. -->
+    <section class="ac-card" aria-labelledby="acProfileH">
+      <h2 id="acProfileH">Profile</h2>
+      <div class="ac-photo-row">
+        <div class="ac-photo" id="acPhoto" aria-hidden="true"></div>
+        <div class="ac-photo-actions">
+          <label class="db-btn" for="acFile">Upload photo</label>
+          <input type="file" id="acFile" accept="image/png,image/jpeg,image/webp,image/gif" class="db-sr">
+          <button type="button" class="db-btn" id="acRemove">Remove</button>
+          <p class="ac-hint">JPG, PNG or WebP. Cropped to a square.</p>
+        </div>
+      </div>
+      <label class="db-field">
+        <span>Name</span>
+        <input type="text" id="acName" maxlength="120" autocomplete="name">
+      </label>
+      <div class="ac-actions">
+        <button type="button" class="db-btn db-btn-primary" id="acSaveProfile">Save profile</button>
+        <p class="ac-msg" id="acProfileMsg" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="ac-card" aria-labelledby="acEmailH">
+      <h2 id="acEmailH">Email</h2>
+      <label class="db-field">
+        <span>Email address</span>
+        <input type="email" id="acEmail" autocomplete="email">
+      </label>
+      <div class="ac-actions">
+        <button type="button" class="db-btn" id="acSaveEmail">Change email</button>
+        <p class="ac-msg" id="acEmailMsg" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="ac-card" aria-labelledby="acPassH">
+      <h2 id="acPassH">Password</h2>
+      <div class="ac-two">
+        <label class="db-field">
+          <span>New password</span>
+          <input type="password" id="acPass" autocomplete="new-password" minlength="8">
+        </label>
+        <label class="db-field">
+          <span>Repeat it</span>
+          <input type="password" id="acPass2" autocomplete="new-password" minlength="8">
+        </label>
+      </div>
+      <div class="ac-actions">
+        <button type="button" class="db-btn" id="acSavePass">Change password</button>
+        <p class="ac-msg" id="acPassMsg" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="ac-card" aria-labelledby="acPlanH">
+      <h2 id="acPlanH">Plan</h2>
+      <div class="ac-plan">
+        <div>
+          <p class="ac-plan-name" id="acPlanName"></p>
+          <p class="ac-hint" id="acPlanNote"></p>
+        </div>
+        <a class="db-btn" href="pricing.html">See plans</a>
+      </div>
+      <div class="db-usage-main" id="acUsage"></div>
+    </section>
+  </main>
+
+  <p class="db-toast" id="dbToast" role="status" aria-live="polite" hidden></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="cloud.js"></script>
+  <script src="account-menu.js"></script>
+  <script src="account.js"></script>
+</body>
+</html>

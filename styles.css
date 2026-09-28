@@ -930,3 +930,22 @@ body.share-page{background:#F6F5FB;height:auto;overflow:auto;display:flex;flex-d
 }
 .share-head-actions{display:flex;align-items:center;gap:8px}
 .share-for{font-size:11.5px;color:var(--muted)}
+
+/* ── Account menu in the editor header ──
+   The same three destinations as the dashboard's menu (dashboard.css), in
+   the editor's own tokens. */
+.ed-account{position:relative;flex-shrink:0}
+.ed-avatar{width:36px;height:36px;padding:0;border-radius:50%;border:1px solid var(--border);background:var(--accent-light);color:var(--accent);font-family:var(--ui-font);font-size:12px;font-weight:800;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.ed-avatar.has-photo{background:var(--white)}
+.ed-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.ed-menu{position:absolute;right:0;top:44px;z-index:60;min-width:240px;padding:6px;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:0 16px 40px rgba(20,18,31,.16);display:flex;flex-direction:column}
+.ed-menu[hidden]{display:none}
+.ed-menu-who{margin:0 0 4px;padding:10px 12px 12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:2px}
+.ed-menu-who strong{font-size:14px;font-weight:800;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-menu-who span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-menu a,.ed-menu button{min-height:44px;padding:8px 12px;border:0;border-radius:8px;background:transparent;display:flex;flex-direction:column;justify-content:center;gap:1px;text-align:left;text-decoration:none;cursor:pointer;font-family:var(--ui-font)}
+.ed-menu a:hover,.ed-menu button:hover{background:var(--canvas)}
+.ed-menu strong{font-size:14px;font-weight:700;color:var(--ink)}
+.ed-menu small{font-size:12px;color:var(--muted)}
+.ed-menu .is-out strong{color:#C2263A}
+.ed-menu hr{border:0;height:1px;background:var(--border);margin:4px 6px}

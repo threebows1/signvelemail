@@ -532,3 +532,17 @@ returns boolean language sql stable security definer set search_path = public as
 $$;
 
 grant execute on function public.banner_active(uuid) to service_role;
+
+-- ── Profile picture ───────────────────────────────────────
+-- Kept on the profile as a small image, shrunk in the browser to 192 px
+-- before it is saved — not in storage. Storage uploads are refused on the free
+-- plan, and a profile picture is not a paid feature: everybody has an account
+-- page. It is shown only inside Sign Vel, never sent in mail, so the reason
+-- signature images must be hosted (Gmail strips inline images) does not apply.
+--
+-- The cap is on the stored text, about four times what a 192 px picture needs,
+-- so a full-size photo pasted around the browser's resize is refused rather
+-- than bloating every profile read.
+alter table public.profiles
+  add column if not exists avatar_url text
+  check (avatar_url is null or length(avatar_url) <= 120000);
