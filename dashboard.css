@@ -257,3 +257,86 @@ button,input{font:inherit;color:inherit}
   .ac-card{padding:18px}
   .ac-two{grid-template-columns:minmax(0,1fr)}
 }
+
+/* ── Signatures dashboard: sidebar, top row, manager ──
+   Scoped to .db-shell, so the profile page's plain top bar is untouched. */
+.db-shell{display:flex;min-height:100vh}
+.db-side{width:248px;flex-shrink:0;position:sticky;top:0;height:100vh;box-sizing:border-box;padding:28px 20px;display:flex;flex-direction:column;gap:32px;background:var(--card);border-right:1px solid var(--line)}
+.db-side .db-brand{padding:0 12px}
+.db-side .db-word{font-size:21px}
+.db-side-nav{display:flex;flex-direction:column;gap:4px}
+.db-side-nav a{height:48px;padding:0 14px;display:flex;align-items:center;gap:12px;border-radius:12px;color:var(--ink-soft);font-size:15px;font-weight:600;text-decoration:none}
+.db-side-nav a:hover{background:var(--bg);color:var(--ink)}
+.db-side-nav a[aria-current="page"]{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
+.db-side-usage{padding:18px;border:0;border-radius:16px;background:var(--bg);display:block}
+.db-side-usage .db-usage-main{gap:10px}
+.db-side-usage .db-usage-line{font-size:13px;flex-wrap:wrap;gap:4px}
+.db-side-usage .db-usage-line strong{font-size:15px}
+.db-content{flex-grow:1;min-width:0;display:flex;flex-direction:column}
+.db-shell .db-top{height:84px;padding:0 40px;gap:16px;background:transparent;border-bottom:0;position:static}
+.db-brand-phone{display:none}
+.db-title{margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em}
+.db-shell .db-plan{background:var(--ok-ground);border-color:#C5F2E1;color:var(--ok-ink);font-weight:700}
+.db-shell .db-banner{margin:0 40px;border:1px solid #E2DAFF;border-radius:12px;padding:12px 18px}
+.db-shell .db-main{max-width:1180px;width:100%;margin:0;padding:12px 40px 64px;box-sizing:border-box;gap:24px}
+.db-btn-pill{border-radius:999px;height:44px;padding:0 20px}
+.db-btn-soft{border-color:#D9D2FF;color:var(--accent-ink)}
+.db-btn-soft:hover{border-color:var(--accent);color:var(--accent-ink)}
+
+.db-hero-row{display:grid;grid-template-columns:minmax(0,2.6fr) minmax(0,1fr);gap:24px}
+.db-hero-row[hidden]{display:none}
+.db-hero{padding:30px;border-radius:22px;background:#F3F0FF;border:1px solid #E4DDFF;display:flex;gap:28px;align-items:center;min-width:0}
+.db-hero-text{flex:1 1 300px;min-width:300px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.db-hello{margin:0;font-size:15px;font-weight:700;color:var(--ink)}
+.db-hero h2{margin:6px 0 0;font-size:24px;font-weight:800;letter-spacing:-.01em}
+.db-hero-note{margin:0;font-size:14px;line-height:1.6;color:var(--ink-soft);max-width:340px}
+.db-hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.db-hero-link{font-size:13px;font-weight:700}
+.db-hero-sig{flex:0 1 400px;min-width:0}
+.db-thumb.is-hero{height:190px;border-radius:18px;box-shadow:0 10px 30px rgba(91,46,255,.12)}
+.db-plan-card{padding:28px 26px;border-radius:22px;background:#E9FBF4;border:1px solid #C5F2E1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px}
+.db-plan-icon{width:52px;height:52px;border-radius:14px;background:#FFFFFF;color:var(--ok-ink);display:flex;align-items:center;justify-content:center}
+.db-plan-card h2{margin:4px 0 0;font-size:19px;font-weight:800}
+.db-plan-card p{margin:0;font-size:14px;line-height:1.55;color:#2F4A40;max-width:260px}
+.db-plan-btn{margin-top:6px;border-color:#FFFFFF;color:var(--ok-ink);font-weight:800;box-shadow:0 2px 8px rgba(6,115,79,.12)}
+.db-plan-btn:hover{border-color:#C5F2E1;color:var(--ok-ink)}
+
+.db-shell .db-head{flex-wrap:wrap;margin-top:8px}
+.db-shell .db-head h2{margin:0;font-size:24px;font-weight:800;letter-spacing:-.01em}
+.db-shell .db-search{width:300px;border-radius:999px;background:var(--card)}
+
+@media (max-width:1200px){
+  .db-hero-row{grid-template-columns:minmax(0,1fr)}
+  .db-plan-card{flex-direction:row;flex-wrap:wrap;text-align:left;justify-content:flex-start}
+  .db-plan-card p{max-width:none;flex:1 1 200px}
+  .db-plan-card h2{margin:0}
+  .db-plan-btn{margin-top:0}
+}
+@media (max-width:1000px){
+  .db-side{display:none}
+  .db-brand-phone{display:flex}
+  .db-shell .db-top{height:64px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line)}
+  .db-title{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .db-shell .db-banner{margin:16px 24px 0}
+  .db-shell .db-main{padding:24px 24px 56px}
+  .db-usage-top{display:flex}
+}
+@media (max-width:640px){
+  .db-shell .db-top{height:60px;padding:0 16px}
+  .db-shell .db-banner{margin:12px 16px 0}
+  .db-shell .db-main{padding:18px 16px 40px;gap:16px}
+  .db-hero{flex-direction:column;align-items:stretch;padding:20px;gap:16px}
+  .db-hero-text{flex:none;min-width:0}
+  .db-hero-sig{order:-1;flex:none}
+  .db-hero-text{order:0}
+  .db-thumb.is-hero{height:150px;border-radius:14px}
+  .db-hero-actions .db-btn{flex:1 1 0}
+  .db-plan-card{padding:18px}
+  .db-plan-icon{display:none}
+  .db-shell .db-head{flex-wrap:wrap}
+  .db-shell .db-head h2{font-size:21px;flex:1 1 auto}
+  .db-shell .db-head .db-spacer{display:none}
+  .db-shell .db-search{width:100%;order:3}
+  .db-shell .db-top .db-btn{width:auto;padding:0 20px}
+  .db-shell .db-head .db-btn{width:44px;padding:0}
+}

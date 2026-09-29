@@ -9,36 +9,43 @@
 <pre id="out" style="font:12px monospace;background:#fff;position:relative;z-index:99;margin:0;padding:8px"></pre>
 
 <!-- The page's own markup, as signatures.html has it. -->
+<div class="db-shell">
+<aside class="db-side">
+  <nav class="db-side-nav"><a href="#" aria-current="page">Signatures</a></nav>
+  <section class="db-usage db-side-usage" id="dbUsage" hidden></section>
+</aside>
+<div class="db-content">
 <header class="db-top">
-  <a class="db-brand" href="#"><span class="db-word">Sign <em>Vel</em></span></a>
-  <nav class="db-nav"><a href="#" aria-current="page">Signatures</a></nav>
-  <span class="db-spacer"></span>
+  <h1 class="db-title">Dashboard</h1>
   <span class="db-plan" id="dbPlan"></span>
-  <button class="db-btn db-btn-primary" id="dbNew" type="button"><span class="db-new-label">New signature</span></button>
+  <span class="db-spacer"></span>
   <div class="db-account">
     <button class="db-avatar" id="dbAvatar" type="button" aria-expanded="false"></button>
-    <div class="db-menu db-account-menu" id="dbAccountMenu" role="menu" hidden>
-      <p class="db-menu-note" id="dbEmail"></p>
-      <a role="menuitem" href="#" id="dbAdmin" hidden>Admin</a>
-      <button role="menuitem" type="button" id="dbSignOut">Sign out</button>
-    </div>
+    <div class="db-menu db-account-menu" id="dbAccountMenu" role="menu" hidden></div>
   </div>
 </header>
 <div class="db-banner" id="dbBanner" hidden></div>
 <main class="db-main">
+  <div class="db-hero-row" id="dbHeroRow" hidden>
+    <section class="db-hero" id="dbHero"></section>
+    <section class="db-plan-card" id="dbPlanCard"></section>
+  </div>
+  <div class="db-usage db-usage-top" id="dbUsageTop" hidden></div>
   <div class="db-head">
-    <h1>Signatures</h1><span class="db-spacer"></span>
+    <h2>Your signatures</h2>
     <label class="db-search"><input type="search" id="dbSearch"></label>
+    <span class="db-spacer"></span>
     <div class="db-views" id="dbViews">
       <button type="button" data-view="grid" aria-pressed="true">G</button>
       <button type="button" data-view="list" aria-pressed="false">L</button>
     </div>
+    <button class="db-btn db-btn-primary" id="dbNew" type="button"><span class="db-new-label">New signature</span></button>
   </div>
-  <div class="db-usage db-usage-top" id="dbUsageTop" hidden></div>
   <div class="db-status" id="dbStatus"></div>
   <div id="dbList"></div>
-  <section class="db-usage db-usage-bottom" id="dbUsage" hidden></section>
 </main>
+</div>
+</div>
 <div class="db-scrim" id="dbScrim" hidden></div>
 <div class="db-dialog" id="dbDialog" hidden>
   <h2 id="dbDialogTitle"></h2><div id="dbDialogBody"></div>
@@ -185,6 +192,15 @@ const titleOf = (c) => (c.querySelector('h2') || {}).textContent;
   const create = $('.db-create');
   if (!create || !/2 left/.test(create.textContent)) F.push('the create card does not say 2 left');
   if (!/3/.test($('#dbUsage').textContent) || !/of 5/.test($('#dbUsage').textContent)) F.push('the usage bar does not read 3 of 5');
+  // The top row: the default signature, drawn, with its copy and edit.
+  const hero = $('#dbHero');
+  if ($('#dbHeroRow').hidden) F.push('the default signature panel is hidden');
+  if (!hero.querySelector('.db-thumb') || hero.querySelector('.db-thumb').innerHTML.indexOf('Daniel Reyes') === -1) F.push('the default signature panel does not draw the default');
+  if (!hero.querySelector('[data-act="copy"][data-id="a"]')) F.push('the default signature panel offers no Copy signature');
+  if (!hero.querySelector('a[href="editor.html?sig=a"]')) F.push('the default signature panel offers no Edit');
+  if (!/Team gives you 10/.test($('#dbPlanCard').textContent) || !$('#dbPlanCard a[href="pricing.html"]')) F.push('the plan card does not offer the next plan');
+  // Layout names are not shown anywhere on the page.
+  if (/Corporate|Connect|Profile ·/.test($('#dbList').textContent)) F.push('a layout name is still shown');
   if (!/Free trial · 18 days left/.test($('#dbPlan').textContent)) F.push('the plan chip does not show the trial');
   if ($('#dbBanner').hidden) F.push('no trial banner');
 
@@ -192,6 +208,7 @@ const titleOf = (c) => (c.querySelector('h2') || {}).textContent;
   cards()[1].querySelector('[data-act="default"]').click();
   await tick(200);
   if (titleOf(cards()[0]) !== 'Q4 webinar campaign') F.push('Make default did not move the default to the front');
+  if ($('#dbHero .db-thumb').innerHTML.indexOf('Sara Malik') === -1) F.push('the default signature panel did not follow the new default');
   if (store.sigs.filter((s) => s.is_default).length !== 1) F.push('there is not exactly one default');
 
   // ── Rename through the menu ──
@@ -238,7 +255,7 @@ const titleOf = (c) => (c.querySelector('h2') || {}).textContent;
   if (rows.length !== store.sigs.length) F.push('list view: expected ' + store.sigs.length + ' rows, got ' + rows.length);
   if (!rows.some((r) => /Lena Fischer/.test(r.cells[1].textContent))) F.push('list view: the Person column does not show the signature’s own name');
   if (!rows.some((r) => /Legal/.test(r.cells[2].textContent))) F.push('list view: no scope chip');
-  if ($('#dbUsageTop').hidden) F.push('list view: the usage bar is not beside the title');
+  if (/Corporate|Connect/.test($('.db-table').textContent)) F.push('list view: a layout name is still shown');
   if (!$('.db-add-row.is-limit')) F.push('list view: the limit is not shown at the foot of the table');
 
   // ── Search ──
