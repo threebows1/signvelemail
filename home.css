@@ -1015,13 +1015,15 @@ body{margin:0}
 .ba-pills{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .ba-pills li{height:28px;padding:0 12px;display:inline-flex;align-items:center;border-radius:999px;background:rgba(0,229,160,.16);color:#04231a;font-size:12.5px;font-weight:700}
 .ba-pills.bad li{background:#fdeceb;color:#a3302a}
-.ba-icons{display:flex;gap:6px;margin-top:8px}
-.ba-icons i{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--primary)}
+.ba-icons{display:inline-flex;gap:6px;margin-top:8px;padding:3px}
+.ba-icons i{width:20px;height:20px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--primary);color:var(--primary);display:inline-flex;align-items:center;justify-content:center;font-style:normal}
+.ba-icons svg{display:block}
 .ba-stage[data-focus="tables"] [data-part="tables"],
 .ba-stage[data-focus="hosted"] [data-part="hosted"],
 .ba-stage[data-focus="corners"] [data-part="corners"],
 .ba-stage[data-focus="fallback"] [data-part="fallback"]{box-shadow:0 0 0 3px rgba(91,46,255,.35);border-radius:10px}
 .ba-stage[data-focus="hosted"] [data-part="hosted"]{border-radius:50%}
+.ba-stage[data-focus="corners"] [data-part="corners"]{border-radius:999px}
 @media (prefers-reduced-motion:no-preference){
   .ba-stage[data-focus] [data-part]{transition:box-shadow .3s}
   .ba-stage[data-focus="tables"] [data-part="tables"],
