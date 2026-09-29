@@ -22,8 +22,8 @@ const day = ms => new Date(Date.now() + ms).toISOString().slice(0, 10);
 let ran = 0;
 
 // Layouts differ in which banner they have a slot for, so each case is run on
-// one that draws it: corporate has no place for a banner image at all, and
-// profile does not draw the text banner. Run on the wrong one, a case passes
+// one that draws it: profile does not draw the text banner, so the text case
+// runs on corporate and the image case on profile. Run on the wrong one, a case passes
 // by drawing nothing, which is what the first two attempts at this did.
 S.bannerEnabled = true;
 S.bannerMessage = 'Book a 15-minute intro call';
@@ -79,6 +79,30 @@ function seen(kind) {
   S.bannerExpiresAt = 'not-a-date';
   ran++;
   if (!seen(kind).copy) F.push(kind + ': an unparseable date switched the banner off');
+});
+
+// Corporate and Minimal once had no slot for a banner image, so an image
+// campaign set on either simply never appeared. It goes under the social
+// icons and above the disclaimer, and still ends on its date.
+['corporate', 'minimal'].forEach(function (tpl) {
+  S.template = tpl; applyTemplateTheme(tpl);
+  S.bannerImage = 'https://signvel.com/sample-banner.png';
+  S.bannerExpiresAt = '';
+  S.disclaimerEnabled = true;
+  S.disclaimerText = 'Confidential test notice';
+  ran++;
+  ['', 'classic'].forEach(function (target) {
+    const h = withExportTarget(target, generateSignaturePreview);
+    const at = h.indexOf('sample-banner');
+    const social = h.lastIndexOf('facebook.com');
+    const disc = h.indexOf('Confidential test notice');
+    const where = tpl + ', ' + (target || 'standard');
+    if (at === -1) { F.push(where + ': a running image banner is not drawn'); return; }
+    if (social !== -1 && at < social) F.push(where + ': the image banner sits above the social icons');
+    if (disc !== -1 && at > disc) F.push(where + ': the image banner sits below the disclaimer');
+  });
+  S.bannerExpiresAt = day(-2 * 864e5);
+  if (/sample-banner/.test(generateSignaturePreview())) F.push(tpl + ': an ended image banner is still in the copy');
 });
 
 if (!ran) F.push('nothing was measured, so this check proves nothing');

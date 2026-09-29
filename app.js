@@ -3695,7 +3695,7 @@ function buildSignatureBody() {
       </td></tr>
       ${S.dividerEnabled ? `<tr><td style="padding:${sp} 0;">${rule}</td></tr>` : ''}
       ${socialHTML ? `<tr><td style="padding-bottom:${sp};">${socialHTML}</td></tr>` : ''}
-      ${bannerHTML}
+      ${bannerImgHTML ? `<tr><td style="padding-bottom:${sp};">${bannerImgHTML}</td></tr>` : bannerHTML}
       ${S.disclaimerEnabled && S.disclaimerText ? `<tr><td><p style="${discStyle}">${esc(S.disclaimerText)}</p></td></tr>` : ''}
     </tbody></table>`;
   }
@@ -3912,7 +3912,7 @@ function buildSignatureBody() {
       }).join(`<span style="color:${ruleColor};margin:0 6px;">·</span>`)}
     </td></tr>
     ${socialHTML ? `<tr><td style="padding-top:${sp};">${socialHTML}</td></tr>` : ''}
-    ${bannerHTML}
+    ${bannerImgHTML ? `<tr><td style="padding-top:${sp};">${bannerImgHTML}</td></tr>` : bannerHTML}
     ${disclaimerHTML}`);
 }
 
