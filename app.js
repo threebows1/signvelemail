@@ -1415,7 +1415,7 @@ function signvelCreditHTML() {
     + `</td></tr></tbody></table>`;
 }
 function renderRail() {
-  let html = `<a class="rail-brand" href="index.html" title="Back to signvel.com home">${icons.logo}</a>
+  let html = `<a class="rail-brand" href="signatures.html" title="Back to your signatures">${icons.logo}</a>
     <nav class="rail-nav">`;
   let lastCat = '';
   sections.forEach((sec, i) => {
