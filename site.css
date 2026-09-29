@@ -548,3 +548,26 @@ body{margin:0}
 .guide{scroll-margin-top:88px}
 .guide-before .h3{margin:0 0 18px}
 @media (max-width:640px){.guide{padding:22px 18px}}
+
+/* Pricing cards: solid purple ticks, and every plan's button solid purple
+   with an arrow, so no plan's call to action reads as the lesser one. */
+.price-list li{padding-left:34px}
+.price-list li::before{
+  content:"";top:1px;width:22px;height:22px;background:var(--accent);box-shadow:none;
+}
+.price-list li::after{
+  content:"";position:absolute;left:8px;top:6px;width:5px;height:9px;
+  border:solid #fff;border-width:0 2.2px 2.2px 0;transform:rotate(45deg);
+}
+.price-card .btn-secondary{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 6px 20px var(--accent-glow)}
+.price-card .btn-secondary:hover{background:var(--accent-dark);color:#fff;transform:translateY(-1px)}
+.price-card .btn-primary::after,.price-card .btn-secondary::after{content:"\2192"}
+/* Four columns at a laptop width leave a card too narrow for "Start your 30
+   days" and an arrow on one line; held on one line it pushed the page wide. */
+.price-card .btn-primary,.price-card .btn-secondary{white-space:normal;text-align:center;padding-left:16px;padding-right:16px;line-height:1.25}
+/* The period sat inside the price and took its tight tracking: "/mnth". */
+.price-amount .price-period{letter-spacing:0;margin-left:4px;white-space:nowrap;font-size:15px}
+.price-card .btn-primary,.price-card .btn-secondary{display:flex;justify-content:center;align-self:stretch}
+/* Four plans do not fit four across below this: two rows of two instead. */
+@media (max-width:1120px){.grid-4:has(> .price-card){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:620px){.grid-4:has(> .price-card){grid-template-columns:minmax(0,1fr)}}
