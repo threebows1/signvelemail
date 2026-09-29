@@ -1018,18 +1018,18 @@ body{margin:0}
 .ba-icons{display:inline-flex;gap:6px;margin-top:8px;padding:3px}
 .ba-icons i{width:20px;height:20px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--primary);color:var(--primary);display:inline-flex;align-items:center;justify-content:center;font-style:normal}
 .ba-icons svg{display:block}
-.ba-stage[data-focus="tables"] [data-part="tables"],
+.ba-stage[data-focus="tables"] [data-part~="tables"],
 .ba-stage[data-focus="hosted"] [data-part="hosted"],
 .ba-stage[data-focus="corners"] [data-part="corners"],
-.ba-stage[data-focus="fallback"] [data-part="fallback"]{box-shadow:0 0 0 3px rgba(91,46,255,.35);border-radius:10px}
+.ba-stage[data-focus="fallback"] [data-part~="fallback"]{box-shadow:0 0 0 3px rgba(91,46,255,.35);border-radius:10px}
 .ba-stage[data-focus="hosted"] [data-part="hosted"]{border-radius:50%}
 .ba-stage[data-focus="corners"] [data-part="corners"]{border-radius:999px}
 @media (prefers-reduced-motion:no-preference){
   .ba-stage[data-focus] [data-part]{transition:box-shadow .3s}
-  .ba-stage[data-focus="tables"] [data-part="tables"],
+  .ba-stage[data-focus="tables"] [data-part~="tables"],
   .ba-stage[data-focus="hosted"] [data-part="hosted"],
   .ba-stage[data-focus="corners"] [data-part="corners"],
-  .ba-stage[data-focus="fallback"] [data-part="fallback"]{animation:fixPulse 1.6s ease-in-out infinite}
+  .ba-stage[data-focus="fallback"] [data-part~="fallback"]{animation:fixPulse 1.6s ease-in-out infinite}
   @keyframes fixPulse{50%{box-shadow:0 0 0 7px rgba(91,46,255,.12)}}
   .ba-panel:not([hidden]){animation:baIn .4s ease-out both}
   @keyframes baIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
@@ -1138,3 +1138,8 @@ body{margin:0}
   .bento-wires{gap:6px}
   .bento-wires .strip-wire{flex:1 1 0;min-width:0}
 }
+
+/* The whole signature lights up for tables and fallbacks: a gap of white,
+   then the purple ring, so the ring never sits on the text. */
+.ba-stage[data-focus="tables"] .ba-sig,.ba-stage[data-focus="fallback"] .ba-sig{border-color:var(--primary);box-shadow:0 0 0 4px rgba(91,46,255,.18);border-radius:14px}
+.ba-stage[data-focus="hosted"] [data-part~="hosted"],.ba-stage[data-focus="corners"] [data-part~="corners"]{box-shadow:0 0 0 3px #fff,0 0 0 6px rgba(91,46,255,.45)}
