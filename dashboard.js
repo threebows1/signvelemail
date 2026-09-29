@@ -25,8 +25,6 @@
   const SCOPE_NAMES = {sales: 'Sales', legal: 'Legal', engineering: 'Engineering', executive: 'Executive'};
   const PLAN_NAMES = {solo: 'Solo plan', team: 'Team plan', org: 'Business plan'};
   const phone = window.matchMedia('(max-width: 640px)');
-  // Below this the sidebar, and the allowance in it, is hidden (dashboard.css).
-  const narrow = window.matchMedia('(max-width: 1000px)');
 
   // The renderer's defaults, before any signature has been loaded into it.
   // Each card starts from these, so one signature's settings never leak into
@@ -92,7 +90,7 @@
       inner.style.transform = '';
       const w = inner.scrollWidth, h = inner.scrollHeight;
       if (!w || !h) return;
-      const pad = box.classList.contains('is-small') ? 4 : box.classList.contains('is-hero') ? 24 : 20;
+      const pad = box.classList.contains('is-small') ? 4 : 20;
       const k = Math.min(1, (box.clientWidth - pad * 2) / w, (box.clientHeight - pad * 2) / h);
       inner.style.transform = `translate(-50%, -50%) scale(${k})`;
     });
@@ -133,8 +131,8 @@
     const c = Cloud.state() || {};
     const cap = D.usage && D.usage.cap;
     if (c.plan === 'org') return '';
-    if (c.plan === 'team') return cap < 20 ? 'Business gives you 20 signatures.' : '';
-    return cap < 10 ? 'Team gives you 10 signatures.' : '';
+    if (c.plan === 'team') return cap < 20 ? 'Business gives you 20.' : '';
+    return cap < 10 ? 'Team gives you 10.' : '';
   }
 
   function limitBlock() {
@@ -217,41 +215,6 @@
     return `<ul class="db-rows">${rows}</ul>${foot}`;
   }
 
-  // ── The top row: the default signature, and the plan ─────
-  function greeting() {
-    const h = new Date().getHours();
-    const part = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
-    const first = String((Cloud.state() || {}).fullName || '').trim().split(/s+/)[0];
-    return first ? part + ', ' + first : part;
-  }
-
-  const COPY = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>';
-  const PEN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
-  const STAR = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg>';
-
-  function heroHTML(sig) {
-    return `<div class="db-hero-text">
-        <p class="db-hello">${esc(greeting())}</p>
-        <h2>Your default signature</h2>
-        <p class="db-hero-note">This is the one you install. Change it any time, or make another one the default below.</p>
-        <div class="db-hero-actions">
-          <button type="button" class="db-btn db-btn-primary db-btn-pill" data-act="copy" data-id="${esc(sig.id)}">${COPY}Copy signature</button>
-          <a class="db-btn db-btn-pill db-btn-soft" href="editor.html?sig=${encodeURIComponent(sig.id)}">${PEN}Edit</a>
-        </div>
-        <a class="db-hero-link" href="install.html">How to install it</a>
-      </div>
-      <div class="db-hero-sig">${thumb(sig, 'is-hero')}</div>`;
-  }
-
-  function planCardHTML() {
-    const line = nextPlanLine();
-    const cap = D.usage && D.usage.cap;
-    return `<span class="db-plan-icon">${STAR}</span>
-      <h2>${line ? 'Need more signatures?' : 'Your plan'}</h2>
-      <p>${esc(line || (cap ? cap + ' signatures on your plan.' : 'Your plan and account details.'))}</p>
-      <a class="db-btn db-btn-pill db-plan-btn" href="${line ? 'pricing.html' : 'account.html'}">${line ? 'See plans' : 'Profile settings'}</a>`;
-  }
-
   function usageHTML(compact) {
     const u = D.usage;
     if (!u) return '';
@@ -265,7 +228,7 @@
         </div>
         <div class="db-bar" role="progressbar" aria-label="Signatures used" aria-valuemin="0" aria-valuemax="${u.cap}" aria-valuenow="${u.used}"><i style="width:${pct}%"></i></div>
       </div>
-`;
+      ${compact ? '' : '<a class="db-usage-link" href="pricing.html">Upgrade</a>'}`;
   }
 
   // ── Page ─────────────────────────────────────────────────
@@ -281,16 +244,13 @@
     el('dbStatus').textContent = (q && !shown.length) ? 'Nothing matches that search.' : '';
     el('dbList').innerHTML = view === 'rows' ? rowsView(shown) : view === 'list' ? listView(shown) : gridView(shown);
 
-    // The allowance lives in the sidebar; a phone has no sidebar, so there it
-    // sits under the top row instead.
-    el('dbUsage').hidden = !D.usage;
-    el('dbUsage').innerHTML = usageHTML(false);
-    el('dbUsageTop').hidden = !D.usage || !narrow.matches;
-    el('dbUsageTop').innerHTML = narrow.matches ? usageHTML(false) : '';
-
-    const def = D.list.find((s) => s.is_default) || D.list[0];
-    el('dbHeroRow').hidden = !def;
-    if (def) { el('dbHero').innerHTML = heroHTML(def); el('dbPlanCard').innerHTML = planCardHTML(); }
+    // The bar sits beside the title for a list — which can run to a hundred
+    // rows — and under the cards for a grid, as the two designs have it.
+    const top = view !== 'grid';
+    el('dbUsageTop').hidden = !top || !D.usage;
+    el('dbUsageTop').innerHTML = top ? usageHTML(true) : '';
+    el('dbUsage').hidden = top || !D.usage;
+    el('dbUsage').innerHTML = top ? '' : usageHTML(false);
 
     el('dbNew').disabled = atLimit() || D.busy;
     requestAnimationFrame(fitThumbs);
@@ -487,7 +447,6 @@
     render();
   });
   phone.addEventListener('change', render);
-  narrow.addEventListener('change', render);
   window.addEventListener('resize', () => requestAnimationFrame(fitThumbs));
 
   // ── Start ────────────────────────────────────────────────

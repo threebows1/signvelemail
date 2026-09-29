@@ -20,78 +20,56 @@
      both read as something broken. -->
 <body class="db db-loading">
 
-  <div class="db-shell">
-  <aside class="db-side" aria-label="Sign Vel">
+  <header class="db-top">
     <a class="db-brand" href="index.html" aria-label="Sign Vel home">
       <svg width="40" height="17" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="dbLogo" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#dbLogo)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg>
       <span class="db-word">Sign <em>Vel</em></span>
     </a>
-    <nav class="db-side-nav" aria-label="Main">
-      <a href="signatures.html" aria-current="page"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Signatures</a>
-      <a href="install.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Install guides</a>
-      <a href="account.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Profile settings</a>
-      <a href="help.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7"/><path d="M12 17h.01"/></svg>Help</a>
+    <nav class="db-nav" aria-label="Main">
+      <a href="signatures.html" aria-current="page">Signatures</a>
+      <a href="install.html">Install guides</a>
+      <a href="help.html">Help</a>
     </nav>
     <span class="db-spacer"></span>
-    <!-- How much of the allowance is used. On a phone, where there is no
-         sidebar, the same numbers are drawn into #dbUsageTop instead. -->
-    <section class="db-usage db-side-usage" id="dbUsage" aria-label="Signature allowance" hidden></section>
-  </aside>
+    <span class="db-plan" id="dbPlan"></span>
+    <button class="db-btn db-btn-primary" id="dbNew" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      <span class="db-new-label">New signature</span>
+    </button>
+    <div class="db-account">
+      <button class="db-avatar" id="dbAvatar" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu"></button>
+      <!-- Drawn by account-menu.js, so it is the same on every page that has it. -->
+      <div class="db-menu db-account-menu" id="dbAccountMenu" role="menu" hidden></div>
+    </div>
+  </header>
 
-  <div class="db-content">
-    <header class="db-top">
-      <a class="db-brand db-brand-phone" href="index.html" aria-label="Sign Vel home">
-        <svg width="40" height="17" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="dbLogo2" x1="0" x2="1"><stop offset="0" stop-color="#5B2EFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs><path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#dbLogo2)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="27" r="5" fill="#9D4EDD"/></svg>
-        <span class="db-word">Sign <em>Vel</em></span>
-      </a>
-      <h1 class="db-title">Dashboard</h1>
-      <span class="db-plan" id="dbPlan"></span>
+  <div class="db-banner" id="dbBanner" hidden></div>
+
+  <main class="db-main">
+    <div class="db-head">
+      <h1>Signatures</h1>
       <span class="db-spacer"></span>
-      <div class="db-account">
-        <button class="db-avatar" id="dbAvatar" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu"></button>
-        <!-- Drawn by account-menu.js, so it is the same on every page that has it. -->
-        <div class="db-menu db-account-menu" id="dbAccountMenu" role="menu" hidden></div>
+      <label class="db-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <span class="db-sr">Search signatures</span>
+        <input type="search" id="dbSearch" placeholder="Search signatures" autocomplete="off">
+      </label>
+      <div class="db-views" id="dbViews">
+        <button type="button" data-view="grid" aria-pressed="true" aria-label="Grid view"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></button>
+        <button type="button" data-view="list" aria-pressed="false" aria-label="List view"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
       </div>
-    </header>
+    </div>
 
-    <div class="db-banner" id="dbBanner" hidden></div>
+    <div class="db-usage db-usage-top" id="dbUsageTop" hidden></div>
 
-    <main class="db-main">
-      <!-- The default signature, and what the plan allows. Drawn by dashboard.js
-           once the list is in; hidden while there is nothing to show. -->
-      <div class="db-hero-row" id="dbHeroRow" hidden>
-        <section class="db-hero" id="dbHero" aria-label="Your default signature"></section>
-        <section class="db-plan-card" id="dbPlanCard" aria-label="Your plan"></section>
-      </div>
+    <!-- Everything the dashboard says about the account — loading, empty, a
+         failure — is said here, so the list below only ever holds signatures. -->
+    <div class="db-status" id="dbStatus" role="status" aria-live="polite"></div>
 
-      <div class="db-usage db-usage-top" id="dbUsageTop" hidden></div>
+    <div id="dbList"></div>
 
-      <div class="db-head">
-        <h2>Your signatures</h2>
-        <label class="db-search">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-          <span class="db-sr">Search signatures</span>
-          <input type="search" id="dbSearch" placeholder="Search by name or person" autocomplete="off">
-        </label>
-        <span class="db-spacer"></span>
-        <div class="db-views" id="dbViews">
-          <button type="button" data-view="grid" aria-pressed="true" aria-label="Grid view"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></button>
-          <button type="button" data-view="list" aria-pressed="false" aria-label="List view"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
-        </div>
-        <button class="db-btn db-btn-primary db-btn-pill" id="dbNew" type="button">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-          <span class="db-new-label">New signature</span>
-        </button>
-      </div>
-
-      <!-- Everything the dashboard says about the account — loading, empty, a
-           failure — is said here, so the list below only ever holds signatures. -->
-      <div class="db-status" id="dbStatus" role="status" aria-live="polite"></div>
-
-      <div id="dbList"></div>
-    </main>
-  </div>
-  </div>
+    <section class="db-usage db-usage-bottom" id="dbUsage" aria-label="Signature allowance" hidden></section>
+  </main>
 
   <div class="db-scrim" id="dbScrim" hidden></div>
   <div class="db-dialog" id="dbDialog" role="dialog" aria-modal="true" aria-labelledby="dbDialogTitle" hidden>
