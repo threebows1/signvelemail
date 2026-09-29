@@ -806,12 +806,6 @@ body{margin:0}
 }
 .band-copy{min-width:0}
 .band-inner .lead{max-width:none;color:var(--secondary-foreground);opacity:.85}
-.band-list{margin:30px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:18px}
-.band-list li{
-  font-size:13.5px;line-height:1.55;color:var(--secondary-foreground);
-  opacity:.85;padding-left:18px;border-left:2px solid var(--primary);
-}
-.band-list strong{display:block;font-size:14.5px;font-weight:700;opacity:1;margin-bottom:3px}
 
 /* ── Before / after ── */
 .ba{min-width:0}
@@ -975,8 +969,6 @@ body{margin:0}
   .swatch:hover{transform:scale(1.08)}
 
   .ba-tab{transition:background-color .16s,color .16s}
-  .band-list li{transition:border-color .16s}
-  .band-list li:hover{border-left-color:var(--accent)}
   .client-tile{transition:transform .14s ease-out,border-color .14s}
   .client-tile:hover{transform:translateY(-2px);border-color:#D9D4EC}
   .copy-btn{transition:background-color .16s,color .16s}
@@ -1010,3 +1002,34 @@ body{margin:0}
 .how-pill{display:inline-flex;align-items:center;height:30px;padding:0 14px;border:1px solid #DDD8F0;border-radius:999px}
 .how-accent{color:var(--primary)}
 .how-head .h2{max-width:none}
+
+/* ── Outlook band: tiles, pills, and the part a tile lights up ── */
+.fix-grid{margin-top:28px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fix-tile{font:inherit;display:flex;align-items:center;gap:12px;min-height:64px;padding:12px 14px;border-radius:16px;border:1.5px solid transparent;background:rgba(255,255,255,.7);color:var(--foreground);font-size:14.5px;font-weight:700;text-align:left;cursor:pointer;transition:border-color .2s,background .2s,transform .2s}
+.fix-tile:hover{background:#fff;transform:translateY(-2px)}
+.fix-tile.is-on{background:#fff;border-color:var(--primary)}
+.fix-tile:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.fix-ico{width:40px;height:40px;flex-shrink:0;border-radius:12px;background:rgba(91,46,255,.1);color:var(--primary);display:flex;align-items:center;justify-content:center}
+.fix-tile.is-on .fix-ico{background:var(--primary);color:#fff}
+.fix-tip{margin:16px 0 0;min-height:3em;font-size:14px;line-height:1.55;color:var(--secondary-foreground)}
+.ba-pills{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.ba-pills li{height:28px;padding:0 12px;display:inline-flex;align-items:center;border-radius:999px;background:rgba(0,229,160,.16);color:#04231a;font-size:12.5px;font-weight:700}
+.ba-pills.bad li{background:#fdeceb;color:#a3302a}
+.ba-icons{display:flex;gap:6px;margin-top:8px}
+.ba-icons i{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--primary)}
+.ba-stage[data-focus="tables"] [data-part="tables"],
+.ba-stage[data-focus="hosted"] [data-part="hosted"],
+.ba-stage[data-focus="corners"] [data-part="corners"],
+.ba-stage[data-focus="fallback"] [data-part="fallback"]{box-shadow:0 0 0 3px rgba(91,46,255,.35);border-radius:10px}
+.ba-stage[data-focus="hosted"] [data-part="hosted"]{border-radius:50%}
+@media (prefers-reduced-motion:no-preference){
+  .ba-stage[data-focus] [data-part]{transition:box-shadow .3s}
+  .ba-stage[data-focus="tables"] [data-part="tables"],
+  .ba-stage[data-focus="hosted"] [data-part="hosted"],
+  .ba-stage[data-focus="corners"] [data-part="corners"],
+  .ba-stage[data-focus="fallback"] [data-part="fallback"]{animation:fixPulse 1.6s ease-in-out infinite}
+  @keyframes fixPulse{50%{box-shadow:0 0 0 7px rgba(91,46,255,.12)}}
+  .ba-panel:not([hidden]){animation:baIn .4s ease-out both}
+  @keyframes baIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+}
+@media (max-width:460px){.fix-grid{grid-template-columns:minmax(0,1fr)}}

@@ -371,26 +371,17 @@
         <div class="band-copy">
           <span class="eyebrow">The difficult part</span>
           <h2 class="h2 h2-tight">Most signatures break in Outlook.</h2>
-          <p class="lead">Outlook renders mail through Word. It ignores rounded corners, drops inline SVG, and undoes half of what a browser would accept. Gmail strips background images and cuts a long message off entirely. A signature that looks right in the builder and arrives broken is worse than no signature at all.</p>
+          <p class="lead">Outlook draws email with Word. Sign Vel builds for it.</p>
 
-          <ul class="band-list">
-            <li>
-              <strong>Nested tables, inline styles</strong>
-              No flexbox, no grid, no stylesheet — the only markup every client agrees on.
-            </li>
-            <li>
-              <strong>Images hosted, not embedded</strong>
-              Uploads become real URLs. The data: URIs a browser produces are stripped before the recipient sees them.
-            </li>
-            <li>
-              <strong>Checked against the clients</strong>
-              Every layout rendered and read in Gmail, Outlook, Apple Mail, Yahoo, Thunderbird and Proton.
-            </li>
-            <li>
-              <strong>Falls back rather than breaks</strong>
-              No photo, no logo, images switched off — the layout still reads as a finished signature.
-            </li>
-          </ul>
+          <!-- Four things done differently. Each tile lights up its part of the
+               signature on the right, so the detail is shown, not written. -->
+          <div class="fix-grid" role="group" aria-label="What Sign Vel does differently">
+            <button type="button" class="fix-tile is-on" data-fix="tables" aria-pressed="true"><span class="fix-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M10 4v16"/></svg></span><span>Built from tables</span></button>
+            <button type="button" class="fix-tile" data-fix="hosted" aria-pressed="false"><span class="fix-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9a4 4 0 0 1 0 9z"/><path d="M12 12v6M9.5 14.5 12 12l2.5 2.5"/></svg></span><span>Images hosted</span></button>
+            <button type="button" class="fix-tile" data-fix="corners" aria-pressed="false"><span class="fix-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></span><span>Word-proof icons</span></button>
+            <button type="button" class="fix-tile" data-fix="fallback" aria-pressed="false"><span class="fix-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7v5c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V7z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Falls back cleanly</span></button>
+          </div>
+          <p class="fix-tip" id="fixTip" aria-live="polite">Nested tables and inline styles: the only markup every mail app agrees on.</p>
         </div>
 
         <div class="ba">
@@ -399,7 +390,7 @@
             <button class="ba-tab" role="tab" id="ba-tab-2" aria-controls="ba-panel-2" aria-selected="false" tabindex="-1">Built here</button>
           </div>
 
-          <div class="ba-stage">
+          <div class="ba-stage" id="baStage" data-focus="tables">
             <div class="ba-panel" role="tabpanel" id="ba-panel-1" aria-labelledby="ba-tab-1">
               <p class="ba-head"><span class="ba-chip bad">As it arrives in Outlook</span></p>
               <div class="ba-sig broken">
@@ -412,48 +403,29 @@
                   <span class="ba-line faint">[cid:image001.png@01D9A4]</span>
                 </span>
               </div>
-              <ul class="ba-faults">
-                <li>Logo stripped — it was pasted, not hosted</li>
-                <li>Spacing collapsed, two fields run together</li>
-                <li>Rounded corners and icons dropped by Word</li>
+              <ul class="ba-pills bad">
+                <li>Logo stripped</li><li>Fields run together</li><li>Icons dropped</li>
               </ul>
             </div>
 
             <div class="ba-panel" role="tabpanel" id="ba-panel-2" aria-labelledby="ba-tab-2" hidden>
               <p class="ba-head"><span class="ba-chip good">As it arrives in Outlook</span></p>
-              <div class="ba-sig">
-                <span class="ba-face" aria-hidden="true"></span>
-                <span class="ba-body">
+              <div class="ba-sig" data-part="fallback">
+                <span class="ba-face" data-part="hosted" aria-hidden="true"></span>
+                <span class="ba-body" data-part="tables">
                   <span class="ba-name">Daniel Reyes</span>
                   <span class="ba-line">Head of Partnerships · Sign Vel</span>
                   <span class="ba-rule" aria-hidden="true"></span>
                   <span class="ba-line">daniel@signvel.com</span>
                   <span class="ba-line">+971 50 123 4567</span>
                   <span class="ba-line accent">signvel.com</span>
+                  <span class="ba-icons" data-part="corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
                 </span>
               </div>
-              <ul class="ba-faults ok">
-                <li>Portrait and logo served from a real URL</li>
-                <li>Spacing held by table cells, not margins</li>
-                <li>Square fallbacks where Word refuses a radius</li>
+              <ul class="ba-pills">
+                <li>Hosted images</li><li>Table spacing</li><li>Word-proof icons</li>
               </ul>
             </div>
-          </div>
-
-          <!-- Names the clients the claim above is actually made against,
-               rather than leaving "checked against the clients" abstract. -->
-          <div class="ba-checked">
-            <p class="ba-checked-head">Every layout rendered and read in</p>
-            <ul class="ba-checked-list">
-              <li>Gmail</li>
-              <li>Outlook 2016–365</li>
-              <li>Outlook.com</li>
-              <li>Apple Mail</li>
-              <li>iOS Mail</li>
-              <li>Yahoo</li>
-              <li>Thunderbird</li>
-              <li>Proton</li>
-            </ul>
           </div>
         </div>
       </div>
@@ -742,6 +714,43 @@
 
 
   <!-- The copyright year, so the footer does not go stale every January. -->
+  <script>
+  // The Outlook band: the preview flips between the pasted and the built
+  // signature on its own until someone touches it, and each tile switches to
+  // the built one and lights up the part it is about.
+  (function () {
+    var band = document.querySelector('.band');
+    if (!band) return;
+    var tabs = band.querySelectorAll('.ba-tab');
+    var stage = document.getElementById('baStage');
+    var tip = document.getElementById('fixTip');
+    var tiles = [].slice.call(band.querySelectorAll('.fix-tile'));
+    var TIPS = {
+      tables: 'Nested tables and inline styles: the only markup every mail app agrees on.',
+      hosted: 'Your logo and photo go out as real web addresses. Pasted images get stripped.',
+      corners: 'Where Word drops rounded corners, the icons are drawn into the picture instead.',
+      fallback: 'No photo, no logo, images off: it still reads as a finished signature.'
+    };
+    var timer = null;
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!still && tabs.length === 2) {
+      var n = 0;
+      timer = setInterval(function () { n = 1 - n; tabs[n].click(); }, 3600);
+      band.addEventListener('pointerdown', stop, true);
+      band.addEventListener('keydown', stop, true);
+    }
+    tiles.forEach(function (t) {
+      t.addEventListener('click', function () {
+        stop();
+        tiles.forEach(function (x) { x.classList.toggle('is-on', x === t); x.setAttribute('aria-pressed', String(x === t)); });
+        stage.setAttribute('data-focus', t.dataset.fix);
+        tip.textContent = TIPS[t.dataset.fix] || '';
+        if (tabs[1] && tabs[1].getAttribute('aria-selected') !== 'true') tabs[1].click();
+      });
+    });
+  })();
+  </script>
   <script>document.querySelectorAll(".footer-year").forEach(function (e) { e.textContent = new Date().getFullYear(); });</script>
 </body>
 </html>

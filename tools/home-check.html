@@ -136,7 +136,10 @@ document.getElementById('f').addEventListener('load', function () {
   // ── Before/after panels have real content ──
   if (!d.querySelector('#ba-panel-1 .ba-sig.broken')) E.push('before panel: no broken signature');
   if (!d.querySelector('#ba-panel-2 .ba-face')) E.push('after panel: no portrait');
-  if (d.querySelectorAll('.ba-faults li').length !== 6) E.push('expected 3 faults per panel');
+  if (d.querySelectorAll('.ba-pills li').length !== 6) E.push('expected 3 pills per panel');
+  if (d.querySelectorAll('.fix-tile').length !== 4) E.push('expected 4 tiles in the Outlook band');
+  const hostedTile = d.querySelector('.fix-tile[data-fix="hosted"]');
+  if (hostedTile) { hostedTile.click(); if (d.getElementById('baStage').getAttribute('data-focus') !== 'hosted' || d.getElementById('ba-panel-2').hidden) E.push('a tile does not switch to the built signature and light up its part'); }
 
   // ── Content the page must not claim ──
   const text = d.body.innerText;
