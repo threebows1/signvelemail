@@ -27,6 +27,22 @@
   <script src="../cloud.js"></script>
   <script src="../app.js"></script>
   <script>
+  // The app keeps the old company details only as fingerprints, so these
+  // checks stand in an invented identity and logo, fingerprinted the same way,
+  // and prove the recognition works without the real values in the repo.
+  const OLD_IDENTITY = {
+    name: 'Old Demo Person', title: 'Old Demo Title', company: 'Old Demo Company',
+    contacts: {email: 'old.demo@example.com', mobile: '+000 00 000 0001', phone: '+000 0 000 0002',
+               address: 'Old Demo Street 1', website: 'old-demo.example'},
+  };
+  CORPORATE_IDENTITY.fingerprints = {
+    head: fingerprintHead(OLD_IDENTITY.name, OLD_IDENTITY.title, OLD_IDENTITY.company),
+    contacts: Object.fromEntries(Object.entries(OLD_IDENTITY.contacts).map(([k, v]) => [k, fingerprintContact(k, v)])),
+  };
+  const OLD_LOGO_URL = 'https://example.com/old-demo-logo.png';
+  RETIRED_DEFAULT_LOGO_FINGERPRINTS.push(fingerprint(OLD_LOGO_URL));
+  </script>
+  <script>
   (function () {
     const E = window.__errs;
     const $ = s => document.querySelector(s);
@@ -662,7 +678,7 @@
         const shown = want.filter(u => h.includes(u))[0];
         if (!shown) E.push(id + ': does not show the expected sample logo');
         // No layout shows the old brand logo any more, Corporate included.
-        if (h.includes(CORPORATE_LOGO_URL)) E.push(id + ": shows the other company's logo");
+        if (h.includes(OLD_LOGO_URL)) E.push(id + ": shows the other company's logo");
         if (!shown) return;
         // A logo nobody has seen yet can be any shape. Every slot has to cap
         // its width, or a wide one pushes its column out and squeezes the rest
@@ -680,7 +696,7 @@
         S.template = id;
         const h = generateSignaturePreview();
         if (!h.includes('mine.png')) E.push(id + ': an uploaded logo did not replace the sample');
-        if (h.includes(CORPORATE_LOGO_URL)) E.push(id + ': kept the sample logo over an uploaded one');
+        if (h.includes(OLD_LOGO_URL)) E.push(id + ': kept the sample logo over an uploaded one');
       });
 
       window.SIGNVEL_SHOW_IMAGES = keepShow;
@@ -692,7 +708,7 @@
       // The retired logo default follows the new one forward; an uploaded logo
       // is left alone. Same rule as the portrait below.
       const keep = S.logoUrl;
-      adoptCloudState({state: {logoUrl: RETIRED_DEFAULT_LOGOS[0]}});
+      adoptCloudState({state: {logoUrl: OLD_LOGO_URL}});
       if (S.logoUrl !== DEFAULT_LOGO_URL) E.push('an old saved signature kept the retired default logo');
       const mine = 'https://cdn.signvel.com/u/mine.png';
       adoptCloudState({state: {logoUrl: mine}});
@@ -848,41 +864,41 @@
     S.template = 'corporate';
     const corp = generateSignaturePreview();
     if (!corp.includes(SAMPLE_IDENTITY.name)) E.push('Corporate did not show the sample name');
-    if (corp.includes(CORPORATE_IDENTITY.name)) E.push('Corporate still shows the old brand name');
-    if (corp.includes(CORPORATE_IDENTITY.contacts.email)) E.push('Corporate still shows the old brand email');
-    if (corp.includes(CORPORATE_LOGO_URL)) E.push('Corporate still shows the old brand logo');
+    if (corp.includes(OLD_IDENTITY.name)) E.push('Corporate still shows the old brand name');
+    if (corp.includes(OLD_IDENTITY.contacts.email)) E.push('Corporate still shows the old brand email');
+    if (corp.includes(OLD_LOGO_URL)) E.push('Corporate still shows the old brand logo');
     if (!corp.includes(DEFAULT_LOGO_URL)) E.push('Corporate does not show the sample logo');
     ['spotlight','split','grid','feature','minimal'].forEach(id => {
       S.template = id;
       const h = generateSignaturePreview();
       if (!h.includes(SAMPLE_IDENTITY.name)) E.push(id + ' did not show the sample name');
-      if (h.includes(CORPORATE_IDENTITY.name)) E.push(id + ' leaked the brand name');
-      if (h.includes(CORPORATE_IDENTITY.contacts.email)) E.push(id + ' leaked the brand email');
-      if (h.includes(CORPORATE_IDENTITY.contacts.mobile)) E.push(id + ' leaked the brand mobile');
+      if (h.includes(OLD_IDENTITY.name)) E.push(id + ' leaked the brand name');
+      if (h.includes(OLD_IDENTITY.contacts.email)) E.push(id + ' leaked the brand email');
+      if (h.includes(OLD_IDENTITY.contacts.mobile)) E.push(id + ' leaked the brand mobile');
     });
-    // A saved state carrying the original Al Riyady details is a copy of the
+    // A saved state carrying the original company details is a copy of the
     // demo, not a choice — it has to behave exactly like the sample state, or
     // anyone upgrading sees the brand details on all seventeen layouts.
     (function () {
       const restore = {name:S.name, title:S.title, company:S.company,
                        fields:S.contactFields.map(f => Object.assign({}, f))};
-      S.name = CORPORATE_IDENTITY.name;
-      S.title = CORPORATE_IDENTITY.title;
-      S.company = CORPORATE_IDENTITY.company;
-      S.contactFields = S.contactFields.map(f => (f.type in CORPORATE_IDENTITY.contacts)
-        ? Object.assign({}, f, {value: CORPORATE_IDENTITY.contacts[f.type]}) : f);
-      if (!identityIsStock()) E.push('saved Al Riyady state not recognised as stock');
+      S.name = OLD_IDENTITY.name;
+      S.title = OLD_IDENTITY.title;
+      S.company = OLD_IDENTITY.company;
+      S.contactFields = S.contactFields.map(f => (f.type in OLD_IDENTITY.contacts)
+        ? Object.assign({}, f, {value: OLD_IDENTITY.contacts[f.type]}) : f);
+      if (!identityIsStock()) E.push('saved old-company state not recognised as stock');
       S.template = 'corporate';
-      if (generateSignaturePreview().includes(CORPORATE_IDENTITY.name)) {
+      if (generateSignaturePreview().includes(OLD_IDENTITY.name)) {
         E.push('legacy state: Corporate still shows the old brand name');
       }
       ['spotlight','ribbon','band','minimal','corporate'].forEach(id => {
         S.template = id;
         const h = generateSignaturePreview();
         if (!h.includes(SAMPLE_IDENTITY.name)) E.push('legacy state: ' + id + ' did not show the sample name');
-        if (h.includes(CORPORATE_IDENTITY.name)) E.push('legacy state: ' + id + ' still shows the brand name');
-        if (h.includes(CORPORATE_IDENTITY.contacts.email)) E.push('legacy state: ' + id + ' still shows the brand email');
-        if (h.includes(CORPORATE_IDENTITY.contacts.address)) E.push('legacy state: ' + id + ' still shows the brand address');
+        if (h.includes(OLD_IDENTITY.name)) E.push('legacy state: ' + id + ' still shows the brand name');
+        if (h.includes(OLD_IDENTITY.contacts.email)) E.push('legacy state: ' + id + ' still shows the brand email');
+        if (h.includes(OLD_IDENTITY.contacts.address)) E.push('legacy state: ' + id + ' still shows the brand address');
       });
       S.name = restore.name; S.title = restore.title; S.company = restore.company;
       S.contactFields = restore.fields;
@@ -913,7 +929,7 @@
     S.template = 'corporate';
     const edited = generateSignaturePreview();
     if (!edited.includes('Ada Lovelace')) E.push('Corporate ignored the edited name');
-    if (edited.includes(CORPORATE_IDENTITY.contacts.email)) E.push('Corporate kept brand contacts after an edit');
+    if (edited.includes(OLD_IDENTITY.contacts.email)) E.push('Corporate kept brand contacts after an edit');
     S.name = SAMPLE_IDENTITY.name;
     // An edited contact value counts too, not just the name.
     S.contactFields[0].value = 'ada@example.com';

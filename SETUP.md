@@ -130,7 +130,7 @@ stops the browser editing its own plan, so nobody can grant it to themselves.
 **2. Make yourself an admin.** In the SQL Editor:
 
 ```sql
-update public.profiles set is_admin = true where email = 'farrukh@alriyady.ae';
+update public.profiles set is_admin = true where email = 'you@example.com';
 ```
 
 If that reports `0 rows`, you have not signed up in the app yet — create the

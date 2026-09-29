@@ -547,17 +547,14 @@ const DEFAULT_LOGO_URL = 'https://signvel.com/sample-logo.png';
 const SAMPLE_LOGO_WHITE_URL = 'https://signvel.com/sample-logo-white.png';
 const SAMPLE_MARK_WHITE_URL = 'https://signvel.com/sample-mark-white.png';
 
-// Al Riyady's own mark. Used by the identity below and nowhere else: the
-// Corporate layout reproduces that signature, and reproducing it under
-// another company's logo would defeat the point of having it.
-const CORPORATE_LOGO_URL = 'https://alriyady.ae/wp-content/uploads/2023/10/Al-Riyady-Corporate-Services-Proerties-Logo-400x163.png';
-
-// What the default logo used to be. A saved signature still pointing at it
-// was never a choice anybody made, so it follows the default forward.
-const RETIRED_DEFAULT_LOGOS = [CORPORATE_LOGO_URL];
+// What the default logo used to be: the old company's mark, kept only as a
+// fingerprint so its address is not published. A saved signature still
+// pointing at it was never a choice anybody made, so it follows the default
+// forward.
+const RETIRED_DEFAULT_LOGO_FINGERPRINTS = ['9c7cf2ae'];
 
 function ensureDefaultLogo() {
-  if (RETIRED_DEFAULT_LOGOS.indexOf(S.logoUrl) !== -1) S.logoUrl = DEFAULT_LOGO_URL;
+  if (S.logoUrl && RETIRED_DEFAULT_LOGO_FINGERPRINTS.indexOf(fingerprint(S.logoUrl)) !== -1) S.logoUrl = DEFAULT_LOGO_URL;
 }
 
 // ───────────── Template themes ─────────────
@@ -584,7 +581,7 @@ function ensureDefaultLogo() {
 //   shape    – headshot shape, where the layout depends on one
 //   ring     – headshot ring width in px
 const templateThemes = {
-  // The brand layout. Left on Al Riyady gold, and never re-themed.
+  // The brand layout. Left on its gold, and never re-themed.
   corporate:  {accent:'#C9962B', accent2:'#141220', panel:null, social:'circle', icons:'circle',  cols:1, role:'plain', caps:false, track:0},
   spotlight:  {accent:'#2563EB', accent2:'#141220', panel:null, social:'plain',  icons:'icons',   cols:1, role:'plain', caps:false, track:0,  shape:'circle'},
   split:      {accent:'#2E7D74', accent2:'#1F3B37', panel:null, social:'filled', icons:'letters', cols:1, role:'plain', caps:false, track:0},
@@ -733,12 +730,8 @@ function ensureDefaultBanner() {
 // and so nobody's real address and phone number are the first thing a new
 // user sees.
 //
-// Corporate is the exception. It is the brand signature the app was built to
-// reproduce, so it shows the real Al Riyady details and the real mark, in the
-// same way and for the same reason it is the only layout that shows the real
-// logo. That substitution lasts exactly as long as the shipped sample is
-// untouched: type your own name and it is used on every layout, Corporate
-// included.
+// Every layout, Corporate included, previews on these while the shipped
+// sample is untouched: type your own name and yours is used on all of them.
 // Sign Vel's own brand. The layouts double as the product's showcase, so the
 // mark, company and links they preview with are Sign Vel's — the generated
 // monogram picks the company name up from here, which is what puts "SV ·
@@ -804,20 +797,24 @@ const LEGACY_SAMPLE_IDENTITY = {
   },
 };
 
+// A short, one-way fingerprint of a string (32-bit FNV-1a). Used where the
+// app has to recognise a value it must not publish.
+function fingerprint(s) {
+  let x = 0x811c9dc5;
+  for (const ch of String(s)) { x ^= ch.codePointAt(0); x = Math.imul(x, 0x01000193) >>> 0; }
+  return x.toString(16).padStart(8, '0');
+}
+const fingerprintHead = (name, title, company) => fingerprint([name, title, company].join('\u0001'));
+const fingerprintContact = (type, value) => fingerprint(type + '\u0001' + value);
+
+// The details the app shipped with when it was a single company's tool. A
+// saved signature still holding them is a copy of that old demo, not anybody's
+// choice, so it has to be recognised — but they are a real person's details,
+// so only their fingerprints are kept here, never the values.
 const CORPORATE_IDENTITY = {
-  name: 'Farrukh Shahzad',
-  title: 'Marketing Manager',
-  company: 'Al Riyady Group',
-  contacts: {
-    email:   'farrukh@alriyady.ae',
-    mobile:  '+971 50 274 9769',
-    phone:   '+971 4 591 8185',
-    address: 'The Curve Building - Office No. M 47, Dubai - UAE',
-    website: 'alriyadygroup.ae',
-  },
-  socials: {
-    facebook:'alriyady', linkedin:'alriyady', instagram:'alriyady.ae',
-    youtube:'alriyady', tiktok:'alriyady', x:'alriyady',
+  fingerprints: {
+    head: '4a9236be',
+    contacts: {email: '7ea9a8fa', mobile: '31996317', phone: 'f8495065', address: '5b5d9793', website: '53d40f59'},
   },
 };
 
@@ -825,6 +822,11 @@ const CORPORATE_IDENTITY = {
 // anywhere is enough to stop the Corporate substitution — at that point the
 // details belong to the user, not to the demo.
 function matchesIdentity(id) {
+  if (id.fingerprints) {
+    const fp = id.fingerprints;
+    if (fingerprintHead(S.name, S.title, S.company) !== fp.head) return false;
+    return S.contactFields.every(f => !(f.type in fp.contacts) || fingerprintContact(f.type, f.value) === fp.contacts[f.type]);
+  }
   if (S.name !== id.name || S.title !== id.title || S.company !== id.company) return false;
   return S.contactFields.every(f => !(f.type in id.contacts) || f.value === id.contacts[f.type]);
 }
@@ -1163,7 +1165,7 @@ const scopePresets = {
   sales: {
     bannerEnabled:true, bannerMessage:'Book a 15-minute intro call',
     bannerSubtext:'No obligation — we will map out your setup options.',
-    ctaLabel:'Book time', ctaUrl:'https://alriyadygroup.ae/contact', ctaStyle:'pill',
+    ctaLabel:'Book time', ctaUrl:'#', ctaStyle:'pill',
   },
   legal: {
     disclaimerEnabled:true, disclaimerPreset:'regulated',
@@ -2082,10 +2084,10 @@ function renderContacts() {
   // is — otherwise picking Corporate and seeing different details on it looks
   // like a bug rather than the point.
   if (identityIsStock()) {
-    // A saved state carrying the old Al Riyady details is the one that needs
+    // A saved state carrying the old company details is the one that needs
     // a word: the fields say one thing and every preview says another.
     h += matchesIdentity(CORPORATE_IDENTITY)
-      ? `<div class="inline-note" id="stockNote">These are the Al&nbsp;Riyady details from an earlier version. Every layout previews on Sign Vel branding instead, so the gallery reads as a set of designs rather than the same signature twenty-four times. Type over any field above and yours are used on all of them.</div>`
+      ? `<div class="inline-note" id="stockNote">These are sample details from an earlier version. Every layout previews on Sign Vel branding instead, so the gallery reads as a set of designs rather than the same signature twenty-four times. Type over any field above and yours are used on all of them.</div>`
       : `<div class="inline-note" id="stockNote">Every layout previews on Sign Vel branding with a stand-in name, so the gallery reads as a set of designs rather than as one person's signature. Type over any field above and your own details are used on all twenty-four.</div>`;
   }
 
