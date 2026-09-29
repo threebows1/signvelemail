@@ -54,9 +54,10 @@ function stockAssets() {
   });
 });
 
-// Classic Outlook sets each line to its line-height exactly and crops what
-// does not fit: a social badge in a zero-height line lost its top. Every hosted
-// icon cell for classic has to be at least as tall as its picture.
+// Classic Outlook crops a picture to the line it sits on: a zero line-height
+// cut the top off the social badges, and one exactly the picture's height still
+// clipped top and bottom. Their cells carry no line-height at all, like the
+// contact icons', which Word draws whole.
 let classicIcons = 0;
 ['corporate', 'connect', 'band', 'grid', 'feature', 'split', 'minimal'].forEach(function (id) {
   S.template = id; applyTemplateTheme(id); stockAssets();
@@ -68,8 +69,7 @@ let classicIcons = 0;
     while ((m = re.exec(h))) {
       if (!/cdn\.signvel\.com\/stub\//.test(m[2])) continue;
       classicIcons++;
-      const lh = /line-height:(\d+)px/.exec(m[1]);
-      if (!lh || +lh[1] < +m[3]) { F.push(id + ', ' + style + ', classic: a social icon sits in a line shorter than itself, so Outlook crops it'); break; }
+      if (/line-height|font-size:0/.test(m[1])) { F.push(id + ', ' + style + ', classic: a social icon cell sets a line-height, which Outlook crops the icon to'); break; }
     }
   });
 });
