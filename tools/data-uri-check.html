@@ -54,6 +54,28 @@ function stockAssets() {
   });
 });
 
+// Classic Outlook sets each line to its line-height exactly and crops what
+// does not fit: a social badge in a zero-height line lost its top. Every hosted
+// icon cell for classic has to be at least as tall as its picture.
+let classicIcons = 0;
+['corporate', 'connect', 'band', 'grid', 'feature', 'split', 'minimal'].forEach(function (id) {
+  S.template = id; applyTemplateTheme(id); stockAssets();
+  ['circle', 'filled'].forEach(function (style) {
+    S.socialStyle = style;
+    const h = withExportTarget('classic', generateSignaturePreview);
+    const re = /<td([^>]*)><a [^>]*>(<img [^>]*height="(\d+)"[^>]*>)<\/a><\/td>/g;
+    let m;
+    while ((m = re.exec(h))) {
+      if (!/cdn\.signvel\.com\/stub\//.test(m[2])) continue;
+      classicIcons++;
+      const lh = /line-height:(\d+)px/.exec(m[1]);
+      if (!lh || +lh[1] < +m[3]) { F.push(id + ', ' + style + ', classic: a social icon sits in a line shorter than itself, so Outlook crops it'); break; }
+    }
+  });
+});
+S.socialStyle = 'circle';
+if (!classicIcons) F.push('no hosted social icons were found in a classic copy, so the crop check proves nothing');
+
 // If the signature drew no images at all this would pass on nothing.
 S.template = 'corporate'; applyTemplateTheme('corporate'); stockAssets();
 const std = withExportTarget('', generateSignaturePreview);

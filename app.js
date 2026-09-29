@@ -3129,7 +3129,10 @@ function buildSignatureBody() {
             : hostedBadgeFor(sl.type, colour, style === 'filled', sz, badgeGround());
           if (baked) {
             const px = style === 'glyph' ? iconScale : sz;
-            cells.push(`<td style="${gap}vertical-align:middle;font-size:0;line-height:0;"><a href="${socialHref(sl)}" style="display:block;text-decoration:none;font-size:0;line-height:0;">${iconImgTag(baked, px)}</a></td>`);
+            // Word sets a line to its line-height exactly and crops what does
+            // not fit, so a zero line-height cut the top off every badge. The
+            // line is made as tall as the picture instead, as the contact icons do.
+            cells.push(`<td height="${px}" style="${gap}height:${px}px;vertical-align:middle;font-size:${px}px;line-height:${px}px;mso-line-height-rule:exactly;"><a href="${socialHref(sl)}" style="text-decoration:none;">${iconImgTag(baked, px)}</a></td>`);
             return;
           }
         }
