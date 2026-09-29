@@ -447,85 +447,73 @@
         </nav>
       </div>
 
-      <div class="feature-grid">
+      <!-- Seven cards around one large one: the layouts tile carries a real
+           signature, and each small card a picture of its feature, not a paragraph. -->
+      <div class="feature-grid bento">
 
-        <div class="feature feature-wide" id="f-layouts">
+        <div class="feature bento-sm" id="f-design">
+          <p class="feature-cat">Design</p>
+          <h3 class="bento-title">Type and colour</h3>
+          <div class="bento-art bento-type" aria-hidden="true"><span>Aa</span><i style="background:#5B2EFF"></i><i style="background:#00B383"></i><i style="background:#C9962B"></i></div>
+        </div>
+
+        <div class="feature bento-hero" id="f-layouts">
           <p class="feature-cat">Layouts</p>
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <h3 class="bento-hero-title">24 layouts, every one editable</h3>
+          <div class="bento-sig" aria-hidden="true">
+            <img src="admin-portrait.jpg" width="72" height="72" alt="">
+            <div>
+              <strong>Daniel Reyes</strong>
+              <em>Head of Partnerships</em>
+              <span>daniel@signvel.com · +971 50 123 4567</span>
+            </div>
           </div>
-          <h3 class="h3">24 layouts</h3>
-          <p class="body-sm">From a formal corporate block to full-bleed colour panels. Each ships with its own palette and treatments, and every one of them stays editable.</p>
-          <div class="feature-strip" aria-hidden="true">
+          <div class="bento-wires" aria-hidden="true">
             <span class="strip-wire"><i></i><b></b><b class="s"></b></span>
             <span class="strip-wire dark"><i></i><b></b><b class="s"></b></span>
             <span class="strip-wire"><i class="sq"></i><b></b><b class="s"></b></span>
-            <span class="strip-wire accent"><i></i><b></b><b class="s"></b></span>
-            <span class="strip-more">+20</span>
+            <span class="strip-more">+21</span>
           </div>
         </div>
 
-        <div class="feature" id="f-design">
-          <p class="feature-cat">Design</p>
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6V4h16v2M12 4v16M9 20h6"/></svg>
-          </div>
-          <h3 class="h3">Type and colour, in detail</h3>
-          <p class="body-sm">Body and display fonts, name size, letter spacing, capitals, role chips, two theme colours, one or two contact columns, and a background panel.</p>
-        </div>
-
-        <div class="feature" id="f-brand">
+        <div class="feature bento-sm" id="f-brand">
           <p class="feature-cat">Brand</p>
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-          </div>
-          <h3 class="h3">Your logo and photo</h3>
-          <p class="body-sm">Upload either and they are hosted for you, so they survive being emailed. Crop, ring and resize the portrait; sample images to start from.</p>
+          <h3 class="bento-title">Your logo and photo</h3>
+          <div class="bento-art" aria-hidden="true"><img class="bento-face" src="admin-portrait.jpg" width="68" height="68" alt=""></div>
         </div>
 
-        <div class="feature" id="f-contacts">
+        <div class="feature bento-sm" id="f-contacts">
           <p class="feature-cat">Contacts</p>
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
-          </div>
-          <h3 class="h3">Rows that behave</h3>
-          <p class="body-sm">Email, mobile, landline, address, website, office, pronouns, booking. Reorder them, switch them off, and pick circles, filled badges, plain icons, letters or labels.</p>
+          <h3 class="bento-title">Rows that behave</h3>
+          <div class="bento-art bento-rows" aria-hidden="true"><b></b><b></b><b class="on"></b></div>
         </div>
 
-        <div class="feature" id="f-social">
+        <div class="feature bento-sm bento-dark" id="f-social">
           <p class="feature-cat">Social</p>
-          <div class="feature-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
-          </div>
-          <h3 class="h3">Six networks, five treatments</h3>
-          <p class="body-sm">LinkedIn, Instagram, Facebook, YouTube, TikTok and X — as chips, rings, filled discs, bare glyphs or plain text, in any order and any colour.</p>
+          <h3 class="bento-title">Six networks, five styles</h3>
+          <div class="bento-art bento-dots" aria-hidden="true"><i class="fill"></i><i class="ring"></i><i class="sq"></i><i class="alt"></i></div>
         </div>
 
-        <div class="feature feature-full" id="f-campaigns">
-          <div class="feature-full-inner">
-            <div class="feature-full-copy">
-              <p class="feature-cat">Campaigns</p>
-              <h3 class="h3">Banners that end on time</h3>
-              <p class="body-sm">Add a campaign banner and pick the day it runs until. After that it leaves the signature by itself, and a hosted banner image goes blank even in emails already sent. Nobody has to remember to take it down.</p>
-            </div>
-            <div class="campaign-demo" aria-hidden="true">
-              <span class="campaign-bar">Spring sale — 20% off</span>
-              <span class="campaign-date"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>Runs until 31 May</span>
-            </div>
+        <div class="feature bento-wide" id="f-campaigns">
+          <p class="feature-cat">Campaigns</p>
+          <h3 class="bento-title">Banners that end on time</h3>
+          <div class="bento-art campaign-demo campaign-row" aria-hidden="true">
+            <span class="campaign-bar">Spring sale — 20% off</span>
+            <span class="campaign-date">Runs until 31 May</span>
           </div>
         </div>
 
-        <a class="feature feature-full" href="install.html" id="f-install">
-          <div class="feature-full-inner">
-            <div class="feature-full-copy">
-              <p class="feature-cat">Install</p>
-              <h3 class="h3">Into any mail client</h3>
-              <p class="body-sm">Copy as a rich signature or export the raw HTML, with an illustrated guide for each of these.</p>
-            </div>
-            <div class="feature-clients">
-              <span class="fc">Gmail</span><span class="fc">Outlook</span><span class="fc">Apple&nbsp;Mail</span><span class="fc">Yahoo</span><span class="fc">Thunderbird</span><span class="fc">Proton</span><span class="fc">iCloud</span>
-              <span class="fc-go">Setup guides <span aria-hidden="true">&rarr;</span></span>
-            </div>
+        <a class="feature bento-wide bento-mint" href="install.html" id="f-install">
+          <p class="feature-cat">Install</p>
+          <h3 class="bento-title">Into any mail client <span aria-hidden="true">&rarr;</span></h3>
+          <div class="bento-art bento-clients">
+            <span class="bento-client"><span class="mail-logo"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4caf50" d="M45 16.2l-5 2.75-5 4.75V40h7c1.657 0 3-1.343 3-3V16.2z"/><path fill="#1e88e5" d="M3 16.2l3.614 1.71L13 23.7V40H6c-1.657 0-3-1.343-3-3V16.2z"/><polygon fill="#e53935" points="35,11.2 24,19.45 13,11.2 12,17 13,23.7 24,31.95 35,23.7 36,17"/><path fill="#c62828" d="M3 12.298V16.2l10 7.5V11.2L9.876 8.859C9.132 8.301 8.228 8 7.298 8 4.924 8 3 9.924 3 12.298z"/><path fill="#fbc02d" d="M45 12.298V16.2l-10 7.5V11.2l3.124-2.341C38.868 8.301 39.772 8 40.702 8 43.076 8 45 9.924 45 12.298z"/></svg></span>Gmail</span>
+            <span class="bento-client"><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.4 6.9h7.9c.4 0 .7.3.7.7v8.8c0 .4-.3.7-.7.7h-7.9z" fill="#28A8EA"/><path d="M13.9 8.7l4 2.7 4-2.7" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="1.4" y="4.3" width="12" height="15.4" rx="1.6" fill="#0364B8"/><ellipse cx="7.4" cy="12" rx="2.9" ry="3.8" fill="none" stroke="#fff" stroke-width="2"/></svg></span>Outlook</span>
+            <span class="bento-client"><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="am-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4FC3F7"/><stop offset="1" stop-color="#1A73E8"/></linearGradient></defs><rect width="24" height="24" rx="5.4" fill="url(#am-g)"/><path d="M4.6 8.2h14.8v7.6H4.6z" fill="none" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="M4.6 8.6l7.4 5.1 7.4-5.1" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Apple&nbsp;Mail</span>
+            <span class="bento-client"><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5.4" fill="#5F01D1"/><path d="M5.2 7.3h3.1l2.4 4.2 2.4-4.2h3l-5 8.4v3h-2.8v-3z" fill="#fff"/><circle cx="17.6" cy="15.1" r="1.5" fill="#fff"/></svg></span>Yahoo</span>
+            <span class="bento-client"><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5.4" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#0A84FF" d="M9.948 4.444h-.005c-1.92.788-2.126 2.55-1.817 3.499v.02C9.236 7.18 10.658 6.76 12 6.76c3.26 0 5.902 2.156 5.902 4.815 0 2.66-2.643 4.816-5.902 4.816l-.083-.002c-.155-.006-.354-.013-.435.118-.096.156.116.397.238.536 1.274 1.441 3.123 1.622 3.608 1.67l.076.008c-4.281.414-9.304-2.32-9.306-7.076 0-1.12.414-2.073 1.075-2.83l-.005-.002h-.003C7.31 6.38 6.376 3.47 4.629 2.898c-.124-.04-.246.054-.262.183-.23 1.924-.727 2.59-1.264 3.31-.805 1.08-1.39 2.328-1.365 3.698a10.99 10.99 0 0 1-.705-1.91c-.024-.09-.17-.365-.333-.272-.13.072-.227.274-.296.485A12.137 12.137 0 0 0 0 11.489c0 6.536 5.475 12 12 12 6.627 0 12-5.372 12-12 0-2.526-.781-4.87-2.115-6.805l.167-.002c.518 0 1.024.045 1.51.129-.734-.816-1.724-1.475-2.877-1.904a8.54 8.54 0 0 1 2.494-.495c-1.426-1.166-3.508-1.9-5.827-1.9-3.355 0-6.648 1.29-7.404 3.93z"/></g></svg></span>Thunderbird</span>
+            <span class="bento-client"><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5.4" fill="#fff"/><path d="M3.4 6.6v11.2c0 .6.5 1.1 1.1 1.1h1.9V9.9l5.6 4.2 5.6-4.2v9h1.9c.6 0 1.1-.5 1.1-1.1V6.6c0-1.2-1.4-1.9-2.4-1.2L12 9.5 5.8 5.4c-1-.7-2.4 0-2.4 1.2z" fill="#6D4AFF"/><path d="M6.4 18.9V9.9l5.6 4.2v4.8z" fill="#8A6EFF"/></svg></span>Proton</span>
+            <span class="bento-client"><span class="mail-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="am-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4FC3F7"/><stop offset="1" stop-color="#1A73E8"/></linearGradient></defs><rect width="24" height="24" rx="5.4" fill="url(#am-g)"/><path d="M4.6 8.2h14.8v7.6H4.6z" fill="none" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="M4.6 8.6l7.4 5.1 7.4-5.1" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>iCloud</span>
           </div>
         </a>
 

@@ -1074,3 +1074,67 @@ body{margin:0}
 .wyg-chips i{width:8px;height:8px;border-radius:50%;background:var(--primary)}
 .feature-grid > .feature{scroll-margin-top:96px}
 .feature-grid > .feature:target{box-shadow:0 0 0 2px var(--primary)}
+
+/* ── What you get: A3 bento. A large layouts tile in the middle, six
+   smaller cards around it, each a picture rather than a paragraph. ── */
+.feature-grid.bento{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(210px,auto);gap:18px}
+.bento .feature{grid-column:auto;display:flex;flex-direction:column;gap:6px;padding:26px;border-radius:24px}
+.bento #f-design{grid-column:1;grid-row:1}
+.bento .bento-hero{grid-column:2 / span 2;grid-row:1 / span 2;background:var(--primary);border-color:var(--primary);color:#fff;padding:34px}
+.bento #f-brand{grid-column:4;grid-row:1}
+.bento #f-contacts{grid-column:1;grid-row:2}
+.bento #f-social{grid-column:4;grid-row:2}
+.bento #f-campaigns{grid-column:1 / span 2;grid-row:3}
+.bento #f-install{grid-column:3 / span 2;grid-row:3}
+.bento-title{margin:0;font-size:19px;font-weight:800;letter-spacing:-.01em;line-height:1.25;color:var(--foreground)}
+.bento-art{margin-top:auto;padding-top:14px}
+.bento-hero .feature-cat{color:rgba(255,255,255,.75)}
+.bento-hero-title{margin:4px 0 0;font-size:clamp(30px,3.2vw,44px);font-weight:800;letter-spacing:-.025em;line-height:1.05;color:#fff;max-width:14ch}
+.bento-sig{margin-top:auto;display:flex;align-items:center;gap:16px;padding:20px;border-radius:18px;background:#fff;color:var(--foreground);box-shadow:0 20px 40px rgba(20,18,31,.25)}
+.bento-sig img{width:72px;height:72px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.bento-sig div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.bento-sig strong{font-size:17px;font-weight:800}
+.bento-sig em{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--primary)}
+.bento-sig span{font-size:13px;color:var(--muted-foreground);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bento-wires{display:flex;gap:10px;align-items:center;margin-top:16px}
+.bento-wires .strip-more{color:#fff}
+.bento-type{display:flex;align-items:flex-end;gap:6px}
+.bento-type span{font-size:60px;line-height:.9;font-weight:800;letter-spacing:-.04em;margin-right:auto}
+.bento-type i{width:26px;height:26px;border-radius:50%}
+.bento-face{width:68px;height:68px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px #fff,0 0 0 6px var(--primary)}
+.bento-rows{display:flex;flex-direction:column;gap:8px}
+.bento-rows b{height:10px;border-radius:5px;background:#E6E2F2;width:90%}
+.bento-rows b:nth-child(2){width:68%}
+.bento-rows b.on{width:80%;background:var(--primary)}
+.bento-dark{background:#1C1A2B;border-color:#1C1A2B}
+.bento-dark .bento-title{color:#fff}
+.bento-dark .feature-cat{color:var(--accent)}
+.bento-dots{display:flex;gap:8px}
+.bento-dots i{width:34px;height:34px;border-radius:50%}
+.bento-dots .fill{background:var(--accent)}
+.bento-dots .ring{border:2px solid var(--accent)}
+.bento-dots .sq{border-radius:9px;background:#fff}
+.bento-dots .alt{background:#8B6BFF}
+.campaign-row{flex-direction:row;align-items:center;flex-wrap:wrap}
+.bento-mint{background:#E9FBF4;border-color:#C5F2E1;text-decoration:none;color:inherit}
+.bento-mint .feature-cat{color:#06734F}
+.bento-clients{display:flex;flex-wrap:wrap;gap:8px}
+.bento-client{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px 0 6px;border-radius:999px;background:#fff;font-size:13px;font-weight:700;color:#04231a}
+.bento-client .mail-logo svg{width:24px;height:24px}
+@media (max-width:1000px){
+  .feature-grid.bento{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bento .feature{grid-column:auto !important;grid-row:auto !important}
+  .bento .bento-hero,.bento .bento-wide{grid-column:1 / -1 !important}
+}
+@media (max-width:640px){
+  .feature-grid.bento{grid-template-columns:minmax(0,1fr)}
+  .bento .feature{grid-column:1 / -1 !important}
+  .bento-sig span{white-space:normal}
+}
+@media (max-width:640px){
+  .feature-grid.bento{grid-auto-rows:auto}
+  .bento .bento-hero{order:-1;padding:26px}
+  .bento-art{padding-top:18px}
+  .bento-wires{gap:6px}
+  .bento-wires .strip-wire{flex:1 1 0;min-width:0}
+}
