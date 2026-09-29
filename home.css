@@ -1062,3 +1062,15 @@ body{margin:0}
 .footer-cta-link{font-size:15px;font-weight:600;color:#C9C5DA;text-decoration:none}
 .footer-cta-link:hover{color:#fff}
 @media (max-width:640px){.footer-cta-btns{width:100%;justify-content:center}}
+
+/* What you get: a centred heading, and chips that jump to each card. */
+.wyg-head{display:flex;flex-direction:column;align-items:center;text-align:center}
+.wyg-head .h2{max-width:none}
+.wyg-pill{display:inline-flex;align-items:center;height:30px;padding:0 14px;border:1px solid #DDD8F0;border-radius:999px}
+.wyg-accent{color:var(--primary)}
+.wyg-chips{margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.wyg-chips a{height:40px;padding:0 16px;display:inline-flex;align-items:center;gap:8px;border-radius:999px;background:#fff;border:1px solid var(--border);color:var(--secondary-foreground);font-size:14px;font-weight:700;text-decoration:none;transition:border-color .2s,transform .2s}
+.wyg-chips a:hover{border-color:var(--primary);color:var(--foreground);transform:translateY(-1px)}
+.wyg-chips i{width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.feature-grid > .feature{scroll-margin-top:96px}
+.feature-grid > .feature:target{box-shadow:0 0 0 2px var(--primary)}

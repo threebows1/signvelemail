@@ -433,12 +433,23 @@
 
     <!-- ══ 05 WHAT YOU GET ══ -->
     <section class="section" style="padding-top:0;">
-      <span class="eyebrow">What you get</span>
-      <h2 class="h2 h2-tight">Everything the editor does.</h2>
+      <div class="wyg-head">
+        <span class="eyebrow wyg-pill">What you get</span>
+        <h2 class="h2 h2-tight">Everything <span class="wyg-accent">the editor does.</span></h2>
+        <nav class="wyg-chips" aria-label="Jump to a feature">
+          <a href="#f-layouts"><i aria-hidden="true"></i>24 layouts</a>
+          <a href="#f-design"><i aria-hidden="true"></i>Type and colour</a>
+          <a href="#f-brand"><i aria-hidden="true"></i>Logo and photo</a>
+          <a href="#f-contacts"><i aria-hidden="true"></i>Contact rows</a>
+          <a href="#f-social"><i aria-hidden="true"></i>Social</a>
+          <a href="#f-campaigns"><i aria-hidden="true"></i>Campaigns</a>
+          <a href="#f-install"><i aria-hidden="true"></i>Install</a>
+        </nav>
+      </div>
 
       <div class="feature-grid">
 
-        <div class="feature feature-wide">
+        <div class="feature feature-wide" id="f-layouts">
           <p class="feature-cat">Layouts</p>
           <div class="feature-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
@@ -454,7 +465,7 @@
           </div>
         </div>
 
-        <div class="feature">
+        <div class="feature" id="f-design">
           <p class="feature-cat">Design</p>
           <div class="feature-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6V4h16v2M12 4v16M9 20h6"/></svg>
@@ -463,7 +474,7 @@
           <p class="body-sm">Body and display fonts, name size, letter spacing, capitals, role chips, two theme colours, one or two contact columns, and a background panel.</p>
         </div>
 
-        <div class="feature">
+        <div class="feature" id="f-brand">
           <p class="feature-cat">Brand</p>
           <div class="feature-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
@@ -472,7 +483,7 @@
           <p class="body-sm">Upload either and they are hosted for you, so they survive being emailed. Crop, ring and resize the portrait; sample images to start from.</p>
         </div>
 
-        <div class="feature">
+        <div class="feature" id="f-contacts">
           <p class="feature-cat">Contacts</p>
           <div class="feature-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
@@ -481,7 +492,7 @@
           <p class="body-sm">Email, mobile, landline, address, website, office, pronouns, booking. Reorder them, switch them off, and pick circles, filled badges, plain icons, letters or labels.</p>
         </div>
 
-        <div class="feature">
+        <div class="feature" id="f-social">
           <p class="feature-cat">Social</p>
           <div class="feature-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
@@ -490,7 +501,7 @@
           <p class="body-sm">LinkedIn, Instagram, Facebook, YouTube, TikTok and X — as chips, rings, filled discs, bare glyphs or plain text, in any order and any colour.</p>
         </div>
 
-        <div class="feature feature-full">
+        <div class="feature feature-full" id="f-campaigns">
           <div class="feature-full-inner">
             <div class="feature-full-copy">
               <p class="feature-cat">Campaigns</p>
@@ -504,7 +515,7 @@
           </div>
         </div>
 
-        <a class="feature feature-full" href="install.html">
+        <a class="feature feature-full" href="install.html" id="f-install">
           <div class="feature-full-inner">
             <div class="feature-full-copy">
               <p class="feature-cat">Install</p>
