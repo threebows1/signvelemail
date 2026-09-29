@@ -128,10 +128,14 @@ body{margin:0}
 
 /* ── Dark showcase section ── */
 .section-dark{background:var(--foreground);color:var(--background);padding:80px 24px}
+/* Centred: the pill, the heading, the line under it, then the button. */
 .showcase-head{
   max-width:80rem;margin:0 auto 48px;
-  display:flex;align-items:flex-start;justify-content:space-between;gap:32px;flex-wrap:wrap;
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:28px;
 }
+.showcase-head > div{display:flex;flex-direction:column;align-items:center}
+.showcase-pill{display:inline-flex;align-items:center;height:30px;padding:0 14px;border:1px solid rgba(255,255,255,.16);border-radius:999px}
+.showcase-accent{color:var(--accent)}
 
 /* ── Section shell ── */
 .section{max-width:80rem;margin:0 auto;padding:80px 24px}
@@ -586,7 +590,7 @@ body{margin:0}
   @keyframes galleryIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 }
 
-.showcase-head .lead{max-width:46ch}
+.showcase-head .lead{max-width:56ch;margin-left:auto;margin-right:auto}
 
 /* ═══════════════════════════════════════════════════════════
    How it works — rail and stage
