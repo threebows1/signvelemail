@@ -41,7 +41,7 @@ body{margin:0}
   --accent-foreground:#04231a;
   --border:#e9e7f2;
 
-  --sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --sans:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --sig:"Rubik",Arial,sans-serif;
@@ -114,7 +114,7 @@ body{margin:0}
 
 /* ── Headings ── */
 .h2{
-  font-size:clamp(30px,4.4vw,48px);font-weight:700;letter-spacing:-.03em;
+  font-size:clamp(30px,4.4vw,48px);font-weight:700;letter-spacing:-.02em;
   line-height:1.02;margin:20px 0 0;
 }
 .h2-tight{max-width:18ch}
@@ -367,7 +367,7 @@ body{margin:0}
    and kept to a measure that breaks it over three lines rather than balancing
    them — the ragged break is the shape the design was drawn with. */
 .mast-title{
-  font-size:clamp(32px,4.5vw,62px);font-weight:800;letter-spacing:-.04em;
+  font-size:clamp(32px,4.5vw,62px);font-weight:800;letter-spacing:-.025em;
   line-height:1;margin:0 auto;color:#fff;
 }
 /* The three-line break is the shape the hero was drawn with, so it is set
