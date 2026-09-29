@@ -537,3 +537,14 @@ body{margin:0}
    form for the expired-link notice and to retire the sign-up form once the
    confirmation mail is away, so it has to win. */
 [hidden]{display:none !important}
+
+/* Install guides: jump links and groups */
+.guide-jump{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
+.guide-jump a{height:44px;padding:0 18px;display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font-size:14px;font-weight:700;text-decoration:none}
+.guide-jump a:hover{border-color:var(--accent)}
+.guide-group{margin-top:48px;scroll-margin-top:88px}
+.guide-group-title{margin:0 0 6px}
+.guide-group-intro{margin:0 0 20px}
+.guide{scroll-margin-top:88px}
+.guide-before .h3{margin:0 0 18px}
+@media (max-width:640px){.guide{padding:22px 18px}}

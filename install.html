@@ -46,133 +46,228 @@
     <div class="wrap-narrow">
       <p class="eyebrow">Install</p>
       <h1 class="h2">Getting your signature into your mail client</h1>
-      <p class="body-text">Build your signature first, then use <strong>Copy signature</strong> for a rich paste, or <strong>Export HTML</strong> where a client wants raw source. Which one you need depends on the client — each guide below says so.</p>
-
-      <div class="callout" style="margin-top:26px;">
-        <strong>Before you start:</strong> nothing, if a trial or a plan is running — a logo or photo you upload is hosted for you and goes out as a real address, which is what survives being emailed. Without one the editor does not send images at all: the layouts fall back to a generated mark and initials, so a signature is complete rather than broken. The only case to watch is an upload that fails, and the editor says so on the spot rather than leaving you to find out from a recipient.
-      </div>
+      <p class="body-text">Step-by-step guides for every mail app Sign Vel supports: on your computer, in the browser and on your phone. Pick yours below.</p>
     </div>
   </section>
 
   <section style="padding-bottom:88px;">
     <div class="wrap-narrow">
+      <nav class="guide-jump" aria-label="Jump to a group of mail apps">
+        <a href="#desktop">Desktop apps</a><a href="#web">Web mail</a><a href="#phone">Phones and tablets</a>
+      </nav>
 
-      <div class="guide" id="outlook">
-        <div class="guide-head">
-          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><path d="M13.4 7.1h8.1c.4 0 .7.3.7.7v8.4c0 .4-.3.7-.7.7h-8.1z" fill="#28A8EA"/><path d="M13.9 8.9l4.1 2.7 4.1-2.7" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="1.6" y="4.6" width="11.8" height="14.8" rx="1.8" fill="#0364B8"/><ellipse cx="7.5" cy="12" rx="3" ry="3.9" fill="none" stroke="#fff" stroke-width="2"/></svg></span><h2 class="h3">Outlook 365</h2>
-          <span class="tag tag-warn" style="margin:0;">Partial rendering</span>
-        </div>
+      <div class="guide guide-before">
+        <h2 class="h3">Before you start</h2>
         <ol class="guide-steps">
-          <li>In the editor, click <strong>Copy signature</strong>.</li>
-          <li>Open Outlook and go to <strong>Settings → Mail → Compose and reply</strong>.</li>
-          <li>Under <strong>Email signature</strong>, paste into the editing box with <code>Ctrl+V</code>.</li>
-          <li>Give the signature a name, then choose whether it applies to new messages, replies, or both.</li>
-          <li>Click <strong>Save</strong>, and send yourself a test message to confirm.</li>
+          <li>Finish your signature in the editor. Every signature you save is on <a href="signatures.html">your Signatures page</a>.</li>
+          <li>Most apps take <strong>Copy signature</strong>, which you paste like normal text. Thunderbird takes <strong>Export HTML</strong> instead. Each guide says which.</li>
+          <li>Paste straight after copying, without copying anything else in between.</li>
+          <li>When you are done, send a test email to yourself.</li>
         </ol>
-        <div class="callout">
-          <strong>One visual difference here.</strong> Outlook renders mail through Microsoft Word, which ignores <span class="inline-code">border-radius</span> — circular icon badges and a round portrait will arrive as squares. Everything else — layout, spacing, colour, links, icons, and where the logo and photo sit against the text — comes through intact: the icons are rendered as PNG images rather than SVG, and positions are set with the <span class="inline-code">valign</span> attribute as well as the stylesheet, which is the form Word honours.
-        </div>
       </div>
 
-      <div class="guide" id="gmail">
+      <section class="guide-group" id="desktop" aria-labelledby="desktop-h">
+        <h2 class="h3 guide-group-title" id="desktop-h">Desktop apps</h2>
+        <p class="body-text guide-group-intro">Outlook, Apple Mail and Thunderbird on your computer.</p>
+      <div class="guide" id="outlook-new">
         <div class="guide-head">
-          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(3 3) scale(.75)"><path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></g></svg></span><h2 class="h3">Gmail</h2>
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><path d="M13.4 7.1h8.1c.4 0 .7.3.7.7v8.4c0 .4-.3.7-.7.7h-8.1z" fill="#28A8EA"/><path d="M13.9 8.9l4.1 2.7 4.1-2.7" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="1.6" y="4.6" width="11.8" height="14.8" rx="1.8" fill="#0364B8"/><ellipse cx="7.5" cy="12" rx="3" ry="3.9" fill="none" stroke="#fff" stroke-width="2"/></svg></span><h3 class="h3">Outlook — new Outlook for Windows and Outlook on the web</h3>
           <span class="tag tag-good" style="margin:0;">Good support</span>
         </div>
         <ol class="guide-steps">
-          <li>In the editor, click <strong>Copy signature</strong>.</li>
-          <li>In Gmail, open <strong>Settings → See all settings → General</strong>.</li>
-          <li>Scroll to <strong>Signature</strong> and click <strong>Create new</strong>. Give it a name.</li>
-          <li>Paste into the signature box with <code>Ctrl+V</code>.</li>
-          <li>Set the defaults for new mail and replies, then click <strong>Save Changes</strong> at the bottom of the page.</li>
+          <li>Open your signature in Sign Vel and click <strong>Copy signature</strong>.</li>
+          <li>In Outlook, click the <strong>Settings</strong> gear at the top right.</li>
+          <li>Go to <strong>Account → Signatures</strong>.</li>
+          <li>Click <strong>+ New signature</strong> and give it a name.</li>
+          <li>Click in the signature box and paste with <code>Ctrl+V</code> (<code>Cmd+V</code> on a Mac).</li>
+          <li>Under <strong>Select default signatures</strong>, pick it for <strong>New messages</strong> and for <strong>Replies/forwards</strong>.</li>
+          <li>Click <strong>Save</strong>. Send a test email to yourself, and to an address on another service, to check how it looks.</li>
         </ol>
         <div class="callout">
-          <strong>Watch for the size limit.</strong> Gmail truncates signatures over roughly 10,000 characters, and an embedded logo will blow past that on its own. A hosted image URL keeps you far below the limit. Gmail also strips background images, so avoid relying on one for contrast.
+          <strong>Round corners turn square.</strong> Outlook draws email with Microsoft Word, which ignores rounded corners, so round icons and a round photo arrive square. Layout, colours, links and images come through.
         </div>
       </div>
-
+      <div class="guide" id="outlook-classic">
+        <div class="guide-head">
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><path d="M13.4 7.1h8.1c.4 0 .7.3.7.7v8.4c0 .4-.3.7-.7.7h-8.1z" fill="#28A8EA"/><path d="M13.9 8.9l4.1 2.7 4.1-2.7" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="1.6" y="4.6" width="11.8" height="14.8" rx="1.8" fill="#0364B8"/><ellipse cx="7.5" cy="12" rx="3" ry="3.9" fill="none" stroke="#fff" stroke-width="2"/></svg></span><h3 class="h3">Outlook — classic desktop app for Windows</h3>
+          <span class="tag tag-good" style="margin:0;">Good support</span>
+        </div>
+        <ol class="guide-steps">
+          <li>Open your signature in Sign Vel and click <strong>Copy signature</strong>.</li>
+          <li>In Outlook, go to <strong>File → Options → Mail</strong>, then click <strong>Signatures…</strong></li>
+          <li>On the <strong>E-mail Signature</strong> tab, click <strong>New</strong> and give it a name.</li>
+          <li>Click in the <strong>Edit signature</strong> box and paste with <code>Ctrl+V</code>.</li>
+          <li>On the right, choose the email account, then set <strong>New messages</strong> and <strong>Replies/forwards</strong> to this signature.</li>
+          <li>Click <strong>OK</strong>, then <strong>OK</strong> again. Send a test email to yourself, and to an address on another service, to check how it looks.</li>
+        </ol>
+        <div class="callout">
+          <strong>Using several computers?</strong> Classic Outlook keeps signatures on each computer, so repeat these steps on each one. Round corners turn square here too.
+        </div>
+      </div>
+      <div class="guide" id="outlook-mac">
+        <div class="guide-head">
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><path d="M13.4 7.1h8.1c.4 0 .7.3.7.7v8.4c0 .4-.3.7-.7.7h-8.1z" fill="#28A8EA"/><path d="M13.9 8.9l4.1 2.7 4.1-2.7" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="1.6" y="4.6" width="11.8" height="14.8" rx="1.8" fill="#0364B8"/><ellipse cx="7.5" cy="12" rx="3" ry="3.9" fill="none" stroke="#fff" stroke-width="2"/></svg></span><h3 class="h3">Outlook for Mac</h3>
+          <span class="tag tag-good" style="margin:0;">Good support</span>
+        </div>
+        <ol class="guide-steps">
+          <li>Open your signature in Sign Vel and click <strong>Copy signature</strong>.</li>
+          <li>In Outlook, go to <strong>Outlook → Settings → Signatures</strong>.</li>
+          <li>Click <strong>+</strong> to add a signature and give it a name.</li>
+          <li>Click in the signature box and paste with <code>Cmd+V</code>.</li>
+          <li>Close the editing window to save it.</li>
+          <li>Back in Signatures, under <strong>Choose default signature</strong>, pick it for new messages and for replies/forwards. Send a test email to yourself, and to an address on another service, to check how it looks.</li>
+        </ol>
+      </div>
       <div class="guide" id="apple-mail">
         <div class="guide-head">
-          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="2.4" y="6" width="19.2" height="12" rx="3" fill="#1F8DF5"/><path d="M5.2 9.1l6.8 5 6.8-5" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h2 class="h3">Apple Mail</h2>
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="2.4" y="6" width="19.2" height="12" rx="3" fill="#1F8DF5"/><path d="M5.2 9.1l6.8 5 6.8-5" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3 class="h3">Apple Mail on a Mac</h3>
           <span class="tag tag-good" style="margin:0;">Full support</span>
         </div>
         <ol class="guide-steps">
-          <li>In the editor, click <strong>Copy signature</strong>.</li>
-          <li>Open <strong>Mail → Settings → Signatures</strong>.</li>
-          <li>Choose the account on the left, then click <strong>+</strong> to add a signature.</li>
-          <li>Clear the placeholder text, then paste with <code>Cmd+V</code>.</li>
-          <li>Untick <strong>Always match my default message font</strong> — leaving it on strips your typography.</li>
+          <li>Open your signature in Sign Vel and click <strong>Copy signature</strong>.</li>
+          <li>In Mail, go to <strong>Mail → Settings → Signatures</strong>.</li>
+          <li>Pick your email account in the left column, then click <strong>+</strong> at the bottom of the middle column.</li>
+          <li>Give the signature a name.</li>
+          <li>Untick <strong>Always match my default message font</strong>. If it stays ticked, Mail changes your fonts.</li>
+          <li>Delete the sample text in the right column and paste with <code>Cmd+V</code>.</li>
+          <li>Under <strong>Choose Signature</strong>, pick your new signature. Close the window; it saves by itself. Send a test email to yourself, and to an address on another service, to check how it looks.</li>
         </ol>
-        <div class="callout">
-          <strong>The best case of the four.</strong> Apple Mail has the most capable rendering engine, so rounded badges, spacing and colour all appear exactly as designed. If a signature looks right here but wrong elsewhere, the other client is the problem.
-        </div>
       </div>
-
-            <div class="guide" id="yahoo">
-        <div class="guide-head">
-          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="2.4" y="6" width="19.2" height="12" rx="2.6" fill="#6001D2"/><path d="M5.4 9l6.6 4.6L18.6 9" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h2 class="h3">Yahoo Mail</h2>
-          <span class="tag tag-good" style="margin:0;">Good support</span>
-        </div>
-        <ol class="guide-steps">
-          <li>In the editor, click <strong>Copy signature</strong>.</li>
-          <li>Open <strong>Settings → More Settings → Mailboxes</strong>.</li>
-          <li>Select your address and toggle the signature on.</li>
-          <li>Paste into the signature box with <code>Ctrl+V</code>.</li>
-          <li>Changes save on their own — send yourself a test to confirm.</li>
-        </ol>
-        <div class="callout">
-          <strong>Yahoo removes style blocks.</strong> Anything defined in a <span class="inline-code">&lt;style&gt;</span> tag is discarded on send. Every rule in a Sign Vel signature is already inline, so nothing is lost here.
-        </div>
-      </div>
-
       <div class="guide" id="thunderbird">
         <div class="guide-head">
-          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#0A84FF" d="M9.948 4.444h-.005c-1.92.788-2.126 2.55-1.817 3.499v.02C9.236 7.18 10.658 6.76 12 6.76c3.26 0 5.902 2.156 5.902 4.815 0 2.66-2.643 4.816-5.902 4.816l-.083-.002c-.155-.006-.354-.013-.435.118-.096.156.116.397.238.536 1.274 1.441 3.123 1.622 3.608 1.67l.076.008c-4.281.414-9.304-2.32-9.306-7.076 0-1.12.414-2.073 1.075-2.83l-.005-.002h-.003C7.31 6.38 6.376 3.47 4.629 2.898c-.124-.04-.246.054-.262.183-.23 1.924-.727 2.59-1.264 3.31-.805 1.08-1.39 2.328-1.365 3.698a10.99 10.99 0 0 1-.705-1.91c-.024-.09-.17-.365-.333-.272-.13.072-.227.274-.296.485A12.137 12.137 0 0 0 0 11.489c0 6.536 5.475 12 12 12 6.627 0 12-5.372 12-12 0-2.526-.781-4.87-2.115-6.805l.167-.002c.518 0 1.024.045 1.51.129-.734-.816-1.724-1.475-2.877-1.904a8.54 8.54 0 0 1 2.494-.495c-1.426-1.166-3.508-1.9-5.827-1.9-3.355 0-6.648 1.29-7.404 3.93z"/></g></svg></span><h2 class="h3">Thunderbird</h2>
-          <span class="tag tag-good" style="margin:0;">Full support</span>
-        </div>
-        <ol class="guide-steps">
-          <li>In the editor, click <strong>Export HTML</strong> and copy the source — this client wants raw HTML, not a rich paste.</li>
-          <li>Open <strong>Account Settings</strong> and select your account.</li>
-          <li>Tick <strong>Use HTML</strong> under the signature field.</li>
-          <li>Paste the exported source and close the dialog.</li>
-        </ol>
-        <div class="callout">
-          <strong>Renders through Gecko</strong> — the same engine as Firefox, so CSS support is close to a browser. Rounded badges and spacing survive intact.
-        </div>
-      </div>
-
-      <div class="guide" id="proton">
-        <div class="guide-head">
-          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#6D4AFF" d="m15.24 8.998 3.656-3.073v15.81H2.482C1.11 21.735 0 20.609 0 19.223V6.944l7.58 6.38a2.186 2.186 0 0 0 2.871-.042l4.792-4.284h-.003zm-5.456 3.538 1.809-1.616a2.438 2.438 0 0 1-1.178-.533L.905 2.395A.552.552 0 0 0 0 2.826v2.811l8.226 6.923a1.186 1.186 0 0 0 1.558-.024zM23.871 2.463a.551.551 0 0 0-.776-.068l-3.199 2.688v16.653h1.623c1.371 0 2.481-1.127 2.481-2.513V2.824a.551.551 0 0 0-.129-.36z"/></g></svg></span><h2 class="h3">Proton Mail</h2>
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#0A84FF" d="M9.948 4.444h-.005c-1.92.788-2.126 2.55-1.817 3.499v.02C9.236 7.18 10.658 6.76 12 6.76c3.26 0 5.902 2.156 5.902 4.815 0 2.66-2.643 4.816-5.902 4.816l-.083-.002c-.155-.006-.354-.013-.435.118-.096.156.116.397.238.536 1.274 1.441 3.123 1.622 3.608 1.67l.076.008c-4.281.414-9.304-2.32-9.306-7.076 0-1.12.414-2.073 1.075-2.83l-.005-.002h-.003C7.31 6.38 6.376 3.47 4.629 2.898c-.124-.04-.246.054-.262.183-.23 1.924-.727 2.59-1.264 3.31-.805 1.08-1.39 2.328-1.365 3.698a10.99 10.99 0 0 1-.705-1.91c-.024-.09-.17-.365-.333-.272-.13.072-.227.274-.296.485A12.137 12.137 0 0 0 0 11.489c0 6.536 5.475 12 12 12 6.627 0 12-5.372 12-12 0-2.526-.781-4.87-2.115-6.805l.167-.002c.518 0 1.024.045 1.51.129-.734-.816-1.724-1.475-2.877-1.904a8.54 8.54 0 0 1 2.494-.495c-1.426-1.166-3.508-1.9-5.827-1.9-3.355 0-6.648 1.29-7.404 3.93z"/></g></svg></span><h3 class="h3">Thunderbird</h3>
           <span class="tag tag-good" style="margin:0;">Good support</span>
         </div>
         <ol class="guide-steps">
-          <li>In the editor, click <strong>Export HTML</strong> and copy the source.</li>
-          <li>Open <strong>Settings → All settings → Identity and addresses</strong>.</li>
-          <li>Edit your address and enable the signature.</li>
-          <li>Switch the signature box to code view, then paste.</li>
+          <li>Open your signature in Sign Vel, click <strong>Export HTML</strong>, then <strong>Copy HTML</strong>. Thunderbird needs the HTML code, not a normal paste.</li>
+          <li>In Thunderbird, open <strong>Account Settings</strong> (right-click your account in the left column).</li>
+          <li>Click your email address at the top of the list.</li>
+          <li>Under <strong>Signature text</strong>, tick <strong>Use HTML</strong>.</li>
+          <li>Click in the box and paste with <code>Ctrl+V</code> (<code>Cmd+V</code> on a Mac).</li>
+          <li>Close the settings tab; it saves by itself. Send a test email to yourself, and to an address on another service, to check how it looks.</li>
         </ol>
-        <div class="callout">
-          <strong>Remote content is sanitised.</strong> Recipients may be asked to allow images from your address the first time, so a hosted logo can appear blocked until they do.
-        </div>
       </div>
-      <div class="guide" id="workspace">
+      </section>
+
+      <section class="guide-group" id="web" aria-labelledby="web-h">
+        <h2 class="h3 guide-group-title" id="web-h">Web mail</h2>
+        <p class="body-text guide-group-intro">Mail you open in a browser.</p>
+      <div class="guide" id="gmail">
         <div class="guide-head">
-          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(3 3) scale(.75)"><path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></g></svg></span><h2 class="h3">Google Workspace — organisation-wide</h2>
-          <span class="tag tag-good" style="margin:0;">Admin required</span>
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(3 3) scale(.75)"><path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></g></svg></span><h3 class="h3">Gmail on the web, including Google Workspace</h3>
+          <span class="tag tag-good" style="margin:0;">Good support</span>
         </div>
         <ol class="guide-steps">
-          <li>In the editor, click <strong>Export HTML</strong> and copy the source. This route needs raw HTML, not a rich paste.</li>
-          <li>Open the <strong>Google Admin console → Apps → Google Workspace → Gmail</strong>.</li>
-          <li>Select <strong>Compliance</strong>, then find <strong>Append footer</strong>.</li>
-          <li>Choose the organisational unit the signature should apply to.</li>
-          <li>Paste the exported HTML, then save. Changes can take up to 24 hours to propagate.</li>
+          <li>Open your signature in Sign Vel and click <strong>Copy signature</strong>.</li>
+          <li>Open Gmail in a browser, click the <strong>Settings</strong> gear, then <strong>See all settings</strong>.</li>
+          <li>Stay on the <strong>General</strong> tab and scroll down to <strong>Signature</strong>.</li>
+          <li>Click <strong>+ Create new</strong>, type a name and click <strong>Create</strong>.</li>
+          <li>Click in the box beside it and paste with <code>Ctrl+V</code> (<code>Cmd+V</code> on a Mac).</li>
+          <li>Under <strong>Signature defaults</strong>, pick it for <strong>For new emails use</strong> and <strong>On reply/forward use</strong>.</li>
+          <li>Scroll to the very bottom and click <strong>Save Changes</strong>. Send a test email to yourself, and to an address on another service, to check how it looks.</li>
         </ol>
         <div class="callout">
-          <strong>Appended footers behave differently.</strong> They are added by the server on send, so they appear once at the bottom of the thread rather than under each reply, and staff cannot edit or remove them. Personal details like a direct line have to come from per-user signatures instead — most teams run both.
+          <strong>Each person sets their own.</strong> In Google Workspace, every member of the team installs their signature this way. Google’s admin-wide footer only takes plain text, so it cannot hold a designed signature.
         </div>
       </div>
+      <div class="guide" id="yahoo">
+        <div class="guide-head">
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="2.4" y="6" width="19.2" height="12" rx="2.6" fill="#6001D2"/><path d="M5.4 9l6.6 4.6L18.6 9" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3 class="h3">Yahoo Mail</h3>
+          <span class="tag tag-good" style="margin:0;">Good support</span>
+        </div>
+        <ol class="guide-steps">
+          <li>Open your signature in Sign Vel and click <strong>Copy signature</strong>.</li>
+          <li>In Yahoo Mail, click <strong>Settings</strong> (the gear), then <strong>More Settings</strong>.</li>
+          <li>Choose <strong>Writing email</strong>.</li>
+          <li>Under <strong>Signature</strong>, turn the switch on for your email address.</li>
+          <li>Click in the box and paste with <code>Ctrl+V</code> (<code>Cmd+V</code> on a Mac).</li>
+          <li>It saves by itself. Send a test email to yourself, and to an address on another service, to check how it looks.</li>
+        </ol>
+      </div>
+      <div class="guide" id="icloud">
+        <div class="guide-head">
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="2.4" y="6" width="19.2" height="12" rx="3" fill="#1F8DF5"/><path d="M5.2 9.1l6.8 5 6.8-5" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3 class="h3">iCloud Mail on the web</h3>
+          <span class="tag tag-good" style="margin:0;">Good support</span>
+        </div>
+        <ol class="guide-steps">
+          <li>Open your signature in Sign Vel and click <strong>Copy signature</strong>.</li>
+          <li>Go to <strong>icloud.com/mail</strong> and sign in.</li>
+          <li>Click the <strong>Settings</strong> gear at the top of the mailbox list, then <strong>Settings</strong>.</li>
+          <li>Choose <strong>Composing</strong> and turn on the signature.</li>
+          <li>Click in the box and paste with <code>Cmd+V</code> (<code>Ctrl+V</code> on Windows).</li>
+          <li>Click <strong>Done</strong>. Send a test email to yourself, and to an address on another service, to check how it looks.</li>
+        </ol>
+        <div class="callout">
+          <strong>Check the spacing.</strong> iCloud on the web sometimes trims spacing on paste. If it looks tight, the Mac and iPhone Mail apps keep it better.
+        </div>
+      </div>
+      <div class="guide" id="proton">
+        <div class="guide-head">
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(2.4 2.4) scale(.8)"><path fill="#6D4AFF" d="m15.24 8.998 3.656-3.073v15.81H2.482C1.11 21.735 0 20.609 0 19.223V6.944l7.58 6.38a2.186 2.186 0 0 0 2.871-.042l4.792-4.284h-.003zm-5.456 3.538 1.809-1.616a2.438 2.438 0 0 1-1.178-.533L.905 2.395A.552.552 0 0 0 0 2.826v2.811l8.226 6.923a1.186 1.186 0 0 0 1.558-.024zM23.871 2.463a.551.551 0 0 0-.776-.068l-3.199 2.688v16.653h1.623c1.371 0 2.481-1.127 2.481-2.513V2.824a.551.551 0 0 0-.129-.36z"/></g></svg></span><h3 class="h3">Proton Mail</h3>
+          <span class="tag tag-good" style="margin:0;">Good support</span>
+        </div>
+        <ol class="guide-steps">
+          <li>Open your signature in Sign Vel and click <strong>Copy signature</strong>.</li>
+          <li>In Proton Mail, open <strong>Settings → All settings</strong>.</li>
+          <li>Go to <strong>Identity and addresses</strong>.</li>
+          <li>Click in the <strong>Email signature</strong> box and paste with <code>Ctrl+V</code> (<code>Cmd+V</code> on a Mac).</li>
+          <li>Click <strong>Update</strong>. Send a test email to yourself, and to an address on another service, to check how it looks.</li>
+        </ol>
+        <div class="callout">
+          <strong>Images may be held back.</strong> Proton protects its users from remote images, so some recipients see your logo only after they choose to load images.
+        </div>
+      </div>
+      </section>
 
+      <section class="guide-group" id="phone" aria-labelledby="phone-h">
+        <h2 class="h3 guide-group-title" id="phone-h">Phones and tablets</h2>
+        <p class="body-text guide-group-intro">Phone apps keep their own signature, separate from the one on your computer.</p>
+      <div class="guide" id="iphone">
+        <div class="guide-head">
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><rect x="2.4" y="6" width="19.2" height="12" rx="3" fill="#1F8DF5"/><path d="M5.2 9.1l6.8 5 6.8-5" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3 class="h3">Mail on iPhone and iPad</h3>
+          <span class="tag tag-good" style="margin:0;">Good support</span>
+        </div>
+        <ol class="guide-steps">
+          <li>On the phone, open <a href="signatures.html">your signatures</a> in the browser, sign in, open the signature and tap <strong>Copy signature</strong>.</li>
+          <li>Open the <strong>Settings</strong> app, go to <strong>Apps → Mail</strong> (on older iOS just <strong>Mail</strong>), then tap <strong>Signature</strong>.</li>
+          <li>Choose <strong>All Accounts</strong> or <strong>Per Account</strong>, and delete the “Sent from my iPhone” text.</li>
+          <li>Touch and hold in the box, then tap <strong>Paste</strong>.</li>
+          <li>If it turns plain, shake the phone straight away and tap <strong>Undo</strong>. The iPhone then keeps the design.</li>
+          <li>Go back to save. Send a test email to yourself, and to an address on another service, to check how it looks.</li>
+        </ol>
+      </div>
+      <div class="guide" id="gmail-app">
+        <div class="guide-head">
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><g transform="translate(3 3) scale(.75)"><path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></g></svg></span><h3 class="h3">Gmail app on iPhone and Android</h3>
+          <span class="tag tag-warn" style="margin:0;">Text only</span>
+        </div>
+        <ol class="guide-steps">
+          <li>Open the Gmail app, tap the <strong>menu</strong> (three lines), then <strong>Settings</strong>.</li>
+          <li>Tap your email address.</li>
+          <li>Tap <strong>Mobile signature</strong> (on iPhone, <strong>Signature settings</strong>, then turn it on).</li>
+          <li>Type a short signature — your name, role and phone number — and tap <strong>OK</strong>.</li>
+        </ol>
+        <div class="callout">
+          <strong>The Gmail app cannot show a designed signature.</strong> It only allows plain text on the phone. Your full signature, set up in Gmail on the web, is still used whenever you send from a computer.
+        </div>
+      </div>
+      <div class="guide" id="outlook-app">
+        <div class="guide-head">
+          <span class="mail-logo mail-logo-lg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#fff"/><path d="M13.4 7.1h8.1c.4 0 .7.3.7.7v8.4c0 .4-.3.7-.7.7h-8.1z" fill="#28A8EA"/><path d="M13.9 8.9l4.1 2.7 4.1-2.7" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="1.6" y="4.6" width="11.8" height="14.8" rx="1.8" fill="#0364B8"/><ellipse cx="7.5" cy="12" rx="3" ry="3.9" fill="none" stroke="#fff" stroke-width="2"/></svg></span><h3 class="h3">Outlook app on iPhone and Android</h3>
+          <span class="tag tag-warn" style="margin:0;">Partial support</span>
+        </div>
+        <ol class="guide-steps">
+          <li>On the phone, open <a href="signatures.html">your signatures</a> in the browser, sign in, open the signature and tap <strong>Copy signature</strong>.</li>
+          <li>Open the Outlook app, tap your profile picture at the top left, then the <strong>Settings</strong> gear.</li>
+          <li>Tap <strong>Signature</strong>.</li>
+          <li>Delete the “Get Outlook for…” text, then touch and hold and tap <strong>Paste</strong>.</li>
+          <li>Go back to save. Send a test email to yourself, and to an address on another service, to check how it looks.</li>
+        </ol>
+        <div class="callout">
+          <strong>Expect a simpler version.</strong> The Outlook phone app keeps text and links but can drop images and layout. Your full signature, set up in Outlook on a computer, is still used whenever you send from there.
+        </div>
+      </div>
+      </section>
     </div>
   </section>
 
