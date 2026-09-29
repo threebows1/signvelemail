@@ -26,7 +26,7 @@
     gtag('config', 'G-0KGVSNEJVC');
   </script>
 </head>
-<body class="page">
+<body class="page" id="top">
 
   <!-- ══ MASTHEAD ══
        Full-bleed brand panel carrying the nav, the headline and a real
@@ -522,25 +522,23 @@
     </section>
 
     <!-- ══ CLOSING ══ -->
-    <section class="cta-wrap">
-      <div class="cta">
-        <span class="eyebrow eyebrow-light">Get started</span>
-        <h2 class="h2">Build your signature<br>in minutes.</h2>
-        <p class="lead lead-light">Thirty days free with every feature switched on. Five signatures, no card.</p>
-        <div class="btn-row">
-          <a class="btn btn-lg btn-light" href="signup.html">Start free for 30 days</a>
-          <a class="btn btn-lg btn-ghost" href="pricing.html">See pricing</a>
-        </div>
-      </div>
-    </section>
 
   </main>
 
-  <footer class="footer">
+  <footer class="footer footer-dark" id="footer">
+    <div class="footer-cta">
+      <div>
+        <p class="footer-cta-title">Your signature, in about five minutes.</p>
+        <p class="footer-cta-sub">Thirty days free, five signatures, no card.</p>
+      </div>
+      <div class="footer-cta-btns">
+        <a class="btn btn-md btn-mint" href="signup.html">Start free</a>
+        <a class="footer-cta-link" href="pricing.html">See pricing</a>
+      </div>
+    </div>
     <div class="footer-inner">
       <div class="footer-brand">
-        <!-- Same .logo markup as the masthead, but on a white ground, so the
-             stroke takes the ink colour rather than the panel's white. -->
+        <!-- Same .logo markup as the masthead; the footer is dark too now. -->
         <a class="logo" href="index.html" aria-label="Sign Vel home">
           <svg width="40" height="16.8" viewBox="0 0 88 37" aria-hidden="true"><defs><linearGradient id="grad-home-foot" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8B6BFF"/><stop offset="1" stop-color="#00E5A0"/></linearGradient></defs>
             <path d="M8 22c7-16 12-21 16-19 5 2 3 18 7 19s8-13 13-13 4 13 15 9" fill="none" stroke="url(#grad-home-foot)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -571,6 +569,7 @@
     </div>
     <div class="footer-base">
       <p class="footer-copy">© <span class="footer-year">2026</span> Sign Vel. All rights reserved.</p>
+      <a class="footer-top" href="#top">Back to top <span aria-hidden="true">↑</span></a>
     </div>
   </footer>
 
