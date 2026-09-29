@@ -61,6 +61,7 @@ window.AccountMenu = (function () {
       </div>
       <div class="am-foot">
         <a role="menuitem" href="help.html">Help</a>
+        <a role="menuitem" href="mailto:info@signvel.com">Contact</a>
         <button role="menuitem" type="button" data-signout>Sign out</button>
       </div>`;
   }

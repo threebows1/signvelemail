@@ -257,3 +257,5 @@ button,input{font:inherit;color:inherit}
   .ac-card{padding:18px}
   .ac-two{grid-template-columns:minmax(0,1fr)}
 }
+.am-foot{gap:16px}
+.am-foot > button{margin-left:auto}

@@ -1334,6 +1334,7 @@ function renderAccount() {
         </div>
         <div class="am-foot">
           <a role="menuitem" href="help.html">Help</a>
+          <a role="menuitem" href="mailto:info@signvel.com">Contact</a>
           <button role="menuitem" type="button" id="signOutBtn">Sign out</button>
         </div>
       </div>

@@ -957,3 +957,5 @@ body.share-page{background:#F6F5FB;height:auto;overflow:auto;display:flex;flex-d
 .ed-menu .am-foot a:hover{color:var(--ink)}
 .ed-menu .am-foot button{height:40px;padding:0 12px;border:0;border-radius:8px;background:transparent;font-family:var(--ui-font);font-size:13px;font-weight:700;color:#C2263A;cursor:pointer}
 .ed-menu .am-foot button:hover{background:#FDECEA}
+.am-foot{gap:16px}
+.am-foot > button{margin-left:auto}
