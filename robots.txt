@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /signatures
+Disallow: /account
+Disallow: /admin
+Disallow: /reset
+Disallow: /share
+
+Sitemap: https://signvel.com/sitemap.xml
