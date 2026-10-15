@@ -18,3 +18,6 @@ _selftest.html
 # not in a public repository.
 tools/*.jpg
 tools/*.jpeg
+
+# Wrangler's local cache, made by deploying from this machine.
+.wrangler/
