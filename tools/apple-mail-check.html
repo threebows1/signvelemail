@@ -1,0 +1,51 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>apple-mail-check</title></head><body><pre id="out" style="font:12px monospace"></pre>
+<div class="app" id="app" style="position:absolute;left:-4000px"><aside class="rail" id="rail"></aside><div class="workspace"><header class="topbar" id="header"></header><div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// Apple Mail squeezed Corporate's contacts into a strip one word wide: it gave
+// the logo's cell the logo file's full width. Three things now hold the row:
+// the logo goes out at an exact size once measured, its cell asks for no more
+// than it needs, and short values never break inside themselves.
+const F = [];
+window.SIGNVEL_SHOW_IMAGES = true;
+S.template = 'corporate'; applyTemplateTheme('corporate');
+S.name = 'Test Person'; S.title = 'Assistant'; S.company = 'Test Co';
+const V = {email: 'pa@example.com', mobile: '+971 54 000 0000', phone: '+971 4 000 0000', address: 'Somewhere Building, A Long Road, A Country', website: 'example.com'};
+S.contactFields = S.contactFields.map(f => (f.type in V) ? Object.assign({}, f, {value: V[f.type], enabled: true}) : f);
+S.logoUrl = 'https://example.com/wide-logo.png';
+S.logoHeight = 40;
+
+S.logoDims = null;
+let h = generateSignaturePreview();
+if (!/<img src="https:\/\/example\.com\/wide-logo\.png" height="40"/.test(h)) F.push('an unmeasured logo no longer falls back to height only');
+
+S.logoDims = {url: S.logoUrl, w: 400, h: 163};
+h = generateSignaturePreview();
+if (!/<img src="https:\/\/example\.com\/wide-logo\.png" width="98" height="40"/.test(h)) F.push('a measured logo is not given its exact width and height');
+S.logoDims = {url: 'https://example.com/other.png', w: 400, h: 163};
+if (/width="98" height="40"/.test(generateSignaturePreview())) F.push('measurements of another logo were applied to this one');
+S.logoDims = {url: S.logoUrl, w: 2000, h: 100};
+if (!/width="240" height="12"/.test(generateSignaturePreview())) F.push('a very wide logo is not held to its slot width');
+S.logoDims = {url: S.logoUrl, w: 400, h: 163};
+
+['', 'classic'].forEach(t => {
+  const x = withExportTarget(t, generateSignaturePreview);
+  const where = t || 'standard';
+  if (!/<td valign="[a-z]+" width="1" [^>]*white-space:nowrap;[^>]*><img src="https:\/\/example\.com\/wide-logo\.png"/.test(x)) F.push(where + ': the logo cell does not shrink to the logo');
+  ['+971 54 000 0000', 'pa@example.com'].forEach(v => {
+    const i = x.indexOf(v), td = x.lastIndexOf('<td', i);
+    if (i < 0 || !/white-space:nowrap/.test(x.slice(td, i))) F.push(where + ': "' + v + '" can still break inside itself');
+  });
+  const ai = x.indexOf('Somewhere Building'), atd = x.lastIndexOf('<td', ai);
+  if (/white-space:nowrap/.test(x.slice(atd, ai))) F.push(where + ': the address is held on one line and may push the signature wide');
+});
+
+document.getElementById('out').textContent = F.length ? F.join('\n')
+  : 'logo sized exactly once measured, its cell shrinks to it, short contact values hold together, the address still wraps';
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>

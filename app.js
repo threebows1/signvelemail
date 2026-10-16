@@ -1072,6 +1072,9 @@ const S = {
   logoUrl: DEFAULT_LOGO_URL,
   logoName: 'Sample logo',
   logoHeight: 40,
+  // The logo file's own width and height, measured once in the editor (see
+  // ensureLogoDims), so a signature can give the image an exact size.
+  logoDims: null,
   // Where the logo sits against the text beside it, for the layouts that give
   // it a cell of its own. Middle for the same reason the portrait is.
   logoAlign: 'middle',
@@ -2226,7 +2229,27 @@ function renderRollout() {
 // ═══════════════════════════════════════
 // RENDER: Stage (toolbar + email mock)
 // ═══════════════════════════════════════
+// Measures the logo file once per address and keeps its proportions in the
+// signature's state, so every copy and export can size the image exactly.
+// Until it is measured the logo goes out sized by height alone, as before.
+function ensureLogoDims() {
+  const url = S.logoUrl;
+  if (!url || (S.logoDims && S.logoDims.url === url) || ensureLogoDims.pending === url) return;
+  ensureLogoDims.pending = url;
+  const img = new Image();
+  img.onload = () => {
+    ensureLogoDims.pending = null;
+    if (S.logoUrl !== url || !img.naturalWidth || !img.naturalHeight) return;
+    S.logoDims = {url, w: img.naturalWidth, h: img.naturalHeight};
+    renderStage();
+    scheduleAllSaves();
+  };
+  img.onerror = () => { ensureLogoDims.pending = null; };
+  img.src = url;
+}
+
 function renderStage() {
+  ensureLogoDims();
   const clients = previewClients;
   // A tab saved before the list changed no longer exists, which would leave
   // none of them marked and the target silently Standard.
@@ -2811,6 +2834,16 @@ function buildSignatureBody() {
       if (src === DEFAULT_LOGO_URL && ((opts && opts.colour === '#FFFFFF') || onDark)) {
         src = (opts && opts.mono) ? SAMPLE_MARK_WHITE_URL : SAMPLE_LOGO_WHITE_URL;
       }
+      // With the logo's proportions known, it goes out at its exact size.
+      // Apple Mail sizes the logo's cell from the file's own width rather than
+      // the width it is shown at, so a 400px-wide logo shown 98px wide still
+      // took 400px of the row and squeezed the contacts to one word a line.
+      const dims = S.logoDims && S.logoDims.url === src ? S.logoDims : null;
+      if (dims && dims.w > 0 && dims.h > 0) {
+        let w = Math.round(hh * dims.w / dims.h), h = hh;
+        if (w > mw) { w = mw; h = Math.round(mw * dims.h / dims.w); }
+        return `<img src="${esc(src)}" width="${w}" height="${h}" style="display:block;width:${w}px;height:${h}px;max-width:${w}px;border:0;" alt="${esc(pCompany)} logo">`;
+      }
       return `<img src="${esc(src)}" height="${hh}" style="display:block;height:auto;max-height:${hh}px;width:auto;max-width:${mw}px;" alt="${esc(pCompany)} logo">`;
     }
     // The generated mark is built from the company name, so it has to read the
@@ -3020,7 +3053,13 @@ function buildSignatureBody() {
     const cell = (f, last) => {
       const p = contactParts(f, o);
       const rightPad = last ? 0 : gap;
-      const noWrap = o.row && fieldWidth(f) <= rowMax ? 'white-space:nowrap;' : '';
+      // Stacked in a column, a value still should not break inside itself: in
+      // Apple Mail a column beside a logo can be squeezed to the width of its
+      // longest word, which put "+971 54 305" on one line and "2711" on the
+      // next. An address is the one value meant to wrap, and anything too long
+      // for half the layout is left free to.
+      const noWrap = (o.row ? fieldWidth(f) <= rowMax : (f.type !== 'address' && fieldWidth(f) <= rowMax / 2))
+        ? 'white-space:nowrap;' : '';
       if (!p.lead) return `<td colspan="2" style="padding:${p.valPad};padding-right:${rightPad}px;vertical-align:${p.align};${noWrap}">${p.val}</td>`;
       return `<td style="padding:${p.leadPad};vertical-align:${p.align};${p.raw ? 'font-size:0;line-height:0;' : ''}">${p.lead}</td>
               <td style="padding:${p.valPad};padding-right:${rightPad}px;vertical-align:${p.align};${noWrap}">${p.val}</td>`;
@@ -3692,7 +3731,7 @@ function buildSignatureBody() {
       ${S.dividerEnabled ? `<tr><td style="padding-bottom:${sp};">${rule}</td></tr>` : ''}
       <tr><td>
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tbody><tr>
-          <td valign="${lv}" style="vertical-align:${lv};padding-right:28px;">${logoHTML}</td>
+          <td valign="${lv}" width="1" style="vertical-align:${lv};padding-right:28px;white-space:nowrap;">${logoHTML}</td>
           <td style="vertical-align:middle;width:100%;">${contactHTML}</td>
         </tr></tbody></table>
       </td></tr>
