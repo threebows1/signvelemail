@@ -2066,7 +2066,10 @@ function renderMedia() {
   // Shown on every layout, like the rest of the photo settings: they are saved
   // whether or not the current one draws a portrait, and apply the moment a
   // layout that does is picked.
-  h += `<div class="field-row"><label class="field-label">Photo position<span class="field-hint">Against the text beside it.</span></label><div class="toggle-group" data-action="photoAlign"><button class="${S.photoAlign==='top'?'active':''}" data-val="top">Top</button><button class="${S.photoAlign==='middle'?'active':''}" data-val="middle">Middle</button><button class="${S.photoAlign==='bottom'?'active':''}" data-val="bottom">Bottom</button></div></div>`;
+  // On a layout that gives the photo a row of its own the control has nothing
+  // to align against, so it says so and stands aside instead of looking broken.
+  const ownRow = PHOTO_ON_ITS_OWN_ROW.includes(S.template);
+  h += `<div class="field-row${ownRow ? ' is-inactive' : ''}"><label class="field-label">Photo position<span class="field-hint">${ownRow ? 'This layout puts the photo on a row of its own, so there is nothing beside it to line up with.' : 'Against the text beside it.'}</span></label><div class="toggle-group" data-action="photoAlign"><button class="${S.photoAlign==='top'?'active':''}" data-val="top"${ownRow ? ' disabled' : ''}>Top</button><button class="${S.photoAlign==='middle'?'active':''}" data-val="middle"${ownRow ? ' disabled' : ''}>Middle</button><button class="${S.photoAlign==='bottom'?'active':''}" data-val="bottom"${ownRow ? ' disabled' : ''}>Bottom</button></div></div>`;
   h += `<div class="field-row"><label class="field-label">Photo size<span class="field-hint">Auto follows the template.</span></label><div class="slider-row"><input type="range" min="0" max="140" step="4" value="${S.headshotSize}" data-bind="headshotSize"><span class="slider-val">${S.headshotSize ? S.headshotSize + 'px' : 'Auto'}</span></div></div>`;
   h += `<div class="field-row"><label class="field-label">Ring width</label><div class="slider-row"><input type="range" min="0" max="10" value="${S.photoRing}" data-bind="photoRing"><span class="slider-val">${S.photoRing}px</span></div></div>`;
   if (S.photoRing) h += `<div class="opt-list">${colorRow('Ring colour', 'photoRingColor')}</div>`;
@@ -3751,7 +3754,7 @@ function buildSignatureBody() {
   if (S.template === 'stacked') {
     const gap = parseInt(sp);
     return outer(`
-      ${S.headshotUrl && showImages ? `<tr><td style="padding-bottom:${gap + 4}px;">${photoHTML({shape: 'circle', size: S.headshotSize || 72, ring: S.photoRing, ringColor: S.photoRingColor})}</td></tr>` : ''}
+      ${S.headshotUrl && showImages ? `<tr><td style="padding-bottom:${gap + 4}px;">${photoHTML({size: S.headshotSize || 72, ring: S.photoRing, ringColor: S.photoRingColor})}</td></tr>` : ''}
       <tr><td>
         <p style="${nameStyleAt(bs + 5)}">${eName}</p>
         ${roleHTML({mb: 2})}
@@ -3776,7 +3779,7 @@ function buildSignatureBody() {
   if (S.template === 'profile') {
     const gap = parseInt(sp);
     const hasPhoto = S.headshotUrl && showImages;
-    const media = `${hasPhoto ? photoHTML({shape: 'circle', size: S.headshotSize || 78, ring: S.photoRing, ringColor: S.photoRingColor}) : ''}${
+    const media = `${hasPhoto ? photoHTML({size: S.headshotSize || 78, ring: S.photoRing, ringColor: S.photoRingColor}) : ''}${
       logoHTML ? `<div style="padding-top:${hasPhoto ? gap + 4 : 0}px;">${
         hasPhoto ? underPhoto(logoAs({size: Math.max(26, S.logoHeight - 8)})) : logoAs({size: Math.max(26, S.logoHeight - 8)})
       }</div>` : ''}`;
@@ -3809,7 +3812,7 @@ function buildSignatureBody() {
       ? `<tr><td colspan="2" style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</td></tr>`
       : `<tr><td colspan="2" style="height:${gap + 2}px;"></td></tr>`;
     return outer(`
-      ${S.headshotUrl && showImages ? `<tr><td colspan="2" style="padding-bottom:${gap + 2}px;">${photoHTML({shape: 'circle', size: S.headshotSize || 76, ring: S.photoRing, ringColor: S.photoRingColor})}</td></tr>` : ''}
+      ${S.headshotUrl && showImages ? `<tr><td colspan="2" style="padding-bottom:${gap + 2}px;">${photoHTML({size: S.headshotSize || 76, ring: S.photoRing, ringColor: S.photoRingColor})}</td></tr>` : ''}
       <tr><td colspan="2">
         <p style="${nameStyleAt(bs + 4)}">${eName}</p>
         ${roleHTML({mb: 2})}
@@ -3838,7 +3841,7 @@ function buildSignatureBody() {
       ? `<tr><td colspan="2" style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</td></tr>`
       : `<tr><td colspan="2" style="height:${gap + 2}px;"></td></tr>`;
     return outer(`
-      ${S.headshotUrl && showImages ? `<tr><td colspan="2">${photoHTML({shape: 'circle', size: S.headshotSize || 80, ring: S.photoRing, ringColor: S.photoRingColor})}</td></tr>` : ''}
+      ${S.headshotUrl && showImages ? `<tr><td colspan="2">${photoHTML({size: S.headshotSize || 80, ring: S.photoRing, ringColor: S.photoRingColor})}</td></tr>` : ''}
       ${rule}
       <tr>
         <td width="200" valign="top" style="width:200px;vertical-align:top;padding-right:26px;">
@@ -3867,7 +3870,7 @@ function buildSignatureBody() {
       ? `<tr><td style="padding:${gap + 2}px 0;">${hairline(ac, S.dividerWidth)}</td></tr>`
       : `<tr><td style="height:${gap + 2}px;"></td></tr>`;
     return outer(`
-      ${S.headshotUrl && showImages ? `<tr><td style="padding-bottom:${gap + 2}px;">${photoHTML({shape: 'circle', size: S.headshotSize || 80, ring: S.photoRing, ringColor: S.photoRingColor})}</td></tr>` : ''}
+      ${S.headshotUrl && showImages ? `<tr><td style="padding-bottom:${gap + 2}px;">${photoHTML({size: S.headshotSize || 80, ring: S.photoRing, ringColor: S.photoRingColor})}</td></tr>` : ''}
       <tr><td>
         <p style="${nameStyleAt(bs + 4)}">${eName}</p>
         ${roleHTML({mb: 2})}
@@ -3893,7 +3896,7 @@ function buildSignatureBody() {
     const barW = Math.max(2, S.dividerWidth);
     return outer(`
       <tr>
-        ${S.headshotUrl && showImages ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:22px;">${photoHTML({shape: 'circle', size: S.headshotSize || 84, ring: S.photoRing, ringColor: S.photoRingColor})}${
+        ${S.headshotUrl && showImages ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:22px;">${photoHTML({size: S.headshotSize || 84, ring: S.photoRing, ringColor: S.photoRingColor})}${
           logoHTML ? `<div style="padding-top:${gap + 4}px;">${underPhoto(logoAs({size: Math.max(26, S.logoHeight - 8)}))}</div>` : ''}</td>`
         : logoHTML ? `<td valign="${lv}" style="vertical-align:${lv};padding-right:22px;">${logoAs({size: Math.max(26, S.logoHeight - 8)})}</td>` : ''}
         ${S.dividerEnabled ? `<td width="${barW}" bgcolor="${ac}" style="width:${barW}px;background-color:${ac};font-size:1px;line-height:1px;">&nbsp;</td>` : ''}
@@ -3919,7 +3922,7 @@ function buildSignatureBody() {
     const gap = parseInt(sp);
     return outer(`
       <tr>
-        ${S.headshotUrl && showImages ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:24px;">${photoHTML({shape: 'circle', size: S.headshotSize || 82, ring: S.photoRing, ringColor: S.photoRingColor})}</td>` : ''}
+        ${S.headshotUrl && showImages ? `<td valign="${pv}" style="vertical-align:${pv};padding-right:24px;">${photoHTML({size: S.headshotSize || 82, ring: S.photoRing, ringColor: S.photoRingColor})}</td>` : ''}
         <td width="190" valign="top" style="width:190px;vertical-align:top;padding-right:24px;">
           <p style="${nameStyleAt(bs + 2)}">${eName}</p>
           ${roleHTML({mb: 2})}

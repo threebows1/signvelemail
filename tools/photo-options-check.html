@@ -1,0 +1,40 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>photo-options-check</title></head><body><pre id="out" style="font:12px monospace"></pre>
+<div class="app" id="app" style="position:absolute;left:-4000px"><aside class="rail" id="rail"></aside><div class="workspace"><header class="topbar" id="header"></header><div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// The headshot controls must reach every layout that draws a photo. Seven of
+// them once forced a circle, so Rounded and Square did nothing there.
+const F = [];
+window.SIGNVEL_SHOW_IMAGES = true;
+S.headshotUrl = 'https://example.com/face.jpg';
+const radiusOf = (h) => { const m = h.match(/<div style="width:(\d+)px;height:\1px;border-radius:([^;]+);[^"]*overflow:hidden;"><img src="https:\/\/example\.com\/face\.jpg"/); return m ? {box: +m[1], radius: m[2]} : null; };
+PHOTO_TEMPLATES.forEach((id) => {
+  S.template = id; applyTemplateTheme(id);
+  S.headshotUrl = 'https://example.com/face.jpg';
+  const want = {circle: '50%', rounded: '10px', square: '0'};
+  Object.keys(want).forEach((shape) => {
+    S.headshotShape = shape;
+    const r = radiusOf(generateSignaturePreview());
+    if (!r) { F.push(id + ': no framed photo found'); return; }
+    if (r.radius !== want[shape]) F.push(id + ': shape ' + shape + ' drew radius ' + r.radius);
+  });
+  S.headshotShape = 'circle';
+  S.headshotSize = 100;
+  const r = radiusOf(generateSignaturePreview());
+  if (r && r.box !== 100) F.push(id + ': photo size 100 drew ' + r.box + 'px');
+  S.headshotSize = 0;
+});
+// Photo position stands aside where the photo has a row to itself.
+S.template = 'masthead'; applyTemplateTheme('masthead');
+const panel = renderMedia();
+if (!/is-inactive[\s\S]*Photo position[\s\S]*row of its own/.test(panel)) F.push('masthead: Photo position does not say it has nothing to align against');
+S.template = 'aside'; applyTemplateTheme('aside');
+if (/row of its own/.test(renderMedia())) F.push('aside: Photo position is wrongly marked inactive');
+document.getElementById('out').textContent = F.length ? F.join('\n') : PHOTO_TEMPLATES.length + ' photo layouts honour shape and size; Photo position stands aside where it cannot apply';
+document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+</script></body></html>
