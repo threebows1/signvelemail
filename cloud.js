@@ -173,6 +173,9 @@ window.Cloud = (function () {
 
   async function signOut() {
     if (!ready) return { ok: false };
+    // Signing out of an account entered from the admin panel goes back to the
+    // admin, and must not end the customer's own sessions on their devices.
+    if (readReturn()) return returnToAdmin();
     await db.auth.signOut();
     session = null; profile = null;
     emit();
@@ -433,7 +436,92 @@ window.Cloud = (function () {
   const adminSetTeam = (userId, teamId, name) =>
     adminCall('setTeam', { userId, teamId, name }).then(r => r.ok ? { ok: true, user: r.data.user } : r);
 
+  // ── Signing in as someone else ───────────────────────────
+  // Support work inside a customer's account. The admin's own session is put
+  // aside here before the switch, and put back by returnToAdmin, so coming back
+  // needs no password and no email. Only the refresh token is worth keeping —
+  // the access token expires within the hour anyway.
+  const RETURN_KEY = 'signvel.adminReturn';
+
+  function readReturn() {
+    try { return JSON.parse(localStorage.getItem(RETURN_KEY) || 'null'); } catch (e) { return null; }
+  }
+
+  async function adminImpersonate(userId) {
+    if (!ready || !session) return { ok: false, error: 'Sign in first.' };
+    if (readReturn()) return { ok: false, error: 'Return to your admin account before switching to another.' };
+    const r = await adminCall('impersonate', { userId });
+    if (!r.ok) return r;
+    const back = { email: session.user.email, refresh_token: session.refresh_token, as: r.data.email };
+    try { localStorage.setItem(RETURN_KEY, JSON.stringify(back)); } catch (e) {
+      return { ok: false, error: 'This browser will not store the way back to your account, so the switch was not made.' };
+    }
+    // local: forgets the admin session in this browser without revoking it, so
+    // the refresh token kept above still works.
+    await db.auth.signOut({ scope: 'local' });
+    let v = await db.auth.verifyOtp({ token_hash: r.data.tokenHash, type: 'magiclink' });
+    if (v.error) v = await db.auth.verifyOtp({ token_hash: r.data.tokenHash, type: 'email' });
+    if (v.error) {
+      await returnToAdmin();
+      return { ok: false, error: 'Could not sign in as them: ' + v.error.message };
+    }
+    session = v.data.session;
+    await loadProfile();
+    emit();
+    return { ok: true, email: r.data.email };
+  }
+
+  async function returnToAdmin() {
+    const back = readReturn();
+    if (!ready || !back) return { ok: false, error: 'Not signed in as anyone else.' };
+    // local again: the customer's own sessions elsewhere must not be ended
+    // because support has finished looking.
+    await db.auth.signOut({ scope: 'local' });
+    try { localStorage.removeItem(RETURN_KEY); } catch (e) { /* nothing more to do */ }
+    const { data, error } = await db.auth.refreshSession({ refresh_token: back.refresh_token });
+    session = (data && data.session) || null;
+    await loadProfile();
+    emit();
+    return error ? { ok: false, error: 'Your admin session had ended. Sign in again.' } : { ok: true };
+  }
+
+  // A bar on every page while it lasts, so nobody forgets whose account they
+  // are editing.
+  function paintImpersonationBar() {
+    const back = readReturn();
+    let bar = document.getElementById('svImpersonating');
+    if (!back || !session) { if (bar) bar.remove(); return; }
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'svImpersonating';
+      bar.setAttribute('role', 'status');
+      bar.style.cssText = 'position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:99999;' +
+        'display:flex;gap:12px;align-items:center;padding:10px 14px;border-radius:12px;background:#B42318;color:#fff;' +
+        'font:600 13px/1.3 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100% - 32px);';
+      document.body.appendChild(bar);
+    }
+    bar.innerHTML = '';
+    const label = document.createElement('span');
+    label.textContent = 'Signed in as ' + (session.user.email || back.as) + ' (admin view)';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Return to admin';
+    btn.style.cssText = 'border:0;border-radius:8px;padding:6px 10px;background:#fff;color:#B42318;font:inherit;cursor:pointer;white-space:nowrap;';
+    btn.onclick = function () {
+      btn.disabled = true;
+      returnToAdmin().then(function (r) { window.location.href = r.ok ? 'admin.html' : 'signin.html'; });
+    };
+    bar.appendChild(label);
+    bar.appendChild(btn);
+  }
+  listeners.push(function () {
+    if (document.body) paintImpersonationBar();
+    else document.addEventListener('DOMContentLoaded', paintImpersonationBar, { once: true });
+  });
+
   return {
+    adminImpersonate, returnToAdmin,
+    impersonating: () => readReturn(),
     init, signIn, signInPassword, signUp, resetPassword, updatePassword, signOut,
     updateProfile, changeEmail,
     loadSignature, saveSignature, uploadAsset, saveBannerExpiry,

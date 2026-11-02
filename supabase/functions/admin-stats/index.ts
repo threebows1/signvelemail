@@ -26,6 +26,8 @@
 //   setPlan   move somebody between plans
 //   setTrial  extend or end paid access without a payment — complimentary
 //             access, and the way a grant is taken back
+//   impersonate  a one-time sign-in token for another (non-admin) account,
+//             so support can work inside it
 //
 // The two writes address the account by id rather than email, and both refuse
 // the caller's own account: this is a tool for granting access to other people
@@ -515,6 +517,35 @@ async function stats(admin: any, origin: string | null) {
   }, 200, origin);
 }
 
+// Sign in as somebody else, for support: to see their signatures as they see
+// them and fix what is wrong. Returns a one-time magic-link token for the
+// account rather than sending it anywhere; the panel exchanges it for a
+// session in the admin's own browser. Nothing is mailed to the customer.
+//
+// Refused for the caller's own account (there is nothing to switch to) and for
+// other admins: a session as another admin is a second way into this panel
+// under someone else's name.
+async function impersonate(admin: any, body: any, callerId: string, callerEmail: string, origin: string | null) {
+  const userId = String(body?.userId ?? '');
+  if (!UUID.test(userId)) return json({ error: 'Which account?' }, 400, origin);
+  if (userId === callerId) return json({ error: 'That is your own account.' }, 400, origin);
+
+  const { data: prof } = await admin.from('profiles').select('is_admin').eq('id', userId).single();
+  if (prof?.is_admin) return json({ error: 'You cannot sign in as another admin.' }, 403, origin);
+
+  const { data: got, error: getErr } = await admin.auth.admin.getUserById(userId);
+  const email = got?.user?.email;
+  if (getErr || !email) return json({ error: 'No such account, or it has no address to sign in with.' }, 404, origin);
+
+  const { data, error } = await admin.auth.admin.generateLink({ type: 'magiclink', email });
+  const tokenHash = data?.properties?.hashed_token;
+  if (error || !tokenHash) return json({ error: 'Could not start the session: ' + (error?.message || 'no token') }, 500, origin);
+
+  // The trail. Function logs are where Supabase keeps it.
+  console.log(`impersonate: ${callerEmail} (${callerId}) signed in as ${email} (${userId})`);
+  return json({ email, tokenHash }, 200, origin);
+}
+
 // ── Entry ────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -564,6 +595,7 @@ Deno.serve(async (req) => {
   if (action === 'setTrial') return setTrial(admin, body, uid, origin);
   if (action === 'setSignatureLimit') return setSignatureLimit(admin, body, uid, origin);
   if (action === 'setTeam') return setTeam(admin, body, origin);
+  if (action === 'impersonate') return impersonate(admin, body, uid, userData.user.email ?? '', origin);
   if (action === 'stats') return stats(admin, origin);
   // Naming the action matters: "Unknown action." alone says nothing about
   // which one, and the usual cause is a deployment older than the page that

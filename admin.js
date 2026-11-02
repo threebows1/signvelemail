@@ -227,6 +227,22 @@
     });
   }
 
+  function impersonate(userId) {
+    if (!userId || A.busy) return;
+    const row = (A.detail && A.detail.user) || {};
+    if (!window.confirm('Sign in as ' + (row.email || 'this user') + '?\n\nYou will see and edit their signatures. Use “Return to admin” on the red bar to come back.')) return;
+    A.busy = userId;
+    A.impersonateError = '';
+    paintDrawer();
+    Cloud.adminImpersonate(userId).then(function (r) {
+      A.busy = '';
+      if (r.ok) { window.location.href = 'signatures.html'; return; }
+      A.impersonateError = r.error;
+      noteDeploy(r.error);
+      paintDrawer();
+    });
+  }
+
   // An allowance, in signatures, for one account. Empty clears it.
   // Join the id in the box, start a fresh team, or take them out of one.
   function setTeam(userId, teamId) {
@@ -670,6 +686,18 @@
       '<dt>Stripe customer</dt><dd class="adm-mono">' + esc(u.stripe_customer_id || 'none') + '</dd>' +
       '</dl>';
 
+    // ── Sign in as them ──
+    if (!self && !u.is_admin) {
+      h += '<div class="adm-sec"><h3 class="adm-sec-h">Sign in as this user</h3>' +
+        '<div class="adm-note">Opens their dashboard and editor as they see them, so you can fix a signature ' +
+        'for them. Anything you change is saved to their account. A red bar stays on screen until you press ' +
+        'Return to admin. Nothing is emailed to them.</div>' +
+        '<div class="adm-grantrow"><button class="adm-mini" data-act="impersonate" data-user="' + esc(u.id) + '"' +
+        (A.busy === u.id ? ' disabled' : '') + '>Sign in as ' + esc(u.email || 'this user') + '</button></div>' +
+        (A.impersonateError ? '<div class="adm-note is-error" style="margin-top:12px">' + esc(A.impersonateError) + '</div>' : '') +
+        '</div>';
+    }
+
     // ── Complimentary access ──
     h += '<div class="adm-sec"><h3 class="adm-sec-h">Complimentary access</h3>';
     if (self) {
@@ -928,6 +956,7 @@
       setSignatureLimit(btn.dataset.user, raw === '' ? null : Number(raw));
       return;
     }
+    if (act === 'impersonate') { impersonate(btn.dataset.user); return; }
     if (act === 'detail') { openDrawer(btn.dataset.user); return; }
     if (act === 'exportCsv') { exportCsv(); return; }
   }
