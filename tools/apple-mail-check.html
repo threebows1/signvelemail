@@ -45,7 +45,15 @@ S.logoDims = {url: S.logoUrl, w: 400, h: 163};
   if (/white-space:nowrap/.test(x.slice(atd, ai))) F.push(where + ': the address is held on one line and may push the signature wide');
 });
 
+// With no logo, its cell used to stay behind with its 28px of padding and
+// push every contact row in from the edge.
+S.logoUrl = null;
+['', 'classic'].forEach(t => {
+  const x = withExportTarget(t, generateSignaturePreview);
+  if (/padding-right:28px;white-space:nowrap;/.test(x)) F.push((t || 'standard') + ': with no logo, an empty logo cell still indents the contacts');
+});
+
 document.getElementById('out').textContent = F.length ? F.join('\n')
-  : 'logo sized exactly once measured, its cell shrinks to it, short contact values hold together, the address still wraps';
+  : 'logo sized exactly once measured, its cell shrinks to it, short contact values hold together, the address still wraps, no empty logo cell without a logo';
 document.title = F.length ? 'FAIL ' + F.length : 'PASS';
 </script></body></html>

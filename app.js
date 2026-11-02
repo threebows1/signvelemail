@@ -3734,7 +3734,7 @@ function buildSignatureBody() {
       ${S.dividerEnabled ? `<tr><td style="padding-bottom:${sp};">${rule}</td></tr>` : ''}
       <tr><td>
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tbody><tr>
-          <td valign="${lv}" width="1" style="vertical-align:${lv};padding-right:28px;white-space:nowrap;">${logoHTML}</td>
+          ${logoHTML ? `<td valign="${lv}" width="1" style="vertical-align:${lv};padding-right:28px;white-space:nowrap;">${logoHTML}</td>` : ''}
           <td style="vertical-align:middle;width:100%;">${contactHTML}</td>
         </tr></tbody></table>
       </td></tr>
