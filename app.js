@@ -3724,6 +3724,12 @@ function buildSignatureBody() {
     // panel takes its padding out of this layout too instead of adding 48px
     // to it — this was the one place that still grew.
     const corpW = layoutW || 560;
+    // The logo's cell is held to the logo's own width. width="1" did the same
+    // job in a browser, but a mail client that honours the 1 literally — after
+    // Outlook has rewritten the markup on its way out — shrinks the logo to
+    // nothing, which is how it vanished in Apple Mail on a message sent from
+    // Windows. Unmeasured, the cell is left to size itself.
+    const logoCellW = (logoHTML.match(/<img[^>]* width="(\d+)"/) || [])[1];
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${corpW}" style="width:${corpW}px;max-width:100%;text-align:${al};"><tbody>
       <tr><td style="padding-bottom:${sp};">
         <p style="${nameStyle}">${eName}</p>
@@ -3734,7 +3740,7 @@ function buildSignatureBody() {
       ${S.dividerEnabled ? `<tr><td style="padding-bottom:${sp};">${rule}</td></tr>` : ''}
       <tr><td>
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tbody><tr>
-          ${logoHTML ? `<td valign="${lv}" width="1" style="vertical-align:${lv};padding-right:28px;white-space:nowrap;">${logoHTML}</td>` : ''}
+          ${logoHTML ? `<td valign="${lv}"${logoCellW ? ` width="${logoCellW}"` : ''} style="vertical-align:${lv};${logoCellW ? `width:${logoCellW}px;` : ''}padding-right:28px;white-space:nowrap;">${logoHTML}</td>` : ''}
           <td style="vertical-align:middle;width:100%;">${contactHTML}</td>
         </tr></tbody></table>
       </td></tr>
