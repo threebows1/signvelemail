@@ -1,0 +1,58 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>share-icons-check</title></head><body><pre id="out" style="font:12px monospace"></pre>
+<div class="app" id="app" style="position:absolute;left:-4000px"><aside class="rail" id="rail"></aside><div class="workspace"><header class="topbar" id="header"></header><div class="body" id="appBody"><aside class="panel" id="panel"></aside><main class="stage" id="stage"></main></div></div></div>
+<div class="install-overlay hidden" id="installOverlay"><div class="install-panel"><div class="install-panel-header"><h2 id="installTitle">I</h2><button id="installClose">c</button></div><div class="install-body" id="installBody"></div></div></div>
+<div class="install-overlay hidden" id="shareOverlay"><div class="install-panel"><div class="install-panel-header"><h2>S</h2><button id="shareClose">c</button></div><div class="install-body"><div class="share-row"><input id="shareUrl"><button id="shareCopyLink">C</button><a id="shareOpen" href="#">o</a></div></div></div></div>
+<div class="export-overlay hidden" id="exportOverlay"><div class="export-panel"><div class="export-panel-header"><h2>E</h2><button id="exportClose">x</button></div><div class="export-targets-row"><div class="toggle-group" id="exportTargets"></div><p id="exportNote"></p></div><pre><code id="exportCode"></code></pre><div class="export-actions"><button id="exportCopyBtn">C</button></div></div></div>
+<script>try{localStorage.clear()}catch(e){}</script>
+<script src="../config.js"></script><script src="../cloud.js"></script><script src="../app.js"></script>
+<script>
+// A shared link is a snapshot of the signature, and the person opening it may
+// pick New Outlook or Outlook classic. Those clients need glyph files that are
+// only made while that client is previewed, so a link built on Standard went
+// out without them for any field added since — and that one badge came out
+// filled while the others stayed open (a mobile number, in the report).
+const F = [];
+window.SIGNVEL_SHOW_IMAGES = true;
+window.Cloud = {
+  isReady: true,
+  state: function () { return {signedIn: true, entitled: true, plan: 'team', email: 'owner@example.com'}; },
+  onChange: function () {},
+  init: function () { return Promise.resolve({signedIn: true}); },
+  loadSignature: function () { return Promise.resolve(null); },
+  saveSignature: function () { return Promise.resolve({ok: true}); },
+  uploadAsset: function (file) { return Promise.resolve({ok: true, url: 'https://cdn.signvel.com/stub/' + file.name}); },
+};
+
+S.template = 'corporate'; applyTemplateTheme('corporate');
+S.contactFields = S.contactFields.map(f => f.type === 'mobile' ? Object.assign({}, f, {value: '+971 50 000 0000', enabled: true}) : f);
+// Everything hosted except the mobile glyph, as on the reported signature.
+S.iconAssets = {};
+['newoutlook', 'classic'].forEach(t => neededIconAssets(t).forEach(w => {
+  if (w.name !== 'mobile') S.iconAssets[w.key] = 'https://cdn.signvel.com/stub/' + w.key + '.png';
+}));
+
+// Waits on the link itself rather than a timer: the headless run's virtual
+// clock races past any timeout while the glyphs are being drawn.
+const realBuild = buildShareLink;
+let snapshot = null;
+buildShareLink = function () { snapshot = JSON.parse(JSON.stringify(shareState())); return realBuild().then(u => { finish(); return u; }); };
+showShare();
+
+function finish() {
+  const sent = snapshot.iconAssets || {};
+  ['newoutlook', 'classic'].forEach(t => {
+    neededIconAssets(t).length && F.push(t + ': glyphs still missing after sharing');
+    const need = [];
+    // Reset the filter so pending/hosted ones are both listed, then check each.
+    const all = (function () { const keep = S.iconAssets; S.iconAssets = {}; const w = neededIconAssets(t); S.iconAssets = keep; return w; })();
+    all.forEach(w => { if (!sent[w.key]) need.push(w.name); });
+    if (need.length) F.push(t + ': the shared link has no file for ' + need.join(', '));
+  });
+  report();
+}
+function report() {
+  document.getElementById('out').textContent = F.length ? F.join('\n')
+    : 'a shared link carries the glyph files New Outlook and Outlook classic need, made before the link is built';
+  document.title = F.length ? 'FAIL ' + F.length : 'PASS';
+}
+</script></body></html>

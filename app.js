@@ -378,6 +378,16 @@ function syncIconAssets(target) {
   return iconAssetRun;
 }
 
+// The glyph files for every client at once, for things that leave the editor
+// as a snapshot — a shared link — and so cannot make them later. Signed out
+// this does nothing and the fallback stands.
+async function syncAllIconAssets() {
+  for (const t of ['newoutlook', 'classic']) {
+    if (iconAssetRun) await iconAssetRun;
+    await syncIconAssets(t);
+  }
+}
+
 // Which target is in force. Derived from the selected client tab rather than
 // held alongside it: the two were separate state, and a reload restored the
 // tab without the target, so New Outlook sat selected while the preview, the
@@ -4143,7 +4153,12 @@ function showShare() {
   if (!overlay || !field) return;
   field.value = 'Building the link…';
   overlay.classList.remove('hidden');
-  buildShareLink().then(url => {
+  // The link is a snapshot, and whoever opens it may pick New Outlook or
+  // Outlook classic. Their glyph files are only made while that client is
+  // being previewed, so a link built on Standard carried none for a field
+  // added since, and that field's badge came out filled where the rest were
+  // open. Everything every client needs is made first, then the link.
+  syncAllIconAssets().catch(() => {}).then(buildShareLink).then(url => {
     field.value = url;
     field.select();
     const open = document.getElementById('shareOpen');
